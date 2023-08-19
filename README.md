@@ -2,7 +2,9 @@
 
 **Crafting the world's most iconic Next.js starter.**
 
-The ultimate Next.js 13 app router TypeScript starter! i18n, Server Actions, T3, Shadcn, Tailwind, Drizzle, Prisma, Zod, RSC, SWC, tRPC, NextAuth, Auth.js, Lucia, Lucide Icons, & More. Get it and enjoy!
+Experimental Next.js 13 app router TypeScript starter! i18n, Server Actions, T3, Shadcn, Tailwind, Drizzle, Prisma, Zod, RSC, SWC, tRPC, NextAuth, Auth.js, Lucia, Lucide Icons, & More. Get it and enjoy!
+
+_You can also check [our another free Next.js 13 starter](https://github.com/blefnk/relivator). This one starter offers you some of tech used in the current starter plus: store implementation, landing page, and more. It means there we're trying to build strong open-source store marketplace, using all of the newest Next.js and React tech._
 
 ## 🚀 About the Project
 
