@@ -1,0 +1,5 @@
+{
+  "name": "Bleverse Relivator",
+  "description": "Monorepo with multiple Next.js apps sharing a UI Library all using Shadcn UI and Tailwind CSS with a shared config",
+  "featured": true
+}

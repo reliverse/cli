@@ -1,17 +1,9 @@
 {
   "recommendations": [
-    "aaron-bond.better-comments",
-    "ambar.bundle-size",
     "bradlc.vscode-tailwindcss",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "lokalise.i18n-ally",
-    "mattpocock.ts-error-translator",
-    "mikekscholz.pop-icon-theme",
-    "neptunedesign.vs-sequential-number",
-    "streetsidesoftware.code-spell-checker",
-    "yoavbls.pretty-ts-errors",
-    "yzhang.markdown-all-in-one",
-    "davidanson.vscode-markdownlint"
+    "expo.vscode-expo-tools",
+    "yoavbls.pretty-ts-errors"
   ]
 }
