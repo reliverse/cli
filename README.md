@@ -1,20 +1,18 @@
-# Relivator: Nextjs Starter
+# Reliverse: An Open-Source Superapp
 
-> **Warn**
-> It's not currently production-ready. Please check the [Bleverse Relivator non-monorepo edition](https://github.com/blefnk/relivator).
+_Build a Site, Build an App, Build a Game, Build Everything._
 
-⬇️
+This is the one app to build them all. It's comprehensive and powerful both code and no-code website builder. Work as you want. Sites/apps/games created with this builder will be super fast and beautiful by default.
 
-> **Note**
-> Ever wondered how to migrate your Relivator application into a monorepo? Stop right here! This is the perfect starter repo to get you running with the perfect stack!
+Also, you can use it as Turborepo starter. But it's not currently production-ready. So you can check the [Relivator: A Next.js Starter](https://github.com/blefnk/relivator) for now.
 
-This is the Bleverse Relivator Turborepo Edition. It's the Incremental Turborepo Starter 💻 Next.js 13, Tauri Apps UI, Solito Expo 💪 i18n, Stripe, Shadcn, Tailwind, Drizzle Zod Trpc, TypeScript Page, Resend, Auth, Lucide CSS Radix UI, Reponsive React Server, TS ORM, Intl App Router Docs, User Actions Kit, SaaS Commerce Shop, Subscriptions Payments, T3 Turbo Full Stack 🤩 (more stars → more features)
+This is the Reliverse Turborepo Edition. It's the Incremental Turborepo Superapp Starter 💻 Next.js 13, Tauri Apps UI, Solito Expo 💪 i18n, Stripe, Shadcn, Tailwind, Drizzle Zod Trpc, TypeScript, Resend, Auth, Lucide CSS Radix UI, Responsive React Server, TS ORM, Intl App Router Docs, User Actions Kit, SaaS Commerce Shop, Subscriptions Payments, T3 Turbo Full Stack 🤩 (more stars → more features)
 
-When you give us the star [on this repo](https://github.com/blefnk/reliverse), you take part in a weekly lottery where a randomly selected person will receive a secret Relivator feature of their choice as a gift!
+When you give us the star [on this repo](https://github.com/blefnk/reliverse), you take part in the lottery where a randomly selected person will receive a secret Reliverse feature of their choice as a gift!
 
-## Using this template
+## How to Install
 
-Run the following command:
+Make fork to your Github profile, or just run the following command:
 
 ```sh
 pnpm dlx create-turbo@latest -e https://github.com/blefnk/reliverse
@@ -22,33 +20,33 @@ pnpm dlx create-turbo@latest -e https://github.com/blefnk/reliverse
 
 ## What's inside?
 
-The Bleverse Relivator monorepo includes the following packages/apps:
+This project includes the following packages/apps:
 
-### Apps / Packages / Tools
+### Apps and Packages
 
-- `nextjs`: a [Next.js](https://nextjs.org) with App Router
-- `solito`: a [Solito](https://solito.dev) app Expo Router
-- `tauri`: a [Tauri](https://tauri.app) app with Tauri UI
-- `primitives`: a stub React component library shared by both `nextjs`, `solito`, and `tauri` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+- `@nextjs/edge`: a [Next.js](https://nextjs.org) with App Router (Edge Runtime)
+- `@nextjs/node`: a [Next.js](https://nextjs.org) with App Router (Node.js Runtime)
+- `@acme/expo`: a [Solito](https://solito.dev) app Expo Router
+- `@acme/tauri`: a [Tauri](https://tauri.app) app with Tauri UI
+- `@acme/eslint-config`: `eslint` tool configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@acme/tsconfig` / `@acme/tailwind-config` / `@acme/prettier-config`: tools used throughout the monorepo
 
-Each package/app is 100% [TypeScript](https://typescriptlang.org)
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
 ### Utilities
 
-This Turborepo has some additional tools already setup for you:
+This project has some additional tools already setup for you:
 
-- [TypeScript](https://typescriptlang.org) for static type checking
-- [ESLint](https://eslint.org) for code linting
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
 
 ### Build
 
 To build all apps and packages, run the following command:
 
-```bash
-cd relivator
+```sh
+cd reliverse
 pnpm build
 ```
 
@@ -56,8 +54,8 @@ pnpm build
 
 To develop all apps and packages, run the following command:
 
-```bash
-cd relivator
+```sh
+cd reliverse
 pnpm dev
 ```
 
@@ -67,8 +65,8 @@ Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo
 
 By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
 
-```bash
-cd relivator
+```sh
+cd reliverse
 pnpm dlx turbo login
 ```
 
@@ -76,13 +74,13 @@ This will authenticate the Turborepo CLI with your [Vercel account](https://verc
 
 Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
 
-```bash
+```sh
 pnpm dlx turbo link
 ```
 
 ## Useful Links
 
-Learn more about the power of Relivator:
+Learn more about the power of Turborepo:
 
 - [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
 - [Caching](https://turbo.build/repo/docs/core-concepts/caching)

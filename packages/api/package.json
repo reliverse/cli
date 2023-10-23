@@ -1,0 +1,39 @@
+{
+  "name": "@acme/api",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint .",
+    "format": "prettier --check \"**/*.{mjs,ts,md,json}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@acme/auth": "^0.0.0",
+    "@acme/db": "^0.0.0",
+    "@trpc/client": "^10.41.0",
+    "@trpc/server": "^10.41.0",
+    "drizzle-orm": "^0.28.6",
+    "next-auth": "4.24.3",
+    "superjson": "2.1.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@acme/eslint-config": "^0.0.0",
+    "@acme/prettier-config": "^0.0.0",
+    "@acme/tsconfig": "^0.0.0",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@acme/eslint-config/base"
+    ]
+  },
+  "prettier": "@acme/prettier-config"
+}

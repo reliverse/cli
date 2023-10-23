@@ -1,4 +1,6 @@
 packages:
-  - apps/*
-  - packages/*
-  - tools/*
+  - "apps/native/*"
+  - "apps/nextjs/*"
+  - "packages/*"
+  - "plugins/*"
+  - "tools/*"

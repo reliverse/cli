@@ -1,0 +1,44 @@
+{
+  "name": "@acme/auth",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint .",
+    "format": "prettier --check \"**/*.{mjs,ts,md,json}\"",
+    "latest": "pnpm latest:canary",
+    "latest:stable": "pnpm add react@latest react-dom@latest next@latest",
+    "latest:canary": "pnpm add react@canary react-dom@canary next@canary",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@acme/db": "^0.0.0",
+    "@auth/core": "^0.17.0",
+    "@auth/drizzle-adapter": "^0.3.4",
+    "@t3-oss/env-nextjs": "^0.7.1",
+    "drizzle-orm": "^0.28.6",
+    "next": "13.5.7-canary.16",
+    "next-auth": "4.24.3",
+    "react": "18.3.0-canary-d803f519e-20231020",
+    "react-dom": "18.3.0-canary-d803f519e-20231020",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@acme/eslint-config": "^0.0.0",
+    "@acme/prettier-config": "^0.0.0",
+    "@acme/tsconfig": "^0.0.0",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@acme/eslint-config/base"
+    ]
+  },
+  "prettier": "@acme/prettier-config"
+}
