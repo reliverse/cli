@@ -4,6 +4,7 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "expo.vscode-expo-tools",
-    "yoavbls.pretty-ts-errors"
+    "yoavbls.pretty-ts-errors",
+    "lokalise.i18n-ally"
   ]
 }

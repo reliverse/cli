@@ -1,0 +1,30 @@
+{
+  "name": "minimal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm with-env next dev --port 3004",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "with-env": "dotenv -e ../../../.env --"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.3.0",
+    "next": "14.1.1",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "compilerOptions": {
+    /**
+     * In this file you can set the options for the TypeScript compiler.
+     * You can hover over on each option to get more information about.
+     * Hint: You can also press Shift+Space to get auto-completion.
+     * Lean more by checking the official TypeScript documentation:
+     * @see https://typescriptlang.org/docs/handbook/tsconfig-json
+     * @see https://totaltypescript.com/tsconfig-cheat-sheet
+     */
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "target": "esnext",
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+      "@/*": ["./public/*"]
+    },
+    "plugins": [
+      {
+        /**
+         * Next.js has built-in support for TypeScript, using plugin below.
+         * But while you use `pnpm build`, it stops on the first type errors.
+         * So you can use `pnpm typecheck` to check all type warns/errors at once.
+         */
+        "name": "next"
+      },
+      {
+        /**
+         * Atomic CSS in the style attribute. Type-safe static styles with
+         * theming, responsive variant support, and no bundler integration.
+         * @see https://github.com/tokenami/tokenami#readme
+         */
+        "name": "@tokenami/ts-plugin"
+      }
+    ],
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "sourceMap": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "strictFunctionTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    /**
+     * These options below can be dangerously set to false,
+     * while you're incrementally move to full type-safety.
+     */
+    "strictPropertyInitialization": true,
+    "verbatimModuleSyntax": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "alwaysStrict": true,
+    "strict": true
+  },
+  "include": [
+    "eslint.config.ts",
+    ".eslintrc.cjs",
+    "next-env.d.ts",
+    "**/*.cjs",
+    "**/*.cjs",
+    "**/*.mjs",
+    "**/*.mjs",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    "**/*.test.ts",
+    "jest.config.js",
+    ".storybook/**/*.ts",
+    ".next/types/**/*.ts",
+    ".tokenami/tokenami.env.d.ts",
+    ".tokenami/tokenami.env.ci.d.ts",
+    "src/tests/ava/swc/tests/ava/**/*.js"
+  ],
+  "exclude": ["node_modules"]
+}

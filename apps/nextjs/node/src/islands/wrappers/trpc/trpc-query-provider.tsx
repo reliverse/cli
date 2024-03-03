@@ -17,7 +17,6 @@ export default function TrpcQueryProvider({
   const [trpcClient] = useState(() =>
     api.createClient({
       links: [
-        // @ts-expect-error ...
         httpBatchLink({
           url: "/api/trpc",
         }),

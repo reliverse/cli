@@ -1,4 +1,16 @@
-# Reliverse: An Open-Source Superapp
+# Reliverse: An Open-Source Superapp CLI
+
+## Reliverse CLI v0.3.0
+
+Ship your web apps faster! Try the Reliverse CLI to bootstrap [Relivator](https://github.com/blefnk/relivator) v1.2.5 in seconds! Run it with:
+
+```sh
+# Install Go lang — https://go.dev/dl
+# Open Reliverse in terminal and run:
+go run .
+```
+
+## Coming Soon ✨
 
 _Build a Site, Build an App, Build a Game, Build Everything._
 

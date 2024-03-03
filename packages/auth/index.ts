@@ -53,6 +53,7 @@ declare module "next-auth" {
 }
 
 export const authOptions: NextAuthOptions = {
+  // @ts-expect-error ...
   adapter: DrizzleAdapter(db, tableCreator),
   providers: [
     Discord({
