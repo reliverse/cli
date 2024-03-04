@@ -26,8 +26,6 @@ require (
 // github.com/MakeNowJust/heredoc v1.0.0
 // github.com/briandowns/spinner v1.23.0
 // github.com/cenkalti/backoff/v4 v4.2.1
-// github.com/charmbracelet/bubbles v0.18.0
-// github.com/charmbracelet/bubbletea v0.25.0
 // github.com/charmbracelet/charm v0.12.6
 // github.com/charmbracelet/glamour v0.6.0
 // github.com/charmbracelet/x/editor v0.0.0-20240229115032-4b79243a3516
@@ -57,13 +55,18 @@ require (
 // github.com/rivo/tview v0.0.0-20240225120200-5605142ca62e
 // github.com/segmentio/ksuid v1.0.4
 // github.com/shurcooL/githubv4 v0.0.0-20240120211514-18a1ae0e79dc
-// github.com/spf13/cobra v1.8.0
 // github.com/spf13/viper v1.18.2
 // github.com/stretchr/testify v1.9.0
 // github.com/zalando/go-keyring v0.2.3
 // google.golang.org/grpc v1.62.0
 // gopkg.in/h2non/gock.v1 v1.1.2
 // gopkg.in/yaml.v3 v3.0.1
+// ...
+// github.com/charmbracelet/bubbles v0.16.1
+// github.com/charmbracelet/bubbletea v0.24.2
+// github.com/charmbracelet/lipgloss v0.9.1
+// github.com/spf13/cobra v1.8.0
+// github.com/spf13/pflag v1.0.5
 
 // =========================== DIRECT DEPENDENCIES ============================
 // github.com/PuerkitoBio/goquery v1.9.1 // indirect
@@ -157,7 +160,6 @@ require (
 // github.com/spf13/afero v1.11.0 // indirect
 // github.com/spf13/cast v1.6.0 // indirect
 // github.com/spf13/jwalterweatherman v1.1.0 // indirect
-// github.com/spf13/pflag v1.0.5 // indirect
 // github.com/stretchr/objx v0.5.2 // indirect
 // github.com/subosito/gotenv v1.6.0 // indirect
 // github.com/thlib/go-timezone-local v0.0.0-20210907160436-ef149e42d28e // indirect
