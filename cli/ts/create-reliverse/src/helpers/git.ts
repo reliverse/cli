@@ -6,7 +6,7 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import ora from "ora";
 
-import { logger } from "~/utils/logger.js";
+import { logger } from "../utils/logger.js";
 
 const isGitInstalled = (dir: string): boolean => {
 	try {

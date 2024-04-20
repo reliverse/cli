@@ -1,4 +1,7 @@
-# @see https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# The rules in this file are applied in order they appear, with 
+# later rules overriding earlier ones, similar to how CSS works
 
 # Dependencies
 
@@ -197,3 +200,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Binaries
 
 .swc
+
+# Exclude
+
+!cli/ts/create-reliverse/dist

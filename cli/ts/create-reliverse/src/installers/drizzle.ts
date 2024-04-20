@@ -2,9 +2,9 @@ import path from "node:path";
 import fs from "fs-extra";
 import type { PackageJson } from "type-fest";
 
-import { PKG_ROOT } from "~/consts.js";
-import type { Installer } from "~/installers/index.js";
-import { addPackageDependency } from "~/utils/addPackageDependency.js";
+import { PKG_ROOT } from "../consts.js";
+import type { Installer } from "../installers/index.js";
+import { addPackageDependency } from "../utils/addPackageDependency.js";
 import type { AvailableDependencies } from "./dependencyVersionMap.js";
 
 export const drizzleInstaller: Installer = ({

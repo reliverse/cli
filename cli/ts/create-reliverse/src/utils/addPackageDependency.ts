@@ -6,7 +6,7 @@ import type { PackageJson } from "type-fest";
 import {
 	type AvailableDependencies,
 	dependencyVersionMap,
-} from "~/installers/dependencyVersionMap.js";
+} from "../installers/dependencyVersionMap.js";
 
 export const addPackageDependency = (opts: {
 	dependencies: AvailableDependencies[];

@@ -1,17 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
-import { PKG_ROOT } from "~/consts.js";
-import { installPackages } from "~/helpers/installPackages.js";
-import { scaffoldProject } from "~/helpers/scaffoldProject.js";
+import { PKG_ROOT } from "../consts.js";
+import { installPackages } from "../helpers/installPackages.js";
+import { scaffoldProject } from "../helpers/scaffoldProject.js";
 import {
 	selectAppFile,
 	selectIndexFile,
 	selectLayoutFile,
 	selectPageFile,
-} from "~/helpers/selectBoilerplate.js";
-import type { DatabaseProvider, PkgInstallerMap } from "~/installers/index.js";
-import removeExpectErrors from "~/scripts/removeExpectErrors";
-import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
+} from "../helpers/selectBoilerplate.js";
+import type { DatabaseProvider, PkgInstallerMap } from "../installers/index.js";
+import removeExpectErrors from "../scripts/removeExpectErrors";
+import { getUserPkgManager } from "../utils/getUserPkgManager.js";
 
 interface CreateProjectOptions {
 	projectName: string;

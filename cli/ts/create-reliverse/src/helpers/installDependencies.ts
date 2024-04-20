@@ -5,8 +5,8 @@ import ora, { type Ora } from "ora";
 import {
 	type PackageManager,
 	getUserPkgManager,
-} from "~/utils/getUserPkgManager.js";
-import { logger } from "~/utils/logger.js";
+} from "../utils/getUserPkgManager.js";
+import { logger } from "../utils/logger.js";
 
 const execWithSpinner = async (
 	projectDir: string,

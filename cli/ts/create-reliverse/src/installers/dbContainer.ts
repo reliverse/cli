@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { PKG_ROOT } from "~/consts.js";
-import type { Installer } from "~/installers/index.js";
+import { PKG_ROOT } from "../consts.js";
+import type { Installer } from "../installers/index.js";
 
 export const dbContainerInstaller: Installer = ({
 	projectDir,

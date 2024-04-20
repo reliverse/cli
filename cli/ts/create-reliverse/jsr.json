@@ -1,5 +1,35 @@
 {
+	"$schema": "https://jsr.io/schema/config-file.v1.json",
 	"name": "@blefnk/reliverse",
 	"version": "0.1.0",
-	"exports": "./src/index.ts"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/blefnk/reliverse.git"
+	},
+	"publish": {
+		"exclude": [
+			"!dist",
+			"**/__tests__/**",
+			".github",
+			".vscode",
+			"template",
+			"biome.json"
+		]
+	},
+	"keywords": [
+		"reliverse",
+		"create-reliverse",
+		"relivator",
+		"next.js",
+		"reliverse-stack",
+		"tailwind",
+		"tRPC",
+		"typescript"
+	],
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.cts",
+	"exports": "./src/index.ts",
+	"bin": { "reliverse": "./dist/index.js" }
 }

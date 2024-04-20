@@ -1,9 +1,9 @@
 import path from "node:path";
 import fs from "fs-extra";
 
-import { PKG_ROOT } from "~/consts.js";
-import type { Installer } from "~/installers/index.js";
-import { addPackageDependency } from "~/utils/addPackageDependency.js";
+import { PKG_ROOT } from "../consts.js";
+import type { Installer } from "../installers/index.js";
+import { addPackageDependency } from "../utils/addPackageDependency.js";
 
 const copyFile = (srcDir: string, destDir: string, fileName: string) => {
 	const srcFile = path.join(srcDir, fileName);

@@ -32,16 +32,7 @@
 			"default": "./dist/index.mjs"
 		}
 	},
-	"imports": {
-		"~/utils": "./src/utils",
-		"~/cli": "./src/cli",
-		"~/helpers": "./src/helpers",
-		"~/installers": "./src/installers",
-		"~/consts.js": "./src/consts.js",
-		"~/scripts": "./src/scripts",
-		"~/../template/extras/config/_eslint.js": "./template/extras/config/_eslint.js"
-	},
-	"bin": { "create-reliverse": "./dist/index.js" },
+	"bin": { "reliverse": "./dist/index.js" },
 	"files": [
 		"dist",
 		"template",
@@ -63,9 +54,10 @@
 		"start": "bun run build && tsx dist/index.js",
 		"format": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --write",
 		"format:check": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --check",
-		"pub:beta": "bun build && bunx jsr publish --tag beta && npm publish --tag beta",
-		"pub:next": "bun build && bunx jsr publish --tag next && npm publish --tag next",
-		"pub:release": "bun build && bunx jsr publish && npm publish"
+		"pub:beta": "bun run build && bunx jsr publish --tag beta && npm publish --tag beta",
+		"pub:next": "bun run build && bunx jsr publish --tag next && npm publish --tag next",
+		"npmpub:release": "bun run build && bunx jsr publish && npm publish",
+		"pub:release": "bun run build && bunx jsr publish"
 	},
 	"publishConfig": {
 		"access": "public"

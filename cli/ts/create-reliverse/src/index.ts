@@ -4,18 +4,18 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import type { PackageJson } from "type-fest";
 
-import { runCli } from "~/cli/index.js";
-import { createProject } from "~/helpers/createProject.js";
-import { initializeGit } from "~/helpers/git.js";
-import { logNextSteps } from "~/helpers/logNextSteps.js";
-import { setImportAlias } from "~/helpers/setImportAlias.js";
-import { buildPkgInstallerMap } from "~/installers/index.js";
-import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
-import { logger } from "~/utils/logger.js";
-import { parseNameAndPath } from "~/utils/parseNameAndPath.js";
-import { renderTitle } from "~/utils/renderTitle.js";
+import { runCli } from "./cli/index.js";
+import { createProject } from "./helpers/createProject.js";
+import { initializeGit } from "./helpers/git.js";
 import { installDependencies } from "./helpers/installDependencies.js";
+import { logNextSteps } from "./helpers/logNextSteps.js";
+import { setImportAlias } from "./helpers/setImportAlias.js";
+import { buildPkgInstallerMap } from "./installers/index.js";
+import { getUserPkgManager } from "./utils/getUserPkgManager.js";
 import { getVersion } from "./utils/getVersion.js";
+import { logger } from "./utils/logger.js";
+import { parseNameAndPath } from "./utils/parseNameAndPath.js";
+import { renderTitle } from "./utils/renderTitle.js";
 
 // import {
 // 	getNpmVersion,

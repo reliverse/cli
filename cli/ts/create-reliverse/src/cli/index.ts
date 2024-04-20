@@ -2,18 +2,18 @@ import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
 
-import { CREATE_RELIVERSE, DEFAULT_APP_NAME } from "~/consts.js";
+import { CREATE_RELIVERSE, DEFAULT_APP_NAME } from "../consts.js";
 import {
 	type AvailablePackages,
 	type DatabaseProvider,
 	databaseProviders,
-} from "~/installers/index.js";
-import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
-import { getVersion } from "~/utils/getVersion.js";
-import { IsTTYError } from "~/utils/isTTYError.js";
-import { logger } from "~/utils/logger.js";
-import { validateAppName } from "~/utils/validateAppName.js";
-import { validateImportAlias } from "~/utils/validateImportAlias.js";
+} from "../installers/index.js";
+import { getUserPkgManager } from "../utils/getUserPkgManager.js";
+import { getVersion } from "../utils/getVersion.js";
+import { IsTTYError } from "../utils/isTTYError.js";
+import { logger } from "../utils/logger.js";
+import { validateAppName } from "../utils/validateAppName.js";
+import { validateImportAlias } from "../utils/validateImportAlias.js";
 
 interface CliFlags {
 	noGit: boolean;
