@@ -9,7 +9,10 @@ import (
 
 // ShowWelcomeMessage displays the welcome message
 func ShowWelcomeMessage() {
-    fmt.Println("▲ Reliverse CLI v0.3.0")
+    fmt.Println("🔴 Reliverse Go Edition is still in early development")
+    fmt.Println("🔴 Please use TS Edition for now -> bunx relivator")
+    fmt.Println("")
+    fmt.Println("🟢 Reliverse CLI v0.4.0")
     fmt.Println("▲ Issue? Hotline: https://discord.gg/Pb8uKbwpsJ")
     fmt.Println("")
     fmt.Println("Hello and thank you for testing the Reliverse CLI Go Edition! This is still an early alpha version, so we apologize if you encounter any issues. Please use TS Edition to get full expirience, because Go Edition currently is not-ready.") 

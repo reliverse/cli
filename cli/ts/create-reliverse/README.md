@@ -7,32 +7,35 @@ Reliverse CLI is a powerful command-line tool that allows you to bootstrap web t
 To install Reliverse CLI, follow these steps:
 
 1. Make sure you have [Node.js](https://nodejs.org) installed on your system.
-2. Run the following command to install Reliverse CLI globally:
+2. Run one of the following commands to install Reliverse CLI globally:
 
    ```sh
-   bun add -g reliverse
-   pnpm add -g reliverse
-   npm install -g reliverse
-   yarn global add reliverse
+   bun add -g reliverse # bun
+   pnpm add -g reliverse # pnpm
+   yarn global add reliverse # yarn
+   npm install -g reliverse # npm
    ```
 
 3. Once the installation is complete, you can start using Reliverse CLI.
 
-If global installation fails, try using `bunx reliverse` or `pnpx reliverse`.
+If global installation fails, try these commands:
+
+   ```sh
+   bunx reliverse # bun
+   pnpx reliverse # pnpm
+   yarn reliverse # yarn
+   npx reliverse # npm
+   ```
 
 ## Usage
 
 To create a new project using Reliverse CLI, follow these steps:
 
 1. Open your terminal and navigate to the directory where you want to create your project.
-2. Run the following command:
+2. Just run the following command, that's it:
 
    ```sh
-   reliverse init
-   <!-- or -->
-   bunx reliverse init
-   pnpx reliverse init
-   yarn reliverse init
+   reliverse
    ```
 
 3. Follow the interactive prompts to configure your project options.

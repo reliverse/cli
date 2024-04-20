@@ -1,6 +1,6 @@
 {
 	"name": "@reliverse/root",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"author": "Nazarii Korniienko <blefnk@gmail.com> (https://github.com/blefnk)",
 	"repository": {
 		"type": "git",
@@ -51,11 +51,13 @@
 		"build": "turbo build",
 		"bun:dev": "bun run --filter @apps/next dev",
 		"check": "bunx sherif@latest",
+		"reli:config": "tsx reli.config.ts",
 		"clean": "turbo clean && rm -rf node_modules bun.lockb",
 		"db:push": "pnpm -F db push",
 		"db:studio": "pnpm -F db studio",
 		"dev:cli": "cd cli/ts/create-reliverse && bun run dev && cd ../..",
 		"dev:nextjs": "pnpm --filter @apps/next dev",
+		"preinstall": "bun run reli:config",
 		"dev:parallel": "turbo dev --parallel",
 		"dev:tauris": "pnpm --filter tauris dev",
 		"dev": "turbo dev",

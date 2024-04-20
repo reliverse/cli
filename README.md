@@ -1,53 +1,59 @@
-# Reliverse CLI 0.3.0: Bootstrap Next.js Templates in Seconds
+# Reliverse CLI v0.4.0: Bootstrap Templates in Seconds
 
-Welcome to the Reliverse! This CLI helps you bootstrap and deploy new web apps in a matter of seconds. Currently, the project focuses on Next.js, but support for other frameworks and additional features will be available soon. Happy coding!
+Welcome to Reliverse! This CLI helps you bootstrap and deploy new web apps in a matter of seconds. Currently, the project focuses on Next.js, but support for other frameworks and additional features will be available soon. Happy coding!
 
 ## Features
 
 - 🚀 Bootstrap [Relivator](https://github.com/blefnk/relivator), a Next.js starter, in seconds
 - 🌐 Comprehensive and powerful code and no-code website builder (coming soon)
 - 🎨 Beautiful and fast sites and web apps by default
-- 🧩 Can be used as a Turborepo starter
 - 🌟 Exciting features planned (currently not all are implemented), including Next.js 14, Tauri Apps UI, Solito Expo, i18n, Stripe, Shadcn, Tailwind, Drizzle Zod Trpc, TypeScript, Resend, Auth, Lucide CSS Radix UI, Responsive React Server, TS ORM, Intl App Router Docs, User Actions Kit, SaaS Commerce Shop, Subscriptions Payments, and Turbopack Full Stack
 
-## Installation
+## CLI Installation
 
-1. Fork this repository to your GitHub profile or run the following command:
+To install Reliverse CLI, follow these steps:
 
-   ```sh
-   bunx create-turbo@latest -e https://github.com/blefnk/reliverse
-   ```
-
-2. Install dependencies:
+1. Make sure you have [Node.js](https://nodejs.org) installed on your system.
+2. Run one of the following commands to install Reliverse CLI globally:
 
    ```sh
-   cd reliverse
-   bun install
+   bun add -g reliverse # bun
+   pnpm add -g reliverse # pnpm
+   yarn global add reliverse # yarn
+   npm install -g reliverse # npm
    ```
 
-3. Experimental. Run the following command to check if the current project state meets the deploy best practices standards:
+3. Once the installation is complete, you can start using Reliverse CLI.
+
+If global installation fails, try these commands:
 
    ```sh
-   bun appts
+   bunx reliverse # bun
+   pnpx reliverse # pnpm
+   yarn reliverse # yarn
+   npx reliverse # npm
    ```
-
-Tip. You can also use `ctrl+shift+b` to run the `appts` script.
 
 ## Usage
 
-### Development
+To create a new project using Reliverse CLI, follow these steps:
 
-To develop all apps and packages, run the following command:
+1. Open your terminal and navigate to the directory where you want to create your project.
+2. Run the following command:
 
-```sh
-cd reliverse
-bun run dev
-```
+   ```sh
+   reliverse
+   ```
+
+3. Follow the interactive prompts to configure your project options.
+4. Once the configuration is complete, Reliverse CLI will bootstrap your project with the selected options.
+
+### CLI Development
 
 #### CLI Ts Edition
 
 ```sh
-# Buid and run
+# Build & run
 bun start:cli
 # Build only
 bun build:cli
@@ -61,7 +67,7 @@ bun build:cli
 go run .
 ```
 
-### Building
+### Monorepo Development
 
 To build all apps and packages, run the following command:
 
@@ -70,22 +76,30 @@ cd reliverse
 bun run build
 ```
 
+To develop all apps and packages, run the following command:
+
+```sh
+cd reliverse
+bun run dev
+```
+
 ## Monorepo Structure
 
 This project includes the following packages/apps:
 
 ### Apps and Packages
 
+- `reliverse`: a [Reliverse](https://turbo.build) CLI
 - `nextjs`: a [Next.js](https://nextjs.org) app with App Router
-- `expo`: a [Solito](https://solito.dev) app Expo Router (coming soon)
-- `tauri`: a [Tauri](https://tauri.app) app with Tauri UI (coming soon)
+- [coming soon] `expo`: a [Solito](https://solito.dev) app Expo Router
+- [coming soon] `tauri`: a [Tauri](https://tauri.app) app with Tauri UI
 - `@tools/eslintconfig`: `eslint` tool configurations (includes `eslint-config-next`)
 - `@tools/tailwind-config` / `@tools/tsconfig` / `@repo/jsconfig`: tools used throughout the monorepo
 - `@packages/ui`: a stub React component library shared by the entire application
 - `@tools/tsconfig`: `tsconfig.json`s used throughout the monorepo
 - ...and much more!
 
-Each package/app is 100% [TypeScript](https://typescriptlang.org/).
+Each package/app is 100% [TypeScript](https://typescriptlang.org).
 
 ### Utilities
 
@@ -120,27 +134,78 @@ Learn more about the power of Turborepo:
 - [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
 - [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
 
-## TODO
+## Roadmap
 
-- [ ] Reliverse CLI TS Edition should have everything that Relivator has.
-- [ ] All items on the Relivator roadmap must be completed.
-- [ ] Release Relivator 1.0.0 version.
+- [x] Publish Reliverse CLI as a package on [NPM](https://npmjs.com) and [JSR](https://jsr.io)
+- [ ] Add all Relivator features to Reliverse CLI TS Edition
+- [ ] Complete all items on the Relivator roadmap
+- [ ] Release Relivator 1.0.0 version
 
 ## Frequently Asked Questions
 
-### How to fix error "ENOWORKSPACES command does not support workspaces"?
+**Why does the VSCode terminal exhibit unexpected behavior when interacting with CLI like Turbo and Reliverse?**
+
+```sh
+[Use arrows to move, type to filter] › [B[A[B 
+```
+
+This is a known issue. Please use an external terminal instead. For Windows users, [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4) is recommended.
+
+**How can I fix the error: ENOWORKSPACES command does not support workspaces?**
+
+To resolve this error, run the following command:
 
 ```sh
 bunx next telemetry disable
 ```
 
-## Credits
-
-This project is created by @blefnk Nazarii Korniienko. Many thanks to the t3-oss team for create-t3-app and create-t3-turbo, this project is very inspired by these projects. The Reliverse has the almost everything what they has, so you can migrate to Relivator very easily.
-
 ## Contributing
 
-We welcome contributions to improve Reliverse! If you have any ideas, suggestions, or bug reports, please open an issue on the [GitHub repository](https://github.com/blefnk/reliverse). If you'd like to contribute code, please fork the repository and submit a pull request.
+We welcome contributions to improve Reliverse! If you have any ideas, suggestions, or bug reports, please open an issue on the [GitHub repository](https://github.com/blefnk/reliverse). If you'd like to contribute code, please follow these steps:
+
+1. Fork the repository to your GitHub profile or run the following command:
+
+   ```sh
+   bunx create-turbo@latest -e https://github.com/blefnk/reliverse
+   ```
+
+2. Install dependencies:
+
+   ```sh
+   cd reliverse
+   bun install
+   ```
+
+3. (Experimental) Run the following command to check if the current project state meets the deploy best practices standards:
+
+   ```sh
+   bun appts
+   ```
+
+   Tip: You can also use `ctrl+shift+b` to run the `appts` script.
+
+### Adding New Options to Reliverse CLI
+
+If you want to contribute a new option to Reliverse CLI, follow these steps:
+
+1. Add the option to the `CliFlags` and `CliResults` interfaces in `src/cli/index.ts`.
+2. Update the `defaultOptions.flags` and `defaultOptions` const in `src/cli/index.ts` with the new option.
+3. Add prompts for the new option in the `runCli` function (find `return p.confirm`) to ask the user if they want to include the option.
+4. Add the option to the `const availablePackages` and `const buildPkgInstallerMap` in `src/installers/index.ts`.
+5. Create a new installer file for the option in `src/installers/optionNameInstaller.ts`.
+6. Place the necessary files to be copied in `template/extras/*`.
+7. List the library in `const dependencyVersionMap` in `src/installers/dependencyVersionMap.ts`.
+8. Find `if (project.` and add your option correspondingly.
+9. In the return statement, add the option in the format: `optionName: project.optionName as "none" | "option1" | "option2"`.
+10. If needed, find the relevant section (e.g., "Install the selected i18n package") and add your option accordingly.
+11. Update `const selectLayoutFile` and `const selectPageFile` in `src/installers/index.ts` if required.
+12. Add final log notes in `logNextSteps.ts` file for your option.
+13. Update the required environment variables in `envVars.ts` file if necessary.
+14. Update the scripts in `base/package.json` if needed.
+
+## Credits
+
+This project is created by @blefnk Nazarii Korniienko. Many thanks to the t3-oss team for create-t3-app and create-t3-turbo, as this project is greatly inspired by their work. Reliverse has almost everything they have, so you can migrate to Relivator very easily.
 
 ## License
 
