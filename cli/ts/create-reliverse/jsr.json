@@ -1,7 +1,8 @@
 {
 	"$schema": "https://jsr.io/schema/config-file.v1.json",
 	"name": "@blefnk/reliverse",
-	"version": "0.1.0",
+	"description": "A powerful CLI that allows you to bootstrap web templates in seconds with various options.",
+	"version": "0.2.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/blefnk/reliverse.git"

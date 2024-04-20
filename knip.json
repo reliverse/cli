@@ -100,7 +100,6 @@
 				"@types/eslint__eslintrc",
 				"@types/eslint__js",
 				"eslint-plugin-tailwindcss",
-				"@tools/eslintconfig",
 				"zod"
 			]
 		},

@@ -59,7 +59,7 @@ If you want to contribute a new option to Reliverse CLI, follow these steps:
 
 ## Contributing
 
-We welcome contributions to Reliverse CLI! If you have any ideas, suggestions, or bug reports, please open an issue on the [GitHub repository](https://github.com/your-repo-url). If you'd like to contribute code, please fork the repository and submit a pull request.
+We welcome contributions to Reliverse CLI! If you have any ideas, suggestions, or bug reports, please open an issue on the [GitHub repository](https://github.com/blefnk/reliverse). If you'd like to contribute code, please fork the repository and submit a pull request.
 
 ## License
 
