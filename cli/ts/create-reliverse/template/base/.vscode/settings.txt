@@ -1,0 +1,35 @@
+{
+	"editor.codeActionsOnSave": {
+		"quickfix.biome": "explicit",
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports.biome": "explicit"
+	},
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.formatOnSave": true,
+	"editor.tabSize": 2,
+	"i18n-ally.localesPaths": ["src/i18n"],
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"typescript.preferences.includePackageJsonAutoImports": "on",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
+	"eslint.experimental.useFlatConfig": false,
+	"eslint.workingDirectories": [{ "mode": "auto" }],
+	"[json]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[markdown]": { "editor.defaultFormatter": "DavidAnson.vscode-markdownlint" },
+	"markdownlint.config": {
+		"MD033": { "allowed_elements": ["img", "p", "a", "details", "summary"] }
+	},
+	"tailwindCSS.experimental.configFile": "./tools/tailwind/web.ts",
+	"tailwindCSS.experimental.classRegex": [
+		["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+		["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+	],
+	"typescript.preferences.autoImportFileExcludePatterns": [
+		"next/router.d.ts",
+		"next/dist/client/router.d.ts"
+	],
+	"[css]": { "editor.defaultFormatter": "vscode.css-language-features" },
+	"css.lint.unknownAtRules": "ignore",
+	"editor.formatOnSaveMode": "file",
+	"i18n-ally.keystyle": "nested"
+}

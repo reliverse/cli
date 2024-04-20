@@ -1,0 +1,20 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig((options) => {
+	return {
+		entry: ["src/index.ts"],
+		// entry: [
+		// 	"src/index.mts",
+		// 	"src/utils.mts",
+		// 	"src/core.mts",
+		// 	"src/nextjs.mts",
+		// 	"src/preset.mts",
+		// ],
+		format: ["esm", "cjs"],
+		sourcemap: !options.watch,
+		dts: true,
+		clean: true,
+		silent: true,
+		minify: "terser",
+	};
+});

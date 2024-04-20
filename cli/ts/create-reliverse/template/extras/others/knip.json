@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignore": ["src/**"],
+	"ignoreBinaries": [],
+	"ignoreDependencies": [
+		"@stripe/stripe-js",
+		"@biomejs/biome",
+		"@trpc/next",
+		"postcss"
+	]
+}

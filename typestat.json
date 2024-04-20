@@ -1,0 +1,64 @@
+[
+	{
+		"fixes": {
+			"incompleteTypes": true,
+			"inferableTypes": true,
+			"noImplicitThis": true,
+			"noImplicitAny": true,
+			"strictNonNullAssertions": true
+		},
+		"include": [
+			"apps/**/__tests__/*.test.{ts,tsx}",
+			"cli/**/__tests__/*.test.{ts,tsx}",
+			"packages/**/__tests__/*.test.{ts,tsx}",
+			"scripts/**/__tests__/*.test.{ts,tsx}",
+			"tools/**/__tests__/*.test.{ts,tsx}"
+		],
+		"projectPath": "tsconfig.json",
+		"types": { "strictNullChecks": true }
+	},
+	{
+		"exclude": [
+			"apps/**/__tests__/*.test.{ts,tsx}",
+			"cli/**/__tests__/*.test.{ts,tsx}",
+			"packages/**/__tests__/*.test.{ts,tsx}",
+			"scripts/**/__tests__/*.test.{ts,tsx}",
+			"tools/**/__tests__/*.test.{ts,tsx}"
+		],
+		"projectPath": "tsconfig.json",
+		"include": [
+			"apps/**/src/**/*.{ts,tsx}",
+			"cli/**/src/**/*.{ts,tsx}",
+			"packages/**/src/**/*.{ts,tsx}",
+			"scripts/**/*.{ts,tsx}",
+			"tools/**/*.{ts,tsx}"
+		],
+		"fixes": {
+			"incompleteTypes": true,
+			"inferableTypes": true,
+			"noImplicitThis": true,
+			"noImplicitAny": true
+		}
+	},
+	{
+		"fixes": {
+			"incompleteTypes": true,
+			"inferableTypes": true,
+			"noImplicitThis": true,
+			"noImplicitAny": true
+		},
+		"include": [
+			"apps/**/__tests__/*.test.{ts,tsx}",
+			"cli/**/__tests__/*.test.{ts,tsx}",
+			"packages/**/__tests__/*.test.{ts,tsx}",
+			"scripts/**/__tests__/*.test.{ts,tsx}",
+			"tools/**/__tests__/*.test.{ts,tsx}",
+			"apps/**/src/**/*.{ts,tsx}",
+			"cli/**/src/**/*.{ts,tsx}",
+			"packages/**/src/**/*.{ts,tsx}",
+			"scripts/**/*.{ts,tsx}",
+			"tools/**/src/**/*.{ts,tsx}"
+		],
+		"projectPath": "tsconfig.json"
+	}
+]

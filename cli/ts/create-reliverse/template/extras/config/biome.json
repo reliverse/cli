@@ -1,0 +1,22 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.6.4/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"useLiteralKeys": "off"
+			}
+		},
+		"ignore": [
+			"**/node_modules/**",
+			"**/dist/**",
+			"**/.turbo/**",
+			"**/.next/**",
+			"**/.vercel/**"
+		]
+	}
+}

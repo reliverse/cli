@@ -1,13 +1,13 @@
 {
-  "version": "0.0.0",
-  "configurations": [
-    {
-      "name": "Next.js",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "pnpm dev",
-      "cwd": "${workspaceFolder}/apps/nextjs/",
-      "skipFiles": ["<node_internals>/**"]
-    }
-  ]
+	"version": "0.1.0",
+	"configurations": [
+		{
+			"name": "Next.js",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "bun run dev",
+			"cwd": "${workspaceFolder}/apps/next/",
+			"skipFiles": ["<node_internals>/**"]
+		}
+	]
 }

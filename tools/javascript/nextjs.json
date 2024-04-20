@@ -1,0 +1,8 @@
+{
+	"$schema": "https://json.schemastore.org/jsconfig",
+	"display": "Next.js",
+	"extends": "./base.json",
+	"compilerOptions": {
+		"removeComments": true
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"extends": "@tools/tsconfig/base.json",
+	"compilerOptions": {
+		"baseUrl": "./",
+		"checkJs": true,
+		"emitDeclarationOnly": false,
+		"paths": {
+			"~/*": ["./src/*"]
+		}
+	},
+	"include": ["src", "../../reset.d.ts"]
+}

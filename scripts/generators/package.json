@@ -1,0 +1,14 @@
+{
+	"name": "@repo/generators",
+	"version": "0.1.0",
+	"module": "index.ts",
+	"type": "module",
+	"devDependencies": {
+		"@tools/tsconfig": "workspace:*",
+		"@tools/javascript": "workspace:*",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.4.5"
+	}
+}

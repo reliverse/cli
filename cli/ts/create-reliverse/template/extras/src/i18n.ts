@@ -1,0 +1,1 @@
+// next-intl.config.js

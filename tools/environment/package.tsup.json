@@ -1,0 +1,71 @@
+{
+	"name": "@tools/environment",
+	"version": "0.1.0",
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-typescript": "^11.1.6",
+		"@tools/javascript": "workspace:*",
+		"@tools/tsconfig": "workspace:*",
+		"@turbo/gen": "^1.13.2",
+		"@types/bun": "latest",
+		"@types/node": "^20.12.7",
+		"dts-bundle-generator": "^9.3.1",
+		"expect-type": "^0.19.0",
+		"pkgroll": "^2.0.2",
+		"rollup": "^4.14.1",
+		"rollup-plugin-dts": "^6.1.0",
+		"rollup-plugin-esbuild": "^6.1.1",
+		"terser": "^5.30.3",
+		"ts-node": "^10.9.2",
+		"tsup": "^8.0.2",
+		"tsx": "^4.7.2",
+		"typescript": "^5.4.5",
+		"vitest": "^1.4.0"
+	},
+	"scripts": {
+		"build": "rimraf dist && tsup --config tsup.config.ts",
+		"build:pr": "pkgroll",
+		"dev": "tsup --config tsup.config.ts --watch",
+		"dts": "dts-bundle-generator --config ./rollup.gendts.json",
+		"build:rollup": "rimraf dist && rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" && bun run dts",
+		"dev:rollup": "rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" --watch",
+		"dev:bun": "rimraf dist && bun run src/*.mts --outdir ./dist --watch",
+		"build:bun": "rimraf dist && bun build src/index.ts --outdir ./dist",
+		"build:cli": "bun build src/index.mts --outdir ./dist",
+		"latest": "bun update",
+		"test": "vitest run"
+	},
+	"type": "module",
+	"types": "dist/index.d.ts",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./core": {
+			"types": "./dist/core.d.ts",
+			"import": "./dist/core.js",
+			"require": "./dist/core.cjs"
+		},
+		"./nextjs": {
+			"types": "./dist/nextjs.d.ts",
+			"import": "./dist/nextjs.js",
+			"require": "./dist/nextjs.cjs"
+		},
+		"./preset": {
+			"types": "./dist/preset.d.ts",
+			"import": "./dist/preset.js",
+			"require": "./dist/preset.cjs"
+		},
+		"./utils": {
+			"types": "./dist/utils.d.ts",
+			"import": "./dist/utils.js",
+			"require": "./dist/utils.cjs"
+		}
+	},
+	"files": ["dist", "package.json"],
+	"require": "dist/index.cjs"
+}
