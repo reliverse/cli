@@ -1,21 +1,21 @@
-# @packages/ui
+# @repo/primitives
 
 This package contains the UI components used in the project.
 
 ## Installation
 
 ```sh
-bun install
+pnpm install
 ```
 
 To add new @shadcn component:
 
-`bun run add <component-name>`
+`pnpm run add <component-name>`
 
 ## Usage
 
 ```tsx
-import { Button } from "@packages/ui";
+import { Button } from "@repo/primitives";
 
 function MyComponent() {
   return <Button>Click me!</Button>;

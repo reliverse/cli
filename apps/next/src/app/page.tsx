@@ -1,7 +1,7 @@
 import { titleCase } from "@luca/cases";
-import { Button as NextButton } from "@packages/ui/button-two";
-import { Card as NextCard } from "@packages/ui/card-two";
-import { Code } from "@packages/ui/code-two";
+import { Button as NextButton } from "@repo/primitives/button-two";
+import { Card as NextCard } from "@repo/primitives/card-two";
+import { Code } from "@repo/primitives/code-two";
 import Image from "next/image";
 
 import HomePageClient from "./_client";

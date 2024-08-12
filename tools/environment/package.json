@@ -1,74 +1,74 @@
 {
-  "name": "@tools/environment",
-  "version": "0.1.0",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@tools/javascript": "workspace:*",
-    "@tools/tsconfig": "workspace:*",
-    "@turbo/gen": "^1.13.2",
-    "@types/bun": "latest",
-    "@types/node": "^20.12.7",
-    "dts-bundle-generator": "^9.3.1",
-    "expect-type": "^0.19.0",
-    "pkgroll": "^2.0.2",
-    "rollup": "^4.14.1",
-    "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-esbuild": "^6.1.1",
-    "terser": "^5.30.3",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.0.2",
-    "tsx": "^4.7.2",
-    "typescript": "^5.4.5",
-    "vitest": "^1.4.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "build": "pkgroll",
-    "dts": "dts-bundle-generator --config ./rollup.gendts.json",
-    "build:rollup": "rimraf dist && rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" && bun run dts",
-    "dev:rollup": "rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" --watch",
-    "dev:bun": "rimraf dist && bun run src/*.mts --outdir ./dist --watch",
-    "build:bun": "rimraf dist && bun build src/index.ts --outdir ./dist",
-    "build:cli": "bun build src/index.mts --outdir ./dist",
-    "latest": "bun update",
-    "test": "vitest run",
-    "publish": "bunx jsr publish && npm publish"
-  },
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    "require": {
-      "types": "./dist/index.d.cts",
-      "default": "./dist/index.cjs"
-    },
-    "import": {
-      "types": "./dist/index.d.mts",
-      "default": "./dist/index.mjs"
-    }
-  },
-  "bin": "./dist/index.js",
-  "files": [
-    "__tests__",
-    "dist",
-    "src",
-    "bunfig.toml",
-    "CHANGELOG.md",
-    "LICENSE",
-    "package.json",
-    "README.md",
-    "rollup.config.mts",
-    "rollup.gendts.js",
-    "rollup.gendts.json",
-    "rollup.postbuild.mjs",
-    "tsconfig.json"
-  ],
-  "dependencies": {
-    "valibot": "^0.30.0"
-  }
+	"name": "@repo/environment",
+	"version": "0.1.0",
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-typescript": "^11.1.6",
+		"@repo/javascript": "workspace:*",
+		"@repo/tsconfig": "workspace:*",
+		"@turbo/gen": "^1.13.2",
+		"@types/bun": "latest",
+		"@types/node": "^20.12.7",
+		"dts-bundle-generator": "^9.3.1",
+		"expect-type": "^0.19.0",
+		"pkgroll": "^2.0.2",
+		"rollup": "^4.14.1",
+		"rollup-plugin-dts": "^6.1.0",
+		"rollup-plugin-esbuild": "^6.1.1",
+		"terser": "^5.30.3",
+		"ts-node": "^10.9.2",
+		"tsup": "^8.0.2",
+		"tsx": "^4.7.2",
+		"typescript": "^5.4.5",
+		"vitest": "^1.4.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "pkgroll",
+		"dts": "dts-bundle-generator --config ./rollup.gendts.json",
+		"build:rollup": "rimraf dist && rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" && pnpm run dts",
+		"dev:rollup": "rollup --config=rollup.config.mts --configPlugin=rollup-plugin-esbuild --filterLogs \"!code:CIRCULAR_DEPENDENCY\" --watch",
+		"dev:bun": "rimraf dist && bun run src/*.mts --outdir ./dist --watch",
+		"build:bun": "rimraf dist && bun build src/index.ts --outdir ./dist",
+		"build:cli": "pnpm build src/index.mts --outdir ./dist",
+		"latest": "pnpm update --latest",
+		"test": "vitest run",
+		"publish": "bunx jsr publish && npm publish"
+	},
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.cts",
+	"exports": {
+		"require": {
+			"types": "./dist/index.d.cts",
+			"default": "./dist/index.cjs"
+		},
+		"import": {
+			"types": "./dist/index.d.mts",
+			"default": "./dist/index.mjs"
+		}
+	},
+	"bin": "./dist/index.js",
+	"files": [
+		"__tests__",
+		"dist",
+		"src",
+		"bunfig.toml",
+		"CHANGELOG.md",
+		"LICENSE",
+		"package.json",
+		"README.md",
+		"rollup.config.mts",
+		"rollup.gendts.js",
+		"rollup.gendts.json",
+		"rollup.postbuild.mjs",
+		"tsconfig.json"
+	],
+	"dependencies": {
+		"valibot": "^0.30.0"
+	}
 }

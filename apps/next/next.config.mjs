@@ -8,7 +8,7 @@ createJiti(fileURLToPath(import.meta.url))("./src/env");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	// Enables hot reloading for local packages without build step
-	transpilePackages: ["@packages/ui"],
+	transpilePackages: ["@repo/primitives"],
 };
 
 export default nextConfig;

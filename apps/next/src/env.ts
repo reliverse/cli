@@ -1,4 +1,4 @@
-import { createEnv } from "@tools/environment";
+import { createEnv } from "@repo/environment";
 import { minLength, optional, string } from "valibot";
 
 export const env = createEnv({

@@ -1,5 +1,5 @@
 {
-	"name": "@packages/ui",
+	"name": "@repo/primitives",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -8,10 +8,10 @@
 		"./*": "./src/*.tsx"
 	},
 	"scripts": {
-		"add": "bunx --bun shadcn-ui@latest add",
+		"add": "bunx --pnpm shadcn-ui@latest add",
 		"clean": "rm -rf .turbo node_modules",
 		"generate:component": "turbo gen react-component",
-		"latest": "bun update",
+		"latest": "pnpm update --latest",
 		"lint:es": "eslint",
 		"typecheck:error": "tsc --noEmit --emitDeclarationOnly false",
 		"add:ui": "bunx shadcn-ui add"
@@ -30,12 +30,12 @@
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
-		"@tools/eslintconfig": "workspace:*",
-		"@tools/tailwind": "workspace:*",
+		"@repo/eslintconfig": "workspace:*",
+		"@repo/tailwind": "workspace:*",
 		"eslint": "^9.0.0",
 		"tailwindcss": "^3.4.3",
 		"zod": "^3.22.4",
-		"@tools/tsconfig": "workspace:*",
+		"@repo/tsconfig": "workspace:*",
 		"esbuild": "^0.20.2",
 		"@turbo/gen": "^1.13.2",
 		"@types/node": "^20.12.7",

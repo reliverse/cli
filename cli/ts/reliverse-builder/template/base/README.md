@@ -1,6 +1,6 @@
 # Create Reliverse App
 
-This is a slim edition of [Relivator](https://github.com/blefnk/relivator), a [Reliverse Stack](https://github.com/blefnk/reliverse) project bootstrapped with [`Reliverse CLI`](https://github.com/blefnk/reliverse).
+This is a slim edition of [Relivator](https://github.com/blefnk/relivator), a [Reliverse Stack](https://github.com/blefnk/reliverse) project bootstrapped with [`Reliverse CLI`](https://github.com/blefnk/reliverse/tree/main/cli/ts/create-reliverse#readme).
 
 <!-- https://github.com/blefnk/reliverse/apps/next#readme -->
 
@@ -18,6 +18,11 @@ If you are not familiar with the different technologies used in this project, pl
 - [Drizzle](https://orm.drizzle.team)
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
+
+## Additional Resources
+
+- [This CLI on NPM](https://npmjs.com/package/reliverse)
+- [This CLI on JSR](https://jsr.io/@blefnk/reliverse)
 
 ## Learn More
 

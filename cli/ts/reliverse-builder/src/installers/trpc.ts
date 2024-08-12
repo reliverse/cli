@@ -121,12 +121,12 @@ export const trpcInstaller: Installer = ({
 		);
 
 		// If no tailwind, shadcn, or components, then use css modules
-		if (!(usingTailwind || usingShadcn || usingComponents)) {
-			copySrcDest.push([
-				path.join(extrasDir, "src/components", "index.module.css"),
-				path.join(projectDir, "src/components/index.module.css"),
-			]);
-		}
+		// if (!(usingTailwind || usingShadcn || usingComponents)) {
+		copySrcDest.push([
+			path.join(extrasDir, "src/components", "index.module.css"),
+			path.join(projectDir, "src/components/index.module.css"),
+		]);
+		// }
 	} else {
 		const utilsSrc = path.join(extrasDir, "src/utils/api.ts");
 		const utilsDest = path.join(projectDir, "src/utils/api.ts");

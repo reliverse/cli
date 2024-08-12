@@ -22,7 +22,7 @@
 		"esbuild",
 		"next",
 		"sherif",
-		"@tools/tailwind",
+		"@repo/tailwind",
 		"@changesets/changelog-github",
 		"@antfu/eslint-config",
 		"@turbo/gen",
@@ -47,7 +47,7 @@
 	"workspaces": {
 		".": {
 			"ignoreDependencies": [
-				"@tools/tsconfig",
+				"@repo/tsconfig",
 				"@testing-library/react",
 				"rollup-plugin-esbuild",
 				"tsup",
@@ -58,7 +58,7 @@
 		"apps/next": {
 			"ignoreDependencies": [
 				"@testing-library/react",
-				"@tools/environment",
+				"@repo/environment",
 				"valibot",
 				"tailwindcss",
 				"@eslint/eslintrc",
@@ -104,10 +104,10 @@
 			]
 		},
 		"scripts/generators": {
-			"ignoreDependencies": ["@tools/javascript", "@tools/tsconfig"]
+			"ignoreDependencies": ["@repo/javascript", "@repo/tsconfig"]
 		},
 		"scripts/validators": {
-			"ignoreDependencies": ["@tools/javascript", "@tools/tsconfig"]
+			"ignoreDependencies": ["@repo/javascript", "@repo/tsconfig"]
 		},
 		"packages/ui": {
 			"ignoreDependencies": [
@@ -118,7 +118,7 @@
 		},
 		"tools/environment": {
 			"ignoreDependencies": [
-				"@tools/javascript",
+				"@repo/javascript",
 				"@rollup/plugin-commonjs",
 				"@rollup/plugin-node-resolve",
 				"@rollup/plugin-typescript",

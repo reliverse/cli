@@ -109,19 +109,19 @@ export const createProject = async ({
 	}
 
 	// If no tailwind, shadcn, or components, then use css modules
-	if (!(usingTailwind || usingShadcn || usingComponents)) {
-		const indexModuleCss = path.join(
-			PKG_ROOT,
-			"template/extras/src/index.module.css",
-		);
-		const indexModuleCssDest = path.join(
-			projectDir,
-			"src",
-			appRouter ? "app" : "pages",
-			"index.module.css",
-		);
-		fs.copyFileSync(indexModuleCss, indexModuleCssDest);
-	}
+	// if (!(usingTailwind || usingShadcn || usingComponents)) {
+	const indexModuleCss = path.join(
+		PKG_ROOT,
+		"template/extras/src/index.module.css",
+	);
+	const indexModuleCssDest = path.join(
+		projectDir,
+		"src",
+		appRouter ? "app" : "pages",
+		"index.module.css",
+	);
+	fs.copyFileSync(indexModuleCss, indexModuleCssDest);
+	// }
 
 	// Remove @ts-expect-error comments
 	removeExpectErrors(projectDir);

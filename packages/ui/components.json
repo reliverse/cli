@@ -10,7 +10,7 @@
 		"cssVariables": true
 	},
 	"aliases": {
-		"utils": "@packages/ui",
+		"utils": "@repo/primitives",
 		"components": "src/",
 		"ui": "src/"
 	}

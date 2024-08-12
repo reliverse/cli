@@ -1,13 +1,13 @@
 # Reliverse CLI v0.4.0: Bootstrap Templates in Seconds
 
-Welcome to Reliverse! This CLI helps you bootstrap and deploy new web apps in a matter of seconds. Currently, the project focuses on Next.js, but support for other frameworks and additional features will be available soon. Happy coding!
+Welcome to Reliverse! This CLI helps you bootstrap and deploy new web apps in a matter of seconds. The project focuses on Next.js, but support for other frameworks and additional features will be available soon. Happy coding!
 
 ## Features
 
-- 🚀 Bootstrap [Relivator](https://github.com/blefnk/relivator), a Next.js starter, in seconds
+- 🚀 Bootstrap slim edition of [Relivator](https://github.com/blefnk/relivator) -> [Versator](https://github.com/blefnk/versator), a Next.js starter
 - 🌐 Comprehensive and powerful code and no-code website builder (coming soon)
 - 🎨 Beautiful and fast sites and web apps by default
-- 🌟 Exciting features planned (currently not all are implemented), including Next.js 14, Tauri Apps UI, Solito Expo, i18n, Stripe, Shadcn, Tailwind, Drizzle Zod Trpc, TypeScript, Resend, Auth, Lucide CSS Radix UI, Responsive React Server, TS ORM, Intl App Router Docs, User Actions Kit, SaaS Commerce Shop, Subscriptions Payments, and Turbopack Full Stack
+- 🌟 Exciting features planned (currently not all are implemented), including Next.js 14, Tauri Apps UI, Solito Expo, i18n, Stripe, Shadcn, Tailwind, Drizzle Zod Trpc, TypeScript, Resend, Auth, Lucide CSS Radix UI, Responsive React Server, TS ORM, Intl App Router Docs, User Actions Kit, SaaS Commerce Shop, and Fullstack Turborepo
 
 ## CLI Installation
 
@@ -17,8 +17,8 @@ To install Reliverse CLI, follow these steps:
 2. Run one of the following commands to install Reliverse CLI globally:
 
    ```sh
-   bun add -g reliverse # bun
    pnpm add -g reliverse # pnpm
+   bun add -g reliverse # bun
    yarn global add reliverse # yarn
    npm install -g reliverse # npm
    ```
@@ -28,13 +28,13 @@ To install Reliverse CLI, follow these steps:
 If global installation fails, try these commands:
 
    ```sh
-   bunx reliverse # bun
    pnpx reliverse # pnpm
+   bunx reliverse # bun
    yarn reliverse # yarn
    npx reliverse # npm
    ```
 
-## Usage
+## CLI Usage
 
 To create a new project using Reliverse CLI, follow these steps:
 
@@ -50,16 +50,16 @@ To create a new project using Reliverse CLI, follow these steps:
 
 ### CLI Development
 
-#### CLI Ts Edition
+**CLI Ts Edition:**
 
 ```sh
 # Build & run
-bun start:cli
+pnpm start:cli
 # Build only
-bun build:cli
+pnpm build:cli
 ```
 
-#### CLI Go Edition
+**CLI Go Edition:**
 
 ```sh
 # Install Go lang — https://go.dev/dl
@@ -73,14 +73,14 @@ To build all apps and packages, run the following command:
 
 ```sh
 cd reliverse
-bun run build
+pnpm run build
 ```
 
 To develop all apps and packages, run the following command:
 
 ```sh
 cd reliverse
-bun run dev
+pnpm run dev
 ```
 
 ## Monorepo Structure
@@ -93,10 +93,10 @@ This project includes the following packages/apps:
 - `nextjs`: a [Next.js](https://nextjs.org) app with App Router
 - [coming soon] `expo`: a [Solito](https://solito.dev) app Expo Router
 - [coming soon] `tauri`: a [Tauri](https://tauri.app) app with Tauri UI
-- `@tools/eslintconfig`: `eslint` tool configurations (includes `eslint-config-next`)
-- `@tools/tailwind-config` / `@tools/tsconfig` / `@repo/jsconfig`: tools used throughout the monorepo
-- `@packages/ui`: a stub React component library shared by the entire application
-- `@tools/tsconfig`: `tsconfig.json`s used throughout the monorepo
+- `@repo/eslintconfig`: `eslint` tool configurations (includes `eslint-config-next`)
+- `@repo/tailwind-config` / `@repo/tsconfig` / `@repo/jsconfig`: tools used throughout the monorepo
+- `@repo/primitives`: a stub React component library shared by the entire application
+- `@repo/tsconfig`: `tsconfig.json`s used throughout the monorepo
 - ...and much more!
 
 Each package/app is 100% [TypeScript](https://typescriptlang.org).
@@ -105,9 +105,10 @@ Each package/app is 100% [TypeScript](https://typescriptlang.org).
 
 This project has some additional tools already set up for you:
 
-- [TypeScript](https://typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
+- [TypeScript](https://typescriptlang.org) for static type checking
+- [ESLint](https://eslint.org) for code linting
 - [Biome](https://biomejs.dev) for code formatting and linting
+- ...and much more!
 
 ## Remote Caching
 
@@ -136,7 +137,7 @@ Learn more about the power of Turborepo:
 
 ## Roadmap
 
-- [x] Publish Reliverse CLI as a package on [NPM](https://npmjs.com) and [JSR](https://jsr.io)
+- [x] Publish Reliverse CLI as a package on [NPM](https://npmjs.com/package/reliverse) and [JSR](https://jsr.io/@blefnk/reliverse)
 - [ ] Add all Relivator features to Reliverse CLI TS Edition
 - [ ] Complete all items on the Relivator roadmap
 - [ ] Release Relivator 1.0.0 version
@@ -173,13 +174,13 @@ We welcome contributions to improve Reliverse! If you have any ideas, suggestion
 
    ```sh
    cd reliverse
-   bun install
+   pnpm install
    ```
 
 3. (Experimental) Run the following command to check if the current project state meets the deploy best practices standards:
 
    ```sh
-   bun appts
+   pnpm appts
    ```
 
    Tip: You can also use `ctrl+shift+b` to run the `appts` script.

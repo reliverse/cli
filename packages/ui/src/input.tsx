@@ -1,4 +1,4 @@
-import { cn } from "@packages/ui";
+import { cn } from "@repo/primitives";
 import * as React from "react";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;

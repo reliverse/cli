@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import type * as LabelPrimitive from "@radix-ui/react-label";
@@ -10,8 +12,8 @@ import type {
 import type { ZodType } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@packages/ui";
 import { Slot } from "@radix-ui/react-slot";
+import { cn } from "@repo/primitives";
 import * as React from "react";
 import {
 	Controller,

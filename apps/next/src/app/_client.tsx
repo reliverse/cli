@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@packages/ui/button";
+import { Button } from "@repo/primitives/button";
 import { Copy, CopyCheck } from "lucide-react";
 import { useState } from "react";
 

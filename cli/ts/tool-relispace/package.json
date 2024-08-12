@@ -1,0 +1,10 @@
+{
+	"name": "@reliverse/relispace",
+	"version": "0.1.0",
+	"scripts": {
+		"latest": "pnpm update --latest"
+	},
+	"dependencies": {
+		"execa": "^8.0.1"
+	}
+}

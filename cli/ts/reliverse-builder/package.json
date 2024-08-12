@@ -58,15 +58,16 @@
 		"build:tsup": "tsup",
 		"dev:w": "tsup --watch",
 		"lint:disabled": "eslint",
-		"lint:fix": "bun lint --fix",
+		"lint:fix": "pnpm lint --fix",
 		"release": "changeset version",
 		"clean": "rm -rf dist .turbo node_modules",
-		"start": "bun run build && tsx dist/index.js",
+		"start": "pnpm run build && tsx dist/index.js",
 		"format": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --write",
 		"format:check": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --check",
-		"pub:beta": "bun run build && bunx jsr publish --tag beta && bun run npm publish --tag beta",
-		"pub:next": "bun run build && bunx jsr publish --tag next && bun run npm publish --tag next",
-		"pub:release": "bun run build && bunx jsr publish && bun run npm publish"
+		"pub:beta": "pnpm run build && bunx jsr publish --tag beta && pnpm run npm publish --tag beta",
+		"pub:next": "pnpm run build && bunx jsr publish --tag next && pnpm run npm publish --tag next",
+		"pub:release": "pnpm run build && bunx jsr publish && pnpm run npm publish",
+		"latest": "pnpm update --latest"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -103,10 +104,6 @@
 		"@swc/cli": "^0.3.12",
 		"@swc/core": "^1.4.13",
 		"@tanstack/react-query": "^5.25.0",
-		"@trpc/client": "^next",
-		"@trpc/next": "^next",
-		"@trpc/react-query": "^next",
-		"@trpc/server": "^next",
 		"@types/better-sqlite3": "^7.6.9",
 		"@types/node": "^20.12.7",
 		"better-sqlite3": "^9.4.3",

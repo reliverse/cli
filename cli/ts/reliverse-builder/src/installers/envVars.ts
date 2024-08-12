@@ -95,10 +95,10 @@ STRIPE_WEBHOOK_SIGNING_SECRET=""
 # [STRIPE WEBHOOK FOR DEVELOPMENT]
 # 1. Install Stripe CLI: https://stripe.com/docs/stripe-cli#install
 # 2. https://dashboard.stripe.com/test/webhooks/create?endpoint_location=local
-# 3. Open 3 terminals: (1) "bun dev"; (2) "stripe login"; (3) "bun stripe:listen".
+# 3. Open 3 terminals: (1) "pnpm dev"; (2) "stripe login"; (3) "pnpm stripe:listen".
 # 4. Copy signing secret from your terminal, paste to STRIPE_WEBHOOK_SIGNING_SECRET.
 # 5. Run "stripe trigger payment_intent.succeeded", wait for Completed, click Done.
-# Keep "bun stripe:listen" enabled when you need to test Stripe on the localhost.
+# Keep "pnpm stripe:listen" enabled when you need to test Stripe on the localhost.
 # When testing the Stripe -> use these test data: 4242424242424242 | 12/34 | 567
 
 # [STRIPE WEBHOOK FOR PRODUCTION]

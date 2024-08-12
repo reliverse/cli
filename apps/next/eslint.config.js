@@ -2,9 +2,9 @@
 import antfu from "@antfu/eslint-config";
 // @ts-expect-error disabled temporarily
 import eslintJsPlugin from "@eslint/js";
-import baseConfig from "@tools/eslintconfig/base";
-import nextjsConfig from "@tools/eslintconfig/nextjs";
-import reactConfig from "@tools/eslintconfig/react";
+import baseConfig from "@repo/eslintconfig/base";
+import nextjsConfig from "@repo/eslintconfig/nextjs";
+import reactConfig from "@repo/eslintconfig/react";
 // @ts-expect-error dts missing
 import tailwindcssPlugin from "eslint-plugin-tailwindcss";
 

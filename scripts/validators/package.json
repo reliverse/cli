@@ -4,8 +4,8 @@
 	"module": "index.ts",
 	"type": "module",
 	"devDependencies": {
-		"@tools/tsconfig": "workspace:*",
-		"@tools/javascript": "workspace:*",
+		"@repo/tsconfig": "workspace:*",
+		"@repo/javascript": "workspace:*",
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {

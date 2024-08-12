@@ -5,7 +5,7 @@
 			"name": "Next.js",
 			"type": "node-terminal",
 			"request": "launch",
-			"command": "bun run dev",
+			"command": "pnpm run dev",
 			"cwd": "${workspaceFolder}/apps/next/",
 			"skipFiles": ["<node_internals>/**"]
 		}

@@ -6,7 +6,7 @@
 			"label": "appts",
 			"script": "appts",
 			"problemMatcher": [],
-			"detail": "bun appts",
+			"detail": "pnpm appts",
 			"group": {
 				"kind": "build",
 				"isDefault": true

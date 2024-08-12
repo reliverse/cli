@@ -1,5 +1,5 @@
 {
-	"name": "@tools/tailwind",
+	"name": "@repo/tailwind",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -10,7 +10,8 @@
 	"scripts": {
 		"clean": "rm -rf .turbo node_modules",
 		"lint:es": "eslint",
-		"typecheck": "tsc --noEmit --emitDeclarationOnly false"
+		"typecheck": "tsc --noEmit --emitDeclarationOnly false",
+		"latest": "pnpm update --latest"
 	},
 	"dependencies": {
 		"postcss": "^8.4.38",
@@ -18,8 +19,8 @@
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
-		"@tools/eslintconfig": "workspace:*",
-		"@tools/tsconfig": "workspace:*",
+		"@repo/eslintconfig": "workspace:*",
+		"@repo/tsconfig": "workspace:*",
 		"eslint": "^9.0.0",
 		"typescript": "^5.4.5"
 	}
