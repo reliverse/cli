@@ -1,3 +1,0 @@
-# Reliverse CLI: Plugins System
-
-Coming soon...

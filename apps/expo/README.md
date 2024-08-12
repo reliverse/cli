@@ -1,3 +1,0 @@
-# Expo
-
-Coming soon...

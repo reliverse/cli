@@ -1,6 +1,0 @@
-packages:
-  - apps/*
-  - cli/ts/*
-  - packages/*
-  - scripts/*
-  - tools/*

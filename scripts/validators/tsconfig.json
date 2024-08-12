@@ -1,9 +1,0 @@
-{
-	"extends": "@repo/tsconfig/base.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"noEmit": true
-	},
-	"include": ["."],
-	"exclude": ["node_modules", "dist"]
-}
