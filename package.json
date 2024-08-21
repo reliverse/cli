@@ -6,10 +6,11 @@
   "description": "@reliverse/cli is a website builder inside your terminal. You can start from scratch, or you can install a selected template. You can set everything up automatically, or configure everything the way you want. You can have it all. This world is yours, and all the tools are already prepared for you.",
   "scripts": {
     "appts": "redrun knip lint format typecheck test build",
-    "build": "tsup",
+    "build": "fse remove --quiet dist && tsup",
     "ci": "pnpm lint:eslint && pnpm typecheck && pnpm test && pnpm build",
     "dev:eslint": "pnpm eslint --inspect-config",
-    "dev": "vitest",
+    "dev": "tsx src/index.ts",
+    "dev:node": "node dist/index.js",
     "format:biome": "biome format --write .",
     "format": "redrun format:biome",
     "knip": "knip",
@@ -19,9 +20,12 @@
     "lint": "redrun lint:eslint lint:biome",
     "pub": "pnpm publish --access public",
     "test": "vitest run",
+    "test:dev": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -30,27 +34,32 @@
   },
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
-  "keywords": ["reliverse", "cli"],
+  "keywords": [
+    "reliverse",
+    "cli"
+  ],
   "license": "MIT",
   "dependencies": {
     "consola": "^3.2.3",
-    "fs-extra": "^11.2.0",
     "giget": "^1.2.3",
-    "pathe": "^1.1.2"
+    "nypm": "^0.3.9",
+    "pathe": "^1.1.2",
+    "random-words": "^2.0.1",
+    "simple-git": "^3.25.0"
   },
   "devDependencies": {
+    "@atao60/fse-cli": "^0.1.9",
     "@biomejs/biome": "^1.8.3",
-    "@changesets/cli": "^2.27.7",
     "@eslint/js": "^9.9.0",
     "@total-typescript/ts-reset": "^0.5.1",
     "@types/eslint__js": "^8.42.3",
-    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.4.0",
     "eslint": "^9.9.0",
     "knip": "^5.27.2",
     "redrun": "^11.0.5",
     "terser": "^5.31.6",
     "tsup": "^8.2.4",
+    "tsx": "^4.17.0",
     "typescript": "5.6.0-beta",
     "typescript-eslint": "^8.1.0",
     "vitest": "^2.0.5"

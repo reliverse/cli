@@ -1,7 +1,7 @@
-import { setupProject } from "~/utils/setup";
+import { createProject } from "~/cli/create";
 
 async function main() {
-  await setupProject();
+  await createProject();
 }
 
 main().catch((error) => {
