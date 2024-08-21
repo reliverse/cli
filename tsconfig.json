@@ -11,10 +11,19 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "module": "NodeNext",
-    "outDir": "dist",
-    "sourceMap": true,
     "declaration": true,
-    "lib": ["es2022"]
-  }
+    "module": "preserve",
+    "noEmit": true,
+    "lib": ["es2022"],
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "eslint.config.js",
+    "tsup.config.ts",
+    "reset.d.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

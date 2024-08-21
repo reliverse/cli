@@ -1,26 +1,70 @@
 {
-  "name": "reliverse",
-  "module": "index.ts",
+  "name": "@reliverse/cli",
+  "author": "reliverse",
+  "version": "0.1.0",
   "type": "module",
+  "description": "@reliverse/cli is a website builder inside your terminal. You can start from scratch, or you can install a selected template. You can set everything up automatically, or configure everything the way you want. You can have it all. This world is yours, and all the tools are already prepared for you.",
+  "scripts": {
+    "appts": "redrun knip lint format typecheck test build",
+    "build": "tsup",
+    "ci": "pnpm lint:eslint && pnpm typecheck && pnpm test && pnpm build",
+    "dev:eslint": "pnpm eslint --inspect-config",
+    "dev": "vitest",
+    "format:biome": "biome format --write .",
+    "format": "redrun format:biome",
+    "knip": "knip",
+    "latest": "pnpm update --latest",
+    "lint:biome": "biome lint --write .",
+    "lint:eslint": "eslint --cache --fix .",
+    "lint": "redrun lint:eslint lint:biome",
+    "pub": "pnpm publish --access public",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "keywords": ["reliverse", "cli"],
+  "license": "MIT",
+  "dependencies": {
+    "consola": "^3.2.3",
+    "fs-extra": "^11.2.0",
+    "giget": "^1.2.3",
+    "pathe": "^1.1.2"
+  },
   "devDependencies": {
-    "@cspell/dict-companies": "^3.1.4",
-    "@cspell/dict-de-de": "^4.0.0",
-    "@cspell/dict-es-es": "^3.0.0",
-    "@cspell/dict-fa-ir": "^4.0.0",
-    "@cspell/dict-fr-fr": "^2.2.2",
-    "@cspell/dict-fullstack": "^3.2.0",
-    "@cspell/dict-it-it": "^3.1.0",
-    "@cspell/dict-markdown": "^2.0.2",
-    "@cspell/dict-npm": "^5.0.18",
-    "@cspell/dict-pl_pl": "^3.0.1",
-    "@cspell/dict-tr-tr": "^3.0.0",
-    "@cspell/dict-typescript": "^3.1.6",
-    "@cspell/dict-uk-ua": "^4.0.1",
-    "@types/bun": "^1.1.6",
-    "typescript": "5.5.4"
+    "@biomejs/biome": "^1.8.3",
+    "@changesets/cli": "^2.27.7",
+    "@eslint/js": "^9.9.0",
+    "@total-typescript/ts-reset": "^0.5.1",
+    "@types/eslint__js": "^8.42.3",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.4.0",
+    "eslint": "^9.9.0",
+    "knip": "^5.27.2",
+    "redrun": "^11.0.5",
+    "terser": "^5.31.6",
+    "tsup": "^8.2.4",
+    "typescript": "5.6.0-beta",
+    "typescript-eslint": "^8.1.0",
+    "vitest": "^2.0.5"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "pnpm": {
+    "allowedDeprecatedVersions": {
+      "inflight": "*",
+      "glob": "*"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": "9"
+      }
+    }
   },
-  "packageManager": "pnpm@9.7.0+sha512.dc09430156b427f5ecfc79888899e1c39d2d690f004be70e05230b72cb173d96839587545d09429b55ac3c429c801b4dc3c0e002f653830a420fa2dd4e3cf9cf"
+  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247"
 }

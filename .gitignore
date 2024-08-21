@@ -161,9 +161,6 @@ __pycache__/
 *.pem
 *.swc
 path_mapping.txt
-
-# Reliverse
 addons/.output/
-.million/
-yarn-error.log/
-coverage/
+addons/premium/
+.changeset/README.md
