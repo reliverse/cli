@@ -1,7 +1,7 @@
 {
   "name": "@reliverse/cli",
   "author": "reliverse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "@reliverse/cli is a website builder inside your terminal. You can start from scratch, or you can install a selected template. You can set everything up automatically, or configure everything the way you want. You can have it all. This world is yours, and all the tools are already prepared for you.",
   "scripts": {
@@ -23,9 +23,7 @@
     "test:dev": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -34,10 +32,7 @@
   },
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
-  "keywords": [
-    "reliverse",
-    "cli"
-  ],
+  "keywords": ["reliverse", "cli"],
   "license": "MIT",
   "dependencies": {
     "consola": "^3.2.3",

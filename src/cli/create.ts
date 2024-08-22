@@ -14,11 +14,12 @@ export async function createProject() {
   const deps = await dependencies();
   const confirmed = await confirmation();
 
-  if (confirmed) {
-    await installTemplate(name, template, deps, git);
-  } else {
-    consola.info("Installation canceled by the user.");
+  if (!confirmed) {
+    consola.info("Project creation process was canceled.");
+    return;
   }
+
+  await installTemplate(name, template, deps, git);
 }
 
 async function appName(): Promise<string> {
@@ -87,6 +88,7 @@ async function chooseTemplate(): Promise<string> {
         "Enter the GitHub repository link:",
         {
           default: randomDefaultLink,
+          placeholder: randomDefaultLink,
           type: "text",
         },
       );
@@ -106,7 +108,14 @@ async function gitInitialization(): Promise<boolean> {
     "Do you want to initialize a Git repository?",
     { type: "confirm" },
   );
-  validate(git, "boolean", "Git initialization canceled by the user.");
+
+  validate(git, "boolean");
+
+  if (!git) {
+    consola.info("Git initialization canceled by the user.");
+    return false;
+  }
+
   return git;
 }
 
@@ -135,8 +144,15 @@ async function confirmation(): Promise<boolean> {
     "Press `Y` to proceed with the selected template installation.",
     { type: "confirm" },
   );
-  validate(confirmed, "boolean", "Installation canceled by the user.");
-  return confirmed;
+
+  validate(confirmed, "boolean");
+
+  if (!confirmed) {
+    consola.info("Installation canceled by the user.");
+    return false;
+  }
+
+  return true;
 }
 
 async function installTemplate(

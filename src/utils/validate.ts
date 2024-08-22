@@ -8,11 +8,6 @@ export function handlePromptCancellation(
     consola.info(exitMessage);
     process.exit(0);
   }
-
-  if (typeof input === "boolean" && input === false) {
-    consola.info(exitMessage);
-    process.exit(0);
-  }
 }
 
 export function validate(
@@ -28,10 +23,8 @@ export function validate(
     | "bigint",
   exitMessage = `Invalid input: Expected a ${type}, but got ${String(input)}`,
 ): void {
-  // Delegate cancellation and rejection handling to the utility function
   handlePromptCancellation(input, exitMessage);
 
-  // Proceed with the normal type validation
   if (
     // biome-ignore lint/suspicious/useValidTypeof: <explanation>
     typeof input !== type ||
