@@ -1,9 +1,9 @@
 {
-  "name": "@reliverse/cli",
-  "author": "reliverse",
-  "version": "0.2.0",
+  "name": "reliverse",
+  "author": "blefnk",
+  "version": "0.3.0",
   "type": "module",
-  "description": "@reliverse/cli is a website builder inside your terminal. You can start from scratch, or you can install a selected template. You can set everything up automatically, or configure everything the way you want. You can have it all. This world is yours, and all the tools are already prepared for you.",
+  "description": "At its current stage, Reliverse CLI is a powerful website builder right in your terminal. You can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.",
   "scripts": {
     "appts": "redrun knip lint format typecheck test build",
     "build": "fse remove --quiet dist && tsup",
@@ -37,27 +37,27 @@
   "dependencies": {
     "consola": "^3.2.3",
     "giget": "^1.2.3",
-    "nypm": "^0.3.9",
+    "nypm": "^0.3.11",
     "pathe": "^1.1.2",
     "random-words": "^2.0.1",
-    "simple-git": "^3.25.0"
+    "simple-git": "^3.26.0"
   },
   "devDependencies": {
     "@atao60/fse-cli": "^0.1.9",
-    "@biomejs/biome": "^1.8.3",
-    "@eslint/js": "^9.9.0",
-    "@total-typescript/ts-reset": "^0.5.1",
+    "@biomejs/biome": "^1.9.0",
+    "@eslint/js": "^9.10.0",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/eslint__js": "^8.42.3",
-    "@types/node": "^22.4.0",
-    "eslint": "^9.9.0",
-    "knip": "^5.27.2",
+    "@types/node": "^22.5.4",
+    "eslint": "^9.10.0",
+    "knip": "^5.30.1",
     "redrun": "^11.0.5",
-    "terser": "^5.31.6",
+    "terser": "^5.32.0",
     "tsup": "^8.2.4",
-    "tsx": "^4.17.0",
-    "typescript": "5.6.0-beta",
-    "typescript-eslint": "^8.1.0",
-    "vitest": "^2.0.5"
+    "tsx": "^4.19.1",
+    "typescript": "5.6.2",
+    "typescript-eslint": "^8.5.0",
+    "vitest": "^2.1.0"
   },
   "pnpm": {
     "allowedDeprecatedVersions": {

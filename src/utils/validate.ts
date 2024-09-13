@@ -1,9 +1,6 @@
 import consola from "consola";
 
-export function handlePromptCancellation(
-  input: unknown,
-  exitMessage: string,
-): void {
+function handlePromptCancellation(input: unknown, exitMessage: string): void {
   if (typeof input === "symbol" && String(input) === "Symbol(clack:cancel)") {
     consola.info(exitMessage);
     process.exit(0);
