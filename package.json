@@ -1,6 +1,6 @@
 {
   "name": "reliverse",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "Reliverse is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the Relivator Next.js template or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.",
   "keywords": ["reliverse", "cli"],
   "license": "MIT",
@@ -21,18 +21,18 @@
   "scripts": {
     "appts": "redrun knip lint format typecheck test build",
     "build": "fse remove --quiet dist && tsup",
-    "ci": "bun lint:eslint && bun typecheck && bun test && bun build",
+    "ci": "pnpm lint:eslint && pnpm typecheck && pnpm test && pnpm build",
     "dev": "tsx src/index.ts --dev",
-    "dev:eslint": "bun eslint --inspect-config",
+    "dev:eslint": "pnpm eslint --inspect-config",
     "dev:node": "node dist/index.js",
     "format": "redrun format:biome",
     "format:biome": "biome format --write .",
     "knip": "knip",
-    "latest": "bun update --latest",
+    "latest": "pnpm update --latest",
     "lint": "redrun lint:eslint lint:biome",
     "lint:biome": "biome lint --write .",
     "lint:eslint": "eslint --cache --fix .",
-    "pub": "bun appts && npm publish --access public",
+    "pub": "pnpm appts && npm publish --access public",
     "test": "vitest run",
     "test:dev": "vitest",
     "typecheck": "tsc --noEmit"
@@ -101,5 +101,17 @@
     "typescript": "5.6.2",
     "typescript-eslint": "^8.6.0",
     "vitest": "^2.1.1"
+  },
+  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b",
+  "pnpm": {
+    "allowedDeprecatedVersions": {
+      "inflight": "*",
+      "glob": "*"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": "9"
+      }
+    }
   }
 }

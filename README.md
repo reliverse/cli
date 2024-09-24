@@ -37,6 +37,8 @@ Once installed, you can use **Reliverse CLI** to create new projects or manage e
 reliverse
 ```
 
+> **Temporary issue**: It seems that currently if you build and publish a project using Bun, then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
+
 ## Features
 
 - **Create Projects**: Build new projects from scratch, including your own version of the **Relivator Next.js template**, or install any other templates from GitHub.
@@ -171,6 +173,8 @@ npm dev
 ## Contributing
 
 We welcome contributions! Feel free to open issues or submit pull requests. Please ensure your code passes all tests and adheres to our linting guidelines by running `bun appts` before submitting.
+
+> **Temporary issue**: It seems that currently if you build and publish a project using Bun, then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
 
 Reliverse takes a different, non-standard approach compared to other bootstrappers. The author has observed many CLIs handling project bootstrapping, some of which are quite impressive. However, their repositories often contain numerous files that are eventually bundled into a single `index.js`, functioning like an installer wizard. This leads to cluttered repositories, typically set up as monorepos, adding complexity. In contrast, the `reliverse/cli` repository downloads specific files from existing repositories and only copies or generates files when absolutely necessary.
 
