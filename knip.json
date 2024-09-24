@@ -1,7 +1,35 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/index.ts", "eslint.config.js"],
-  "ignore": [],
-  "ignoreBinaries": [],
-  "ignoreDependencies": ["terser"]
+  "entry": ["eslint.config.js", "reliverse.config.ts", "src/index.ts"],
+  "ignore": [
+    "src/app.ts",
+    "src/constants/metadata.ts",
+    "src/constants/products.ts",
+    "src/setup/configure.ts",
+    "src/setup/prompt/appts.ts",
+    "src/setup/prompt/biome.ts",
+    "src/setup/prompt/env.ts",
+    "src/setup/prompt/envjs.ts",
+    "src/setup/prompt/eslint.ts",
+    "src/setup/prompt/knip.ts",
+    "src/setup/prompt/nextjs.ts",
+    "src/setup/prompt/putout.ts",
+    "src/setup/types.ts",
+    "src/types/nav.ts",
+    "src/types/string.ts",
+    "src/types/with.ts"
+  ],
+  "ignoreBinaries": ["publish"],
+  "ignoreDependencies": [
+    "@clack/prompts",
+    "@reliverse/core",
+    "@reliverse/fs",
+    "citty",
+    "magicast",
+    "node-fetch",
+    "ofetch",
+    "picocolors",
+    "tasuku",
+    "terser"
+  ]
 }

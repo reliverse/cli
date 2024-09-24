@@ -1,5 +1,5 @@
-import { normalize } from "pathe";
 import { cwd } from "node:process";
+import { normalize } from "pathe";
 
 let cachedCWD: null | string = null;
 

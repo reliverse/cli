@@ -10,20 +10,19 @@ function handlePromptCancellation(input: unknown, exitMessage: string): void {
 export function validate(
   input: unknown,
   type:
-    | "string"
-    | "number"
+    | "bigint"
     | "boolean"
-    | "object"
     | "function"
-    | "undefined"
+    | "number"
+    | "object"
+    | "string"
     | "symbol"
-    | "bigint",
+    | "undefined",
   exitMessage = `Invalid input: Expected a ${type}, but got ${String(input)}`,
 ): void {
   handlePromptCancellation(input, exitMessage);
 
   if (
-    // biome-ignore lint/suspicious/useValidTypeof: <explanation>
     typeof input !== type ||
     input === undefined ||
     input === null ||

@@ -1,4 +1,4 @@
-import { createProject } from "~/cli/create";
+import { createProject } from "~/cli/createProject";
 
 async function main() {
   await createProject();
