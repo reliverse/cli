@@ -8,7 +8,7 @@ import {
   gitInitialization,
 } from "~/utils/prompt";
 
-import { installTemplate } from "./installer";
+import { installTemplate } from "./installTemplate";
 
 export async function installRelivatorTemplate() {
   const name = await appName();

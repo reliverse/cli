@@ -10,6 +10,7 @@ import {
   fileCategories,
   GITHUB_REPO_URL,
   TEMP_CLONE_DIR,
+  TEMP_GITHUB_REPO_NAME,
 } from "./fileCategories";
 
 // Type definition for fileCategories
@@ -25,7 +26,7 @@ export const cloneAndCopyFiles = async (
     const git: SimpleGit = simpleGit();
 
     consola.info(
-      `We will use the following template (to provide your the required files): ${GITHUB_REPO_URL}`,
+      `We will use the following template (to provide to you the required files): ${GITHUB_REPO_URL}`,
     );
     await git.clone(GITHUB_REPO_URL, TEMP_CLONE_DIR, ["--depth", "1"]);
     consola.success(
@@ -51,8 +52,6 @@ export const cloneAndCopyFiles = async (
       const files = filesByCategory[category];
 
       if (files) {
-        consola.info(`Copying files for category: ${category}`);
-
         for (const fileName of files) {
           const sourcePath = path.join(TEMP_CLONE_DIR, fileName);
           const destPath = path.join(targetDir, fileName);
@@ -78,13 +77,13 @@ export const cloneAndCopyFiles = async (
         }
 
         // After all files in the category have been copied or replaced
-        consola.success(`* ${category} files copied.`);
+        consola.success(`* Files of '${category}' category was copied.`);
       }
     }
 
     // Clean up the temporary clone
     await fs.remove(TEMP_CLONE_DIR);
-    consola.info("Temporary clone removed.");
+    consola.success(`Temporary '${TEMP_GITHUB_REPO_NAME}' clone removed.`);
   } catch (error) {
     if (error instanceof Error) {
       consola.error(`Error: ${error.message}`);

@@ -19,7 +19,7 @@
     "src/types/string.ts",
     "src/types/with.ts"
   ],
-  "ignoreBinaries": ["publish"],
+  "ignoreBinaries": [],
   "ignoreDependencies": [
     "@clack/prompts",
     "@reliverse/core",

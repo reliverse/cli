@@ -2,7 +2,7 @@
 
 *Build the Sites. Build the Apps. Build the Games. Build Anything.*
 
-**Reliverse CLI**, or simply **Reliverse**, is a command-line tool designed to streamline the setup and configuration of JavaScript/TypeScript projects (for now), with a focus on React and Next.js templates. It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template), or any other template from GitHub. Reliverse also assists in managing configuration files and resolving potential conflicts between different tools like ESLint, Prettier, and Biome.
+**Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
 ## TL;DR
 

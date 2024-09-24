@@ -11,7 +11,7 @@ import {
 } from "~/utils/prompt";
 import { validate } from "~/utils/validate";
 
-import { installTemplate } from "./installer";
+import { installTemplate } from "./installTemplate";
 
 const args = process.argv.slice(2);
 const isDevelopment = args.includes("--dev");
@@ -93,6 +93,7 @@ export async function buildRelivator() {
 
   await checkAndDownloadFiles(targetDir);
 
+  consola.info("");
   consola.success("🤘 Project created successfully.");
   consola.info(`👉 If you have VSCode installed, run: code ${targetDir}\n`);
 }

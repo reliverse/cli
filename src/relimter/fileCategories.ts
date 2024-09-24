@@ -9,4 +9,6 @@ export const fileCategories: Record<string, string[]> = {
 export const GITHUB_REPO_URL =
   "https://github.com/blefnk/relivator-nextjs-template.git";
 
+export const TEMP_GITHUB_REPO_NAME = "blefnk/relivator";
+
 export const TEMP_CLONE_DIR = "temp-repo-clone";

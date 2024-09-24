@@ -1,15 +1,14 @@
 import { consola } from "consola";
 import { downloadTemplate } from "giget";
 import path from "node:path";
-import { detectPackageManager } from "nypm";
 
 import { getCurrentWorkingDirectory } from "~/utils/fs";
 import { initializeGitRepository } from "~/utils/git";
+import { choosePackageManager } from "~/utils/packageManager";
 
 const args = process.argv.slice(2);
 const isDevelopment = args.includes("--dev");
 
-// Install the selected template
 export async function installTemplate(
   name: string,
   template: string,
@@ -28,7 +27,6 @@ export async function installTemplate(
     let dir: string | undefined;
 
     try {
-      // Download template
       const result = await downloadTemplate(`github:${template}`, {
         dir: targetDir,
         install: deps,
@@ -39,7 +37,6 @@ export async function installTemplate(
 
       consola.success(`🎉 ${source} was successfully installed to ${dir}.`);
     } catch (error) {
-      // Handle unknown error type
       if (error instanceof Error) {
         consola.error(
           `🤔 Failed to set up the project: ${error.message}`,
@@ -52,7 +49,6 @@ export async function installTemplate(
       process.exit(1);
     }
 
-    // After successful installation, log the next steps
     consola.info("✨ Next steps to get started:");
     consola.info(`- Open the project: cd ${targetDir}`);
 
@@ -64,15 +60,12 @@ export async function installTemplate(
       await initializeGitRepository(targetDir, gitOption);
     }
 
-    const pkgManager = detectPackageManager?.name || "bun";
+    const pkgManager = await choosePackageManager(cwd);
 
     consola.info(`- Apply linting and formatting: ${pkgManager} appts`);
-    consola.info("");
-
     consola.info(`- Run the project: ${pkgManager} dev`);
     consola.info("");
   } catch (error) {
-    // Handle unknown error type at the top level
     if (error instanceof Error) {
       consola.error(`🤔 Failed to set up the project: ${error.message}`);
     } else {

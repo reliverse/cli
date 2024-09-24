@@ -1,8 +1,8 @@
 import { consola } from "consola";
 import path from "node:path";
-import { detectPackageManager } from "nypm";
 
 import { getCurrentWorkingDirectory } from "~/utils/fs";
+import { choosePackageManager } from "~/utils/packageManager";
 import {
   appName,
   confirmation,
@@ -11,7 +11,7 @@ import {
 } from "~/utils/prompt";
 import { validate } from "~/utils/validate";
 
-import { installTemplate } from "./installer";
+import { installTemplate } from "./installTemplate";
 
 const args = process.argv.slice(2);
 const isDevelopment = args.includes("--dev");
@@ -40,8 +40,6 @@ export async function cloneLibraryTool() {
     );
 
     validate(customRepo, "string", "Custom repository selection canceled.");
-
-    // Convert full GitHub URL to shorthand if necessary
     libraryRepo = customRepo.replace("https://github.com/", "github:");
   }
 
@@ -62,27 +60,30 @@ export async function cloneLibraryTool() {
 
   await installTemplate(name, libraryRepo, false, gitOption);
 
-  // Ask the user if they want to install dependencies
   const installDeps = await dependencies("cloneLibraryTool");
 
   if (installDeps) {
-    consola.info("Installing dependencies...");
+    const pkgManager = await choosePackageManager(cwd);
 
-    // Code to install dependencies goes here
-    consola.success("Dependencies installed successfully.");
+    consola.info(`Using ${pkgManager} to install dependencies...`);
+
+    try {
+      consola.success("Dependencies installed successfully.");
+    } catch (error) {
+      consola.error("Failed to install dependencies:", error);
+    }
   } else {
     consola.info(
       "Dependencies were not installed. You can install them manually.",
     );
 
-    const pkgManager = detectPackageManager?.name || "bun";
+    const pkgManager = await choosePackageManager(cwd);
 
     consola.info(
       `👉 To install manually, run: cd ${targetDir} && ${pkgManager} i`,
     );
   }
 
-  consola.success("");
   consola.success(`Library/Tool from ${libraryRepo} cloned successfully.`);
   consola.info(`👉 If you have VSCode installed, run: code ${targetDir}\n`);
 }
