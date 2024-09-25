@@ -2,6 +2,8 @@ import { checkbox, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import path from "pathe";
 
+import { getCurrentWorkingDirectory } from "~/utils/fs";
+
 import {
   handleESLintConflict,
   handlePrettierConflict,
@@ -61,6 +63,10 @@ export const checkAndDownloadFiles = async (
       )
       .filter(Boolean); // Ensure there are no undefined values
 
+    const cwd = getCurrentWorkingDirectory();
+    const tempCloneRepo = "https://github.com/blefnk/relivator";
+    const tempCloneDir = `${cwd}/..`;
+
     // Handle conflicts for already existing files
     if (existingFiles.length > 0) {
       const replaceAll = await confirm({
@@ -83,12 +89,16 @@ export const checkAndDownloadFiles = async (
           [...filesToDownload, ...filesToReplace].filter(Boolean), // Filter out undefined values
           targetDir,
           false,
+          tempCloneRepo,
+          tempCloneDir,
         );
       } else {
         await cloneAndCopyFiles(
           filesToDownload.filter(Boolean), // Filter out undefined values
           targetDir,
           true,
+          tempCloneRepo,
+          tempCloneDir,
         ); // Replace all existing files
       }
     } else {
@@ -96,6 +106,8 @@ export const checkAndDownloadFiles = async (
         filesToDownload.filter(Boolean), // Filter out undefined values
         targetDir,
         false,
+        tempCloneRepo,
+        tempCloneDir,
       ); // No conflicts, just download the files
     }
   } else {

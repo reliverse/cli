@@ -927,10 +927,12 @@ export default tseslint.config(
       "import-x/first": "off",
       "import-x/named": "off",
       "import-x/namespace": "off",
+
       "import-x/newline-after-import": "warn",
       "import-x/no-absolute-path": "error",
       "import-x/no-amd": "error",
       "import-x/no-anonymous-default-export": "off",
+
       "import-x/no-cycle": [
         "off",
         {
@@ -978,6 +980,7 @@ export default tseslint.config(
       "jsx-a11y/aria-props": "error",
       "jsx-a11y/aria-proptypes": "error",
       "jsx-a11y/aria-unsupported-elements": "error",
+
       "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/no-noninteractive-element-interactions": "off",
       "jsx-a11y/role-has-required-aria-props": "error",
@@ -1006,6 +1009,7 @@ export default tseslint.config(
       "n/no-extraneous-import": "off",
       "n/no-missing-import": "off",
       "n/no-process-exit": "off",
+
       "n/no-unpublished-import": "off",
       "n/no-unsupported-features/es-syntax": "off",
       "n/no-unsupported-features/node-builtins": "off",
@@ -1015,6 +1019,7 @@ export default tseslint.config(
       "no-anonymous-default-export": "off",
       "no-array-reduce": "off",
       "no-async-promise-executor": "off",
+
       "no-await-in-promise-methods": "off",
       "no-case-declarations": "off",
       "no-compare-neg-zero": "off",
@@ -1211,6 +1216,7 @@ export default tseslint.config(
           property: "pow",
         },
       ],
+
       "no-restricted-syntax": [
         "off",
         {
@@ -1475,6 +1481,7 @@ export default tseslint.config(
           type: "natural",
         },
       ],
+
       "perfectionist/sort-union-types": [
         "warn",
         {
@@ -1485,6 +1492,7 @@ export default tseslint.config(
         },
       ],
       "prefer-blob-reading-methods": "off",
+
       "prefer-const": [
         "error",
         {
@@ -1530,6 +1538,7 @@ export default tseslint.config(
 
       // @see https://github.com/jsx-eslint/eslint-plugin-react
       "react/no-invalid-html-attribute": "error",
+
       "react/no-unescaped-entities": "off",
       "react/no-unknown-property": "off",
       // TODO: https://github.com/shadcn-ui/ui/issues/120
@@ -1555,12 +1564,18 @@ export default tseslint.config(
       // @see https://github.com/schoero/eslint-plugin-readable-tailwind
       "readable-tailwind/multiline": ["off"],
       "readable-tailwind/no-unnecessary-whitespace": ["error"],
+
       "readable-tailwind/sort-classes": ["error"],
+
+      "regexp/no-unused-capturing-group": "off",
+
+      "regexp/no-useless-escape": "off",
       "regexp/strict": "off",
 
       // @see https://github.com/SonarSource/eslint-plugin-sonarjs#rules (errors in: rules-of-hooks, no-fallthrough)
       "sonarjs/cognitive-complexity": "off",
       "sonarjs/constructor-for-side-effects": "off",
+
       "sonarjs/default-param-last": "off",
       "sonarjs/deprecation": "off",
       "sonarjs/different-types-comparison": "off",
@@ -1610,11 +1625,13 @@ export default tseslint.config(
       "sonarjs/sonar-prefer-regexp-exec": "off",
       "sonarjs/table-header": "off",
       "sonarjs/todo-tag": "off",
+      "sonarjs/unnecessary-character-escapes": "off",
       "sonarjs/unused-import": "off",
       "sonarjs/void-use": "off",
 
       // @see https://github.com/mskelton/eslint-plugin-sort#list-of-supported-rules
       "sort/destructuring-properties": "off",
+
       "sort/export-members": "off",
       "sort/exports": [
         "off",
@@ -1663,6 +1680,7 @@ export default tseslint.config(
           sortExportKindFirst: "type",
         },
       ],
+
       "sort-imports": "off",
       "sort-keys": "off",
 
@@ -1671,6 +1689,8 @@ export default tseslint.config(
 
       // Adds ~15s to the lint time (!)
       "tailwindcss/no-custom-classname": "off",
+
+      "unicorn/better-regex": "off",
 
       // @see https://github.com/sindresorhus/eslint-plugin-unicorn
       "unicorn/catch-error-name": [

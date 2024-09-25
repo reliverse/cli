@@ -1,17 +1,26 @@
 import { consola } from "consola";
+import fs from "fs-extra";
 import path from "node:path";
 
+import { downloadI18nFiles, moveAppToLocale } from "~/cli/i18nSetup";
 import { checkAndDownloadFiles } from "~/relimter/checkAndDownloadFiles";
 import { getCurrentWorkingDirectory } from "~/utils/fs";
 import {
   appName,
   confirmation,
   dependencies,
+  githubUsername,
   gitInitialization,
+  promptI18n,
+  userWebsite,
 } from "~/utils/prompt";
+import { replaceStringsInFiles } from "~/utils/replaceStrings";
+import { extractRepoInfo } from "~/utils/repoInfo";
 import { validate } from "~/utils/validate";
 
 import { installTemplate } from "./installTemplate";
+import { handleReplacements } from "./replacementManager";
+import { selectTemplate } from "./templateSelection";
 
 const args = process.argv.slice(2);
 const isDevelopment = args.includes("--dev");
@@ -23,58 +32,11 @@ export async function buildRelivator() {
     // eslint-disable-next-line @stylistic/max-len
     "'blefnk/relivator' template is a highly modified 'sadmann7/skateshop' template, which can be a good starting point to build your own Relivator as well.",
   );
-  consola.info("1. You can choose the `sadmann7/skateshop` template.");
-  consola.info(
-    "2. Or install just a very clean Next.js `blefnk/minext` template.",
-  );
-  consola.info(
-    "3. Or provide a GitHub URL for another template of your choice.",
-  );
-  consola.info(
-    "In any of the choices, you can choose which actions to apply to your project.",
-  );
 
-  const templateOption = await consola.prompt(
-    "Select a template or provide a custom GitHub URL:",
-    {
-      options: [
-        "1. Use skateshop template (to have full Relivator version)",
-        "2. Use minext template (to have minimal Relivator version)",
-        "3. Provide custom GitHub URL (at your own risk)",
-      ] as const,
-      type: "select",
-    },
-  );
-
-  let template = "";
-
-  if (
-    templateOption ===
-    "1. Use skateshop template (to have full Relivator version)"
-  ) {
-    template = "sadmann7/skateshop";
-  } else if (
-    templateOption ===
-    "2. Use minext template (to have minimal Relivator version)"
-  ) {
-    template = "blefnk/minext";
-  } else if (
-    templateOption === "3. Provide custom GitHub URL (at your own risk)"
-  ) {
-    const customTemplate = await consola.prompt(
-      "Enter the GitHub repository link:",
-      { type: "text" },
-    );
-
-    validate(customTemplate, "string", "Custom template selection canceled.");
-    template = customTemplate;
-  } else {
-    consola.error("Invalid option selected. Exiting.");
-
-    return;
-  }
-
+  const template = await selectTemplate();
   const name = await appName();
+  const githubUser = await githubUsername();
+  const website = await userWebsite();
   const gitOption = await gitInitialization();
   const deps = await dependencies("buildRelivator");
   const confirmed = await confirmation();
@@ -90,6 +52,19 @@ export async function buildRelivator() {
   const targetDir = isDevelopment
     ? path.join(cwd, "..", name)
     : path.join(cwd, name);
+
+  await handleReplacements(targetDir, template, name, githubUser, website);
+
+  // Ask if the user wants i18n support
+  const enableI18n = await promptI18n();
+
+  if (enableI18n) {
+    // Step 1: Move all content of src/app to src/app/[locale]
+    await moveAppToLocale(targetDir);
+
+    // Step 2: Download the new layout.ts and page.ts, handling the temp-repo-clone properly
+    await downloadI18nFiles(targetDir, isDevelopment);
+  }
 
   await checkAndDownloadFiles(targetDir);
 

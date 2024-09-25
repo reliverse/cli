@@ -1,3 +1,4 @@
+import { confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import { generate } from "random-words";
 
@@ -15,6 +16,47 @@ export async function appName(): Promise<string> {
   validate(name, "string", "Project creation canceled.");
 
   return name;
+}
+
+// Prompt user for the GitHub username
+export async function githubUsername(): Promise<string> {
+  const placeholder = generate({ exactly: 1, join: "-" });
+  const username = await consola.prompt("Enter your GitHub username:", {
+    default: placeholder,
+    placeholder,
+    type: "text",
+  });
+
+  validate(username, "string", "GitHub username prompt canceled.");
+
+  return username;
+}
+
+// Prompt user for their website
+export async function userWebsite(): Promise<string> {
+  const placeholder = "relivator.com"; // Default placeholder
+  const website = await consola.prompt("Enter your website:", {
+    default: placeholder,
+    placeholder,
+    type: "text",
+  });
+
+  validate(website, "string", "Website prompt canceled.");
+
+  return website;
+}
+
+// Prompt to ask the user if they want i18n support
+export async function promptI18n(): Promise<boolean> {
+  const useI18n = await confirm({
+    default: false,
+    message:
+      "Do you want to enable i18n (internationalization) for this project?",
+  });
+
+  validate(useI18n, "boolean", "i18n setup canceled.");
+
+  return useI18n;
 }
 
 // Prompt user for confirmation about installing dependencies
