@@ -1,7 +1,7 @@
-import { createProject } from "~/cli/createProject";
+import { displayMainReliverseMenu } from "~/prompts/00-displayMainReliverseMenu";
 
 async function main() {
-  await createProject();
+  await displayMainReliverseMenu();
 }
 
 main().catch((error) => {

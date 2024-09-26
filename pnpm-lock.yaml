@@ -38,6 +38,9 @@ importers:
       ofetch:
         specifier: ^1.4.0
         version: 1.4.0
+      open:
+        specifier: ^10.1.0
+        version: 10.1.0
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
@@ -64,7 +67,7 @@ importers:
         specifier: ^1.14.2
         version: 1.14.2(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       '@eslint/js':
-        specifier: ^9.11.0
+        specifier: ^9.11.1
         version: 9.11.1
       '@next/eslint-plugin-next':
         specifier: ^14.2.13
@@ -73,8 +76,8 @@ importers:
         specifier: ^2.8.0
         version: 2.8.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       '@tanstack/eslint-plugin-query':
-        specifier: ^5.57.1
-        version: 5.57.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+        specifier: ^5.57.2
+        version: 5.57.2(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -85,10 +88,10 @@ importers:
         specifier: ^11.0.4
         version: 11.0.4
       '@types/node':
-        specifier: ^22.5.5
-        version: 22.6.1
+        specifier: ^22.7.0
+        version: 22.7.0
       eslint:
-        specifier: ^9.11.0
+        specifier: ^9.11.1
         version: 9.11.1(jiti@1.21.6)
       eslint-plugin-barrel-files:
         specifier: ^2.1.0
@@ -167,7 +170,7 @@ importers:
         version: 15.9.0
       knip:
         specifier: ^5.30.5
-        version: 5.30.5(@types/node@22.6.1)(typescript@5.6.2)
+        version: 5.30.5(@types/node@22.7.0)(typescript@5.6.2)
       magicast:
         specifier: ^0.3.5
         version: 0.3.5
@@ -187,11 +190,8 @@ importers:
         specifier: 5.6.2
         version: 5.6.2
       typescript-eslint:
-        specifier: ^8.6.0
+        specifier: ^8.7.0
         version: 8.7.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
-      vitest:
-        specifier: ^2.1.1
-        version: 2.1.1(@types/node@22.6.1)(terser@5.33.0)
 
 packages:
 
@@ -931,34 +931,16 @@ packages:
   '@emnapi/wasi-threads@1.0.1':
     resolution: {integrity: sha512-iIBu7mwkq4UQGeMEM8bLwNK962nXdhodeScX4slfQnRhEMMzvYivHhutCIk8uojvmASXXPC2WNEjwxFWk72Oqw==}
 
-  '@esbuild/aix-ppc64@0.21.5':
-    resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
-    engines: {node: '>=12'}
-    cpu: [ppc64]
-    os: [aix]
-
   '@esbuild/aix-ppc64@0.23.1':
     resolution: {integrity: sha512-6VhYk1diRqrhBAqpJEdjASR/+WVRtfjpqKuNw11cLiaWpAT/Uu+nokB+UJnevzy/P9C/ty6AOe0dwueMrGh/iQ==}
     engines: {node: '>=18'}
     cpu: [ppc64]
     os: [aix]
 
-  '@esbuild/android-arm64@0.21.5':
-    resolution: {integrity: sha512-c0uX9VAUBQ7dTDCjq+wdyGLowMdtR/GoC2U5IYk/7D1H1JYC0qseD7+11iMP2mRLN9RcCMRcjC4YMclCzGwS/A==}
-    engines: {node: '>=12'}
-    cpu: [arm64]
-    os: [android]
-
   '@esbuild/android-arm64@0.23.1':
     resolution: {integrity: sha512-xw50ipykXcLstLeWH7WRdQuysJqejuAGPd30vd1i5zSyKK3WE+ijzHmLKxdiCMtH1pHz78rOg0BKSYOSB/2Khw==}
     engines: {node: '>=18'}
     cpu: [arm64]
-    os: [android]
-
-  '@esbuild/android-arm@0.21.5':
-    resolution: {integrity: sha512-vCPvzSjpPHEi1siZdlvAlsPxXl7WbOVUBBAowWug4rJHb68Ox8KualB+1ocNvT5fjv6wpkX6o/iEpbDrf68zcg==}
-    engines: {node: '>=12'}
-    cpu: [arm]
     os: [android]
 
   '@esbuild/android-arm@0.23.1':
@@ -967,34 +949,16 @@ packages:
     cpu: [arm]
     os: [android]
 
-  '@esbuild/android-x64@0.21.5':
-    resolution: {integrity: sha512-D7aPRUUNHRBwHxzxRvp856rjUHRFW1SdQATKXH2hqA0kAZb1hKmi02OpYRacl0TxIGz/ZmXWlbZgjwWYaCakTA==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [android]
-
   '@esbuild/android-x64@0.23.1':
     resolution: {integrity: sha512-nlN9B69St9BwUoB+jkyU090bru8L0NA3yFvAd7k8dNsVH8bi9a8cUAUSEcEEgTp2z3dbEDGJGfP6VUnkQnlReg==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [android]
 
-  '@esbuild/darwin-arm64@0.21.5':
-    resolution: {integrity: sha512-DwqXqZyuk5AiWWf3UfLiRDJ5EDd49zg6O9wclZ7kUMv2WRFr4HKjXp/5t8JZ11QbQfUS6/cRCKGwYhtNAY88kQ==}
-    engines: {node: '>=12'}
-    cpu: [arm64]
-    os: [darwin]
-
   '@esbuild/darwin-arm64@0.23.1':
     resolution: {integrity: sha512-YsS2e3Wtgnw7Wq53XXBLcV6JhRsEq8hkfg91ESVadIrzr9wO6jJDMZnCQbHm1Guc5t/CdDiFSSfWP58FNuvT3Q==}
     engines: {node: '>=18'}
     cpu: [arm64]
-    os: [darwin]
-
-  '@esbuild/darwin-x64@0.21.5':
-    resolution: {integrity: sha512-se/JjF8NlmKVG4kNIuyWMV/22ZaerB+qaSi5MdrXtd6R08kvs2qCN4C09miupktDitvh8jRFflwGFBQcxZRjbw==}
-    engines: {node: '>=12'}
-    cpu: [x64]
     os: [darwin]
 
   '@esbuild/darwin-x64@0.23.1':
@@ -1003,22 +967,10 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@esbuild/freebsd-arm64@0.21.5':
-    resolution: {integrity: sha512-5JcRxxRDUJLX8JXp/wcBCy3pENnCgBR9bN6JsY4OmhfUtIHe3ZW0mawA7+RDAcMLrMIZaf03NlQiX9DGyB8h4g==}
-    engines: {node: '>=12'}
-    cpu: [arm64]
-    os: [freebsd]
-
   '@esbuild/freebsd-arm64@0.23.1':
     resolution: {integrity: sha512-h1k6yS8/pN/NHlMl5+v4XPfikhJulk4G+tKGFIOwURBSFzE8bixw1ebjluLOjfwtLqY0kewfjLSrO6tN2MgIhA==}
     engines: {node: '>=18'}
     cpu: [arm64]
-    os: [freebsd]
-
-  '@esbuild/freebsd-x64@0.21.5':
-    resolution: {integrity: sha512-J95kNBj1zkbMXtHVH29bBriQygMXqoVQOQYA+ISs0/2l3T9/kj42ow2mpqerRBxDJnmkUDCaQT/dfNXWX/ZZCQ==}
-    engines: {node: '>=12'}
-    cpu: [x64]
     os: [freebsd]
 
   '@esbuild/freebsd-x64@0.23.1':
@@ -1027,22 +979,10 @@ packages:
     cpu: [x64]
     os: [freebsd]
 
-  '@esbuild/linux-arm64@0.21.5':
-    resolution: {integrity: sha512-ibKvmyYzKsBeX8d8I7MH/TMfWDXBF3db4qM6sy+7re0YXya+K1cem3on9XgdT2EQGMu4hQyZhan7TeQ8XkGp4Q==}
-    engines: {node: '>=12'}
-    cpu: [arm64]
-    os: [linux]
-
   '@esbuild/linux-arm64@0.23.1':
     resolution: {integrity: sha512-/93bf2yxencYDnItMYV/v116zff6UyTjo4EtEQjUBeGiVpMmffDNUyD9UN2zV+V3LRV3/on4xdZ26NKzn6754g==}
     engines: {node: '>=18'}
     cpu: [arm64]
-    os: [linux]
-
-  '@esbuild/linux-arm@0.21.5':
-    resolution: {integrity: sha512-bPb5AHZtbeNGjCKVZ9UGqGwo8EUu4cLq68E95A53KlxAPRmUyYv2D6F0uUI65XisGOL1hBP5mTronbgo+0bFcA==}
-    engines: {node: '>=12'}
-    cpu: [arm]
     os: [linux]
 
   '@esbuild/linux-arm@0.23.1':
@@ -1051,22 +991,10 @@ packages:
     cpu: [arm]
     os: [linux]
 
-  '@esbuild/linux-ia32@0.21.5':
-    resolution: {integrity: sha512-YvjXDqLRqPDl2dvRODYmmhz4rPeVKYvppfGYKSNGdyZkA01046pLWyRKKI3ax8fbJoK5QbxblURkwK/MWY18Tg==}
-    engines: {node: '>=12'}
-    cpu: [ia32]
-    os: [linux]
-
   '@esbuild/linux-ia32@0.23.1':
     resolution: {integrity: sha512-VTN4EuOHwXEkXzX5nTvVY4s7E/Krz7COC8xkftbbKRYAl96vPiUssGkeMELQMOnLOJ8k3BY1+ZY52tttZnHcXQ==}
     engines: {node: '>=18'}
     cpu: [ia32]
-    os: [linux]
-
-  '@esbuild/linux-loong64@0.21.5':
-    resolution: {integrity: sha512-uHf1BmMG8qEvzdrzAqg2SIG/02+4/DHB6a9Kbya0XDvwDEKCoC8ZRWI5JJvNdUjtciBGFQ5PuBlpEOXQj+JQSg==}
-    engines: {node: '>=12'}
-    cpu: [loong64]
     os: [linux]
 
   '@esbuild/linux-loong64@0.23.1':
@@ -1075,22 +1003,10 @@ packages:
     cpu: [loong64]
     os: [linux]
 
-  '@esbuild/linux-mips64el@0.21.5':
-    resolution: {integrity: sha512-IajOmO+KJK23bj52dFSNCMsz1QP1DqM6cwLUv3W1QwyxkyIWecfafnI555fvSGqEKwjMXVLokcV5ygHW5b3Jbg==}
-    engines: {node: '>=12'}
-    cpu: [mips64el]
-    os: [linux]
-
   '@esbuild/linux-mips64el@0.23.1':
     resolution: {integrity: sha512-nrFzzMQ7W4WRLNUOU5dlWAqa6yVeI0P78WKGUo7lg2HShq/yx+UYkeNSE0SSfSure0SqgnsxPvmAUu/vu0E+3Q==}
     engines: {node: '>=18'}
     cpu: [mips64el]
-    os: [linux]
-
-  '@esbuild/linux-ppc64@0.21.5':
-    resolution: {integrity: sha512-1hHV/Z4OEfMwpLO8rp7CvlhBDnjsC3CttJXIhBi+5Aj5r+MBvy4egg7wCbe//hSsT+RvDAG7s81tAvpL2XAE4w==}
-    engines: {node: '>=12'}
-    cpu: [ppc64]
     os: [linux]
 
   '@esbuild/linux-ppc64@0.23.1':
@@ -1099,22 +1015,10 @@ packages:
     cpu: [ppc64]
     os: [linux]
 
-  '@esbuild/linux-riscv64@0.21.5':
-    resolution: {integrity: sha512-2HdXDMd9GMgTGrPWnJzP2ALSokE/0O5HhTUvWIbD3YdjME8JwvSCnNGBnTThKGEB91OZhzrJ4qIIxk/SBmyDDA==}
-    engines: {node: '>=12'}
-    cpu: [riscv64]
-    os: [linux]
-
   '@esbuild/linux-riscv64@0.23.1':
     resolution: {integrity: sha512-5AV4Pzp80fhHL83JM6LoA6pTQVWgB1HovMBsLQ9OZWLDqVY8MVobBXNSmAJi//Csh6tcY7e7Lny2Hg1tElMjIA==}
     engines: {node: '>=18'}
     cpu: [riscv64]
-    os: [linux]
-
-  '@esbuild/linux-s390x@0.21.5':
-    resolution: {integrity: sha512-zus5sxzqBJD3eXxwvjN1yQkRepANgxE9lgOW2qLnmr8ikMTphkjgXu1HR01K4FJg8h1kEEDAqDcZQtbrRnB41A==}
-    engines: {node: '>=12'}
-    cpu: [s390x]
     os: [linux]
 
   '@esbuild/linux-s390x@0.23.1':
@@ -1123,23 +1027,11 @@ packages:
     cpu: [s390x]
     os: [linux]
 
-  '@esbuild/linux-x64@0.21.5':
-    resolution: {integrity: sha512-1rYdTpyv03iycF1+BhzrzQJCdOuAOtaqHTWJZCWvijKD2N5Xu0TtVC8/+1faWqcP9iBCWOmjmhoH94dH82BxPQ==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [linux]
-
   '@esbuild/linux-x64@0.23.1':
     resolution: {integrity: sha512-EV6+ovTsEXCPAp58g2dD68LxoP/wK5pRvgy0J/HxPGB009omFPv3Yet0HiaqvrIrgPTBuC6wCH1LTOY91EO5hQ==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [linux]
-
-  '@esbuild/netbsd-x64@0.21.5':
-    resolution: {integrity: sha512-Woi2MXzXjMULccIwMnLciyZH4nCIMpWQAs049KEeMvOcNADVxo0UBIQPfSmxB3CWKedngg7sWZdLvLczpe0tLg==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [netbsd]
 
   '@esbuild/netbsd-x64@0.23.1':
     resolution: {integrity: sha512-aevEkCNu7KlPRpYLjwmdcuNz6bDFiE7Z8XC4CPqExjTvrHugh28QzUXVOZtiYghciKUacNktqxdpymplil1beA==}
@@ -1153,23 +1045,11 @@ packages:
     cpu: [arm64]
     os: [openbsd]
 
-  '@esbuild/openbsd-x64@0.21.5':
-    resolution: {integrity: sha512-HLNNw99xsvx12lFBUwoT8EVCsSvRNDVxNpjZ7bPn947b8gJPzeHWyNVhFsaerc0n3TsbOINvRP2byTZ5LKezow==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [openbsd]
-
   '@esbuild/openbsd-x64@0.23.1':
     resolution: {integrity: sha512-aY2gMmKmPhxfU+0EdnN+XNtGbjfQgwZj43k8G3fyrDM/UdZww6xrWxmDkuz2eCZchqVeABjV5BpildOrUbBTqA==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [openbsd]
-
-  '@esbuild/sunos-x64@0.21.5':
-    resolution: {integrity: sha512-6+gjmFpfy0BHU5Tpptkuh8+uw3mnrvgs+dSPQXQOv3ekbordwnzTVEb4qnIvQcYXq6gzkyTnoZ9dZG+D4garKg==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [sunos]
 
   '@esbuild/sunos-x64@0.23.1':
     resolution: {integrity: sha512-RBRT2gqEl0IKQABT4XTj78tpk9v7ehp+mazn2HbUeZl1YMdaGAQqhapjGTCe7uw7y0frDi4gS0uHzhvpFuI1sA==}
@@ -1177,34 +1057,16 @@ packages:
     cpu: [x64]
     os: [sunos]
 
-  '@esbuild/win32-arm64@0.21.5':
-    resolution: {integrity: sha512-Z0gOTd75VvXqyq7nsl93zwahcTROgqvuAcYDUr+vOv8uHhNSKROyU961kgtCD1e95IqPKSQKH7tBTslnS3tA8A==}
-    engines: {node: '>=12'}
-    cpu: [arm64]
-    os: [win32]
-
   '@esbuild/win32-arm64@0.23.1':
     resolution: {integrity: sha512-4O+gPR5rEBe2FpKOVyiJ7wNDPA8nGzDuJ6gN4okSA1gEOYZ67N8JPk58tkWtdtPeLz7lBnY6I5L3jdsr3S+A6A==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [win32]
 
-  '@esbuild/win32-ia32@0.21.5':
-    resolution: {integrity: sha512-SWXFF1CL2RVNMaVs+BBClwtfZSvDgtL//G/smwAc5oVK/UPu2Gu9tIaRgFmYFFKrmg3SyAjSrElf0TiJ1v8fYA==}
-    engines: {node: '>=12'}
-    cpu: [ia32]
-    os: [win32]
-
   '@esbuild/win32-ia32@0.23.1':
     resolution: {integrity: sha512-BcaL0Vn6QwCwre3Y717nVHZbAa4UBEigzFm6VdsVdT/MbZ38xoj1X9HPkZhbmaBGUD1W8vxAfffbDe8bA6AKnQ==}
     engines: {node: '>=18'}
     cpu: [ia32]
-    os: [win32]
-
-  '@esbuild/win32-x64@0.21.5':
-    resolution: {integrity: sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw==}
-    engines: {node: '>=12'}
-    cpu: [x64]
     os: [win32]
 
   '@esbuild/win32-x64@0.23.1':
@@ -1398,58 +1260,58 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oxc-resolver/binding-darwin-arm64@1.11.0':
-    resolution: {integrity: sha512-jjhTgaTMhJ5lpE/OiqF5eX7Nhy5gPZBjZNqwmZstbHmqujfVs1MGiTEXHWgKUrcFdLnENWtuoIR3Kmdp3/vuqw==}
+  '@oxc-resolver/binding-darwin-arm64@1.12.0':
+    resolution: {integrity: sha512-wYe+dlF8npM7cwopOOxbdNjtmJp17e/xF5c0K2WooQXy5VOh74icydM33+Uh/SZDgwyum09/U1FVCX5GdeQk+A==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxc-resolver/binding-darwin-x64@1.11.0':
-    resolution: {integrity: sha512-w/svTRKnuRinojYAVsWRozVoPar7XUPlJhpfnsYlReRjls6A53/ziTzHfpmcKjdBrP/AXPcDVJDnM4pOSsvWvA==}
+  '@oxc-resolver/binding-darwin-x64@1.12.0':
+    resolution: {integrity: sha512-FZxxp99om+SlvBr1cjzF8A3TjYcS0BInCqjUlM+2f9m9bPTR2Bng9Zq5Q09ZQyrKJjfGKqlOEHs3akuVOnrx3Q==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxc-resolver/binding-freebsd-x64@1.11.0':
-    resolution: {integrity: sha512-thGp8g8maYUx7vYJqD0vSsuUO95vWNJwKS2AXchq212J5dQ0Dybq4gjt2O2N9iU+lxj1QzmIDXGw7q5HCagOiw==}
+  '@oxc-resolver/binding-freebsd-x64@1.12.0':
+    resolution: {integrity: sha512-BZi0iU6IEOnXGSkqt1OjTTkN9wfyaK6kTpQwL/axl8eCcNDc7wbv1vloHgILf7ozAY1TP75nsLYlASYI4B5kGA==}
     cpu: [x64]
     os: [freebsd]
 
-  '@oxc-resolver/binding-linux-arm-gnueabihf@1.11.0':
-    resolution: {integrity: sha512-8G99bs4cnwpJRjRK2cEJXiJVyLogzPJq4JgLlcMEKSGhdkoMV1Ia0dghLk9lAFog33U4lWIwKmPgqQzTO6JM8g==}
+  '@oxc-resolver/binding-linux-arm-gnueabihf@1.12.0':
+    resolution: {integrity: sha512-L2qnMEnZAqxbG9b1J3di/w/THIm+1fMVfbbTMWIQNMMXdMeqqDN6ojnOLDtuP564rAh4TBFPdLyEfGhMz6ipNA==}
     cpu: [arm]
     os: [linux]
 
-  '@oxc-resolver/binding-linux-arm64-gnu@1.11.0':
-    resolution: {integrity: sha512-hNcB/wbuCFbsspg4h9+Nz5gSL8PbRW7zG/eVvmEpzGhmVubzDFuNmlYtmaUaZ6b9jzOrrqTkYCt9t7Q2TDHnBA==}
+  '@oxc-resolver/binding-linux-arm64-gnu@1.12.0':
+    resolution: {integrity: sha512-otVbS4zeo3n71zgGLBYRTriDzc0zpruC0WI3ICwjpIk454cLwGV0yzh4jlGYWQJYJk0BRAmXFd3ooKIF+bKBHw==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-resolver/binding-linux-arm64-musl@1.11.0':
-    resolution: {integrity: sha512-H9rjqCcNQT9aip1VLrtsiyj9So0DEKUoutMNu1oL9UuD3H5lWIaxhDlHTAFsobWeUHCnuaCbizhGb9wyLRHSuA==}
+  '@oxc-resolver/binding-linux-arm64-musl@1.12.0':
+    resolution: {integrity: sha512-IStQDjIT7Lzmqg1i9wXvPL/NsYsxF24WqaQFS8b8rxra+z0VG7saBOsEnOaa4jcEY8MVpLYabFhTV+fSsA2vnA==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-resolver/binding-linux-x64-gnu@1.11.0':
-    resolution: {integrity: sha512-6hdv/kmaGysK3/hUaGTYG07yX+nvk6hGoWombmOuc0vBnGLRtSjqvvgDBdAs9/iIcOSQI2YNUEiJvTyy6eb5GA==}
+  '@oxc-resolver/binding-linux-x64-gnu@1.12.0':
+    resolution: {integrity: sha512-SipT7EVORz8pOQSFwemOm91TpSiBAGmOjG830/o+aLEsvQ4pEy223+SAnCfITh7+AahldYsJnVoIs519jmIlKQ==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-resolver/binding-linux-x64-musl@1.11.0':
-    resolution: {integrity: sha512-AYUvI4VwQkBq0rcYI3Z7a9+BpllbllbxQCD30ZRgHghvqXvDECWfP8r98iynz7u0oKGO8ZPf15d/l9VrkRtiuQ==}
+  '@oxc-resolver/binding-linux-x64-musl@1.12.0':
+    resolution: {integrity: sha512-mGh0XfUzKdn+WFaqPacziNraCWL5znkHRfQVxG9avGS9zb2KC/N1EBbPzFqutDwixGDP54r2gx4q54YCJEZ4iQ==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-resolver/binding-wasm32-wasi@1.11.0':
-    resolution: {integrity: sha512-vhXnOs34q8p7QhqQ04bIGy7ZzLEHBaBTsqh2wpAzSBCmjL7MmTpM8KWwXFPFB+Wj0P7/parjGDHzbZG20pEePg==}
+  '@oxc-resolver/binding-wasm32-wasi@1.12.0':
+    resolution: {integrity: sha512-SZN6v7apKmQf/Vwiqb6e/s3Y2Oacw8uW8V2i1AlxtyaEFvnFE0UBn89zq6swEwE3OCajNWs0yPvgAXUMddYc7Q==}
     engines: {node: '>=14.0.0'}
     cpu: [wasm32]
 
-  '@oxc-resolver/binding-win32-arm64-msvc@1.11.0':
-    resolution: {integrity: sha512-5XMm8EELDkAVQoMGv4QKqi+SjWnhcU1aq5B9q59iqiXIBNAs72f0d3LAldLrqE2XomP2QweorpsoxuGuIk2Cnw==}
+  '@oxc-resolver/binding-win32-arm64-msvc@1.12.0':
+    resolution: {integrity: sha512-GRe4bqCfFsyghruEn5bv47s9w3EWBdO2q72xCz5kpQ0LWbw+enPHtTjw3qX5PUcFYpKykM55FaO0hFDs1yzatw==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxc-resolver/binding-win32-x64-msvc@1.11.0':
-    resolution: {integrity: sha512-rVKiZSTgao4SBWyqWvStxDhKmwbKEN/E8+H3CJzIP4FcsL7MQtWH2HT86bmoefkyRe1yO+m2/mG7j3TfADh/Fg==}
+  '@oxc-resolver/binding-win32-x64-msvc@1.12.0':
+    resolution: {integrity: sha512-Z3llHH0jfJP4mlWq3DT7bK6qV+/vYe0+xzCgfc67+Tc/U3eYndujl880bexeGdGNPh87JeYznpZAOJ44N7QVVQ==}
     cpu: [x64]
     os: [win32]
 
@@ -1895,11 +1757,11 @@ packages:
     peerDependencies:
       putout: '>=35'
 
-  '@putout/plugin-madrun@18.0.0':
-    resolution: {integrity: sha512-Wo8xOg3ynSvlWKB274vHR/kYd0gA9+NxCE/SU4Dr918Co7JdlMhqyw0Ph51TaoGqWtd7isdEfw7sN+7tsWppKA==}
-    engines: {node: '>=16'}
+  '@putout/plugin-madrun@19.0.0':
+    resolution: {integrity: sha512-zz6lxOYVCSsPNc4rJOAyWs1JCPstFlUXG/+HSJl495sg1SU5S5kCKviT7na0wZH8/YPBvUleltXycU3RvB6soA==}
+    engines: {node: '>=18'}
     peerDependencies:
-      putout: '>=33'
+      putout: '>=36'
 
   '@putout/plugin-math@2.1.0':
     resolution: {integrity: sha512-HWx6Zv8cAr5fglBNqlaQyQ/CZApxSgM36aJFUTPzcTihgvLUBWkh5P+JrKE+tl0fIqFssRu0XtUUuRkOlrbouw==}
@@ -2406,8 +2268,8 @@ packages:
     peerDependencies:
       eslint: '>=8.40.0'
 
-  '@tanstack/eslint-plugin-query@5.57.1':
-    resolution: {integrity: sha512-HrfX4NqVseUZiRFBEOjS61bYIU5Qb9TeLEraOj0yMruCFIXz4reP62Cpq6BwZfMMASV7GfWAFiRvMbg7J/U05Q==}
+  '@tanstack/eslint-plugin-query@5.57.2':
+    resolution: {integrity: sha512-JEvKhL4cRV0vMwvjg8LSYE7tiaxr1zzBEgNC9n/vexrUKkLeM7rxt4iIXMYphMGzuTYdSBYBo5CQy1Iio7LhSA==}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
@@ -2462,8 +2324,8 @@ packages:
   '@types/mute-stream@0.0.4':
     resolution: {integrity: sha512-CPM9nzrCPPJHQNA9keH9CVkVI+WR5kMa+7XEs5jcGQ0VoAGnLv242w8lIVgwAEfmE4oufJRaTc9PNLQl0ioAow==}
 
-  '@types/node@22.6.1':
-    resolution: {integrity: sha512-V48tCfcKb/e6cVUigLAaJDAILdMP0fUW6BidkPK4GpGjXcfbnoHasCZDwz3N3yVt5we2RHm4XTQCpv0KJz9zqw==}
+  '@types/node@22.7.0':
+    resolution: {integrity: sha512-MOdOibwBs6KW1vfqz2uKMlxq5xAfAZ98SZjO8e3XnAbFnTJtAspqhWk7hrdSAs9/Y14ZWMiy7/MxMUzAOadYEw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2648,36 +2510,6 @@ packages:
     resolution: {integrity: sha512-b1tx0orFCCh/THWPQa2ZwWzvOeyzzp36vkJYOpVg0u8UVOIsfVrnuC9FqAw9gRKn+rG2VmWQ/zDJZzkxUnj/XQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@vitest/expect@2.1.1':
-    resolution: {integrity: sha512-YeueunS0HiHiQxk+KEOnq/QMzlUuOzbU1Go+PgAsHvvv3tUkJPm9xWt+6ITNTlzsMXUjmgm5T+U7KBPK2qQV6w==}
-
-  '@vitest/mocker@2.1.1':
-    resolution: {integrity: sha512-LNN5VwOEdJqCmJ/2XJBywB11DLlkbY0ooDJW3uRX5cZyYCrc4PI/ePX0iQhE3BiEGiQmK4GE7Q/PqCkkaiPnrA==}
-    peerDependencies:
-      '@vitest/spy': 2.1.1
-      msw: ^2.3.5
-      vite: ^5.0.0
-    peerDependenciesMeta:
-      msw:
-        optional: true
-      vite:
-        optional: true
-
-  '@vitest/pretty-format@2.1.1':
-    resolution: {integrity: sha512-SjxPFOtuINDUW8/UkElJYQSFtnWX7tMksSGW0vfjxMneFqxVr8YJ979QpMbDW7g+BIiq88RAGDjf7en6rvLPPQ==}
-
-  '@vitest/runner@2.1.1':
-    resolution: {integrity: sha512-uTPuY6PWOYitIkLPidaY5L3t0JJITdGTSwBtwMjKzo5O6RCOEncz9PUN+0pDidX8kTHYjO0EwUIvhlGpnGpxmA==}
-
-  '@vitest/snapshot@2.1.1':
-    resolution: {integrity: sha512-BnSku1WFy7r4mm96ha2FzN99AZJgpZOWrAhtQfoxjUU5YMRpq1zmHRq7a5K9/NjqonebO7iVDla+VvZS8BOWMw==}
-
-  '@vitest/spy@2.1.1':
-    resolution: {integrity: sha512-ZM39BnZ9t/xZ/nF4UwRH5il0Sw93QnZXd9NAZGRpIgj0yvVwPpLd702s/Cx955rGaMlyBQkZJ2Ir7qyY48VZ+g==}
-
-  '@vitest/utils@2.1.1':
-    resolution: {integrity: sha512-Y6Q9TsI+qJ2CC0ZKj6VBb+T8UPz593N113nnUykqwANqhgf3QkZeHFlusgKLTqrnVHbj/XDKZcDHol+dxVT+rQ==}
-
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -2796,10 +2628,6 @@ packages:
     resolution: {integrity: sha512-bMxMKAjg13EBSVscxTaYA4mRc5t1UAXa2kXiGTNfZ079HIWXEkKmkgFrh/nJqamaLSrXO5H4WFFkPEaLJWbs3A==}
     engines: {node: '>= 0.4'}
 
-  assertion-error@2.0.1:
-    resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
-    engines: {node: '>=12'}
-
   ast-types-flow@0.0.8:
     resolution: {integrity: sha512-OH/2E5Fg20h2aPrbe+QL8JZQFko0YZaF+j4mnQ7BGhfavO7OpSLa8a0y9sBwomHdSbkhTS8TQNayBfnW5DwbvQ==}
 
@@ -2870,8 +2698,8 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  browserslist@4.23.3:
-    resolution: {integrity: sha512-btwCFJVjI4YWDNfau8RhZ+B1Q/VLoUITrm3RlP6y1tYGWIOa+InuYiRGXUBXo8nA1qKmHMyLB/iVQg5TT4eFoA==}
+  browserslist@4.24.0:
+    resolution: {integrity: sha512-Rmb62sR1Zpjql25eSanFGEhAxcFwfA1K0GuQcLoaJBAcENegrQut3hYdhXFF1obQfiDyqIW/cLM5HSJ/9k884A==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -2884,6 +2712,10 @@ packages:
   builtin-modules@3.3.0:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
+
+  bundle-name@4.1.0:
+    resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
+    engines: {node: '>=18'}
 
   bundle-require@5.0.0:
     resolution: {integrity: sha512-GuziW3fSSmopcx4KRymQEJVbZUfqlCqcq7dvs6TYwKRZiegK/2buMxQTPs6MGlNv50wms1699qYO54R8XfRX4w==}
@@ -2914,10 +2746,6 @@ packages:
   caniuse-lite@1.0.30001663:
     resolution: {integrity: sha512-o9C3X27GLKbLeTYZ6HBOLU1tsAcBZsLis28wrVzddShCS16RujjHp9GDHKZqrB3meE0YjhawvMFsGb/igqiPzA==}
 
-  chai@5.1.1:
-    resolution: {integrity: sha512-pT1ZgP8rPNqUgieVaEY+ryQr6Q4HXNg8Ei9UnLUrjN4IA7dvQC5JB+/kxVcPNDHyBcc/26CXPkbNzq3qwrOEKA==}
-    engines: {node: '>=12'}
-
   chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
     engines: {node: '>=4'}
@@ -2944,10 +2772,6 @@ packages:
 
   chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
-
-  check-error@2.1.1:
-    resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
-    engines: {node: '>= 16'}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -3113,10 +2937,6 @@ packages:
   decode-named-character-reference@1.0.2:
     resolution: {integrity: sha512-O8x12RzrUF8xyVcY0KJowWsmaJxQbmy0/EtnNtHRpsOcT7dFk5W598coHqBVpmWo1oQQfsCqfCmkZN5DJrZVdg==}
 
-  deep-eql@5.0.2:
-    resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
-    engines: {node: '>=6'}
-
   deep-equal@2.2.3:
     resolution: {integrity: sha512-ZIwpnevOurS8bpT4192sqAowWM76JDKSHYzMLty3BZGSswgq6pBaH3DhCSW5xVAZICZyKdOBPjwww5wfgT/6PA==}
     engines: {node: '>= 0.4'}
@@ -3128,12 +2948,24 @@ packages:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
 
+  default-browser-id@5.0.0:
+    resolution: {integrity: sha512-A6p/pu/6fyBcA1TRz/GqWYPViplrftcW2gZC9q79ngNCKAeR/X3gcEdXQHl4KNXV+3wgIJ1CPkJQ3IHM6lcsyA==}
+    engines: {node: '>=18'}
+
+  default-browser@5.2.1:
+    resolution: {integrity: sha512-WY/3TUME0x3KPYdRRxEJJvXRHV4PyPoUsxtZa78lwItwRQRHhd2U9xOscaT/YTf8uCXIAjeJOFBVEh/7FtD8Xg==}
+    engines: {node: '>=18'}
+
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
 
   define-data-property@1.1.4:
     resolution: {integrity: sha512-rBMvIzlpA8v6E+SJZoo++HAYqsLrkg7MSfIinMPFhmkorw7X+dOXVJQs+QT69zGkzMyfDnIMN2Wid1+NbL3T+A==}
     engines: {node: '>= 0.4'}
+
+  define-lazy-prop@3.0.0:
+    resolution: {integrity: sha512-N+MeXYoqr3pOgn8xfyRPREN7gHakLYjhsHhWGT3fWAiL4IkAt0iDw14QiiEm2bE30c5XX5q0FtAA3CK5f9/BUg==}
+    engines: {node: '>=12'}
 
   define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
@@ -3243,11 +3075,6 @@ packages:
   es-to-primitive@1.2.1:
     resolution: {integrity: sha512-QCOllgZJtaUo9miYBcLChTUaHNjJF3PYs1VidD7AwiEj1kYxKeQTctLAezAOH5ZKRH0g2IgPn6KwB4IT8iRpvA==}
     engines: {node: '>= 0.4'}
-
-  esbuild@0.21.5:
-    resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
-    engines: {node: '>=12'}
-    hasBin: true
 
   esbuild@0.23.1:
     resolution: {integrity: sha512-VVNz/9Sa0bs5SELtn3f7qhJCDPCF5oMEl5cO9/SSinpE9hbPVvxbd572HH5AKiP7WD8INO53GgfDDhRjkylHEg==}
@@ -3382,6 +3209,7 @@ packages:
     resolution: {integrity: sha512-NXeHXtFLZd6QGbS5af9tiwIoI+BVptHUcGkkF/ouvEPa+ZiZvK0xek4Yh6cd5jNDEg8P+tIA5xxB2ZC/RnqXyw==}
     peerDependencies:
       eslint: '>= 5'
+    bundledDependencies: []
 
   eslint-plugin-drizzle@0.2.3:
     resolution: {integrity: sha512-BO+ymHo33IUNoJlC0rbd7HP9EwwpW4VIp49R/tWQF/d2E1K2kgTf0tCXT0v9MSiBr6gGR1LtPwMLapTKEWSg9A==}
@@ -3674,9 +3502,6 @@ packages:
   estree-util-attach-comments@3.0.0:
     resolution: {integrity: sha512-cKUwm/HUcTDsYh/9FgnuFqpfquUbwIqwKM26BVCGDPVgvaCl/nDCCjUfiLlx6lsEZ3Z4RFxNbOQ60pkaEwFxGw==}
 
-  estree-walker@3.0.3:
-    resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
-
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
@@ -3833,9 +3658,6 @@ packages:
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
-
-  get-func-name@2.0.2:
-    resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
 
   get-intrinsic@1.2.4:
     resolution: {integrity: sha512-5uYhsJH8VJBTv7oslg4BznJYhDoRI6waYCxMmCdnTrcCrHA/fCFKoTFz2JKKE0HdDFUF7/oQuhzumXJK7paBRQ==}
@@ -4059,6 +3881,11 @@ packages:
   is-decimal@1.0.4:
     resolution: {integrity: sha512-RGdriMmQQvZ2aqaQq3awNA6dCGtKpiDFcOzrTWrDAT2MiWrKQVPmxLGHl7Y2nNu6led0kEyoX0enY0qXYsv9zw==}
 
+  is-docker@3.0.0:
+    resolution: {integrity: sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    hasBin: true
+
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
     engines: {node: '>=0.10.0'}
@@ -4086,6 +3913,11 @@ packages:
     peerDependencies:
       eslint: '*'
       typescript: '>=4.7.4'
+
+  is-inside-container@1.0.0:
+    resolution: {integrity: sha512-KIYLCCJghfHZxqjYBE7rEy0OBuTd5xCHS7tHVgvCLkx7StIoaxwNW3hCALgEUjFfeRk+MG/Qxmp/vtETEF3tRA==}
+    engines: {node: '>=14.16'}
+    hasBin: true
 
   is-interactive@1.0.0:
     resolution: {integrity: sha512-2HvIEKRoqS62guEC+qBjpvRubdX910WCMuJTZ+I9yvqKU2/12eSL549HMwtabb4oupdj2sMP50k+XJfB/8JE6w==}
@@ -4173,6 +4005,10 @@ packages:
   is-weakset@2.0.3:
     resolution: {integrity: sha512-LvIm3/KWzS9oRFHugab7d+M/GcBXuXX5xZkzPmN+NxihdQlZUQ4dWuSV1xR/sq6upL1TJEDrfBgRepHFdBtSNQ==}
     engines: {node: '>= 0.4'}
+
+  is-wsl@3.1.0:
+    resolution: {integrity: sha512-UcVfVfaK4Sc4m7X3dUSoHoozQGBEFeDC+zVo06t98xe8CzHSZZBekNXH+tu0NalHolcJ/QAGqS46Hef7QXBIMw==}
+    engines: {node: '>=16'}
 
   isarray@2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
@@ -4362,9 +4198,6 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  loupe@3.1.1:
-    resolution: {integrity: sha512-edNu/8D5MKVfGVFRhFf8aAxiTM6Wumfz5XsaatSxlD3w4R1d/WEKUTydCdPGbl9K7QG/Ca3GnDV2sIKIpXRQcw==}
-
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
@@ -4375,13 +4208,10 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
-  madrun@10.1.0:
-    resolution: {integrity: sha512-JWW2Lse7utHEGmeGQ2AmGyvrdyd5nd+nxBn/SKivBZJvXL0TWj/5IhLkORphHvesFJp/VhzH8O05OTF0Zm0q3Q==}
+  madrun@10.2.1:
+    resolution: {integrity: sha512-h9Uy2BNIP/enyrcPFjTxMat0cOUqY6tDbHd8jv8k2ReBvStM/LTsmyWXxDJDbdkkSbpBu59BQk6yH1odOk9lHg==}
     engines: {node: '>=18'}
     hasBin: true
-
-  magic-string@0.30.11:
-    resolution: {integrity: sha512-+Wri9p0QHMy+545hKww7YAu5NyzF8iomPL/RQazugQ9+Ez4Ic3mERMd8ZTX5rfK944j+560ZJi8iAwgak1Ac7A==}
 
   magicast@0.3.5:
     resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
@@ -4678,6 +4508,10 @@ packages:
     resolution: {integrity: sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==}
     engines: {node: '>=12'}
 
+  open@10.1.0:
+    resolution: {integrity: sha512-mnkeQ1qP5Ue2wd+aivTD3NHd/lZ96Lu0jgf0pwktLPtx6cTZiH7tyeGRRHs0zX0rbrahXPnXlUnbeXyaBBuIaw==}
+    engines: {node: '>=18'}
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -4690,8 +4524,8 @@ packages:
     resolution: {integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==}
     engines: {node: '>=0.10.0'}
 
-  oxc-resolver@1.11.0:
-    resolution: {integrity: sha512-N3qMse2AM7uST8PaiUMXZkcACyGAMN073tomyvzHTICSzaOqKHvVS0IZ3vj/OqoE140QP4CyOiWmgC1Hw5Urmg==}
+  oxc-resolver@1.12.0:
+    resolution: {integrity: sha512-YlaCIArvWNKCWZFRrMjhh2l5jK80eXnpYP+bhRc1J/7cW3TiyEY0ngJo73o/5n8hA3+4yLdTmXLNTQ3Ncz50LQ==}
 
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
@@ -4780,10 +4614,6 @@ packages:
 
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
-
-  pathval@2.0.0:
-    resolution: {integrity: sha512-vE7JKRyES09KiunauX7nd2Q9/L7lhok4smP9RZTDeD4MVs72Dp2qNFVz39Nz5a0FVEW0BJR6C0DYrq6unoziZA==}
-    engines: {node: '>= 14.16'}
 
   picocolors@1.1.0:
     resolution: {integrity: sha512-TQ92mBOW0l3LeMeyLV6mzy/kWr8lkd/hp3mTg7wYK7zJhuBStmGMBG0BdeDZS/dZx1IukaX6Bk11zcln25o1Aw==}
@@ -4911,8 +4741,8 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
-  putout@36.6.0:
-    resolution: {integrity: sha512-X9uXmZR3AR6QqWRasepN6I9ZrOKJiHSYHXA1CLdEOBr9to6DKbqYceZkSpU4XcVDJzQP5zT6RQEr6FpiWQDPNA==}
+  putout@36.6.1:
+    resolution: {integrity: sha512-9sigtSaBPRuVSOvBp556OnyKyVUYpIDn3Y1kPEIiTeO3oq08hAXu7XG4UcL8SFrurJJiWQ9EYRtrnug4w1agHg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5106,6 +4936,10 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  run-applescript@7.0.0:
+    resolution: {integrity: sha512-9by4Ij99JUr/MCFBUkDKLWK3G9HVXmabKz9U5MlIAIuvuzkiOicRYs8XJLxX+xahD+mLiiCYDqF9dKAgtzKP1A==}
+    engines: {node: '>=18'}
+
   run-async@2.4.1:
     resolution: {integrity: sha512-tvVnVv01b8c1RrA6Ep7JkStj85Guv/YrMcwqYQnwjsAS2cTmmPGBBjAjpCW7RrSodNSoE2/qg9O4bceNvUuDgQ==}
     engines: {node: '>=0.12.0'}
@@ -5183,9 +5017,6 @@ packages:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
     engines: {node: '>= 0.4'}
 
-  siginfo@2.0.0:
-    resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
-
   signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
 
@@ -5246,12 +5077,6 @@ packages:
 
   stable-hash@0.0.4:
     resolution: {integrity: sha512-LjdcbuBeLcdETCrPn9i8AYAZ1eCtu4ECAWtP7UleOiZ9LzVxRzzUZEoZ8zB24nhkQnDWyET0I+3sWokSDS3E7g==}
-
-  stackback@0.0.2:
-    resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
-
-  std-env@3.7.0:
-    resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
 
   stop-iteration-iterator@1.0.0:
     resolution: {integrity: sha512-iCGQj+0l0HOdZ2AEeBADlsRC+vsnDsZsbdSiH1yNSjcfKM7fdpCMfqAL/dwF5BLiw/XhRft/Wax6zQbhq2BcjQ==}
@@ -5435,27 +5260,9 @@ packages:
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
 
-  tinybench@2.9.0:
-    resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
-
-  tinyexec@0.3.0:
-    resolution: {integrity: sha512-tVGE0mVJPGb0chKhqmsoosjsS+qUnJVGJpZgsHYQcGoPlG3B51R3PouqTgEGH2Dc9jjFyOqOpix6ZHNMXp1FZg==}
-
   tinyglobby@0.2.6:
     resolution: {integrity: sha512-NbBoFBpqfcgd1tCiO8Lkfdk+xrA7mlLR9zgvZcZWQQwU63XAfUePyd6wZBaU93Hqw347lHnwFzttAkemHzzz4g==}
     engines: {node: '>=12.0.0'}
-
-  tinypool@1.0.1:
-    resolution: {integrity: sha512-URZYihUbRPcGv95En+sz6MfghfIc2OJ1sv/RmhWZLouPY0/8Vo80viwPvg3dlaS9fuq7fQMEfgRRK7BBZThBEA==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-
-  tinyrainbow@1.2.0:
-    resolution: {integrity: sha512-weEDEq7Z5eTHPDh4xjX789+fHfF+P8boiFB+0vbWzpbnbsEr/GRaohi/uMKxg8RZMXnl1ItAi/IUHWMsjDV7kQ==}
-    engines: {node: '>=14.0.0'}
-
-  tinyspy@3.0.2:
-    resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
-    engines: {node: '>=14.0.0'}
 
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
@@ -5681,67 +5488,6 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vite-node@2.1.1:
-    resolution: {integrity: sha512-N/mGckI1suG/5wQI35XeR9rsMsPqKXzq1CdUndzVstBj/HvyxxGctwnK6WX43NGt5L3Z5tcRf83g4TITKJhPrA==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-
-  vite@5.4.7:
-    resolution: {integrity: sha512-5l2zxqMEPVENgvzTuBpHer2awaetimj2BGkhBPdnwKbPNOlHsODU+oiazEZzLK7KhAnOrO+XGYJYn4ZlUhDtDQ==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': ^18.0.0 || >=20.0.0
-      less: '*'
-      lightningcss: ^1.21.0
-      sass: '*'
-      sass-embedded: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-
-  vitest@2.1.1:
-    resolution: {integrity: sha512-97We7/VC0e9X5zBVkvt7SGQMGrRtn3KtySFQG5fpaMlS+l62eeXRQO633AYhSTC3z7IMebnPPNjGXVGNRFlxBA==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@types/node': ^18.0.0 || >=20.0.0
-      '@vitest/browser': 2.1.1
-      '@vitest/ui': 2.1.1
-      happy-dom: '*'
-      jsdom: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@types/node':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-
   vue-eslint-parser@9.4.3:
     resolution: {integrity: sha512-2rYRLWlIpaiN8xbPiDyXZXRgLGOtWxERV7ND5fFAv5qo1D2N9Fu9MNajBNc6o13lZ+24DAWCkQCvj4klgmcITg==}
     engines: {node: ^14.17.0 || >=16.0.0}
@@ -5783,11 +5529,6 @@ packages:
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
-    hasBin: true
-
-  why-is-node-running@2.3.0:
-    resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
-    engines: {node: '>=8'}
     hasBin: true
 
   word-wrap@1.2.5:
@@ -5943,7 +5684,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.25.4
       '@babel/helper-validator-option': 7.24.8
-      browserslist: 4.23.3
+      browserslist: 4.24.0
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -6790,109 +6531,55 @@ snapshots:
       tslib: 2.7.0
     optional: true
 
-  '@esbuild/aix-ppc64@0.21.5':
-    optional: true
-
   '@esbuild/aix-ppc64@0.23.1':
-    optional: true
-
-  '@esbuild/android-arm64@0.21.5':
     optional: true
 
   '@esbuild/android-arm64@0.23.1':
     optional: true
 
-  '@esbuild/android-arm@0.21.5':
-    optional: true
-
   '@esbuild/android-arm@0.23.1':
-    optional: true
-
-  '@esbuild/android-x64@0.21.5':
     optional: true
 
   '@esbuild/android-x64@0.23.1':
     optional: true
 
-  '@esbuild/darwin-arm64@0.21.5':
-    optional: true
-
   '@esbuild/darwin-arm64@0.23.1':
-    optional: true
-
-  '@esbuild/darwin-x64@0.21.5':
     optional: true
 
   '@esbuild/darwin-x64@0.23.1':
     optional: true
 
-  '@esbuild/freebsd-arm64@0.21.5':
-    optional: true
-
   '@esbuild/freebsd-arm64@0.23.1':
-    optional: true
-
-  '@esbuild/freebsd-x64@0.21.5':
     optional: true
 
   '@esbuild/freebsd-x64@0.23.1':
     optional: true
 
-  '@esbuild/linux-arm64@0.21.5':
-    optional: true
-
   '@esbuild/linux-arm64@0.23.1':
-    optional: true
-
-  '@esbuild/linux-arm@0.21.5':
     optional: true
 
   '@esbuild/linux-arm@0.23.1':
     optional: true
 
-  '@esbuild/linux-ia32@0.21.5':
-    optional: true
-
   '@esbuild/linux-ia32@0.23.1':
-    optional: true
-
-  '@esbuild/linux-loong64@0.21.5':
     optional: true
 
   '@esbuild/linux-loong64@0.23.1':
     optional: true
 
-  '@esbuild/linux-mips64el@0.21.5':
-    optional: true
-
   '@esbuild/linux-mips64el@0.23.1':
-    optional: true
-
-  '@esbuild/linux-ppc64@0.21.5':
     optional: true
 
   '@esbuild/linux-ppc64@0.23.1':
     optional: true
 
-  '@esbuild/linux-riscv64@0.21.5':
-    optional: true
-
   '@esbuild/linux-riscv64@0.23.1':
-    optional: true
-
-  '@esbuild/linux-s390x@0.21.5':
     optional: true
 
   '@esbuild/linux-s390x@0.23.1':
     optional: true
 
-  '@esbuild/linux-x64@0.21.5':
-    optional: true
-
   '@esbuild/linux-x64@0.23.1':
-    optional: true
-
-  '@esbuild/netbsd-x64@0.21.5':
     optional: true
 
   '@esbuild/netbsd-x64@0.23.1':
@@ -6901,31 +6588,16 @@ snapshots:
   '@esbuild/openbsd-arm64@0.23.1':
     optional: true
 
-  '@esbuild/openbsd-x64@0.21.5':
-    optional: true
-
   '@esbuild/openbsd-x64@0.23.1':
-    optional: true
-
-  '@esbuild/sunos-x64@0.21.5':
     optional: true
 
   '@esbuild/sunos-x64@0.23.1':
     optional: true
 
-  '@esbuild/win32-arm64@0.21.5':
-    optional: true
-
   '@esbuild/win32-arm64@0.23.1':
     optional: true
 
-  '@esbuild/win32-ia32@0.21.5':
-    optional: true
-
   '@esbuild/win32-ia32@0.23.1':
-    optional: true
-
-  '@esbuild/win32-x64@0.21.5':
     optional: true
 
   '@esbuild/win32-x64@0.23.1':
@@ -7101,7 +6773,7 @@ snapshots:
       '@inquirer/figures': 1.0.6
       '@inquirer/type': 2.0.0
       '@types/mute-stream': 0.0.4
-      '@types/node': 22.6.1
+      '@types/node': 22.7.0
       '@types/wrap-ansi': 3.0.0
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
@@ -7245,39 +6917,39 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@oxc-resolver/binding-darwin-arm64@1.11.0':
+  '@oxc-resolver/binding-darwin-arm64@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-darwin-x64@1.11.0':
+  '@oxc-resolver/binding-darwin-x64@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-freebsd-x64@1.11.0':
+  '@oxc-resolver/binding-freebsd-x64@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-linux-arm-gnueabihf@1.11.0':
+  '@oxc-resolver/binding-linux-arm-gnueabihf@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-linux-arm64-gnu@1.11.0':
+  '@oxc-resolver/binding-linux-arm64-gnu@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-linux-arm64-musl@1.11.0':
+  '@oxc-resolver/binding-linux-arm64-musl@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-linux-x64-gnu@1.11.0':
+  '@oxc-resolver/binding-linux-x64-gnu@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-linux-x64-musl@1.11.0':
+  '@oxc-resolver/binding-linux-x64-musl@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-wasm32-wasi@1.11.0':
+  '@oxc-resolver/binding-wasm32-wasi@1.12.0':
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
     optional: true
 
-  '@oxc-resolver/binding-win32-arm64-msvc@1.11.0':
+  '@oxc-resolver/binding-win32-arm64-msvc@1.12.0':
     optional: true
 
-  '@oxc-resolver/binding-win32-x64-msvc@1.11.0':
+  '@oxc-resolver/binding-win32-x64-msvc@1.12.0':
     optional: true
 
   '@pkgjs/parseargs@0.11.0':
@@ -7294,11 +6966,11 @@ snapshots:
       json-stable-stringify-without-jsonify: 1.0.1
       try-to-catch: 3.0.1
 
-  '@putout/cli-choose-formatter@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/cli-choose-formatter@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/cli-choose': 2.0.0
       find-up: 7.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
   '@putout/cli-choose@2.0.0':
     dependencies:
@@ -7344,13 +7016,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@putout/engine-loader@14.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/engine-loader@14.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/engine-parser': 10.8.0
       diff-match-patch: 1.0.5
       nano-memoize: 3.0.16
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
       try-to-catch: 3.0.1
 
@@ -7366,40 +7038,40 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@putout/engine-processor@12.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/engine-processor@12.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/engine-loader': 14.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-loader': 14.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       once: 1.4.0
       picomatch: 4.0.2
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-to-catch: 3.0.1
 
-  '@putout/engine-reporter@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/engine-reporter@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/cli-choose-formatter': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/cli-choose-formatter': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/cli-keypress': 2.0.0
-      '@putout/engine-loader': 14.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-loader': 14.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
       try-to-catch: 3.0.1
 
-  '@putout/engine-runner@21.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/engine-runner@21.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/compare': 14.7.2
       '@putout/engine-parser': 10.8.0
       '@putout/operate': 12.11.0
-      '@putout/operator-declare': 9.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-declare': 9.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operator-json': 2.2.0
-      '@putout/plugin-filesystem': 5.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-filesystem': 5.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       debug: 4.3.7
       fullstore: 3.0.0
       jessy: 3.1.1
       nessy: 4.0.0
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
       wraptile: 3.0.0
     transitivePeerDependencies:
@@ -7411,72 +7083,72 @@ snapshots:
       find-up: 7.0.0
       try-to-catch: 3.0.1
 
-  '@putout/formatter-codeframe@7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-codeframe@7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
-      '@putout/formatter-json': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-json': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       chalk: 5.3.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       table: 6.8.2
 
-  '@putout/formatter-dump@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-dump@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-json': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-json': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       chalk: 5.3.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       table: 6.8.2
 
-  '@putout/formatter-frame@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-frame@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-codeframe': 7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      '@putout/formatter-codeframe': 7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-json-lines@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-json-lines@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-json@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-json@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-memory@4.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-memory@4.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       chalk: 5.3.0
       cli-progress: 3.12.0
       format-io: 2.0.0
       montag: 1.2.1
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-progress-bar@4.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-progress-bar@4.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       chalk: 5.3.0
       cli-progress: 3.12.0
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-progress@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-progress@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/formatter-stream@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-stream@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       chalk: 5.3.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       table: 6.8.2
 
-  '@putout/formatter-time@3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/formatter-time@3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       chalk: 5.3.0
       cli-progress: 3.12.0
       format-io: 2.0.0
       montag: 1.2.1
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       timer-node: 5.0.7
 
   '@putout/git-status-porcelain@3.0.0': {}
@@ -7485,31 +7157,31 @@ snapshots:
     dependencies:
       '@putout/babel': 2.8.0
 
-  '@putout/operator-add-args@8.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-add-args@8.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/compare': 14.7.2
       '@putout/engine-parser': 10.8.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@putout/operator-declare@9.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-declare@9.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/compare': 14.7.2
       '@putout/engine-parser': 10.8.0
       '@putout/operate': 12.11.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@putout/operator-filesystem@4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-filesystem@4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/operate': 12.11.0
       fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
 
   '@putout/operator-ignore@1.2.0':
@@ -7521,448 +7193,448 @@ snapshots:
     dependencies:
       remove-blank-lines: 1.4.1
 
-  '@putout/operator-match-files@3.5.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-match-files@3.5.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/engine-parser': 10.8.0
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operator-json': 2.2.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/operator-regexp@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-regexp@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       regexp-tree: 0.1.27
 
-  '@putout/operator-rename-files@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/operator-rename-files@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-at@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-at@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-destructuring@7.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-destructuring@7.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-dot-notation@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-dot-notation@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-early-return@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-early-return@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-flat-map@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-flat-map@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-optional-chaining@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-optional-chaining@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-overrides@2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-overrides@2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-starts-with@1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-starts-with@1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-apply-template-literals@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-apply-template-literals@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-browserlist@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-browserlist@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-conditions@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-conditions@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-apply-to-spread@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-apply-to-spread@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-arguments-to-rest@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-arguments-to-rest@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-array-copy-to-slice@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-array-copy-to-slice@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-assignment-to-arrow-function@1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-assignment-to-arrow-function@1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-assignment-to-comparison@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-assignment-to-comparison@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-assignment-to-declaration@1.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-assignment-to-declaration@1.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-concat-to-flat@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-concat-to-flat@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-const-to-let@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-const-to-let@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-index-of-to-includes@2.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-index-of-to-includes@2.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-object-assign-to-merge-spread@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-object-assign-to-merge-spread@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-object-entries-to-array-entries@3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-object-entries-to-array-entries@3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-optional-to-logical@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-optional-to-logical@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-quotes-to-backticks@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-quotes-to-backticks@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-template-to-string@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-template-to-string@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-convert-to-arrow-function@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-convert-to-arrow-function@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-coverage@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-coverage@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-declare-before-reference@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-declare-before-reference@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-declare-imports-first@2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-declare-imports-first@2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-declare@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-declare@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-eslint@9.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-eslint@9.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-extract-object-properties@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-extract-object-properties@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-extract-sequence-expressions@3.5.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-extract-sequence-expressions@3.5.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-filesystem@5.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-filesystem@5.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/operate': 12.11.0
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operator-json': 2.2.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-for-of@6.1.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-for-of@6.1.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-generators@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
-    dependencies:
-      fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
-
-  '@putout/plugin-github@12.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
-    dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
-
-  '@putout/plugin-gitignore@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
-    dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
-
-  '@putout/plugin-group-imports-by-source@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
-    dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
-
-  '@putout/plugin-labels@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-generators@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-logical-expressions@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-github@12.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-madrun@18.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-gitignore@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-math@2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-group-imports-by-source@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-maybe@2.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-labels@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      fullstore: 3.0.0
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-merge-destructuring-properties@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-logical-expressions@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-merge-duplicate-functions@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-madrun@19.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-merge-duplicate-imports@11.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-math@2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-montag@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-maybe@2.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-new@3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-merge-destructuring-properties@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-nodejs@11.11.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-merge-duplicate-functions@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+    dependencies:
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+
+  '@putout/plugin-merge-duplicate-imports@11.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+    dependencies:
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+
+  '@putout/plugin-montag@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+    dependencies:
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+
+  '@putout/plugin-new@3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+    dependencies:
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+
+  '@putout/plugin-nodejs@11.11.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       just-camel-case: 6.2.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-npmignore@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-npmignore@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-package-json@7.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-package-json@7.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-promises@15.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-promises@15.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-putout-config@6.9.3(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-putout-config@6.9.3(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-putout@21.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-putout@21.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       fullstore: 3.0.0
       just-camel-case: 6.2.0
       parse-import-specifiers: 1.0.3
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
 
-  '@putout/plugin-regexp@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-regexp@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       regexp-tree: 0.1.27
       try-catch: 3.0.1
 
-  '@putout/plugin-remove-console@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-console@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-constant-conditions@4.0.2(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-constant-conditions@4.0.2(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-debugger@7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-debugger@7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-duplicate-case@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-duplicate-case@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-duplicate-keys@5.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-duplicate-keys@5.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       fullstore: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-empty@12.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-empty@12.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-iife@4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-iife@4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-nested-blocks@6.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-nested-blocks@6.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-quotes-from-import-assertions@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-quotes-from-import-assertions@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unreachable-code@1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unreachable-code@1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unreferenced-variables@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unreferenced-variables@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unused-expressions@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unused-expressions@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unused-for-of-variables@3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unused-for-of-variables@3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unused-labels@1.0.2(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unused-labels@1.0.2(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unused-private-fields@2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unused-private-fields@2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-unused-variables@9.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-unused-variables@9.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-arguments@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-arguments@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-array-constructor@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-array-constructor@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-array-entries@1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-array-entries@1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-array@1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-array@1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-assign@1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-assign@1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-constructor@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-constructor@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-continue@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-continue@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-delete@1.0.4(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-delete@1.0.4(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-escape@6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-escape@6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       emoji-regex: 10.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-functions@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-functions@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-map@1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-map@1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-operand@2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-operand@2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-replace@1.0.4(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-replace@1.0.4(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-return@7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-return@7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-spread@11.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-spread@11.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-template-expressions@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-template-expressions@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-remove-useless-variables@12.4.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-remove-useless-variables@12.4.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-reuse-duplicate-init@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-reuse-duplicate-init@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-simplify-assignment@3.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-simplify-assignment@3.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-simplify-boolean-return@2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-simplify-boolean-return@2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-simplify-ternary@7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-simplify-ternary@7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-sort-imports-by-specifiers@1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-sort-imports-by-specifiers@1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       parse-import-specifiers: 1.0.3
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-split-assignment-expressions@1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-split-assignment-expressions@1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-split-nested-destructuring@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-split-nested-destructuring@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-split-variable-declarations@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-split-variable-declarations@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-tape@15.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-tape@15.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-try-catch@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-try-catch@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-types@5.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-types@5.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-typescript@8.2.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-typescript@8.2.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
-  '@putout/plugin-webpack@3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/plugin-webpack@3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
   '@putout/printer@9.15.2':
     dependencies:
@@ -7977,13 +7649,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@putout/processor-css@9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))(typescript@5.6.2)':
+  '@putout/processor-css@9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))(typescript@5.6.2)':
     dependencies:
       align-spaces: 1.0.4
       cosmiconfig: 9.0.0(typescript@5.6.2)
       deepmerge: 4.3.1
       prettier: 3.3.3
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       stylelint: 16.9.0(typescript@5.6.2)
       stylelint-config-standard: 36.0.1(stylelint@16.9.0(typescript@5.6.2))
       stylelint-prettier: 5.0.2(prettier@3.3.3)(stylelint@16.9.0(typescript@5.6.2))
@@ -7991,10 +7663,10 @@ snapshots:
       - supports-color
       - typescript
 
-  '@putout/processor-filesystem@4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/processor-filesystem@4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
       '@putout/cli-filesystem': 2.0.1
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operator-json': 2.2.0
     transitivePeerDependencies:
       - putout
@@ -8003,9 +7675,9 @@ snapshots:
     dependencies:
       '@putout/operator-json': 2.2.0
 
-  '@putout/processor-javascript@5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
+  '@putout/processor-javascript@5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))':
     dependencies:
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
 
   '@putout/processor-json@9.0.0':
     dependencies:
@@ -8117,7 +7789,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@tanstack/eslint-plugin-query@5.57.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)':
+  '@tanstack/eslint-plugin-query@5.57.2(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)':
     dependencies:
       '@typescript-eslint/utils': 8.7.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       eslint: 9.11.1(jiti@1.21.6)
@@ -8156,7 +7828,7 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 22.6.1
+      '@types/node': 22.7.0
 
   '@types/hast@3.0.4':
     dependencies:
@@ -8168,7 +7840,7 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 22.6.1
+      '@types/node': 22.7.0
 
   '@types/mdast@3.0.15':
     dependencies:
@@ -8182,9 +7854,9 @@ snapshots:
 
   '@types/mute-stream@0.0.4':
     dependencies:
-      '@types/node': 22.6.1
+      '@types/node': 22.7.0
 
-  '@types/node@22.6.1':
+  '@types/node@22.7.0':
     dependencies:
       undici-types: 6.19.8
 
@@ -8436,46 +8108,6 @@ snapshots:
       '@typescript-eslint/types': 8.7.0
       eslint-visitor-keys: 3.4.3
 
-  '@vitest/expect@2.1.1':
-    dependencies:
-      '@vitest/spy': 2.1.1
-      '@vitest/utils': 2.1.1
-      chai: 5.1.1
-      tinyrainbow: 1.2.0
-
-  '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(vite@5.4.7(@types/node@22.6.1)(terser@5.33.0))':
-    dependencies:
-      '@vitest/spy': 2.1.1
-      estree-walker: 3.0.3
-      magic-string: 0.30.11
-    optionalDependencies:
-      vite: 5.4.7(@types/node@22.6.1)(terser@5.33.0)
-
-  '@vitest/pretty-format@2.1.1':
-    dependencies:
-      tinyrainbow: 1.2.0
-
-  '@vitest/runner@2.1.1':
-    dependencies:
-      '@vitest/utils': 2.1.1
-      pathe: 1.1.2
-
-  '@vitest/snapshot@2.1.1':
-    dependencies:
-      '@vitest/pretty-format': 2.1.1
-      magic-string: 0.30.11
-      pathe: 1.1.2
-
-  '@vitest/spy@2.1.1':
-    dependencies:
-      tinyspy: 3.0.2
-
-  '@vitest/utils@2.1.1':
-    dependencies:
-      '@vitest/pretty-format': 2.1.1
-      loupe: 3.1.1
-      tinyrainbow: 1.2.0
-
   acorn-jsx@5.3.2(acorn@8.12.1):
     dependencies:
       acorn: 8.12.1
@@ -8617,8 +8249,6 @@ snapshots:
       is-array-buffer: 3.0.4
       is-shared-array-buffer: 1.0.3
 
-  assertion-error@2.0.1: {}
-
   ast-types-flow@0.0.8: {}
 
   ast-types@0.16.1:
@@ -8690,12 +8320,12 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  browserslist@4.23.3:
+  browserslist@4.24.0:
     dependencies:
       caniuse-lite: 1.0.30001663
       electron-to-chromium: 1.5.28
       node-releases: 2.0.18
-      update-browserslist-db: 1.1.0(browserslist@4.23.3)
+      update-browserslist-db: 1.1.0(browserslist@4.24.0)
 
   buffer-from@1.1.2: {}
 
@@ -8705,6 +8335,10 @@ snapshots:
       ieee754: 1.2.1
 
   builtin-modules@3.3.0: {}
+
+  bundle-name@4.1.0:
+    dependencies:
+      run-applescript: 7.0.0
 
   bundle-require@5.0.0(esbuild@0.23.1):
     dependencies:
@@ -8729,14 +8363,6 @@ snapshots:
 
   caniuse-lite@1.0.30001663: {}
 
-  chai@5.1.1:
-    dependencies:
-      assertion-error: 2.0.1
-      check-error: 2.1.1
-      deep-eql: 5.0.2
-      loupe: 3.1.1
-      pathval: 2.0.0
-
   chalk@2.4.2:
     dependencies:
       ansi-styles: 3.2.1
@@ -8759,8 +8385,6 @@ snapshots:
   character-reference-invalid@1.1.4: {}
 
   chardet@0.7.0: {}
-
-  check-error@2.1.1: {}
 
   chokidar@3.6.0:
     dependencies:
@@ -8836,7 +8460,7 @@ snapshots:
 
   core-js-compat@3.38.1:
     dependencies:
-      browserslist: 4.23.3
+      browserslist: 4.24.0
 
   core-js@3.38.1: {}
 
@@ -8900,8 +8524,6 @@ snapshots:
     dependencies:
       character-entities: 2.0.2
 
-  deep-eql@5.0.2: {}
-
   deep-equal@2.2.3:
     dependencies:
       array-buffer-byte-length: 1.0.1
@@ -8927,6 +8549,13 @@ snapshots:
 
   deepmerge@4.3.1: {}
 
+  default-browser-id@5.0.0: {}
+
+  default-browser@5.2.1:
+    dependencies:
+      bundle-name: 4.1.0
+      default-browser-id: 5.0.0
+
   defaults@1.0.4:
     dependencies:
       clone: 1.0.4
@@ -8936,6 +8565,8 @@ snapshots:
       es-define-property: 1.0.0
       es-errors: 1.3.0
       gopd: 1.0.1
+
+  define-lazy-prop@3.0.0: {}
 
   define-properties@1.2.1:
     dependencies:
@@ -9112,32 +8743,6 @@ snapshots:
       is-date-object: 1.0.5
       is-symbol: 1.0.4
 
-  esbuild@0.21.5:
-    optionalDependencies:
-      '@esbuild/aix-ppc64': 0.21.5
-      '@esbuild/android-arm': 0.21.5
-      '@esbuild/android-arm64': 0.21.5
-      '@esbuild/android-x64': 0.21.5
-      '@esbuild/darwin-arm64': 0.21.5
-      '@esbuild/darwin-x64': 0.21.5
-      '@esbuild/freebsd-arm64': 0.21.5
-      '@esbuild/freebsd-x64': 0.21.5
-      '@esbuild/linux-arm': 0.21.5
-      '@esbuild/linux-arm64': 0.21.5
-      '@esbuild/linux-ia32': 0.21.5
-      '@esbuild/linux-loong64': 0.21.5
-      '@esbuild/linux-mips64el': 0.21.5
-      '@esbuild/linux-ppc64': 0.21.5
-      '@esbuild/linux-riscv64': 0.21.5
-      '@esbuild/linux-s390x': 0.21.5
-      '@esbuild/linux-x64': 0.21.5
-      '@esbuild/netbsd-x64': 0.21.5
-      '@esbuild/openbsd-x64': 0.21.5
-      '@esbuild/sunos-x64': 0.21.5
-      '@esbuild/win32-arm64': 0.21.5
-      '@esbuild/win32-ia32': 0.21.5
-      '@esbuild/win32-x64': 0.21.5
-
   esbuild@0.23.1:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.23.1
@@ -9253,7 +8858,7 @@ snapshots:
     dependencies:
       eslint: 9.11.1(jiti@1.21.6)
       eslint-barrel-file-utils: 0.0.11
-      oxc-resolver: 1.11.0
+      oxc-resolver: 1.12.0
       requireindex: 1.2.0
 
   eslint-plugin-drizzle@0.2.3(eslint@9.11.1(jiti@1.21.6)):
@@ -9747,10 +9352,6 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.6
 
-  estree-walker@3.0.3:
-    dependencies:
-      '@types/estree': 1.0.6
-
   esutils@2.0.3: {}
 
   execa@5.1.1:
@@ -9921,8 +9522,6 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  get-func-name@2.0.2: {}
-
   get-intrinsic@1.2.4:
     dependencies:
       es-errors: 1.3.0
@@ -10015,15 +9614,15 @@ snapshots:
 
   goldstein@5.18.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2):
     dependencies:
-      '@putout/plugin-declare': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-logical-expressions': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-try-catch': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-declare': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-logical-expressions': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-try-catch': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/printer': 9.15.2
       acorn: 8.12.1
       acorn-typescript: 1.4.13(acorn@8.12.1)
       estree-to-babel: 9.1.0
       estree-util-attach-comments: 3.0.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
     transitivePeerDependencies:
       - eslint
@@ -10169,6 +9768,8 @@ snapshots:
 
   is-decimal@1.0.4: {}
 
+  is-docker@3.0.0: {}
+
   is-extglob@2.1.1: {}
 
   is-finalizationregistry@1.0.2:
@@ -10196,6 +9797,10 @@ snapshots:
       typescript: 5.6.2
     transitivePeerDependencies:
       - supports-color
+
+  is-inside-container@1.0.0:
+    dependencies:
+      is-docker: 3.0.0
 
   is-interactive@1.0.0: {}
 
@@ -10262,6 +9867,10 @@ snapshots:
     dependencies:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
+
+  is-wsl@3.1.0:
+    dependencies:
+      is-inside-container: 1.0.0
 
   isarray@2.0.5: {}
 
@@ -10361,11 +9970,11 @@ snapshots:
 
   kind-of@6.0.3: {}
 
-  knip@5.30.5(@types/node@22.6.1)(typescript@5.6.2):
+  knip@5.30.5(@types/node@22.7.0)(typescript@5.6.2):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@snyk/github-codeowners': 1.1.0
-      '@types/node': 22.6.1
+      '@types/node': 22.7.0
       easy-table: 1.2.0
       enhanced-resolve: 5.17.1
       fast-glob: 3.3.2
@@ -10436,10 +10045,6 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  loupe@3.1.1:
-    dependencies:
-      get-func-name: 2.0.2
-
   lru-cache@10.4.3: {}
 
   lru-cache@5.1.1:
@@ -10450,9 +10055,9 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  madrun@10.1.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2):
+  madrun@10.2.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2):
     dependencies:
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       all-object-keys: 2.2.0
       enquirer: 2.4.1
       find-up: 7.0.0
@@ -10460,7 +10065,7 @@ snapshots:
       mapsome: 1.0.0
       montag: 1.2.1
       once: 1.4.0
-      putout: 36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      putout: 36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       try-catch: 3.0.1
       try-to-catch: 3.0.1
       yargs-parser: 21.1.1
@@ -10468,10 +10073,6 @@ snapshots:
       - eslint
       - supports-color
       - typescript
-
-  magic-string@0.30.11:
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.0
 
   magicast@0.3.5:
     dependencies:
@@ -10876,6 +10477,13 @@ snapshots:
     dependencies:
       mimic-fn: 4.0.0
 
+  open@10.1.0:
+    dependencies:
+      default-browser: 5.2.1
+      define-lazy-prop: 3.0.0
+      is-inside-container: 1.0.0
+      is-wsl: 3.1.0
+
   optionator@0.9.4:
     dependencies:
       deep-is: 0.1.4
@@ -10899,19 +10507,19 @@ snapshots:
 
   os-tmpdir@1.0.2: {}
 
-  oxc-resolver@1.11.0:
+  oxc-resolver@1.12.0:
     optionalDependencies:
-      '@oxc-resolver/binding-darwin-arm64': 1.11.0
-      '@oxc-resolver/binding-darwin-x64': 1.11.0
-      '@oxc-resolver/binding-freebsd-x64': 1.11.0
-      '@oxc-resolver/binding-linux-arm-gnueabihf': 1.11.0
-      '@oxc-resolver/binding-linux-arm64-gnu': 1.11.0
-      '@oxc-resolver/binding-linux-arm64-musl': 1.11.0
-      '@oxc-resolver/binding-linux-x64-gnu': 1.11.0
-      '@oxc-resolver/binding-linux-x64-musl': 1.11.0
-      '@oxc-resolver/binding-wasm32-wasi': 1.11.0
-      '@oxc-resolver/binding-win32-arm64-msvc': 1.11.0
-      '@oxc-resolver/binding-win32-x64-msvc': 1.11.0
+      '@oxc-resolver/binding-darwin-arm64': 1.12.0
+      '@oxc-resolver/binding-darwin-x64': 1.12.0
+      '@oxc-resolver/binding-freebsd-x64': 1.12.0
+      '@oxc-resolver/binding-linux-arm-gnueabihf': 1.12.0
+      '@oxc-resolver/binding-linux-arm64-gnu': 1.12.0
+      '@oxc-resolver/binding-linux-arm64-musl': 1.12.0
+      '@oxc-resolver/binding-linux-x64-gnu': 1.12.0
+      '@oxc-resolver/binding-linux-x64-musl': 1.12.0
+      '@oxc-resolver/binding-wasm32-wasi': 1.12.0
+      '@oxc-resolver/binding-win32-arm64-msvc': 1.12.0
+      '@oxc-resolver/binding-win32-x64-msvc': 1.12.0
 
   p-limit@2.3.0:
     dependencies:
@@ -10989,8 +10597,6 @@ snapshots:
   path-type@4.0.0: {}
 
   pathe@1.1.2: {}
-
-  pathval@2.0.0: {}
 
   picocolors@1.1.0: {}
 
@@ -11088,148 +10694,148 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2):
+  putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2):
     dependencies:
       '@putout/babel': 2.8.0
       '@putout/cli-cache': 3.1.0
-      '@putout/cli-choose-formatter': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/cli-choose-formatter': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/cli-keypress': 2.0.0
       '@putout/cli-match': 2.2.0
       '@putout/cli-ruler': 3.1.0
       '@putout/cli-staged': 1.1.0
       '@putout/cli-validate-args': 2.0.0
       '@putout/compare': 14.7.2
-      '@putout/engine-loader': 14.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-loader': 14.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/engine-parser': 10.8.0
-      '@putout/engine-processor': 12.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/engine-reporter': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/engine-runner': 21.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-processor': 12.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-reporter': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/engine-runner': 21.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/eslint': 3.6.0(eslint@9.11.1(jiti@1.21.6))
-      '@putout/formatter-codeframe': 7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-dump': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-frame': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-json': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-json-lines': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-memory': 4.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-progress': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-progress-bar': 4.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-stream': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/formatter-time': 3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-codeframe': 7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-dump': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-frame': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-json': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-json-lines': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-memory': 4.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-progress': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-progress-bar': 4.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-stream': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/formatter-time': 3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operate': 12.11.0
-      '@putout/operator-add-args': 8.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/operator-declare': 9.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/operator-filesystem': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-add-args': 8.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-declare': 9.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-filesystem': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/operator-ignore': 1.2.0
       '@putout/operator-json': 2.2.0
-      '@putout/operator-match-files': 3.5.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/operator-regexp': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/operator-rename-files': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-at': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-destructuring': 7.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-dot-notation': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-early-return': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-flat-map': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-optional-chaining': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-overrides': 2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-starts-with': 1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-apply-template-literals': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-browserlist': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-conditions': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-apply-to-spread': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-arguments-to-rest': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-array-copy-to-slice': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-assignment-to-arrow-function': 1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-assignment-to-comparison': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-assignment-to-declaration': 1.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-concat-to-flat': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-const-to-let': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-index-of-to-includes': 2.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-object-assign-to-merge-spread': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-object-entries-to-array-entries': 3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-optional-to-logical': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-quotes-to-backticks': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-template-to-string': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-convert-to-arrow-function': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-coverage': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-declare': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-declare-before-reference': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-declare-imports-first': 2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-eslint': 9.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-extract-object-properties': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-extract-sequence-expressions': 3.5.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-filesystem': 5.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-for-of': 6.1.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-generators': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-github': 12.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-gitignore': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-group-imports-by-source': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-labels': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-logical-expressions': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-madrun': 18.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-math': 2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-maybe': 2.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-merge-destructuring-properties': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-merge-duplicate-functions': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-merge-duplicate-imports': 11.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-montag': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-new': 3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-nodejs': 11.11.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-npmignore': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-package-json': 7.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-promises': 15.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-putout': 21.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-putout-config': 6.9.3(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-regexp': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-console': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-constant-conditions': 4.0.2(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-debugger': 7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-duplicate-case': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-duplicate-keys': 5.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-empty': 12.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-iife': 4.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-nested-blocks': 6.3.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-quotes-from-import-assertions': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unreachable-code': 1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unreferenced-variables': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unused-expressions': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unused-for-of-variables': 3.0.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unused-labels': 1.0.2(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unused-private-fields': 2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-unused-variables': 9.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-arguments': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-array': 1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-array-constructor': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-array-entries': 1.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-assign': 1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-constructor': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-continue': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-delete': 1.0.4(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-escape': 6.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-functions': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-map': 1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-operand': 2.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-replace': 1.0.4(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-return': 7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-spread': 11.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-template-expressions': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-remove-useless-variables': 12.4.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-reuse-duplicate-init': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-simplify-assignment': 3.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-simplify-boolean-return': 2.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-simplify-ternary': 7.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-sort-imports-by-specifiers': 1.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-split-assignment-expressions': 1.2.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-split-nested-destructuring': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-split-variable-declarations': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-tape': 15.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-try-catch': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-types': 5.1.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-typescript': 8.2.1(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/plugin-webpack': 3.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
-      '@putout/processor-css': 9.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))(typescript@5.6.2)
-      '@putout/processor-filesystem': 4.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-match-files': 3.5.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-regexp': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/operator-rename-files': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-at': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-destructuring': 7.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-dot-notation': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-early-return': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-flat-map': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-optional-chaining': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-overrides': 2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-starts-with': 1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-apply-template-literals': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-browserlist': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-conditions': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-apply-to-spread': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-arguments-to-rest': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-array-copy-to-slice': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-assignment-to-arrow-function': 1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-assignment-to-comparison': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-assignment-to-declaration': 1.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-concat-to-flat': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-const-to-let': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-index-of-to-includes': 2.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-object-assign-to-merge-spread': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-object-entries-to-array-entries': 3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-optional-to-logical': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-quotes-to-backticks': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-template-to-string': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-convert-to-arrow-function': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-coverage': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-declare': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-declare-before-reference': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-declare-imports-first': 2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-eslint': 9.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-extract-object-properties': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-extract-sequence-expressions': 3.5.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-filesystem': 5.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-for-of': 6.1.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-generators': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-github': 12.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-gitignore': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-group-imports-by-source': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-labels': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-logical-expressions': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-madrun': 19.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-math': 2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-maybe': 2.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-merge-destructuring-properties': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-merge-duplicate-functions': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-merge-duplicate-imports': 11.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-montag': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-new': 3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-nodejs': 11.11.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-npmignore': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-package-json': 7.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-promises': 15.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-putout': 21.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-putout-config': 6.9.3(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-regexp': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-console': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-constant-conditions': 4.0.2(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-debugger': 7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-duplicate-case': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-duplicate-keys': 5.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-empty': 12.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-iife': 4.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-nested-blocks': 6.3.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-quotes-from-import-assertions': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unreachable-code': 1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unreferenced-variables': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unused-expressions': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unused-for-of-variables': 3.0.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unused-labels': 1.0.2(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unused-private-fields': 2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-unused-variables': 9.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-arguments': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-array': 1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-array-constructor': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-array-entries': 1.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-assign': 1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-constructor': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-continue': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-delete': 1.0.4(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-escape': 6.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-functions': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-map': 1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-operand': 2.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-replace': 1.0.4(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-return': 7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-spread': 11.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-template-expressions': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-remove-useless-variables': 12.4.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-reuse-duplicate-init': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-simplify-assignment': 3.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-simplify-boolean-return': 2.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-simplify-ternary': 7.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-sort-imports-by-specifiers': 1.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-split-assignment-expressions': 1.2.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-split-nested-destructuring': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-split-variable-declarations': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-tape': 15.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-try-catch': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-types': 5.1.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-typescript': 8.2.1(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/plugin-webpack': 3.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/processor-css': 9.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))(typescript@5.6.2)
+      '@putout/processor-filesystem': 4.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/processor-ignore': 6.0.1
-      '@putout/processor-javascript': 5.0.0(putout@36.6.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
+      '@putout/processor-javascript': 5.0.0(putout@36.6.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2))
       '@putout/processor-json': 9.0.0
       '@putout/processor-markdown': 12.1.0
       '@putout/processor-yaml': 8.1.0
@@ -11314,7 +10920,7 @@ snapshots:
       envir: 2.0.1
       for-each-key: 2.0.0
       fullstore: 3.0.0
-      madrun: 10.1.0(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
+      madrun: 10.2.1(eslint@9.11.1(jiti@1.21.6))(typescript@5.6.2)
       mapsome: 1.0.0
       parent-directories: 3.0.0
       readjson: 2.2.2
@@ -11616,6 +11222,8 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.22.4
       fsevents: 2.3.3
 
+  run-applescript@7.0.0: {}
+
   run-async@2.4.1: {}
 
   run-parallel@1.2.0:
@@ -11703,8 +11311,6 @@ snapshots:
       get-intrinsic: 1.2.4
       object-inspect: 1.13.2
 
-  siginfo@2.0.0: {}
-
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
@@ -11761,10 +11367,6 @@ snapshots:
   squad@3.0.0: {}
 
   stable-hash@0.0.4: {}
-
-  stackback@0.0.2: {}
-
-  std-env@3.7.0: {}
 
   stop-iteration-iterator@1.0.0:
     dependencies:
@@ -12032,20 +11634,10 @@ snapshots:
 
   tiny-invariant@1.3.3: {}
 
-  tinybench@2.9.0: {}
-
-  tinyexec@0.3.0: {}
-
   tinyglobby@0.2.6:
     dependencies:
       fdir: 6.3.0(picomatch@4.0.2)
       picomatch: 4.0.2
-
-  tinypool@1.0.1: {}
-
-  tinyrainbow@1.2.0: {}
-
-  tinyspy@3.0.2: {}
 
   tmp@0.0.33:
     dependencies:
@@ -12272,9 +11864,9 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  update-browserslist-db@1.1.0(browserslist@4.23.3):
+  update-browserslist-db@1.1.0(browserslist@4.24.0):
     dependencies:
-      browserslist: 4.23.3
+      browserslist: 4.24.0
       escalade: 3.2.0
       picocolors: 1.1.0
 
@@ -12303,67 +11895,6 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
-
-  vite-node@2.1.1(@types/node@22.6.1)(terser@5.33.0):
-    dependencies:
-      cac: 6.7.14
-      debug: 4.3.7
-      pathe: 1.1.2
-      vite: 5.4.7(@types/node@22.6.1)(terser@5.33.0)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vite@5.4.7(@types/node@22.6.1)(terser@5.33.0):
-    dependencies:
-      esbuild: 0.21.5
-      postcss: 8.4.47
-      rollup: 4.22.4
-    optionalDependencies:
-      '@types/node': 22.6.1
-      fsevents: 2.3.3
-      terser: 5.33.0
-
-  vitest@2.1.1(@types/node@22.6.1)(terser@5.33.0):
-    dependencies:
-      '@vitest/expect': 2.1.1
-      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(vite@5.4.7(@types/node@22.6.1)(terser@5.33.0))
-      '@vitest/pretty-format': 2.1.1
-      '@vitest/runner': 2.1.1
-      '@vitest/snapshot': 2.1.1
-      '@vitest/spy': 2.1.1
-      '@vitest/utils': 2.1.1
-      chai: 5.1.1
-      debug: 4.3.7
-      magic-string: 0.30.11
-      pathe: 1.1.2
-      std-env: 3.7.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.0
-      tinypool: 1.0.1
-      tinyrainbow: 1.2.0
-      vite: 5.4.7(@types/node@22.6.1)(terser@5.33.0)
-      vite-node: 2.1.1(@types/node@22.6.1)(terser@5.33.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 22.6.1
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
 
   vue-eslint-parser@9.4.3(eslint@9.11.1(jiti@1.21.6)):
     dependencies:
@@ -12437,11 +11968,6 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
-
-  why-is-node-running@2.3.0:
-    dependencies:
-      siginfo: 2.0.0
-      stackback: 0.0.2
 
   word-wrap@1.2.5: {}
 

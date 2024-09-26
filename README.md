@@ -172,7 +172,7 @@ npm dev
 
 ## Contributing
 
-We welcome contributions! Feel free to open issues or submit pull requests. Please ensure your code passes all tests and adheres to our linting guidelines by running `bun appts` before submitting.
+We welcome contributions! Feel free to open issues or submit pull requests. Please ensure your code adheres to our linting guidelines by running `bun appts` before submitting.
 
 > **Temporary issue**: It seems that currently if you build and publish a project using Bun, then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
 

@@ -91,7 +91,6 @@ __pycache__/
 *.sublime-workspace
 *.idea/
 .eslintcache
-.vscode-test/
 addons/.output/
 addons/premium/
 yarn-error.log/
