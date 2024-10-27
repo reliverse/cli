@@ -36,7 +36,7 @@ const socialLinks = {
 // Just run bun reli:setup and configure the advanced settings. Perfect!
 export const siteConfig = {
   name: metadata.name,
-  appNameDesc: metadata.appNameDesc,
+  siteNameDesc: metadata.siteNameDesc,
   appPublisher: metadata.appPublisher,
   appVersion: metadata.appVersion,
   author: {

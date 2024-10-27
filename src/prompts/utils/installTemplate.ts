@@ -1,11 +1,10 @@
-import { consola } from "consola";
 import { downloadTemplate } from "giget";
-import path from "node:path";
+import path from "pathe";
 
-import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
+import { handleError, verbose } from "~/prompts/utils/console";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { initializeGitRepository } from "~/prompts/utils/git";
-import { DEBUG, isDevelopment } from "~/settings";
+import { isDev } from "~/settings";
 
 export async function installTemplate(
   name: string,
@@ -15,50 +14,19 @@ export async function installTemplate(
 ): Promise<void> {
   try {
     const cwd = getCurrentWorkingDirectory();
-    const targetDir = isDevelopment
-      ? path.join(cwd, "..", name)
-      : path.join(cwd, name);
+    const targetDir = path.join(cwd, isDev ? ".." : "", name);
 
-    DEBUG.enableVerboseLogging &&
-      consola.log(`Installing template in: ${targetDir}`);
+    verbose("info", `Installing template in: ${targetDir}`);
 
-    let source: string | undefined;
-    let dir: string | undefined;
+    const { dir, source } = await downloadTemplate(`github:${template}`, {
+      dir: targetDir,
+      install: deps,
+    });
 
-    try {
-      const result = await downloadTemplate(`github:${template}`, {
-        dir: targetDir,
-        install: deps,
-      });
+    verbose("success", `${source} was downloaded to ${dir}.`);
 
-      source = result.source;
-      dir = result.dir;
-
-      DEBUG.enableVerboseLogging &&
-        consola.success(`${source} was downloaded to ${dir}.`);
-    } catch (error) {
-      if (error instanceof Error) {
-        consola.error(
-          `🤔 Failed to set up the project: ${error.message}`,
-          error,
-        );
-      } else {
-        consola.error("🤔 An unknown error occurred.");
-      }
-
-      process.exit(1);
-    }
-
-    if (gitOption) {
-      await initializeGitRepository(targetDir, gitOption);
-    }
+    gitOption && (await initializeGitRepository(targetDir, gitOption));
   } catch (error) {
-    if (error instanceof Error) {
-      consola.error(`🤔 Failed to set up the project: ${error.message}`);
-    } else {
-      consola.error("🤔 An unknown error occurred.");
-    }
-
-    process.exit(1);
+    handleError(error);
   }
 }

@@ -2,14 +2,12 @@ import { consola } from "consola";
 
 import { validate } from "~/prompts/utils/validate";
 
-// Prompt user for confirmation about installing dependencies
-export async function dependencies(
-  mode: "buildRelivator" | "installLibrariesMenu" | "justInstallRelivator",
+export async function askInstallDependencies(
+  mode: "buildRelivator" | "installRepository" | "justInstallRelivator",
 ): Promise<boolean> {
-  if (mode === "installLibrariesMenu") {
+  if (mode === "installRepository") {
     consola.info(
-      // eslint-disable-next-line @stylistic/max-len
-      "In `installLibrariesMenu` mode, dependencies may not be installed automatically. Run `bun i` manually if needed.",
+      "In `installRepository` mode, dependencies may not be installed automatically. Run `bun i` manually if needed.",
     );
   }
 

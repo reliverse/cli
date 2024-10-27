@@ -8,9 +8,10 @@ export async function buildRelivatorTemplate(): Promise<string> {
     "Select a template or provide a custom GitHub URL:",
     {
       options: [
-        "1. Use skateshop template to have full Relivator version",
-        "2. Use minext template to have minimal Relivator version",
-        "3. Provide custom GitHub URL (🚨 at your own risk)",
+        // "1. Use skateshop template to have full Relivator version",
+        // "2. Use minext template to have minimal Relivator version",
+        "1. Use reliverse/next-react-js-minimal template",
+        "2. Provide custom GitHub URL (🚨 at your own risk)",
       ] as const,
       type: "select",
     },
@@ -18,18 +19,18 @@ export async function buildRelivatorTemplate(): Promise<string> {
 
   let template = "";
 
-  if (
-    templateOption ===
-    "1. Use skateshop template to have full Relivator version"
-  ) {
-    template = "sadmann7/skateshop";
-  } else if (
-    templateOption ===
-    "2. Use minext template to have minimal Relivator version"
-  ) {
-    template = "blefnk/minext";
-  } else if (
-    templateOption === "3. Provide custom GitHub URL (🚨 at your own risk)"
+  if (templateOption === "1. Use reliverse/next-react-js-minimal template") {
+    template = "reliverse/next-react-js-minimal";
+  }
+
+  // else if (
+  //   templateOption ===
+  //   "2. Use minext template to have minimal Relivator version"
+  // ) {
+  //   template = "blefnk/minext";
+  // }
+  else if (
+    templateOption === "2. Provide custom GitHub URL (🚨 at your own risk)"
   ) {
     const customTemplate = await consola.prompt(
       "Enter the GitHub repository link:",
@@ -48,7 +49,7 @@ export async function buildRelivatorTemplate(): Promise<string> {
 }
 
 // Prompt user to choose the template
-export async function buildAnotherTemplate(): Promise<string> {
+export async function askTemplate(): Promise<string> {
   const templateCategory = await consola.prompt("Choose a template category:", {
     options: ["Install Reliverse Template", "Install External Template"],
     type: "select",
@@ -87,7 +88,7 @@ export async function buildAnotherTemplate(): Promise<string> {
     if (externalTemplate === "Provide custom GitHub link") {
       const defaultLinks = [
         "reliverse/acme",
-        "relivator-nextjs-template",
+        "blefnk/relivator-nextjs-template",
         "blefnk/astro-starlight-template",
       ];
 

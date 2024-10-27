@@ -1,17 +1,17 @@
 import { consola } from "consola";
-import path from "node:path";
+import path from "pathe";
 
-import { appName } from "~/prompts/05-appName";
-import { gitInitialization } from "~/prompts/08-gitInitialization";
-import { dependencies } from "~/prompts/09-installDependencies";
-import { confirmation } from "~/prompts/10-confirmation";
+import { askAppName } from "~/prompts/04-askAppName";
+import { askGitInitialization } from "~/prompts/08-askGitInitialization";
+import { askInstallDependencies } from "~/prompts/09-askInstallDependencies";
+import { askSummaryConfirmation } from "~/prompts/10-askSummaryConfirmation";
 import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { installTemplate } from "~/prompts/utils/installTemplate";
 import { validate } from "~/prompts/utils/validate";
-import { isDevelopment } from "~/settings";
+import { isDev } from "~/settings";
 
-export async function installLibrariesMenu() {
+export async function installRepository() {
   consola.info("You can clone any JavaScript/TypeScript library or tool.");
 
   const libraryOption = await consola.prompt("Select an option to proceed:", {
@@ -38,12 +38,12 @@ export async function installLibrariesMenu() {
     libraryRepo = customRepo.replace("https://github.com/", "github:");
   }
 
-  const projectName = await appName();
-  const gitOption = await gitInitialization();
-  const installDeps = await dependencies("installLibrariesMenu");
+  const projectName = await askAppName();
+  const gitOption = await askGitInitialization();
+  const installDeps = await askInstallDependencies("installRepository");
 
   // Call confirmation with all necessary params
-  const confirmed = await confirmation(
+  const confirmed = await askSummaryConfirmation(
     libraryRepo, // Template
     projectName, // Project Name
     "", // GitHub User (none in this case)
@@ -59,7 +59,7 @@ export async function installLibrariesMenu() {
   }
 
   const cwd = getCurrentWorkingDirectory();
-  const targetDir = isDevelopment
+  const targetDir = isDev
     ? path.join(cwd, "..", projectName)
     : path.join(cwd, projectName);
 

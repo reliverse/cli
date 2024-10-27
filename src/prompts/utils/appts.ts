@@ -81,7 +81,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     },
     {
       default: "Relivator: Next.js 15 and React 19 template by Reliverse",
-      key: "appNameDesc",
+      key: "siteNameDesc",
       message: "Enter the full name for your app:",
     },
     {
@@ -122,7 +122,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
   const {
     name,
-    appNameDesc,
+    siteNameDesc,
     appPublisher,
     appVersion,
     authorEmail,
@@ -134,7 +134,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     [
       handle,
       name,
-      appNameDesc,
+      siteNameDesc,
       appPublisher,
       appVersion,
       authorEmail,
@@ -148,7 +148,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   try {
     await updateFile(metadataConfigPath, {
       name: name as string,
-      appNameDesc: appNameDesc as string,
+      siteNameDesc: siteNameDesc as string,
       appPublisher: appPublisher as string,
       appVersion: appVersion as string,
       authorEmail: authorEmail as string,
@@ -169,7 +169,6 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
 async function askForHandle(currentHandle: string): Promise<string> {
   return (await text({
-    // eslint-disable-next-line @stylistic/max-len
     message: `${pc.bold(`Let's customize the ${config.framework.name} template to your needs. The 'src/app.ts' file holds the main configuration.`)} \n🚀 First of all, what's your username handle? (💡 Type something or just press ${pc.cyan("<enter>")} to use the suggested value)`,
     placeholder: currentHandle,
     validate: (value) => {
@@ -205,7 +204,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     mod.exports.default.author = mod.exports.default.author || {};
 
     mod.exports.default.name = config.name;
-    mod.exports.default.appNameDesc = config.appNameDesc;
+    mod.exports.default.siteNameDesc = config.siteNameDesc;
     mod.exports.default.appPublisher = config.appPublisher;
     mod.exports.default.appVersion = config.appVersion;
     mod.exports.default.author.email = config.authorEmail;

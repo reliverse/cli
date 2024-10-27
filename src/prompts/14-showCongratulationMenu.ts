@@ -1,15 +1,14 @@
 import { checkbox } from "@inquirer/prompts";
 import { consola } from "consola";
 import fs from "fs-extra";
-import path from "node:path";
-import open, { openApp } from "open"; // Use original "open" library
+import path from "pathe";
+import { execa } from "execa";
 
 import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
 import { isVSCodeInstalled } from "~/prompts/utils/isAppInstalled";
-import { DEBUG, FILE_PATHS, isDevelopment } from "~/settings";
+import { DEBUG, FILE_PATHS, isDev } from "~/settings";
 
-// Function to display the final congratulatory message and next steps
-export async function congratulationMenu(
+export async function showCongratulationMenu(
   targetDir: string,
   deps: boolean,
   source: string,
@@ -18,7 +17,6 @@ export async function congratulationMenu(
   const cwd = process.cwd();
   const pkgManager = await choosePackageManager(cwd);
 
-  // Next steps for the user
   console.info("");
   consola.success("🤘 Project created successfully!");
   consola.info("✨ Next steps to get started:");
@@ -41,7 +39,7 @@ export async function congratulationMenu(
   // Checkbox prompt for multiple actions
   const nextActions = await checkbox({
     choices: [
-      { name: "Close Reliverse CLI", checked: true, value: "close" }, // Default checked
+      { name: "Close Reliverse CLI", checked: true, value: "close" },
       ...(DEBUG.alphaFeaturesEnabled
         ? [{ name: "Open Reliverse Documentation", value: "docs" }]
         : []),
@@ -55,7 +53,7 @@ export async function congratulationMenu(
         name: "Remove temp-repo-clone folder",
         checked: true,
         value: "removeTemp",
-      }, // Default checked
+      },
     ],
     message: "What would you like to do next?",
   });
@@ -65,34 +63,26 @@ export async function congratulationMenu(
     if (action === "docs") {
       consola.info("Opening Reliverse Documentation...");
       try {
-        await open("https://reliverse.org/docs", {
-          app: {
-            name: ["firefox", "chrome", "msedge"],
-          },
-        });
+        await execa("firefox", ["https://reliverse.org/docs"]);
       } catch (error) {
         consola.error("Error opening documentation:", error);
       }
     } else if (action === "discord") {
       consola.info("Joining Reliverse Discord server...");
       try {
-        await open("https://discord.gg/Pb8uKbwpsJ", {
-          app: {
-            name: ["firefox", "chrome", "msedge"],
-          },
-        });
+        await execa("firefox", ["https://discord.gg/Pb8uKbwpsJ"]);
       } catch (error) {
         consola.error("Error opening Discord:", error);
       }
     } else if (action === "vscode") {
       consola.info("Opening the project in VSCode...");
       try {
-        await openApp("code", { arguments: [targetDir] });
+        await execa("code", [targetDir]);
       } catch (error) {
         consola.error("Error opening VSCode:", error);
       }
     } else if (action === "removeTemp") {
-      const tempRepoDir = isDevelopment
+      const tempRepoDir = isDev
         ? path.join(cwd, "..", FILE_PATHS.tempRepoClone)
         : path.join(cwd, FILE_PATHS.tempRepoClone);
 

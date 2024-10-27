@@ -3,8 +3,7 @@ import { generate } from "random-words";
 
 import { validate } from "~/prompts/utils/validate";
 
-// Prompt user for the GitHub username
-export async function githubUsername(): Promise<string> {
+export async function askUserName(): Promise<string> {
   const placeholder = generate({ exactly: 1, join: "-" });
   const username = await consola.prompt("Enter your GitHub username:", {
     default: placeholder,

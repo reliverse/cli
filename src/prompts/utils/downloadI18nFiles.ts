@@ -8,9 +8,9 @@ import { DEBUG, FILE_PATHS, FILES_TO_DOWNLOAD, REPO_URLS } from "~/settings";
 // Function to download i18n layout.tsx and page.tsx files
 export async function downloadI18nFiles(
   targetDir: string,
-  isDevelopment: boolean,
+  isDev: boolean,
 ): Promise<void> {
-  const tempRepoDir = isDevelopment
+  const tempRepoDir = isDev
     ? path.join(targetDir, "..", FILE_PATHS.tempRepoClone) // Adjust for development
     : path.join(targetDir, FILE_PATHS.tempRepoClone); // For production
 

@@ -11,7 +11,6 @@ export const resolveProjectConflicts = async (targetDir: string) => {
   const manualHandling = await confirm({
     default: false, // Default to 'No'
     message:
-      // eslint-disable-next-line @stylistic/max-len
       "Do you want to manually handle file conflicts? \n  If you choose 'N' then all the conflicting files will be automatically removed.",
   });
 

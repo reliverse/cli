@@ -1,7 +1,7 @@
-import { displayMainReliverseMenu } from "~/prompts/00-displayMainReliverseMenu";
+import { showReliverseMenu } from "~/prompts/00-showReliverseMenu";
 
 async function main() {
-  await displayMainReliverseMenu();
+  await showReliverseMenu();
 }
 
 main().catch((error) => {

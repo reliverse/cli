@@ -27,7 +27,7 @@ export const FILE_CONFLICTS = [
 // Command-line arguments to check if we are in development mode
 const args = process.argv.slice(2);
 
-export const isDevelopment = args.includes("--dev");
+export const isDev = args.includes("--dev");
 
 // URL configurations for repository links
 export const REPO_URLS = {

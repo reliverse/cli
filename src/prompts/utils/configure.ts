@@ -86,7 +86,6 @@ export async function runReliverseSetup() {
   // Reliverse Config Setup
   const accepted = await confirm({
     initialValue: true,
-    // eslint-disable-next-line @stylistic/max-len
     message: `${pc.bold(`${welcomeCondition} Welcome to the ${config.framework.name} 1.2.6 setup! This setup wizard will help you configure the main configuration of the app and let you choose the Next.js, ESLint, Biome, and Putout config presets.`)} \n👋 Are you ready to proceed? ${pc.dim("(💡 You can press <Cmd/Ctrl+C> anywhere to close the setup)")}`,
   });
 
@@ -140,7 +139,6 @@ export async function runReliverseSetup() {
     );
     consola.info(
       pc.blue(
-        // eslint-disable-next-line @stylistic/max-len
         "😉 It is recommended to open the desired configs and customize the specific options to your preferences, because it all belongs to you! Have fun and enjoy!",
       ),
     );

@@ -3,13 +3,13 @@ import { consola } from "consola";
 import { validate } from "~/prompts/utils/validate";
 
 // Prompt user for confirmation before proceeding with installation
-export async function confirmation(
+export async function askSummaryConfirmation(
   template: string,
   projectName: string,
   githubUser: string,
   website: string,
   gitOption: string,
-  deps: boolean, // Indicates whether to install dependencies or not
+  deps: boolean,
 ): Promise<boolean> {
   const depsMessage = deps
     ? "Yes, install dependencies"

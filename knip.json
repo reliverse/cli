@@ -17,7 +17,8 @@
     "src/prompts/utils/putout.ts",
     "src/prompts/utils/string.ts",
     "src/prompts/utils/types.ts",
-    "src/prompts/utils/with.ts"
+    "src/prompts/utils/with.ts",
+    "src/prompts/05-askTemplate.ts"
   ],
   "ignoreBinaries": [],
   "ignoreDependencies": [
@@ -30,6 +31,7 @@
     "ofetch",
     "picocolors",
     "tasuku",
-    "terser"
+    "terser",
+    "open"
   ]
 }

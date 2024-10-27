@@ -2,14 +2,14 @@ import { checkbox, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import path from "pathe";
 
-import { resolveProjectConflicts } from "~/prompts/12-resolveProjectConflicts";
+import { resolveProjectConflicts } from "~/prompts/12-askToResolveProjectConflicts";
 import { cloneAndCopyFiles } from "~/prompts/utils/cloneAndCopyFiles";
 import { checkFileExists } from "~/prompts/utils/fileUtils";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { DEBUG, FILE_PATHS, fileCategories } from "~/settings";
 
 // Function to check for required files and allow the user to download them
-export const checkAndDownloadFiles = async (
+export const askCheckAndDownloadFiles = async (
   targetDir: string,
   projectName: string,
 ): Promise<void> => {
@@ -83,7 +83,7 @@ export const checkAndDownloadFiles = async (
         });
 
         await cloneAndCopyFiles(
-          [...filesToDownload, ...filesToReplace].filter(Boolean), // Filter out undefined values
+          [...filesToDownload, ...filesToReplace].filter(Boolean),
           targetDir,
           false,
           tempCloneRepo,
@@ -91,7 +91,7 @@ export const checkAndDownloadFiles = async (
         );
       } else {
         await cloneAndCopyFiles(
-          filesToDownload.filter(Boolean), // Filter out undefined values
+          filesToDownload.filter(Boolean),
           targetDir,
           true,
           tempCloneRepo,
@@ -100,7 +100,7 @@ export const checkAndDownloadFiles = async (
       }
     } else {
       await cloneAndCopyFiles(
-        filesToDownload.filter(Boolean), // Filter out undefined values
+        filesToDownload.filter(Boolean),
         targetDir,
         false,
         tempCloneRepo,

@@ -22,7 +22,7 @@ export async function configureEslint({
 
   const eslint: string | symbol = await select({
     maxItems: 5,
-    // eslint-disable-next-line @stylistic/max-len
+
     message: `${config.framework.name} uses various tools to automate code improvement. One of these tools is ESLint. Let's configure @reliverse/eslint-config to meet your needs.\n${pc.cyan("Please select the type of ESLint configuration you want to use.")} If you are a complete beginner, choose the "eslint.config.rules-disabled.ts" config preset, where almost all rules are disabled.\n${pc.dim("Please note that your current configurations will be replaced with the selected ones. If you do not want to lose anything, choose Skip or commit your changes to Git first.")}`,
     options: [
       {
