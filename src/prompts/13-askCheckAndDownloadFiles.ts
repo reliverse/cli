@@ -1,8 +1,8 @@
 import { checkbox, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import path from "pathe";
+import { resolveProjectConflicts } from "~/prompts/12-askToResolveProjectConflicts";
 
-import { resolveProjectConflicts } from "~/prompts/11-askToResolveProjectConflicts";
 import { cloneAndCopyFiles } from "~/prompts/utils/cloneAndCopyFiles";
 import { checkFileExists } from "~/prompts/utils/fileUtils";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
