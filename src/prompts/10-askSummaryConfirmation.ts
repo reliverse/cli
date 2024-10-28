@@ -2,7 +2,6 @@ import { consola } from "consola";
 
 import { validate } from "~/prompts/utils/validate";
 
-// Prompt user for confirmation before proceeding with installation
 export async function askSummaryConfirmation(
   template: string,
   projectName: string,

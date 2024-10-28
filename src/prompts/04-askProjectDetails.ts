@@ -19,7 +19,8 @@ import { isDev } from "~/settings";
 export async function askProjectDetails(
   template: string,
   message: string,
-  mode: "justInstallRelivator" | "buildOwnRelivator",
+  mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",
+  allowI18nPrompt: boolean,
 ) {
   consola.info(message);
 
@@ -58,10 +59,12 @@ export async function askProjectDetails(
     domain,
   );
 
-  const enableI18n = await askInternationalizationSetup();
-  if (enableI18n) {
-    await moveAppToLocale(targetDir);
-    await downloadI18nFiles(targetDir, isDev);
+  if (allowI18nPrompt) {
+    const i18nShouldBeEnabled = await askInternationalizationSetup();
+    if (i18nShouldBeEnabled) {
+      await moveAppToLocale(targetDir);
+      await downloadI18nFiles(targetDir, isDev);
+    }
   }
 
   await askCheckAndDownloadFiles(targetDir, appName);

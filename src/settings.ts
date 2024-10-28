@@ -35,6 +35,7 @@ export const REPO_FULL_URLS = {
 
 export const REPO_SHORT_URLS = {
   relivatorGithubLink: "blefnk/relivator-nextjs-template",
+  versatorGithubLink: "blefnk/versator-nextjs-template",
 };
 
 // Path settings for important files and directories

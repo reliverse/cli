@@ -1,4 +1,5 @@
 import { consola } from "consola";
+import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
 
 import { validate } from "~/prompts/utils/validate";
 
@@ -6,8 +7,11 @@ export async function askInstallDependencies(
   mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",
 ): Promise<boolean> {
   if (mode === "installAnyGitRepo") {
+    const cwd = process.cwd();
+    const pkgManager = await choosePackageManager(cwd);
+
     consola.info(
-      "In `installAnyGitRepo` mode, dependencies may not be installed automatically. Run `bun i` manually if needed.",
+      `In installAnyGitRepo mode, dependencies may not be installed automatically. If something, after project is created, you can run the following command to manually install deps: ${pkgManager} i`,
     );
   }
 

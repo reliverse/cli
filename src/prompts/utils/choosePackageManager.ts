@@ -1,15 +1,12 @@
-// choosePackageManager.ts
-
 import type { PackageManagerName } from "nypm";
 
 import { consola } from "consola";
 import { detectPackageManager } from "nypm";
 
-// Function to select the package manager
 export async function choosePackageManager(
   cwd: string,
 ): Promise<PackageManagerName> {
-  const detectedPkgManager = (await detectPackageManager(cwd))?.name || "pnpm"; // Fallback to pnpm if detection fails
+  const detectedPkgManager = (await detectPackageManager(cwd))?.name || "pnpm";
 
   let pkgManager: PackageManagerName = detectedPkgManager as PackageManagerName;
 

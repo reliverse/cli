@@ -56,7 +56,6 @@ const handleFileConflicts = async ({
         continue; // Skip to the next file
       }
 
-      // Default or custom prompt message for manual handling
       const message =
         customMessage ||
         `Do you want to remove or rename the ${fileDescription} file by adding .txt?`;

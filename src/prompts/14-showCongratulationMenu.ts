@@ -23,20 +23,19 @@ export async function showCongratulationMenu(
   consola.info(`- Open the project: cd ${targetDir}`);
 
   if (!deps) {
-    consola.info("- Install dependencies manually: npx nypm i");
+    consola.info(`- Install dependencies manually: ${pkgManager} i`);
   }
 
   consola.info(`- Apply linting and formatting: ${pkgManager} appts`);
   consola.info(`- Run the project: ${pkgManager} dev`);
   consola.info("");
   consola.success(`🎉 ${source} was successfully installed to ${dir}.`);
-  consola.info(`👉 If you have VSCode installed, run: code ${targetDir}`);
+  consola.info(`- If you have VSCode installed, run: code ${targetDir}`);
 
   console.info("");
 
   const vscodeInstalled = isVSCodeInstalled();
 
-  // Checkbox prompt for multiple actions
   const nextActions = await checkbox({
     choices: [
       { name: "Close Reliverse CLI", checked: true, value: "close" },
@@ -58,7 +57,6 @@ export async function showCongratulationMenu(
     message: "What would you like to do next?",
   });
 
-  // Execute selected actions
   for (const action of nextActions) {
     if (action === "docs") {
       consola.info("Opening Reliverse Documentation...");
@@ -95,7 +93,6 @@ export async function showCongratulationMenu(
     }
   }
 
-  // CLI will always close after all actions are executed
   consola.success(
     "👋 Closing the CLI... Thanks for using Reliverse! See you next time!\n",
   );

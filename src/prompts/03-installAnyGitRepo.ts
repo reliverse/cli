@@ -1,17 +1,8 @@
 import { consola } from "consola";
-import path from "pathe";
-import { askAppName } from "~/prompts/05-askAppName";
-import { askGitInitialization } from "~/prompts/08-askGitInitialization";
-import { askInstallDependencies } from "~/prompts/09-askInstallDependencies";
-import { askSummaryConfirmation } from "~/prompts/10-askSummaryConfirmation";
-import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
-import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
-import { downloadGitRepo } from "~/prompts/utils/downloadGitRepo";
+import { askProjectDetails } from "~/prompts/04-askProjectDetails";
 import { validate } from "~/prompts/utils/validate";
-import { isDev, REPO_SHORT_URLS } from "~/settings";
+import { REPO_SHORT_URLS } from "~/settings";
 import { justInstallRelivator } from "~/prompts/01-justInstallRelivator";
-import { askUserName } from "~/prompts/06-askUserName";
-import { askAppDomain } from "~/prompts/07-askAppDomain";
 
 export async function installAnyGitRepo() {
   consola.info(
@@ -46,13 +37,13 @@ export async function installAnyGitRepo() {
           "blefnk/create-t3-app",
           "blefnk/create-next-app",
           "blefnk/astro-starlight-template",
+          REPO_SHORT_URLS.versatorGithubLink,
           "reliverse/template-browser-extension",
         ],
         type: "select",
       },
     );
     validate(reliverseTemplate, "string", "Template selection canceled.");
-
     repoToInstall = reliverseTemplate;
   } else if (
     projectCategory ===
@@ -63,10 +54,8 @@ export async function installAnyGitRepo() {
       "shadcn-ui/taxonomy",
       "onwidget/astrowind",
     ];
-
     const randomDefaultLink =
       defaultLinks[Math.floor(Math.random() * defaultLinks.length)];
-
     const customLink = await consola.prompt(
       "Enter the GitHub repository link:",
       {
@@ -76,7 +65,6 @@ export async function installAnyGitRepo() {
       },
     );
     validate(customLink, "string", "Custom template providing canceled.");
-
     repoToInstall = customLink;
   } else if (
     projectCategory ===
@@ -91,10 +79,8 @@ export async function installAnyGitRepo() {
       "blefnk/knip",
       "47ng/nuqs",
     ];
-
     const randomDefaultLink =
       defaultLinks[Math.floor(Math.random() * defaultLinks.length)];
-
     const customLink = await consola.prompt(
       "Enter the GitHub repository link:",
       {
@@ -103,7 +89,6 @@ export async function installAnyGitRepo() {
         type: "text",
       },
     );
-
     validate(customLink, "string", "Custom template providing canceled.");
     repoToInstall = customLink;
   } else {
@@ -118,50 +103,10 @@ export async function installAnyGitRepo() {
     return justInstallRelivator();
   }
 
-  const projectName = await askAppName();
-  const username = await askUserName();
-  const domain = await askAppDomain();
-  const gitOption = await askGitInitialization();
-  const installDeps = await askInstallDependencies("installAnyGitRepo");
-
-  const confirmed = await askSummaryConfirmation(
+  await askProjectDetails(
     repoToInstall,
-    projectName,
-    username,
-    domain,
-    gitOption,
-    installDeps,
+    `Setting up the repository: ${repoToInstall}...`,
+    "installAnyGitRepo",
+    false,
   );
-
-  if (!confirmed) {
-    consola.info("Project setup was canceled.");
-    return;
-  }
-
-  const cwd = getCurrentWorkingDirectory();
-
-  const targetDir = isDev
-    ? path.join(cwd, "..", projectName)
-    : path.join(cwd, projectName);
-
-  await downloadGitRepo(projectName, repoToInstall, installDeps, gitOption);
-
-  if (installDeps) {
-    const pkgManager = await choosePackageManager(cwd);
-    consola.info(`Using ${pkgManager} to install dependencies...`);
-
-    try {
-      consola.success("Dependencies installed successfully.");
-    } catch (error) {
-      consola.error("Failed to install dependencies:", error);
-    }
-  } else {
-    const pkgManager = await choosePackageManager(cwd);
-    consola.info(
-      `👉 To install manually, run: cd ${targetDir} && ${pkgManager} i`,
-    );
-  }
-
-  consola.success(`Repository from ${repoToInstall} installed successfully.`);
-  consola.info(`👉 If you have VSCode installed, run: code ${targetDir}\n`);
 }

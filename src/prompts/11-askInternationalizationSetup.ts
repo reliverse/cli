@@ -2,7 +2,6 @@ import { confirm } from "@inquirer/prompts";
 
 import { validate } from "~/prompts/utils/validate";
 
-// Prompt to ask the user if they want i18n support
 export async function askInternationalizationSetup(): Promise<boolean> {
   const useI18n = await confirm({
     default: true,

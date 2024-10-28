@@ -8,7 +8,6 @@ import { checkFileExists } from "~/prompts/utils/fileUtils";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { DEBUG, FILE_PATHS, fileCategories } from "~/settings";
 
-// Function to check for required files and allow the user to download them
 export const askCheckAndDownloadFiles = async (
   targetDir: string,
   projectName: string,
@@ -35,7 +34,7 @@ export const askCheckAndDownloadFiles = async (
   }
 
   // Handle project files conflicts
-  await resolveProjectConflicts(targetDir); // 12-resolveProjectConflicts.ts
+  await resolveProjectConflicts(targetDir);
 
   // If there are missing files, prompt the user to download them
   if (missingFiles.length > 0) {
@@ -58,7 +57,7 @@ export const askCheckAndDownloadFiles = async (
         (category) =>
           fileCategories[category as keyof typeof fileCategories] || [],
       )
-      .filter(Boolean); // Ensure there are no undefined values
+      .filter(Boolean);
 
     const cwd = getCurrentWorkingDirectory();
     const tempCloneRepo = "https://github.com/blefnk/relivator";
