@@ -6,7 +6,7 @@ import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { initializeGitRepository } from "~/prompts/utils/git";
 import { isDev } from "~/settings";
 
-export async function installTemplate(
+export async function downloadGitRepo(
   name: string,
   template: string,
   deps: boolean,

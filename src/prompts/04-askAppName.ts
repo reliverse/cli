@@ -3,9 +3,9 @@ import { generate } from "random-words";
 
 import { validate } from "~/prompts/utils/validate";
 
-// Prompt user for the project name
 export async function askAppName(): Promise<string> {
   const placeholder = generate({ exactly: 3, join: "-" });
+
   const name = await consola.prompt("Enter the project name:", {
     default: placeholder,
     placeholder,

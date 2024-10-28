@@ -3,7 +3,12 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import { cloneAndCopyFiles } from "~/prompts/utils/cloneAndCopyFiles";
-import { DEBUG, FILE_PATHS, FILES_TO_DOWNLOAD, REPO_URLS } from "~/settings";
+import {
+  DEBUG,
+  FILE_PATHS,
+  FILES_TO_DOWNLOAD,
+  REPO_FULL_URLS,
+} from "~/settings";
 
 // Function to download i18n layout.tsx and page.tsx files
 export async function downloadI18nFiles(
@@ -65,7 +70,7 @@ export async function downloadI18nFiles(
         FILES_TO_DOWNLOAD,
         targetDir,
         true,
-        REPO_URLS.i18nRepo,
+        REPO_FULL_URLS.relivatorGithubLink,
         tempRepoDir,
       );
     }

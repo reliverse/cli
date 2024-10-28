@@ -2,26 +2,28 @@ import { consola } from "consola";
 import path from "pathe";
 
 import { askAppName } from "~/prompts/04-askAppName";
-import { askUserName } from "~/prompts/06-askUserName";
-import { askAppDomain } from "~/prompts/07-askAppDomain";
-import { askGitInitialization } from "~/prompts/08-askGitInitialization";
-import { askInstallDependencies } from "~/prompts/09-askInstallDependencies";
-import { askSummaryConfirmation } from "~/prompts/10-askSummaryConfirmation";
-import { askInternationalizationSetup } from "~/prompts/11-askInternationalizationSetup";
-import { askCheckAndDownloadFiles } from "~/prompts/13-askCheckAndDownloadFiles";
-import { showCongratulationMenu } from "~/prompts/14-showCongratulationMenu";
+import { askUserName } from "~/prompts/05-askUserName";
+import { askAppDomain } from "~/prompts/06-askAppDomain";
+import { askGitInitialization } from "~/prompts/07-askGitInitialization";
+import { askInstallDependencies } from "~/prompts/08-askInstallDependencies";
+import { askSummaryConfirmation } from "~/prompts/09-askSummaryConfirmation";
+import { askInternationalizationSetup } from "~/prompts/10-askInternationalizationSetup";
+import { askCheckAndDownloadFiles } from "~/prompts/12-askCheckAndDownloadFiles";
+import { showCongratulationMenu } from "~/prompts/13-showCongratulationMenu";
 import { downloadI18nFiles } from "~/prompts/utils/downloadI18nFiles";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
-import { handleReplacements } from "~/prompts/utils/handleReplacements";
-import { installTemplate } from "~/prompts/utils/installTemplate";
+import { handleStringReplacements } from "~/prompts/utils/handleStringReplacements";
+import { downloadGitRepo } from "~/prompts/utils/downloadGitRepo";
 import { moveAppToLocale } from "~/prompts/utils/moveAppToLocale";
-import { isDev } from "~/settings";
+import { isDev, REPO_SHORT_URLS } from "~/settings";
 
 export async function justInstallRelivator() {
-  const cwd = getCurrentWorkingDirectory();
+  consola.info(
+    "Let's create a brand-new web app using the Relivator Next.js template. After that, you can customize everything however you like.",
+  );
 
+  const template = REPO_SHORT_URLS.relivatorGithubLink;
   const appName = await askAppName();
-  const template = "blefnk/relivator-nextjs-template";
   const username = await askUserName();
   const domain = await askAppDomain();
   const git = await askGitInitialization();
@@ -38,33 +40,31 @@ export async function justInstallRelivator() {
 
   if (!confirmed) {
     consola.info("Project creation process was canceled.");
-
     return;
   }
 
-  // Install the selected template
-  await installTemplate(appName, template, deps, git);
+  await downloadGitRepo(appName, template, deps, git);
 
-  // Set the target directory
+  const cwd = getCurrentWorkingDirectory();
   const targetDir = isDev
     ? path.join(cwd, "..", appName)
     : path.join(cwd, appName);
 
-  // Handle string replacements in the project files (e.g., replace placeholders)
-  await handleReplacements(targetDir, template, appName, username, domain);
+  await handleStringReplacements(
+    targetDir,
+    template,
+    appName,
+    username,
+    domain,
+  );
 
-  // Ask if the user wants i18n support
-  const enableI18n = await askInternationalizationSetup();
+  const shouldAddI18n = await askInternationalizationSetup();
 
-  if (enableI18n) {
-    // Move all content to src/app/[locale] and handle i18n files
+  if (shouldAddI18n) {
     await moveAppToLocale(targetDir);
     await downloadI18nFiles(targetDir, isDev);
   }
 
-  // Check and download any necessary files
   await askCheckAndDownloadFiles(targetDir, appName);
-
-  // Display the final congratulation menu with the next steps
   await showCongratulationMenu(targetDir, deps, template, targetDir);
 }

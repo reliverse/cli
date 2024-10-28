@@ -12,6 +12,9 @@
       "default": "./dist/index.js"
     }
   },
+  "homepage": "https://reliverse.org",
+  "repository": "https://github.com/reliverse/cli",
+  "bugs": "https://github.com/reliverse/cli/issues",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {

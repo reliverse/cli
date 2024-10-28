@@ -1,9 +1,9 @@
-// handleReplacements.ts
+// handleStringReplacements.ts
 
 import { extractRepoInfo } from "~/prompts/utils/extractRepoInfo";
 import { replaceStringsInFiles } from "~/prompts/utils/replaceStringsInFiles";
 
-export async function handleReplacements(
+export async function handleStringReplacements(
   targetDir: string,
   template: string,
   projectName: string,

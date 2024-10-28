@@ -29,9 +29,12 @@ const args = process.argv.slice(2);
 
 export const isDev = args.includes("--dev");
 
-// URL configurations for repository links
-export const REPO_URLS = {
-  i18nRepo: "https://github.com/blefnk/relivator", // Repo for i18n files
+export const REPO_FULL_URLS = {
+  relivatorGithubLink: "https://github.com/blefnk/relivator-nextjs-template",
+};
+
+export const REPO_SHORT_URLS = {
+  relivatorGithubLink: "blefnk/relivator-nextjs-template",
 };
 
 // Path settings for important files and directories

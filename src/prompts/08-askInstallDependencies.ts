@@ -3,11 +3,11 @@ import { consola } from "consola";
 import { validate } from "~/prompts/utils/validate";
 
 export async function askInstallDependencies(
-  mode: "buildRelivator" | "installRepository" | "justInstallRelivator",
+  mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",
 ): Promise<boolean> {
-  if (mode === "installRepository") {
+  if (mode === "installAnyGitRepo") {
     consola.info(
-      "In `installRepository` mode, dependencies may not be installed automatically. Run `bun i` manually if needed.",
+      "In `installAnyGitRepo` mode, dependencies may not be installed automatically. Run `bun i` manually if needed.",
     );
   }
 

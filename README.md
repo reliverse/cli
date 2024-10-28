@@ -1,12 +1,18 @@
-# Reliverse CLI
+# Reliverse
 
-*Build the Sites. Build the Apps. Build the Games. Build Anything.*
+[GitHub](https://github.com/reliverse/cli), [npmjs](https://npmjs.com/package/reliverse)
 
-**Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
+**Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
+
+It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
+
+Reliverse is more than just the easiest way to install Relivator. It’s also the most convenient new way to download any repository from GitHub and automatically prepare it for work. Especially if it’s a project from the JavaScript ecosystem.
+
+The mission of this project is not only to help you install templates in seconds. It is also a desire to make web development more accessible to everyone. It’s a commitment to fixing many things that don’t work in the ecosystem. It’s a wish to share templates, libraries, and tools with the world that deserve attention. It’s also a drive to motivate developers to become contributors to various projects that need and deserve it.
 
 ## TL;DR
 
-**It's a single tool for everything.** At its current stage, Reliverse CLI is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t just be a website builder in the future. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
+**It's a single tool for everything.** At its current stage, Reliverse CLI is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t be only a website builder in the future, it will be a tool for building anything. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
 
 Remember the feeling of empowerment when you first used a website builder like WordPress? It gave you the freedom to create. But eventually, you hit limits—PageSpeed Insights flagged issues, performance lagged, and the bloated size of your site became hard to ignore.
 
@@ -14,11 +20,9 @@ Remember the feeling of empowerment when you first used a website builder like W
 
 ## Get Started
 
-Reliverse is still in its early stages, but it already allows you to bootstrap websites quickly. Soon, advanced customization options will be available, along with game-building tools and other exciting features. You're going to love what's coming.
+Reliverse is still in its early stages, but it already allows you to bootstrap websites quickly. Soon, advanced customization options will be available, along with other exciting features. You're going to love what's coming.
 
 By the way, you might think that a CLI doing so many things would become bloated, like an elephant in the room, but don’t worry—it’s going to be lean. This is the dream of a creator, a dream that must become reality. Everything has to be perfect.
-
-*Psst... We’re already working on a frontend version of the builder too!* 😉
 
 ## Installation
 
@@ -48,7 +52,7 @@ reliverse
 - **Interactive Prompts**: Customize your setup through interactive prompts that allow you to select which file categories to include.
 - **Template-Driven**: Automatically clones and installs templates from GitHub to kickstart your development.
 - **Unlimited Possibilities**: It can work not only with templates! Are you going to clone a JS library? Feel free to use Reliverse!
-- **Anything Else?!**: Currently, the CLI is optimized for JS/TS projects (like React, Astro, Vue, Svelte, etc.). In the future, it will even support native video game applications! This is the dream of Reliverse's founder—a single tool designed for everything.
+- **Anything Else?!**: Currently, the CLI is optimized for JS/TS projects (like React, Astro, Vue, Svelte, etc). This is the dream of Reliverse's founder—a single tool designed for everything.
 
 ### Commands
 

@@ -3,6 +3,7 @@ import type { MainMenuItem } from "~/prompts/utils/with";
 
 import metadata from "~/prompts/utils/metadata";
 import { productCategories } from "~/prompts/utils/products";
+import { REPO_SHORT_URLS } from "~/settings";
 
 export function slugify(str: string) {
   return str
@@ -27,7 +28,7 @@ type IconName =
 const socialLinks = {
   discord: "https://discord.gg/Pb8uKbwpsJ",
   facebook: "https://facebook.com/groups/bleverse",
-  github: "https://github.com/blefnk/relivator-nextjs-template",
+  github: REPO_SHORT_URLS.relivatorGithubLink,
   githubAccount: "https://github.com/blefnk",
   twitter: "https://x.com/blefnk",
 };
@@ -203,7 +204,7 @@ export const siteConfig = {
   socialLinks: {
     discord: "https://discord.gg/Pb8uKbwpsJ",
     facebook: "https://facebook.com/groups/bleverse",
-    github: "https://github.com/blefnk/relivator-nextjs-template",
+    github: REPO_SHORT_URLS.relivatorGithubLink,
     githubAccount: "https://github.com/blefnk",
     twitter: "https://x.com/blefnk",
   },
