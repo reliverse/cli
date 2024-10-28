@@ -1,17 +1,17 @@
 import { consola } from "consola";
 import path from "pathe";
-import { askAppName } from "~/prompts/04-askAppName";
-import { askGitInitialization } from "~/prompts/07-askGitInitialization";
-import { askInstallDependencies } from "~/prompts/08-askInstallDependencies";
-import { askSummaryConfirmation } from "~/prompts/09-askSummaryConfirmation";
+import { askAppName } from "~/prompts/05-askAppName";
+import { askGitInitialization } from "~/prompts/08-askGitInitialization";
+import { askInstallDependencies } from "~/prompts/09-askInstallDependencies";
+import { askSummaryConfirmation } from "~/prompts/10-askSummaryConfirmation";
 import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { downloadGitRepo } from "~/prompts/utils/downloadGitRepo";
 import { validate } from "~/prompts/utils/validate";
 import { isDev, REPO_SHORT_URLS } from "~/settings";
 import { justInstallRelivator } from "~/prompts/01-justInstallRelivator";
-import { askUserName } from "~/prompts/05-askUserName";
-import { askAppDomain } from "~/prompts/06-askAppDomain";
+import { askUserName } from "~/prompts/06-askUserName";
+import { askAppDomain } from "~/prompts/07-askAppDomain";
 
 export async function installAnyGitRepo() {
   consola.info(
