@@ -1,5 +1,6 @@
 import { downloadTemplate } from "giget";
 import path from "pathe";
+import type { GitOption } from "~/prompts/08-askGitInitialization";
 
 import { handleError, verbose } from "~/prompts/utils/console";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
@@ -10,8 +11,8 @@ export async function downloadGitRepo(
   name: string,
   template: string,
   deps: boolean,
-  gitOption: string,
-): Promise<void> {
+  gitOption: GitOption,
+): Promise<string | undefined> {
   try {
     const cwd = getCurrentWorkingDirectory();
     const targetDir = path.join(cwd, isDev ? ".." : "", name);
@@ -26,6 +27,8 @@ export async function downloadGitRepo(
     verbose("success", `${source} was downloaded to ${dir}.`);
 
     gitOption && (await initializeGitRepository(targetDir, gitOption));
+
+    return dir;
   } catch (error) {
     handleError(error);
   }

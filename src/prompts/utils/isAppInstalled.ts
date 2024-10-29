@@ -1,15 +1,11 @@
 import fs from "fs-extra";
 import os from "os";
 
-// Function to check if VSCode is installed by checking common paths
 export function isVSCodeInstalled(): boolean {
   const platform = os.platform();
-
-  // Get the current user's home directory
   const homeDir = os.homedir();
 
-  // Common install paths for VSCode
-  const commonPaths = {
+  const commonVSCodeInstallPaths = {
     darwin: [
       "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code",
     ],
@@ -22,7 +18,7 @@ export function isVSCodeInstalled(): boolean {
   };
 
   const pathsToCheck =
-    commonPaths[platform as "darwin" | "linux" | "win32"] || [];
+    commonVSCodeInstallPaths[platform as "darwin" | "linux" | "win32"] || [];
 
   return pathsToCheck.some((vsCodePath: string) =>
     fs.pathExistsSync(vsCodePath),

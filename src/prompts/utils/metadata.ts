@@ -1,5 +1,3 @@
-// Did you know that you can edit all settings of this file headlessly?
-// Just run bun reli:setup and configure the advanced settings. Perfect!
 export default {
   name: "Relivator",
   siteNameDesc: "Relivator 1.2.6: Next.js 15, React 19, TailwindCSS Template",

@@ -1,0 +1,12 @@
+{
+  "actions": [
+    {
+      "type": "replaceImportSymbol",
+      "params": {
+        "repo": "blefnk/relivator-nextjs-template",
+        "from": "@",
+        "to": "~"
+      }
+    }
+  ]
+}

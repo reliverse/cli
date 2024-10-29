@@ -17,7 +17,14 @@
     "src/prompts/utils/putout.ts",
     "src/prompts/utils/string.ts",
     "src/prompts/utils/types.ts",
-    "src/prompts/utils/with.ts"
+    "src/prompts/utils/with.ts",
+    "src/prompts/16-constructEnvVariablesFile.ts",
+    "src/prompts/mods/replaceWithModern.ts",
+    "src/prompts/temp/14-askCodemodUserCodebase.ts",
+    "src/prompts/temp/16-showUpdateCloneMenu.ts",
+    "src/prompts/temp/replaceImportSymbol.ts",
+    "src/prompts/tests/codemod.ts",
+    "src/prompts/tests/updater.ts"
   ],
   "ignoreBinaries": [],
   "ignoreDependencies": [
@@ -31,6 +38,7 @@
     "picocolors",
     "tasuku",
     "terser",
-    "open"
+    "open",
+    "glob"
   ]
 }

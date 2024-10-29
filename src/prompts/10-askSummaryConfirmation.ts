@@ -1,13 +1,14 @@
 import { consola } from "consola";
 
 import { validate } from "~/prompts/utils/validate";
+import type { GitOption } from "~/prompts/08-askGitInitialization";
 
 export async function askSummaryConfirmation(
   template: string,
   projectName: string,
   githubUser: string,
   website: string,
-  gitOption: string,
+  gitOption: GitOption,
   deps: boolean,
 ): Promise<boolean> {
   const depsMessage = deps

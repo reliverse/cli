@@ -1,3 +1,4 @@
+import { consola } from "consola";
 import { showReliverseMenu } from "~/prompts/00-showReliverseMenu";
 
 async function main() {
@@ -5,6 +6,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(`An error occurred: ${String(error)}`);
+  consola.error(`An error occurred: ${String(error)}`);
   process.exit(1);
 });

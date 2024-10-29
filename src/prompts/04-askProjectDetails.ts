@@ -3,12 +3,15 @@ import path from "pathe";
 import { askAppName } from "~/prompts/05-askAppName";
 import { askUserName } from "~/prompts/06-askUserName";
 import { askAppDomain } from "~/prompts/07-askAppDomain";
-import { askGitInitialization } from "~/prompts/08-askGitInitialization";
+import {
+  askGitInitialization,
+  type GitOption,
+} from "~/prompts/08-askGitInitialization";
 import { askInstallDependencies } from "~/prompts/09-askInstallDependencies";
 import { askSummaryConfirmation } from "~/prompts/10-askSummaryConfirmation";
 import { askInternationalizationSetup } from "~/prompts/11-askInternationalizationSetup";
 import { askCheckAndDownloadFiles } from "~/prompts/13-askCheckAndDownloadFiles";
-import { showCongratulationMenu } from "~/prompts/14-showCongratulationMenu";
+import { showCongratulationMenu } from "~/prompts/15-showCongratulationMenu";
 import { downloadI18nFiles } from "~/prompts/utils/downloadI18nFiles";
 import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
 import { handleStringReplacements } from "~/prompts/utils/handleStringReplacements";

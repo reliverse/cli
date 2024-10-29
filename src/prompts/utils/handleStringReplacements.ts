@@ -1,5 +1,3 @@
-// handleStringReplacements.ts
-
 import { extractRepoInfo } from "~/prompts/utils/extractRepoInfo";
 import { replaceStringsInFiles } from "~/prompts/utils/replaceStringsInFiles";
 
@@ -16,7 +14,7 @@ export async function handleStringReplacements(
     [`${oldProjectName}.sadmn.com`]: website,
     [author]: githubUser,
     [oldProjectName]: projectName,
-    ["skateshop.sadmn.com"]: website,
+    ["relivator.com"]: website,
   };
 
   await replaceStringsInFiles(targetDir, replacements);

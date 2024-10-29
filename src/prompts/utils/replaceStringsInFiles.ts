@@ -4,7 +4,6 @@ import path from "pathe";
 
 import { DEBUG } from "~/settings";
 
-// Function to replace strings in files
 export async function replaceStringsInFiles(
   targetDir: string,
   oldValues: Record<string, string>,
@@ -54,7 +53,7 @@ export async function replaceStringsInFiles(
       const stat = await fs.promises.lstat(fullPath);
 
       if (stat.isDirectory()) {
-        await traverseDirectory(fullPath); // Recursive for directories
+        await traverseDirectory(fullPath);
       } else if (shouldReplaceInFile(file)) {
         await replaceInFile(fullPath);
       }
