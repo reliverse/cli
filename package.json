@@ -1,29 +1,29 @@
 {
 	"name": "@blefnk/reliverse",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"build": "turbo build",
 		"dev": "turbo dev",
-		"dev:cli": "tsx watch ./packages/cli/src/index.ts",
-		"dev:docs": "turbo dev --filter=docs",
-		"dev:web": "turbo dev --filter=web",
-		"lint": "turbo lint",
-		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
-		"add:cli": "pnpm install --recursive --filter=reliverse",
-		"add-dev:cli": "pnpm install --save-dev --recursive --filter=reliverse",
-		"add:docs": "pnpm install --recursive --filter=docs",
-		"add-dev:docs": "pnpm install --save-dev --recursive --filter=docs",
-		"add:web": "pnpm install --recursive --filter=web",
-		"add-dev:web": "pnpm install --save-dev --recursive --filter=web",
-		"knip": "knip"
+		"knip": "knip",
+		"lint": "eslint --cache --fix .",
+		"format": "biome check --write \"**/*.{js,ts,tsx}\"",
+		"cli:dev": "tsx watch ./packages/cli/src/index.ts",
+		"cli:add": "pnpm add --recursive --filter=reliverse"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@eslint/js": "^9.13.0",
+		"@types/eslint__js": "^8.42.3",
 		"@types/node": "^22.8.4",
-		"knip": "^5.34.3",
-		"prettier": "^3.2.5",
+		"eslint": "^9.13.0",
+		"globals": "^15.11.0",
+		"knip": "^5.34.4",
+		"prettier": "^3.3.3",
 		"tsx": "^4.19.2",
 		"turbo": "^2.2.3",
-		"typescript": "5.5.4"
+		"typescript": "5.6.3",
+		"typescript-eslint": "^8.12.2"
 	},
 	"engines": {
 		"node": ">=20"

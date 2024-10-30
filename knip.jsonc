@@ -2,13 +2,10 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"ignoreDependencies": [
 		"next",
-		"eslint",
 		"@turbo/gen",
 		"@types/react-dom",
-		"eslint-config-next",
 		"@typescript-eslint/parser",
-		"@typescript-eslint/eslint-plugin",
-		"eslint-import-resolver-typescript"
+		"@typescript-eslint/eslint-plugin"
 	],
 	"ignore": [
 		"packages/eslint-config/next.js",
