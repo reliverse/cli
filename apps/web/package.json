@@ -1,6 +1,6 @@
 {
   "name": "reliverse",
-  "version": "1.3.0-canary.7",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
