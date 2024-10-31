@@ -1,15 +1,36 @@
 {
-	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"ignoreDependencies": [
-		"next",
-		"@turbo/gen",
-		"@types/react-dom",
-		"@typescript-eslint/parser",
-		"@typescript-eslint/eslint-plugin"
-	],
-	"ignore": [
-		"packages/eslint-config/next.js",
-		"packages/eslint-config/library.js",
-		"packages/ui/turbo/generators/config.ts"
-	]
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    // ".": {
+    //   "entry": "scripts/*.js",
+    //   "project": "scripts/**/*.js"
+    // },
+    "apps/docs": {
+      "entry": [
+        "astro.config.ts",
+        "src/content/config.ts",
+        "src/content/**/*.{md,mdx}"
+        // "src/pages/**/*.{astro,mdx,js,ts}",
+        // "eslint.config.js",
+        // "addons/**/*.ts"
+      ],
+      "project": "**/*.ts"
+    },
+    "cli/reliverse": {
+      "entry": "dist/index.js"
+    }
+  },
+  "ignoreDependencies": [
+    "sharp",
+    "next",
+    "@turbo/gen",
+    "@types/react-dom",
+    "@typescript-eslint/parser",
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "ignore": [
+    "packages/eslint-config/next.js",
+    "packages/eslint-config/library.js",
+    "packages/ui/turbo/generators/config.ts"
+  ]
 }

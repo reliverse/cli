@@ -1,6 +1,7 @@
 {
 	"name": "@repo/ui",
 	"version": "0.0.0",
+  "type": "module",
 	"private": true,
 	"exports": {
 		"./button": "./src/button.tsx",
@@ -11,7 +12,6 @@
 		"generate:component": "turbo gen react-component"
 	},
 	"devDependencies": {
-		"@repo/typescript-config": "workspace:*",
 		"@turbo/gen": "^1.12.4",
 		"@types/node": "^20.11.24",
 		"@types/react": "^18.2.61",

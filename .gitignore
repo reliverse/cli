@@ -1,19 +1,114 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# Dependencies
-node_modules
+# Dependency directories
+node_modules/
+jspm_packages/
+bower_components
+web_modules/
 .pnp
 .pnp.js
 
-# Local env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Build outputs
+build/
+dist/
+out/
+.next/
+.nuxt/
+.gatsby/
+target/
 
-# Testing
-coverage
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directories
+lib-cov/
+coverage/
+*.lcov
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn files
+.yarn/
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.yarn-integrity
+
+# dotenv environment variable files
+.env
+.env.*
+.env.local
+__.env
+.__.env
+
+# Parcel cache
+.cache
+.parcel-cache
+
+# Expo
+.expo/
+dist/
+expo-env.d.ts
+apps/expo/.gitignore
+
+# Docusaurus cache and generated files
+.docusaurus
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
 
 # Turbo
 .turbo
@@ -21,18 +116,53 @@ coverage
 # Vercel
 .vercel
 
-# Build Outputs
-.next/
-out/
-build
-dist
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# IntelliJ based IDEs
+.idea
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# MacOS Finder
+.DS_Store
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+*.swp
+
+# Python related
+__pycache__/
+*.py[oc]
+*.egg-info
+.venv
+.ruff_cache
+.wheels/
+
+# Code editors
+*.sublime-project
+*.sublime-workspace
+*.idea/
+*.vscode/
+.eslintcache
+.vscode-test
 
 # Misc
-.DS_Store
 *.pem
+*.swc
+path_mapping.txt
+
+# Reliverse
+addons/.output
+.astro/
+apps/docs/.vitepress/dist
+apps/docs/.vitepress/cache
