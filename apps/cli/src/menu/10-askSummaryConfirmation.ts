@@ -2,6 +2,7 @@ import { consola } from "consola";
 
 import { validate } from "~/utils/validate";
 import type { GitOption } from "~/menu/08-askGitInitialization";
+import { verbose } from "~/utils/console";
 
 export async function askSummaryConfirmation(
   template: string,
@@ -27,6 +28,8 @@ export async function askSummaryConfirmation(
 
   const confirmed = await consola.prompt(message, { type: "confirm" });
 
+  verbose("info", "Installation confirmed by the user (1)."); // TODO: remove if random bun crash is fixed
+
   validate(confirmed, "boolean");
 
   if (!confirmed) {
@@ -34,6 +37,8 @@ export async function askSummaryConfirmation(
 
     return false;
   }
+
+  verbose("info", "Installation confirmed by the user (2).");
 
   return true;
 }

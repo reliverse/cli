@@ -11,7 +11,7 @@ export async function handleStringReplacements(
   const { author, projectName: oldProjectName } = extractRepoInfo(template);
 
   const replacements = {
-    [`${oldProjectName}.sadmn.com`]: website,
+    [`${oldProjectName}.com`]: website,
     [author]: githubUser,
     [oldProjectName]: projectName,
     // biome-ignore lint/complexity/useLiteralKeys: <explanation>

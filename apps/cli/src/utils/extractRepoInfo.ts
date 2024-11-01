@@ -17,7 +17,7 @@ export function extractRepoInfo(templateUrl: string): {
   const [, author, projectName] = match;
 
   return {
-    author: author, // Non-null assertion to assure TypeScript it's not undefined
-    projectName: projectName.replace(".git", ""), // Non-null assertion and removing .git if present
+    author: author ?? "", // Non-null assertion to assure TypeScript it's not undefined
+    projectName: projectName?.replace(".git", "") ?? "", // Non-null assertion and removing .git if present
   };
 }

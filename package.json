@@ -4,7 +4,9 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "addons/*",
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
     "appts": "redrun typecheck lint format",

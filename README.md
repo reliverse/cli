@@ -54,26 +54,31 @@ bun pm cache rm -g
 bunx reliverse
 ```
 
+## Reliverse Addons
+
+Reliverse Addons, also called as extensions or plugins, are projects that extend the functionality of Reliverse ecosystem. They are created by Reliverse core team and community. Not all of them are included in the Reliverse monorepo and can be installed separately. Reliverse Extension API is coming soon. Projects that are using Reliverse Addons may be selected and featured in the [@reliverse/awesome](https://github.com/reliverse/awesome) showcase. You can build your own Reliverse Addons using Reliverse Helper CLI. This CLI will help you to build your own Reliverse Addons. This CLI is currently under development and not available yet. Please check back later.
+
 ## Features
 
-- **Create Projects**: Build new projects from scratch, including your own version of the **Relivator Next.js template**, or install any other templates from GitHub.
-- **Support for JavaScript/TypeScript Projects**: Primarily designed for React and Next.js projects, but works with other JavaScript/TypeScript libraries as well.
-- **Automatic Configuration Management**: Handles project configuration, including ESLint, Biome, Putout, GitHub, and IDE settings.
-- **Conflict Resolution**: Detects existing configurations and helps resolve file conflicts, giving you control over which files to keep or replace.
-- **Interactive Prompts**: Customize your setup through interactive prompts that allow you to select which file categories to include.
-- **Template-Driven**: Automatically clones and installs templates from GitHub to kickstart your development.
-- **Unlimited Possibilities**: It can work not only with templates! Are you going to clone a JS library? Feel free to use Reliverse!
-- **Anything Else?!**: Currently, the CLI is optimized for JS/TS projects (like React, Astro, Vue, Svelte, etc). This is the dream of Reliverse's founder—a single tool designed for everything.
+- **Create Projects**: Easily build new projects from scratch, including your own version of the **Relivator Next.js template**, or install any other templates directly from GitHub.
+- **JavaScript/TypeScript Support**: Designed primarily for React and Next.js projects but compatible with a wide range of JavaScript and TypeScript libraries.
+- **Automatic Configuration Management**: Manages project configurations for ESLint, Biome, Putout, GitHub, and IDE settings automatically.
+- **Conflict Resolution**: Detects existing configurations and guides you through file conflicts, giving you control over which files to retain or replace.
+- **Interactive Setup**: Customize your setup with interactive prompts that let you choose specific file categories to include.
+- **Template-Driven Initialization**: Instantly clone and set up templates from GitHub to jumpstart your development.
+- **Versatile Functionality**: Not just for templates! Planning to clone a JS library or experiment with new setups? Reliverse can support it all.
+- **Enhanced shadcn/ui CLI Integration**: [W.I.P] The Reliverse CLI integrates with the shadcn/ui CLI, enabling seamless addition of components and dependencies to your project. With added features and support for shadcn-vue and shadcn-svelte (community-led ports for Vue and Svelte), you can easily add shadcn/ui components to React, Vue, and Svelte projects. Checkboxes let you select and install multiple components at once. Note: Reliverse and these community-supported ports are not affiliated with @shadcn.
+- **Future Expansion**: While currently optimized for JavaScript and TypeScript projects (e.g., React, Astro, Vue, Svelte), Reliverse is envisioned to grow beyond web development into a comprehensive toolset you’ll love. This is the founder’s vision for Reliverse—to become the single tool for everything.
 
 ### Commands
 
-The Reliverse CLI provides a series of interactive prompts to guide you through the project setup:
+The Reliverse CLI offers a series of interactive prompts to streamline your project setup:
 
-1. **Create a New Project**: Build from scratch or use predefined templates.
-2. **Install GitHub Templates**: Install any JavaScript/TypeScript project by providing a GitHub repository URL.
-3. **Manage Configurations**: The CLI checks for existing configuration files and assists you in handling any conflicts.
-4. **File Categories**: Select from a variety of configuration categories for your project setup, such as ESLint, Biome, Putout, GitHub settings, and IDE preferences.
-5. **Post-Editing**: Reliverse is there for you throughout your entire development journey. You can run `reliverse` even in an already installed project. If your project's `package.json` contains an `appts` script, that’s also a local piece of `reliverse` within your project.
+1. **Create a New Project**: Start from scratch or use predefined templates for a quick setup.
+2. **Install GitHub Templates**: Easily install any JavaScript or TypeScript project by providing a GitHub repository URL.
+3. **Manage Configurations**: The CLI detects existing configuration files and helps you resolve any conflicts.
+4. **Select Configuration Categories**: Choose from a range of configuration options for your setup, including ESLint, Biome, Putout, GitHub settings, and IDE preferences.
+5. **Ongoing Support**: Reliverse supports you throughout your entire development process. You can run `reliverse` even on an existing project, and if your project’s `package.json` contains an `appts` script, it acts as a local instance of `reliverse` within your project.
 
 ### Example Workflow
 

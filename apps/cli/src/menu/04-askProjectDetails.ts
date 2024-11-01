@@ -1,20 +1,22 @@
 import { consola } from "consola";
-import path from "pathe";
-import { askAppName } from "~/menu/05-askAppName";
-import { askUserName } from "~/menu/06-askUserName";
-import { askAppDomain } from "~/menu/07-askAppDomain";
-import { askGitInitialization } from "~/menu/08-askGitInitialization";
-import { askInstallDependencies } from "~/menu/09-askInstallDependencies";
-import { askSummaryConfirmation } from "~/menu/10-askSummaryConfirmation";
-import { askInternationalizationSetup } from "~/menu/11-askInternationalizationSetup";
-import { askCheckAndDownloadFiles } from "~/menu/13-askCheckAndDownloadFiles";
-import { showCongratulationMenu } from "~/menu/15-showCongratulationMenu";
-import { downloadI18nFiles } from "~/utils/downloadI18nFiles";
-import { getCurrentWorkingDirectory } from "~/utils/fs";
-import { handleStringReplacements } from "~/utils/handleStringReplacements";
-import { downloadGitRepo } from "~/utils/downloadGitRepo";
-import { moveAppToLocale } from "~/utils/moveAppToLocale";
-import { isDev } from "~/app";
+// import path from "pathe";
+// import { askAppName } from "~/menu/05-askAppName";
+// import { askUserName } from "~/menu/06-askUserName";
+// import { askAppDomain } from "~/menu/07-askAppDomain";
+// import { askGitInitialization } from "~/menu/08-askGitInitialization";
+// import { askInstallDependencies } from "~/menu/09-askInstallDependencies";
+// import { askSummaryConfirmation } from "~/menu/10-askSummaryConfirmation";
+// import { askInternationalizationSetup } from "~/menu/11-askInternationalizationSetup";
+// import { askCheckAndDownloadFiles } from "~/menu/13-askCheckAndDownloadFiles";
+// import { showCongratulationMenu } from "~/menu/15-showCongratulationMenu";
+// import { downloadI18nFiles } from "~/utils/downloadI18nFiles";
+// import { getCurrentWorkingDirectory } from "~/utils/fs";
+// import { handleStringReplacements } from "~/utils/handleStringReplacements";
+// import { downloadGitRepo } from "~/utils/downloadGitRepo";
+// import { moveAppToLocale } from "~/utils/moveAppToLocale";
+// import { isDev } from "~/app";
+// import { verbose } from "~/utils/console";
+
 export async function askProjectDetails(
   template: string,
   message: string,
@@ -23,25 +25,29 @@ export async function askProjectDetails(
 ) {
   consola.info(message);
 
-  const appName = await askAppName();
+  /* const appName = await askAppName();
   const username = await askUserName();
   const domain = await askAppDomain();
-  // const git = await askGitInitialization();
-  // const deps = await askInstallDependencies(mode);
+  const git = await askGitInitialization();
+  const deps = await askInstallDependencies(mode);
 
-  // const confirmed = await askSummaryConfirmation(
-  //   template,
-  //   appName,
-  //   username,
-  //   domain,
-  //   git,
-  //   deps,
-  // );
+  const confirmed = await askSummaryConfirmation(
+    template,
+    appName,
+    username,
+    domain,
+    git,
+    deps,
+  );
 
-  // if (!confirmed) {
-  //   consola.info("Project creation process was canceled.");
-  //   return;
-  // }
+  verbose("info", "Installation confirmed by the user (3).");
+
+  if (!confirmed) {
+    consola.info("Project creation process was canceled.");
+    return;
+  }
+
+  verbose("info", "Installation confirmed by the user (4)."); */
 
   // await downloadGitRepo(appName, template, deps, git);
 
@@ -69,5 +75,5 @@ export async function askProjectDetails(
   // await askCheckAndDownloadFiles(targetDir, appName);
   // await showCongratulationMenu(targetDir, deps, template, targetDir);
 
-  consola.success("🎉 Project created successfully!");
+  console.log("🎉 Project created successfully!");
 }
