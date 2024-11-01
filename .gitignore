@@ -1,168 +1,122 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# Dependency directories
-node_modules/
-jspm_packages/
-bower_components
-web_modules/
-.pnp
-.pnp.js
-
-# Build outputs
-build/
-dist/
-out/
-.next/
-.nuxt/
+__.env
+__pycache__/
+.__.env
+.astro/
+.cache
+.cache/
+.docusaurus
+.docusaurus/
+.DS_Store
+.dynamodb/
+.env
+.env.*
+.env.local
+.env*.local
+.eslintcache
+.expo/
+.fusebox/
 .gatsby/
-target/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directories
-lib-cov/
-coverage/
-*.lcov
-.nyc_output
-
-# Grunt intermediate storage
 .grunt
-
-# node-waf configuration
+.grunt/
+.idea
+.idea/
 .lock-wscript
-
-# Compiled binary addons
-build/Release
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
+.million/
+.next/
+.node_repl_history
 .npm
-
-# Optional stylelint cache
-.stylelintcache
-
-# Microbundle cache
+.npm/
+.npm/_locks
+.nuxt/
+.nyc_output
+.nyc_output/
+.parcel-cache
+.parcel-cache/
+.pnp
+.pnp.*
+.pnp.js
+.pnpm-debug.log*
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn files
-.yarn/
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-.yarn-integrity
-
-# dotenv environment variable files
-.env
-.env.*
-.env.local
-__.env
-.__.env
-
-# Parcel cache
-.cache
-.parcel-cache
-
-# Expo
-.expo/
-dist/
-expo-env.d.ts
-apps/expo/.gitignore
-
-# Docusaurus cache and generated files
-.docusaurus
-
-# Serverless directories
+.ruff_cache
+.ruff_cache/
 .serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
+.stylelintcache
 .tern-port
-
-# Turbo
+.tern-port/
 .turbo
-
-# Vercel
+.turbo/
+.venv
+.venv/
 .vercel
-
-# Diagnostic reports
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# IntelliJ based IDEs
-.idea
-
-# MacOS Finder
-.DS_Store
-
-# Binaries
-*.exe
-*.dll
-*.so
-*.dylib
-*.bin
-
-# Temporary files
-*.tmp
-*.temp
+.vercel/
+.vscode-test
+.wheels/
+.yarn-integrity
+.yarn/
+.yarn/build-state.yml
+.yarn/cache
+.yarn/cache/
+.yarn/install-state.gz
+.yarn/unplugged
+.yarn/unplugged/
 *.bak
+*.bin
+*.d.ts.map
+*.dll
+*.dylib
+*.egg-info
+*.egg-info/
+*.exe
+*.idea/
+*.lcov
+*.log
 *.old
 *.orig
-*.swp
-
-# Python related
-__pycache__/
+*.pem
+*.pid
+*.pid.lock
 *.py[oc]
-*.egg-info
-.venv
-.ruff_cache
-.wheels/
-
-# Code editors
+*.seed
+*.so
 *.sublime-project
 *.sublime-workspace
-*.idea/
-*.vscode/
-.eslintcache
-.vscode-test
-
-# Misc
-*.pem
 *.swc
-path_mapping.txt
-
-# Reliverse
+*.swp
+*.temp
+*.tgz
+*.tmp
+*.tsbuildinfo
+*.vscode/
 addons/.output
-.astro/
-apps/docs/.vitepress/dist
+addons/.output/
+addons/premium/
 apps/docs/.vitepress/cache
+apps/docs/.vitepress/dist
+apps/expo/.gitignore
+bower_components
+bower_components/
+build/
+build/Release
+build/Release/
+coverage/
+dist/
+expo-env.d.ts
+jspm_packages/
+lerna-debug.log*
+lib-cov/
+logs/
+next-env.d.ts
+node_modules/
+npm-debug.log*
+out/
+path_mapping.txt
+pids/
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+target/
+web_modules/
+yarn-debug.log*
+yarn-error.log*
+yarn-error.log/

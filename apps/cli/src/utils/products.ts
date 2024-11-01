@@ -202,7 +202,10 @@ export const productTags = [
   "exclusive",
 ];
 
-export function getSubcategories(category?: string): any[] {
+export function getSubcategories(category?: string): {
+  label: string;
+  value: string;
+}[] {
   if (!category) {
     return [];
   }

@@ -5,6 +5,61 @@
     //   "entry": "scripts/*.js",
     //   "project": "scripts/**/*.js"
     // },
+    "packages/fs": {
+      "entry": ["dist/index.js", "src/**/*.ts"],
+      "ignoreDependencies": ["terser"]
+    },
+    "apps/cli": {
+      "entry": ["dist/index.js", "src/**/*.ts"],
+      "ignoreDependencies": [
+        "sharp",
+        "next",
+        "@turbo/gen",
+        "@types/react-dom",
+        "@typescript-eslint/parser",
+        "@typescript-eslint/eslint-plugin",
+        "@clack/prompts",
+        "@reliverse/core",
+        "@reliverse/fs",
+        "citty",
+        "magicast",
+        "node-fetch",
+        "ofetch",
+        "picocolors",
+        "tasuku",
+        "terser",
+        "open",
+        "glob"
+      ],
+      "ignore": [
+        "packages/eslint-config/next.js",
+        "packages/eslint-config/library.js",
+        "packages/ui/turbo/generators/config.ts",
+        "src/utils/app.ts",
+        "src/utils/appts.ts",
+        "src/utils/biome.ts",
+        "src/utils/configure.ts",
+        "src/utils/env.ts",
+        "src/utils/envjs.ts",
+        "src/utils/eslint.ts",
+        "src/utils/knip.ts",
+        "src/utils/metadata.ts",
+        "src/utils/nav.ts",
+        "src/utils/nextjs.ts",
+        "src/utils/products.ts",
+        "src/utils/putout.ts",
+        "src/utils/string.ts",
+        "src/utils/types.ts",
+        "src/utils/with.ts",
+        "src/16-constructEnvVariablesFile.ts",
+        "src/mods/replaceWithModern.ts",
+        "src/temp/14-askCodemodUserCodebase.ts",
+        "src/temp/16-showUpdateCloneMenu.ts",
+        "src/temp/replaceImportSymbol.ts",
+        "src/tests/codemod.ts",
+        "src/tests/updater.ts"
+      ]
+    },
     "apps/docs": {
       "entry": [
         "astro.config.ts",
@@ -15,22 +70,6 @@
         // "addons/**/*.ts"
       ],
       "project": "**/*.ts"
-    },
-    "cli/reliverse": {
-      "entry": "dist/index.js"
     }
-  },
-  "ignoreDependencies": [
-    "sharp",
-    "next",
-    "@turbo/gen",
-    "@types/react-dom",
-    "@typescript-eslint/parser",
-    "@typescript-eslint/eslint-plugin"
-  ],
-  "ignore": [
-    "packages/eslint-config/next.js",
-    "packages/eslint-config/library.js",
-    "packages/ui/turbo/generators/config.ts"
-  ]
+  }
 }

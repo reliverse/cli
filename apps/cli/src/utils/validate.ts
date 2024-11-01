@@ -23,6 +23,7 @@ export function validate(
   handlePromptCancellation(input, exitMessage);
 
   if (
+    // biome-ignore lint/suspicious/useValidTypeof: <explanation>
     typeof input !== type ||
     input === undefined ||
     input === null ||

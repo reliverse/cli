@@ -4,7 +4,7 @@
     "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "module": "Preserve",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "moduleDetection": "force",
     "resolveJsonModule": true,
     "allowJs": true,
@@ -24,7 +24,7 @@
     "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "useUnknownInCatchVariables": true,
@@ -41,8 +41,9 @@
     "verbatimModuleSyntax": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true
   },
-  "include": ["eslint.config.js"],
+  "include": ["eslint.config.js", "reset.d.ts", "publish.ts"],
   "exclude": ["node_modules"]
 }

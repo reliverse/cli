@@ -1,11 +1,29 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./",
+    "target": "es2022",
+    "lib": ["es2022"],
+    "moduleDetection": "force",
+    "module": "preserve",
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "declaration": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
   },
-  "include": ["src", "index.ts", "options.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "eslint.config.js",
+    "reset.d.ts",
+    "src/**/*.ts",
+    "tsup.config.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
 }

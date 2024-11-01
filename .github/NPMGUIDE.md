@@ -16,7 +16,7 @@ For those viewing this markdown file using:
 
 - [pnpm](https://pnpm.io) is a fast, disk space-efficient package manager for JavaScript. It is an alternative to NPM and Yarn, offering unique features like a non-flat node_modules structure and symlinked dependencies, making it faster and more reliable in handling large projects.
 
-- [bun](https://bun.sh) is a fast npm-compatible JavaScript package manager. Develop, test, run, and bundle JavaScript & TypeScript projects—all with Bun. Bun is an all-in-one JavaScript runtime & toolkit designed for speed, complete with a bundler, test runner, and Node.js-compatible package manager.
+- [bun ](<https://bun> .sh) is a fast npm-compatible JavaScript package manager. Develop, test, run, and bundle JavaScript & TypeScript projects—all with bun . bun is an all-in-one JavaScript runtime & toolkit designed for speed, complete with a bundler, test runner, and Node.js-compatible package manager.
 
 ## Installing Node.js and NPM
 

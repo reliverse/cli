@@ -1,6 +1,6 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "@reliverse/browser",
+  "description": "Reliverse Devtools Browser Extension",
   "private": true,
   "version": "0.1.0",
   "type": "module",

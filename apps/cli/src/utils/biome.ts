@@ -1,4 +1,4 @@
-import type { BiomeConfig } from "~/prompts/utils/types";
+import type { BiomeConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";

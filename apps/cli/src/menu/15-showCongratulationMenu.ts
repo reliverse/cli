@@ -4,9 +4,9 @@ import fs from "fs-extra";
 import path from "pathe";
 import { execa } from "execa";
 
-import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
-import { isVSCodeInstalled } from "~/prompts/utils/isAppInstalled";
-import { DEBUG, FILE_PATHS, isDev } from "~/settings";
+import { choosePackageManager } from "~/utils/choosePackageManager";
+import { isVSCodeInstalled } from "~/utils/isAppInstalled";
+import { DEBUG, FILE_PATHS, isDev } from "~/app";
 
 export async function showCongratulationMenu(
   targetDir: string,

@@ -1,5 +1,5 @@
-import { extractRepoInfo } from "~/prompts/utils/extractRepoInfo";
-import { replaceStringsInFiles } from "~/prompts/utils/replaceStringsInFiles";
+import { extractRepoInfo } from "~/utils/extractRepoInfo";
+import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles";
 
 export async function handleStringReplacements(
   targetDir: string,
@@ -14,6 +14,7 @@ export async function handleStringReplacements(
     [`${oldProjectName}.sadmn.com`]: website,
     [author]: githubUser,
     [oldProjectName]: projectName,
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     ["relivator.com"]: website,
   };
 

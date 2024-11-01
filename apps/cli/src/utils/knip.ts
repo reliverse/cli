@@ -1,4 +1,4 @@
-import type { KnipConfig } from "~/prompts/utils/types";
+import type { KnipConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";

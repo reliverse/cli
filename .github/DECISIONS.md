@@ -56,7 +56,7 @@ Please remember that Clerk fully works with third-party services like "Google Pa
 
 In the `tsconfig.json` file you can set the options for the TypeScript compiler. You can hover over on each option to get more information about. Hint: You can also press Shift+Space to get auto-completion. Learn more by checking the official TypeScript documentation: @see <https://typescriptlang.org/docs/handbook/tsconfig-json> @see <https://totaltypescript.com/tsconfig-cheat-sheet>.
 
-Next.js has built-in support for TypeScript, using plugin below. But while you use `pnpm build`, it stops on the first type errors. So you can use `pnpm typecheck` to check all type warns/errors at once.
+Next.js has built-in support for TypeScript, using plugin below. But while you use `bun run build`, it stops on the first type errors. So you can use `bun typecheck` to check all type warns/errors at once.
 
 Config includes Atomic CSS plugin in the style attribute. Type-safe static styles with theming, responsive variant support, and no bundler integration. @see <https://github.com/tokenami/tokenami#readme>.
 
@@ -85,13 +85,13 @@ Consult the deployment guides for [Vercel](https://create.t3.gg/en/deployment/ve
 
 TODO: Implement design system and style guide.
 
-By default, this project includes components from various libraries, as well as unstyled [shadcn/ui](https://ui.shadcn.com) components. Shadcn/ui even allows you to generate new UI components using its CLI (where "button" can be any Shadcn UI element): `pnpm dlx shadcn-ui@latest add button`.
+By default, this project includes components from various libraries, as well as unstyled [shadcn/ui](https://ui.shadcn.com) components. Shadcn/ui even allows you to generate new UI components using its CLI (where "button" can be any Shadcn UI element): `bunx shadcn-ui@latest add button`.
 
-W.I.P. — Use `pnpm css` to watch for [CSS tokens](https://blog.devgenius.io/link-figma-and-react-using-figma-tokens-89e6cc874b4d) in accordance with the project's design system. [Tokenami](https://github.com/tokenami/tokenami#readme) and Figma are anticipated to be utilized for this concept. For additional information, refer to points #33 and #90 in the Relivator's Roadmap.
+W.I.P. — Use `bun css` to watch for [CSS tokens](https://blog.devgenius.io/link-figma-and-react-using-figma-tokens-89e6cc874b4d) in accordance with the project's design system. [Tokenami](https://github.com/tokenami/tokenami#readme) and Figma are anticipated to be utilized for this concept. For additional information, refer to points #33 and #90 in the Relivator's Roadmap.
 
 **Package Manager Compatibility:**
 
-`Relivator` can already harness some fantastic **[`Bun`](https://bun.sh)** features. For this starter, we currently recommend using `pnpm`. Full pnpm support and compatibility will be shipped as soon as [Reliverse](https://github.com/blefnk/reliverse)'s [Relivator](https://github.com/blefnk/relivator) achieves full similarity with Relivator. *Section expansion coming soon.*
+`Relivator` can already harness some fantastic **[`bun`](<https://bun> .sh)** features. For this starter, we currently recommend using `pnpm`. Full bun support and compatibility will be shipped as soon as [Reliverse](https://github.com/blefnk/reliverse)'s [Relivator](https://github.com/blefnk/relivator) achieves full similarity with Relivator. *Section expansion coming soon.*
 
 **Recommended Things to Learn:**
 

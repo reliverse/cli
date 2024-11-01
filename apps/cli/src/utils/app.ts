@@ -1,9 +1,9 @@
-import type { FooterItem } from "~/prompts/utils/nav";
-import type { MainMenuItem } from "~/prompts/utils/with";
+import type { FooterItem } from "~/utils/nav";
+import type { MainMenuItem } from "~/utils/with";
 
-import metadata from "~/prompts/utils/metadata";
-import { productCategories } from "~/prompts/utils/products";
-import { REPO_SHORT_URLS } from "~/settings";
+import metadata from "~/utils/metadata";
+import { productCategories } from "~/utils/products";
+import { REPO_SHORT_URLS } from "~/app";
 
 export function slugify(str: string) {
   return str

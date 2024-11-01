@@ -58,7 +58,7 @@ Since there hasn't been an update in over a month, I'm going to make the transit
 
 If everything goes well, the next update will already be version 1.3.0. By the way, I'm working on 1.2.x and 1.3.0 in parallel, like in big studios, haha. But please note: some files and lines of code was disabled by default for this version to fix and check some things. By the way, the third digit means that this update is not mandatory, but still recommended. And Relivator 1.3.0 may or may not come with a canary version of React/Next.js to start preparing for the upcoming release of React 19.
 
-Well, that's all for today, all the best to everyone, and may your `pnpm latest` and `pnpm appts` always be successful! As usual, I try to write a short announcement, but it turns out a few paragraphs, that's how we live! 😄
+Well, that's all for today, all the best to everyone, and may your `bun latest` and `bun appts` always be successful! As usual, I try to write a short announcement, but it turns out a few paragraphs, that's how we live! 😄
 
 P.S. And, please, don't pay attention that so many files have been "changed" in the latest commit, looks like it's because of Prettier I think, I only updated a few files, and if it's important to someone, please let me know in Discord's DM and I'll list you these files.
 

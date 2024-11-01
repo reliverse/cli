@@ -1,6 +1,6 @@
 import consola from "consola";
-import { replaceImportSymbol } from "~/prompts/mods/replaceImportSymbol";
-import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
+import { replaceImportSymbol } from "~/mods/replaceImportSymbol";
+import { getCurrentWorkingDirectory } from "~/utils/fs";
 
 async function runReliverseCodemod() {
   const projectPath = await consola.prompt(

@@ -8,12 +8,12 @@ export async function choosePackageManager(
 ): Promise<PackageManagerName> {
   const detectedPkgManager = (await detectPackageManager(cwd))?.name || "pnpm";
 
-  let pkgManager: PackageManagerName = detectedPkgManager as PackageManagerName;
+  let pkgManager: PackageManagerName = detectedPkgManager;
 
   if (pkgManager === "bun") {
-    consola.warn("Bun might not work for installing dependencies.");
+    consola.warn("bun might not work for installing dependencies.");
     const selectedPkgManager = await consola.prompt(
-      "Bun was detected. Do you want to use `pnpm`, `npm`, `yarn`, or continue with Bun?",
+      "bun was detected. Do you want to use `pnpm`, `npm`, `yarn`, or continue with bun ?",
       {
         default: "pnpm",
         options: ["pnpm", "npm", "yarn", "bun"] as PackageManagerName[],
@@ -21,7 +21,7 @@ export async function choosePackageManager(
       },
     );
 
-    pkgManager = selectedPkgManager as PackageManagerName;
+    pkgManager = selectedPkgManager;
   }
 
   return pkgManager;

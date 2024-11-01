@@ -6,7 +6,7 @@
 
 Refer to the [`.env.example`](.env.example) file as the guide for where and how to get all the important environment variable keys for Stripe, including webhooks for both localhost and deployment.
 
-Locally, install the [Stripe CLI](https://stripe.com/docs/stripe-cli) and run the command `pnpm stripe:listen` to initiate the Stripe webhook listener. This action connects Stripe to the account and generates a webhook key, which you can then set as an environment variable in Stripe's settings.
+Locally, install the [Stripe CLI](https://stripe.com/docs/stripe-cli) and run the command `bun stripe:listen` to initiate the Stripe webhook listener. This action connects Stripe to the account and generates a webhook key, which you can then set as an environment variable in Stripe's settings.
 
 When testing Stripe, you can use its test data: `4242424242424242` | `12/34` | `567` | `Random Name` | `Random Country`.
 

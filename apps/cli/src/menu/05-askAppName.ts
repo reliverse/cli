@@ -1,7 +1,7 @@
 import { consola } from "consola";
 import { generate } from "random-words";
 
-import { validate } from "~/prompts/utils/validate";
+import { validate } from "~/utils/validate";
 
 export async function askAppName(): Promise<string> {
   const placeholder = generate({ exactly: 3, join: "-" });

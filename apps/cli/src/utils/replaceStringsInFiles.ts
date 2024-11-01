@@ -2,7 +2,7 @@ import { consola } from "consola";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG } from "~/settings";
+import { DEBUG } from "~/app";
 
 export async function replaceStringsInFiles(
   targetDir: string,

@@ -4,14 +4,23 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["apps/docs/{.astro,dist}/", "apps/docs/src/env.d.ts"],
+    ignores: [
+      "**/.{git,next,astro,wxt}/",
+      "**/{node_modules,dist,public,drizzle}/",
+      "apps/docs/src/env.d.ts",
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
-      globals: { ...globals.browser, ...globals.node },
+      globals: {
+        ...globals.builtin,
+        ...globals.browser,
+        ...globals.es2024,
+        ...globals.node,
+      },
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
@@ -37,6 +46,7 @@ export default tseslint.config(
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/unified-signatures": "off",
       "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/only-throw-error": "off",
@@ -48,9 +58,29 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-deprecated": "off",
+      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        {
+          disallowTypeAnnotations: true,
+          fixStyle: "separate-type-imports",
+          prefer: "type-imports",
+        },
+      ],
+      "@typescript-eslint/naming-convention": [
+        "warn",
+        {
+          selector: "import",
+          format: ["camelCase", "PascalCase"],
+        },
+      ],
+      "no-throw-literal": "warn",
       "no-constant-binary-expression": "off",
       "no-constant-condition": "off",
       "no-case-declarations": "off",
+      curly: "warn",
+      eqeqeq: "warn",
+      semi: "warn",
     },
   },
 );

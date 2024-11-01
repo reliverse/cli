@@ -3,8 +3,8 @@ import { consola } from "consola";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { removeFile, renameFile } from "~/prompts/utils/fileUtils";
-import { DEBUG, FILE_CONFLICTS } from "~/settings";
+import { removeFile, renameFile } from "~/utils/fileUtils";
+import { DEBUG, FILE_CONFLICTS } from "~/app";
 
 export const resolveProjectConflicts = async (targetDir: string) => {
   // Ask user if they want to decide what to do with each file conflict

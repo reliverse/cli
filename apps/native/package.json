@@ -1,5 +1,5 @@
 {
-  "name": "native",
+  "name": "@reliverse/native",
   "version": "0.1.0",
   "description": "",
   "main": "main.js",

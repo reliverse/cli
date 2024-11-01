@@ -1,7 +1,7 @@
 import { consola } from "consola";
 
-import { validate } from "~/prompts/utils/validate";
-import type { GitOption } from "~/prompts/08-askGitInitialization";
+import { validate } from "~/utils/validate";
+import type { GitOption } from "~/menu/08-askGitInitialization";
 
 export async function askSummaryConfirmation(
   template: string,

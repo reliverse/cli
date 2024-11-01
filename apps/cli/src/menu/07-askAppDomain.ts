@@ -1,6 +1,6 @@
 import { consola } from "consola";
 
-import { validate } from "~/prompts/utils/validate";
+import { validate } from "~/utils/validate";
 
 export async function askAppDomain(): Promise<string> {
   const placeholder = "relivator.com";

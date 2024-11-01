@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import os from "os";
+import os from "node:os";
 
 export function isVSCodeInstalled(): boolean {
   const platform = os.platform();

@@ -1,4 +1,4 @@
-import type { PutoutConfig } from "~/prompts/utils/types";
+import type { PutoutConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";

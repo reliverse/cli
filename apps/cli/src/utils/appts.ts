@@ -1,4 +1,4 @@
-import type { ApptsConfig } from "~/prompts/utils/types";
+import type { ApptsConfig } from "~/utils/types";
 
 import { confirm, text } from "@clack/prompts";
 import consola from "consola";
@@ -13,7 +13,7 @@ import pc from "picocolors";
 
 import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
-import metadata from "~/prompts/utils/metadata";
+import metadata from "~/utils/metadata";
 
 export async function configureAppts({ apptsConfig }: ApptsConfig) {
   const apptsConfigPath = join(apptsConfig, "app.ts");
@@ -24,7 +24,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       "Oops! It seems like the configuration file `src/app.ts` has gone missing! ⛔",
     );
 
-    return;
+    return process.exit(0);
   }
 
   if (!(await fileExists(metadataConfigPath))) {
@@ -32,9 +32,10 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       `Uh-oh! We couldn't find the configuration file! (${metadataConfigPath}) ⛔`,
     );
 
-    return;
+    return process.exit(0);
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let currentConfig: Record<string, any> = {};
 
   try {
@@ -58,7 +59,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   });
 
   if (typeof proceed !== "boolean" || !proceed) {
-    return;
+    return process.exit(0);
   }
 
   let handle = await askForHandle(metadata.author.handle || "blefnk");
@@ -147,14 +148,14 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
   try {
     await updateFile(metadataConfigPath, {
-      name: name as string,
-      siteNameDesc: siteNameDesc as string,
-      appPublisher: appPublisher as string,
-      appVersion: appVersion as string,
-      authorEmail: authorEmail as string,
-      authorFullName: authorFullName as string,
-      authorUrl: authorUrl as string,
-      handle: handle as string,
+      name: name,
+      siteNameDesc: siteNameDesc,
+      appPublisher: appPublisher,
+      appVersion: appVersion,
+      authorEmail: authorEmail,
+      authorFullName: authorFullName,
+      authorUrl: authorUrl,
+      handle: handle,
     });
 
     consola.success(

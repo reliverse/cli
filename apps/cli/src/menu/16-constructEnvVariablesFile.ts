@@ -50,6 +50,7 @@ async function constructEnvFile() {
     const envContent = (await fs.readFile(ENV_PATH, "utf8")).split("\n");
 
     const missingKeys: Record<string, string> = {};
+    // biome-ignore lint/complexity/noForEach: <explanation>
     exampleContent.forEach((line) => {
       const [key, defaultValue] = line.split("=");
       if (key && !envContent.some((envLine) => envLine.startsWith(`${key}=`))) {

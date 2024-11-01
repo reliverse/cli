@@ -31,8 +31,10 @@ function createPrompt(
 
   if (type === "input") {
     return input(options as { default?: string; message: string });
+    // biome-ignore lint/style/noUselessElse: <explanation>
   } else if (type === "password") {
     return password(options as { default?: string; message: string });
+    // biome-ignore lint/style/noUselessElse: <explanation>
   } else {
     return confirm(options as { default?: boolean; message: string });
   }

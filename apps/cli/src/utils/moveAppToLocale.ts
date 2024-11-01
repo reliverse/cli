@@ -2,7 +2,7 @@ import { consola } from "consola";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG } from "~/settings";
+import { DEBUG } from "~/app";
 
 // Function to move the content of src/app to src/app/[locale]
 export async function moveAppToLocale(targetDir: string): Promise<void> {
@@ -33,7 +33,9 @@ export async function moveAppToLocale(targetDir: string): Promise<void> {
       const newPath = path.join(localeDir, file);
 
       // Skip moving the [locale] folder itself to prevent infinite recursion
-      if (file === "[locale]") continue;
+      if (file === "[locale]") {
+        continue;
+      }
 
       try {
         await fs.move(oldPath, newPath);

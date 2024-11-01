@@ -10,7 +10,7 @@ Presently, all languages are machine-translated. Future revisions by native spea
 
 useTranslations works both on the server and client; we only need the getTranslations on async components.
 
-*Currently not available.* Use `pnpm lint:i18n` to verify the i18n files. The tool attempts to rectify issues when possible, offering features like ascending sort. No output means everything is in order.
+*Currently not available.* Use `bun lint:i18n` to verify the i18n files. The tool attempts to rectify issues when possible, offering features like ascending sort. No output means everything is in order.
 
 We are using *next-intl* for internationalization. Sometime we can use beta/rc versions as needed. Find more information about it [here](https://next-intl-docs.vercel.app/blog/next-intl-3-0) and [here](https://github.com/amannn/next-intl/pull/149).
 
@@ -22,7 +22,7 @@ We are using *next-intl* for internationalization. Sometime we can use beta/rc v
 2. Open the `messages` folder and create a `zh-cn.json` file with the example content: `{ "metadata": { "description": "建立更高效、更吸引人且更有利可图的在线商店：使用 Relivator" } }`.
 3. Now open `src/i18n.ts` and add `"zh-cn": zh_cn` with the appropriate `import` at the top.
 4. In the file `src/navigation.ts`, add the corresponding values to `locales` and `labels`.
-5. Run `pnpm dev` and review the landing page header. If it appears correctly, you're ready to go.
+5. Run `bun run dev` and review the landing page header. If it appears correctly, you're ready to go.
 6. Optionally, I recommend using the VSCode extension [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally), which makes machine translation easy.
 7. Also optionally, install [specific CSpell language](https://github.com/streetsidesoftware/cspell-dicts#language-dictionaries) for full support of this language in VSCode (when using the "[Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker)" extension). If the language is not available, try to find a word dictionary file on the web or make a new one (see CSpell docs).
 

@@ -1,0 +1,38 @@
+{
+  "dictionaries": [],
+  "ignorePaths": [
+    ".astro",
+    "**/*.lock",
+    "**/*.txt",
+    "build",
+    "dist",
+    "out",
+    "eslint.config.js",
+    "pnpm-lock.yaml"
+  ],
+  "ignoreWords": [],
+  "import": [],
+  "language": "en",
+  "version": "0.2",
+  "words": [
+    "appts",
+    "atao",
+    "blefnk",
+    "bunx",
+    "consola",
+    "ENOWORKSPACES",
+    "giget",
+    "knip",
+    "Korniienko",
+    "Nazarii",
+    "nextjs",
+    "nypm",
+    "pathe",
+    "pnpx",
+    "redrun",
+    "relivator",
+    "tsup",
+    "typecheck",
+    "versator"
+  ]
+}

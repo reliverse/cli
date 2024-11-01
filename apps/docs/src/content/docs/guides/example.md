@@ -31,7 +31,7 @@ To build all apps and packages, run the following command:
 
 ```
 cd my-turborepo
-pnpm build
+bun run build
 ```
 
 ### Develop
@@ -40,7 +40,7 @@ To develop all apps and packages, run the following command:
 
 ```
 cd my-turborepo
-pnpm dev
+bun run dev
 ```
 
 ### Remote Caching

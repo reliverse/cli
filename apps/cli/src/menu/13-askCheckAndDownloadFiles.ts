@@ -3,112 +3,116 @@ import { consola } from "consola";
 import path from "pathe";
 import { resolveProjectConflicts } from "~/menu/12-askToResolveProjectConflicts";
 
-import { cloneAndCopyFiles } from "~/prompts/utils/cloneAndCopyFiles";
-import { checkFileExists } from "~/prompts/utils/fileUtils";
-import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
-import { DEBUG, FILE_PATHS, fileCategories } from "~/settings";
+import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles";
+import { checkFileExists } from "~/utils/fileUtils";
+import { getCurrentWorkingDirectory } from "~/utils/fs";
+import { DEBUG, FILE_PATHS, fileCategories } from "~/app";
+import { verbose } from "~/utils/console";
 
 export const askCheckAndDownloadFiles = async (
-	targetDir: string,
-	projectName: string,
+  targetDir: string,
+  projectName: string,
 ): Promise<void> => {
-	const missingFiles: string[] = [];
-	const existingFiles: string[] = [];
+  const missingFiles: string[] = [];
+  const existingFiles: string[] = [];
 
-	// Check if any files in each category are missing or already exist
-	for (const category in fileCategories) {
-		const filesInCategory =
-			fileCategories[category as keyof typeof fileCategories];
+  verbose(
+    "info",
+    `Checking if all required files are present in ${projectName} located in ${targetDir}`,
+  );
 
-		if (!filesInCategory) continue;
+  // Check if any files in each category are missing or already exist
+  for (const category in fileCategories) {
+    const filesInCategory = fileCategories[category];
 
-		for (const file of filesInCategory) {
-			const filePath = path.join(targetDir, file);
+    if (!filesInCategory) {
+      continue;
+    }
 
-			if (!checkFileExists(filePath)) {
-				missingFiles.push(file);
-			} else {
-				existingFiles.push(file);
-			}
-		}
-	}
+    for (const file of filesInCategory) {
+      const filePath = path.join(targetDir, file);
 
-	// Handle project files conflicts
-	await resolveProjectConflicts(targetDir);
+      if (!checkFileExists(filePath)) {
+        missingFiles.push(file);
+      } else {
+        existingFiles.push(file);
+      }
+    }
+  }
 
-	// If there are missing files, prompt the user to download them
-	if (missingFiles.length > 0) {
-		DEBUG.enableVerboseLogging &&
-			consola.info(
-				`The following files are missing in ${targetDir}: ${missingFiles.join(", ")}`,
-			);
+  // Handle project files conflicts
+  await resolveProjectConflicts(targetDir);
 
-		const categoriesToDownload = await checkbox({
-			choices: Object.keys(fileCategories).map((category) => ({
-				name: category,
-				checked: true,
-				value: category,
-			})),
-			message: "Select the file categories you want to download:",
-		});
+  // If there are missing files, prompt the user to download them
+  if (missingFiles.length > 0) {
+    DEBUG.enableVerboseLogging &&
+      consola.info(
+        `The following files are missing in ${targetDir}: ${missingFiles.join(", ")}`,
+      );
 
-		const filesToDownload = categoriesToDownload
-			.flatMap(
-				(category) =>
-					fileCategories[category as keyof typeof fileCategories] || [],
-			)
-			.filter(Boolean);
+    const categoriesToDownload = await checkbox({
+      choices: Object.keys(fileCategories).map((category) => ({
+        name: category,
+        checked: true,
+        value: category,
+      })),
+      message: "Select the file categories you want to download:",
+    });
 
-		const cwd = getCurrentWorkingDirectory();
-		const tempCloneRepo = "https://github.com/blefnk/relivator";
-		const tempRepoDir = path.resolve(cwd, `../${FILE_PATHS.tempRepoClone}`);
+    const filesToDownload = categoriesToDownload
+      .flatMap((category) => fileCategories[category] || [])
+      .filter(Boolean);
 
-		// Handle conflicts for already existing files
-		if (existingFiles.length > 0) {
-			const replaceAll = await confirm({
-				default: true,
-				message:
-					"Some files already exist. Do you want to replace all existing files? (N opens Conflict Management menu)",
-			});
+    const cwd = getCurrentWorkingDirectory();
+    const tempCloneRepo = "https://github.com/blefnk/relivator";
+    const tempRepoDir = path.resolve(cwd, `../${FILE_PATHS.tempRepoClone}`);
 
-			if (!replaceAll) {
-				const filesToReplace = await checkbox({
-					choices: existingFiles.map((file) => ({
-						name: file,
-						checked: false,
-						value: file,
-					})),
-					message: "Select the files you want to replace:",
-				});
+    // Handle conflicts for already existing files
+    if (existingFiles.length > 0) {
+      const replaceAll = await confirm({
+        default: true,
+        message:
+          "Some files already exist. Do you want to replace all existing files? (N opens Conflict Management menu)",
+      });
 
-				await cloneAndCopyFiles(
-					[...filesToDownload, ...filesToReplace].filter(Boolean),
-					targetDir,
-					false,
-					tempCloneRepo,
-					tempRepoDir,
-				);
-			} else {
-				await cloneAndCopyFiles(
-					filesToDownload.filter(Boolean),
-					targetDir,
-					true,
-					tempCloneRepo,
-					tempRepoDir,
-				); // Replace all existing files
-			}
-		} else {
-			await cloneAndCopyFiles(
-				filesToDownload.filter(Boolean),
-				targetDir,
-				false,
-				tempCloneRepo,
-				tempRepoDir,
-			); // No conflicts, just download the files
-		}
-	} else {
-		consola.success(
-			`All required files are present in ${targetDir}. Codemod is finished.`,
-		);
-	}
+      if (!replaceAll) {
+        const filesToReplace = await checkbox({
+          choices: existingFiles.map((file) => ({
+            name: file,
+            checked: false,
+            value: file,
+          })),
+          message: "Select the files you want to replace:",
+        });
+
+        await cloneAndCopyFiles(
+          [...filesToDownload, ...filesToReplace].filter(Boolean),
+          targetDir,
+          false,
+          tempCloneRepo,
+          tempRepoDir,
+        );
+      } else {
+        await cloneAndCopyFiles(
+          filesToDownload.filter(Boolean),
+          targetDir,
+          true,
+          tempCloneRepo,
+          tempRepoDir,
+        ); // Replace all existing files
+      }
+    } else {
+      await cloneAndCopyFiles(
+        filesToDownload.filter(Boolean),
+        targetDir,
+        false,
+        tempCloneRepo,
+        tempRepoDir,
+      ); // No conflicts, just download the files
+    }
+  } else {
+    consola.success(
+      `All required files are present in ${targetDir}. Codemod is finished.`,
+    );
+  }
 };

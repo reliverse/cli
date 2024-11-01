@@ -1,8 +1,8 @@
 import { consola } from "consola";
-import { askProjectDetails } from "~/prompts/04-askProjectDetails";
-import { validate } from "~/prompts/utils/validate";
-import { REPO_SHORT_URLS } from "~/settings";
-import { justInstallRelivator } from "~/prompts/01-justInstallRelivator";
+import { askProjectDetails } from "~/menu/04-askProjectDetails";
+import { validate } from "~/utils/validate";
+import { REPO_SHORT_URLS } from "~/app";
+import { justInstallRelivator } from "~/menu/01-justInstallRelivator";
 
 export async function installAnyGitRepo() {
   consola.info(

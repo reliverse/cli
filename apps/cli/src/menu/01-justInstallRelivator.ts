@@ -1,5 +1,5 @@
-import { askProjectDetails } from "~/prompts/04-askProjectDetails";
-import { REPO_SHORT_URLS } from "~/settings";
+import { askProjectDetails } from "~/menu/04-askProjectDetails";
+import { REPO_SHORT_URLS } from "~/app";
 
 export async function justInstallRelivator() {
   const template = REPO_SHORT_URLS.relivatorGithubLink;

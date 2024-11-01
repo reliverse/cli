@@ -2,11 +2,11 @@ import { consola } from "consola";
 import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
-import { verbose } from "~/prompts/utils/console";
-import { downloadGitRepo } from "~/prompts/utils/downloadGitRepo";
-import { getCurrentWorkingDirectory } from "~/prompts/utils/fs";
-import { validate } from "~/prompts/utils/validate";
-import { isDev, REPO_SHORT_URLS } from "~/settings";
+import { verbose } from "~/utils/console";
+import { downloadGitRepo } from "~/utils/downloadGitRepo";
+import { getCurrentWorkingDirectory } from "~/utils/fs";
+import { validate } from "~/utils/validate";
+import { isDev, REPO_SHORT_URLS } from "~/app";
 
 const cwd = getCurrentWorkingDirectory();
 

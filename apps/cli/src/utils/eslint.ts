@@ -1,4 +1,4 @@
-import type { EslintConfig } from "~/prompts/utils/types";
+import type { EslintConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";

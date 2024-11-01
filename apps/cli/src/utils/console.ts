@@ -1,6 +1,6 @@
 import { consola } from "consola";
 
-import { DEBUG } from "~/settings";
+import { DEBUG } from "~/app";
 
 // Helper for conditional verbose logging
 export const verbose = (

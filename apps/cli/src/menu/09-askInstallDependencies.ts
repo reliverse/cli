@@ -1,7 +1,7 @@
 import { consola } from "consola";
-import { choosePackageManager } from "~/prompts/utils/choosePackageManager";
+import { choosePackageManager } from "~/utils/choosePackageManager";
 
-import { validate } from "~/prompts/utils/validate";
+import { validate } from "~/utils/validate";
 
 export async function askInstallDependencies(
   mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",

@@ -5,14 +5,14 @@ import pc from "picocolors";
 
 import { config } from "@reliverse/core";
 import { getCurrentDirname, getRootDirname } from "@reliverse/fs";
-import { siteConfig } from "~/prompts/utils/app";
-import { configureAppts } from "~/prompts/utils/appts";
-import { configureBiome } from "~/prompts/utils/biome";
-import { configureEnv } from "~/prompts/utils/envjs";
-import { configureEslint } from "~/prompts/utils/eslint";
-import { configureKnip } from "~/prompts/utils/knip";
-import { configureNext } from "~/prompts/utils/nextjs";
-import { configurePutout } from "~/prompts/utils/putout";
+import { siteConfig } from "~/utils/app";
+import { configureAppts } from "~/utils/appts";
+import { configureBiome } from "~/utils/biome";
+import { configureEnv } from "~/utils/envjs";
+import { configureEslint } from "~/utils/eslint";
+import { configureKnip } from "~/utils/knip";
+import { configureNext } from "~/utils/nextjs";
+import { configurePutout } from "~/utils/putout";
 
 export async function runReliverseSetup() {
   const currentDirname = getCurrentDirname(import.meta.url);

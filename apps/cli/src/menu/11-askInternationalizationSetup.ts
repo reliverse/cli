@@ -1,6 +1,6 @@
 import { confirm } from "@inquirer/prompts";
 
-import { validate } from "~/prompts/utils/validate";
+import { validate } from "~/utils/validate";
 
 export async function askInternationalizationSetup(): Promise<boolean> {
   const useI18n = await confirm({

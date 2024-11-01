@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import { DEBUG, FILE_CONFLICTS } from "~/settings";
+import { DEBUG, FILE_CONFLICTS } from "~/app";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(
@@ -57,7 +57,7 @@ export async function cloneAndCopyFiles(
     for (const fileName of filesToDownload) {
       // Find if the file is in FILE_CONFLICTS and has shouldCopy: false
       const fileConflict = FILE_CONFLICTS.find(
-        (file) => file.fileName === fileName && file.shouldCopy === false,
+        (file) => file.fileName === fileName && !file.shouldCopy,
       );
 
       // Skip copying if shouldCopy is false

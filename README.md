@@ -12,6 +12,8 @@ The mission of this project is not only to help you install templates in seconds
 
 ## TL;DR
 
+Things are too overwhelming in our world. Let's make everything easier.
+
 **It's a single tool for everything.** At its current stage, Reliverse CLI is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t be only a website builder in the future, it will be a tool for building anything. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
 
 Remember the feeling of empowerment when you first used a website builder like WordPress? It gave you the freedom to create. But eventually, you hit limits—PageSpeed Insights flagged issues, performance lagged, and the bloated size of your site became hard to ignore.
@@ -28,8 +30,8 @@ By the way, you might think that a CLI doing so many things would become bloated
 
 You should install [Git](https://git-scm.com), [VSCode](https://code.visualstudio.com), and [Node.js LTS](https://nodejs.org/en/download/package-manager) first. Then use one of the following commands to install **Reliverse**:
 
-- With [bun](https://bun.sh): `bun i -g reliverse`
-- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm add -g reliverse`
+- With [bun ](<https://bun> .sh): `bun i -g reliverse`
+- With [pnpm](https://pnpm.io/installation#using-corepack): `bun add -g reliverse`
 - With [yarn](https://yarnpkg.com): `yarn global add reliverse`
 - With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g reliverse`
 
@@ -41,7 +43,16 @@ Once installed, you can use **Reliverse CLI** to create new projects or manage e
 reliverse
 ```
 
-> **Temporary issue**: It seems that currently if you build and publish a project using Bun, then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
+> **Temporary issue**: It seems that currently if you build and publish a project using bun , then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
+
+## FAQ
+
+Bun doesn't install the latest version of Reliverse CLI. What should I do?
+
+```bash
+bun pm cache rm -g
+bunx reliverse
+```
 
 ## Features
 
@@ -157,7 +168,7 @@ To contribute to **Reliverse CLI**, you can clone the repository and install the
 ```bash
 git clone https://github.com/reliverse/cli.git
 cd reliverse
-bun i # OR pnpm i OR yarn install OR npm i
+bun i # OR bun i OR yarn install OR npm i
 ```
 
 ### Running Locally
@@ -165,9 +176,9 @@ bun i # OR pnpm i OR yarn install OR npm i
 To run the CLI locally for development purposes, use:
 
 ```bash
-bun dev
+bun run dev
 # or
-pnpm dev
+bun run dev
 # or
 yarn dev
 # or
@@ -178,10 +189,16 @@ npm dev
 
 We welcome contributions! Feel free to open issues or submit pull requests. Please ensure your code adheres to our linting guidelines by running `bun appts` before submitting.
 
-> **Temporary issue**: It seems that currently if you build and publish a project using Bun, then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
+> **Temporary issue**: It seems that currently if you build and publish a project using bun , then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
 
 Reliverse takes a different, non-standard approach compared to other bootstrappers. The author has observed many CLIs handling project bootstrapping, some of which are quite impressive. However, their repositories often contain numerous files that are eventually bundled into a single `index.js`, functioning like an installer wizard. This leads to cluttered repositories, typically set up as monorepos, adding complexity. In contrast, the `reliverse/cli` repository downloads specific files from existing repositories and only copies or generates files when absolutely necessary.
 
 ## License
 
 This project is licensed under the MIT License—see the [LICENSE](LICENSE) file for more details.
+
+---
+
+## Wrap Up
+
+Reliverse is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the Relivator Next.js template or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.

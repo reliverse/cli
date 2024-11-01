@@ -1,0 +1,88 @@
+{
+  "name": "reliverse",
+  "version": "1.0.7",
+  "description": "Reliverse is a website builder inside your terminal. You can start from scratch or use a template. You can set everything up automatically or configure everything exactly the way you like. You can have it all, with all the tools already prepared for you.",
+  "author": "reliverse",
+  "type": "module",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "cli",
+    "reliverse",
+    "relivator"
+  ],
+  "homepage": "https://docs.reliverse.org",
+  "repository": "https://github.com/blefnk/reliverse",
+  "bugs": "https://github.com/blefnk/reliverse/issues",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "dev": "bun src/index.ts",
+    "pub": "bun run build && npm publish --access public",
+    "appts": "redrun knip lint format typecheck build",
+    "build": "fse remove --quiet dist && tsup",
+    "ci": "bun lint:eslint && bun typecheck && bun run build",
+    "dev:eslint": "bun eslint --inspect-config",
+    "dev:node": "node dist/index.js",
+    "format": "redrun format:biome",
+    "format:biome": "biome format --write .",
+    "knip": "knip",
+    "latest": "bun update --latest",
+    "lint": "redrun lint:eslint lint:biome",
+    "lint:biome": "biome lint --write .",
+    "lint:eslint": "eslint --cache --fix .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@atao60/fse-cli": "^0.1.9",
+    "@reliverse/fs": "^0.6.0",
+    "@turbo/gen": "^1.12.4",
+    "@types/node": "^20.11.24",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "@types/bun": "^1.1.12",
+    "fs-extra": "^11.2.0",
+    "pathe": "^1.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "5.5.4"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "@inquirer/prompts": "^7.0.1",
+    "@reliverse/core": "^0.1.0",
+    "@types/fs-extra": "^11.0.4",
+    "citty": "^0.1.6",
+    "commander": "^12.1.0",
+    "consola": "^3.2.3",
+    "execa": "^9.5.1",
+    "giget": "^1.2.3",
+    "glob": "^11.0.0",
+    "magicast": "^0.3.5",
+    "nypm": "^0.3.12",
+    "picocolors": "^1.1.1",
+    "random-words": "^2.0.1",
+    "simple-git": "^3.27.0",
+    "tsup": "^8.2.4"
+  }
+}

@@ -30,5 +30,6 @@ export type MainMenuItem = NavItemWithOptionalChildren;
 export type SidebarNavItem = NavItemWithChildren;
 
 export type GeneralShellProps = {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   header?: any;
 };

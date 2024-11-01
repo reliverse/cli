@@ -1,4 +1,4 @@
-import type { EnvJsConfig } from "~/prompts/utils/types";
+import type { EnvJsConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";

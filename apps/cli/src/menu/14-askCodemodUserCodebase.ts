@@ -1,7 +1,7 @@
 import { consola } from "consola";
-import { replaceImportSymbol } from "~/prompts/mods/replaceImportSymbol";
-import { validate } from "~/prompts/utils/validate";
-import { getCurrentWorkingDirectory } from "~/prompts/utils/fs"; // Assuming this helper function exists
+import { replaceImportSymbol } from "~/mods/replaceImportSymbol";
+import { validate } from "~/utils/validate";
+import { getCurrentWorkingDirectory } from "~/utils/fs"; // Assuming this helper function exists
 
 export async function askCodemodUserCodebase() {
   consola.info("The code modification process will start now.");

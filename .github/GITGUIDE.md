@@ -122,7 +122,7 @@ git config --global alias.leftover '!git grep -P -i -I --untracked "((?<![a-zA-Z
 
 ### Using Your Favorite Editor for Git
 
-You can set your favorite text editor to use with Git for writing commit messages, etc. For example, if you prefer `gedit` on Ubuntu:
+You can set your favorite text editor to use with Git for writing commit messages, etc. For example, if you prefer `gedit` on Ubun tu:
 
 ```bash
 git config --global core.editor "gedit --wait"
@@ -144,7 +144,7 @@ When you clone repositories over HTTPS, you need to enter a username and passwor
 # On Windows
 git config --global credential.helper wincred
 
-# On Ubuntu
+# On Ubun tu
 sudo apt-get install libgnome-keyring-dev
 cd /usr/share/doc/git/contrib/credential/gnome-keyring
 sudo make

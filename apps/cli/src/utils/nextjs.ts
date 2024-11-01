@@ -1,4 +1,4 @@
-import type { NextJsConfig } from "~/prompts/utils/types";
+import type { NextJsConfig } from "~/utils/types";
 
 import { select } from "@clack/prompts";
 import consola from "consola";
