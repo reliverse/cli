@@ -79,6 +79,7 @@ async function publishPackage() {
 
     await proc.exited;
 
+    // TODO: Display only the error message in the console, without the source code snippet.
     if (proc.exitCode !== 0) {
       if (
         stderr.includes("403 Forbidden") &&
@@ -117,7 +118,7 @@ async function postPublish() {
 
     if (didPublish) {
       console.log("\n│ https://npmjs.com/package/reliverse");
-      console.log("│ Wait a moment and run cmd: bunx reliverse\n");
+      console.log("│ Wait a moment and run: bunx reliverse\n");
     }
   } catch (error) {
     console.error("❌ Error during file deletion:", error);

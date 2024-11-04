@@ -1,0 +1,12 @@
+import color from "picocolors";
+import { detectPackageManager } from "nypm";
+
+export async function getPackageManagerName() {
+  const cwd = process.cwd();
+  const pm = await detectPackageManager(cwd);
+  return pm?.name;
+}
+
+export function formatPromptMessage(message: string): string {
+  return color.cyanBright(color.bold(message));
+}

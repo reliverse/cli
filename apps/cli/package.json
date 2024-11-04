@@ -1,6 +1,6 @@
 {
   "name": "reliverse",
-  "version": "1.0.50",
+  "version": "1.0.53",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "type": "module",
   "repository": {
