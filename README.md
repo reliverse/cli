@@ -1,6 +1,8 @@
 # Reliverse
 
-[GitHub](https://github.com/reliverse/cli), [npmjs](https://npmjs.com/package/reliverse)
+[GitHub](https://github.com/reliverse/cli), [npmjs](https://npmjs.com/package/reliverse), [Discord](https://discord.gg/Pb8uKbwpsJ)
+
+👋 Welcome! This tool already can help you create new web projects and make some codebase modifications, with more features coming soon.
 
 **Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
 
@@ -13,6 +15,16 @@ The mission of this project is not only to help you install templates in seconds
 ## TL;DR
 
 Things are too overwhelming in our world. Let's make everything easier.
+
+**Reliverse CLI allows you:**
+
+1. Install the pre-configured Relivator.
+2. Build your own Relivator from scratch.
+3. Install any web-related repository from GitHub.
+4. Add shadcn/ui components to your React/Vue/Svelte project.
+5. Run code modifications on the existing codebase.
+6. Update your GitHub clone with the latest changes.
+7. Add, remove, or replace the Relivator's features.
 
 **It's a single tool for everything.** At its current stage, Reliverse CLI is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t be only a website builder in the future, it will be a tool for building anything. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
 

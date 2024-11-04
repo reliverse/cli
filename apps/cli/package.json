@@ -1,88 +1,33 @@
 {
   "name": "reliverse",
-  "version": "1.0.19",
-  "description": "Reliverse is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the Relivator Next.js template or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.",
-  "keywords": [
-    "reliverse",
-    "cli"
-  ],
-  "license": "MIT",
-  "author": "blefnk",
+  "version": "1.0.50",
+  "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blefnk/reliverse.git",
+    "directory": "apps/cli"
   },
-  "homepage": "https://reliverse.org",
-  "repository": "https://github.com/reliverse/cli",
-  "bugs": "https://github.com/reliverse/cli/issues",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": "./bin/main.js",
   "bin": {
-    "reliverse": "dist/index.js"
+    "reliverse": "./bin/main.js"
   },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "appts": "redrun lint format typecheck build",
-    "build": "fse remove --quiet dist && tsup",
-    "ci": "bun lint:eslint && bun typecheck && bun run build",
-    "dev": "tsx src/index.ts",
-    "dev:eslint": "bun eslint --inspect-config",
-    "dev:node": "node dist/index.js",
-    "format": "redrun format:biome",
-    "format:biome": "biome format --write .",
-    "knip": "knip",
-    "latest": "bun update --latest",
-    "lint": "redrun lint:eslint lint:biome",
-    "lint:biome": "biome lint --write .",
-    "lint:eslint": "eslint --cache --fix .",
-    "pub": "bun run build && npm publish --access public",
-    "typecheck": "tsc --noEmit"
+  "bugs": {
+    "url": "https://github.com/blefnk/reliverse/issues",
+    "email": "blefnk@gmail.com"
   },
+  "files": ["bin", "README.md"],
+  "homepage": "https://github.com/blefnk/reliverse",
+  "keywords": ["cli", "reliverse"],
+  "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "@inquirer/prompts": "^7.0.1",
-    "@reliverse/core": "^0.1.0",
-    "@reliverse/fs": "^0.6.0",
-    "citty": "^0.1.6",
-    "consola": "^3.2.3",
-    "execa": "^9.5.1",
-    "giget": "^1.2.3",
-    "glob": "^11.0.0",
-    "node-fetch": "^3.3.2",
-    "nypm": "^0.3.12",
-    "ofetch": "^1.4.1",
-    "open": "^10.1.0",
-    "pathe": "^1.1.2",
-    "picocolors": "^1.1.1",
-    "random-words": "^2.0.1",
-    "simple-git": "^3.27.0",
-    "tasuku": "^2.0.1"
+    "nypm": "^0.3.12"
   },
   "devDependencies": {
-    "@atao60/fse-cli": "^0.1.9",
-    "@biomejs/biome": "^1.9.4",
-    "@eslint/js": "^9.13.0",
-    "@total-typescript/ts-reset": "^0.6.1",
-    "@types/bun": "^1.1.12",
-    "@types/eslint__js": "^8.42.3",
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.8.4",
-    "eslint": "^9.13.0",
-    "fs-extra": "^11.2.0",
-    "globals": "^15.11.0",
-    "knip": "^5.34.3",
-    "magicast": "^0.3.5",
-    "redrun": "^11.0.5",
+    "@types/bun": "^1.1.13",
     "terser": "^5.36.0",
     "tsup": "^8.3.5",
-    "tsx": "^4.19.2",
-    "typescript": "5.6.3",
-    "typescript-eslint": "^8.12.2"
-  },
-  "packageManager": "bun@1.1.33"
+    "typescript": "^5.6.3"
+  }
 }

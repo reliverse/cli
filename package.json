@@ -1,52 +1,11 @@
 {
-  "name": "reliverse",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "addons/*",
-    "packages/*",
-    "examples/*"
-  ],
+  "name": "@blefnk/reliverse",
   "scripts": {
-    "appts": "redrun typecheck lint format",
-    "start": "bun cache delete reliverse && pnpx reliverse@latest",
-    "typecheck": "tsc --noEmit",
-    "knip": "knip",
-    "lint": "eslint --cache --fix .",
-    "format": "biome check --write .",
-    "build": "turbo build",
-    "build:cli": "turbo build --filter=reliverse",
-    "dev": "turbo dev",
-    "dev:cli": "bun --filter ./apps/cli dev",
-    "dev:docs": "turbo dev --filter ./apps/docs",
-    "dev:native": "turbo dev --filter ./apps/native",
+    "build:cli": "cd apps/cli && bun build-pub.ts --bundler-tsup --build-only",
+    "pub:cli": "cd apps/cli && bun build-pub.ts --bundler-tsup",
     "add:cli": "cd apps/cli && bun add",
-    "add:docs": "cd apps/docs && bun add",
-    "add:native": "cd apps/native && bun add",
-    "pub:cli": "bun publish.ts prepub && bun run --filter ./apps/cli pub && bun publish.ts postpub"
+    "rm:cli": "cd apps/cli && bun rm",
+    "dev:cli": "bun apps/cli/src/main.ts"
   },
-  "devDependencies": {
-    "@atao60/fse-cli": "^0.1.9",
-    "@biomejs/biome": "1.9.4",
-    "@eslint/js": "^9.13.0",
-    "@types/bun": "^1.1.12",
-    "@types/eslint__js": "^8.42.3",
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.8.4",
-    "eslint": "^9.13.0",
-    "fs-extra": "^11.2.0",
-    "globals": "^15.11.0",
-    "knip": "^5.34.4",
-    "prettier": "^3.3.3",
-    "redrun": "^11.0.5",
-    "tsx": "^4.19.2",
-    "turbo": "^2.2.3",
-    "typescript": "5.6.3",
-    "typescript-eslint": "^8.12.2"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "packageManager": "bun@1.1.33"
+  "workspaces": ["apps/*"]
 }

@@ -1,8 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "dist"
-  },
-  "include": ["src/**/*.tsx", "turbo"],
-  "exclude": ["node_modules", "../../reset.d.ts", "dist"]
-}
