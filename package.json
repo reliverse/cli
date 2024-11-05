@@ -1,10 +1,10 @@
 {
   "name": "@blefnk/reliverse",
   "scripts": {
-    "build:cli": "cd apps/cli && bun build-pub.ts --bundler-tsup --build-only",
-    "build:prompts": "cd packages/prompts && bun build-pub.ts --bundler-tsup --build-only",
-    "pub:cli": "cd apps/cli && bun build-pub.ts --bundler-tsup",
-    "pub:prompts": "cd packages/prompts && bun build-pub.ts --bundler-tsup",
+    "build:cli": "cd apps/cli && bun build-pub.ts --bundler-bun --build-only",
+    "build:prompts": "cd packages/prompts && bun build-pub.ts --bundler-bun --build-only",
+    "pub:cli": "cd apps/cli && bun build-pub.ts --bundler-bun",
+    "pub:prompts": "cd packages/prompts && bun build-pub.ts --bundler-bun",
     "add:cli": "cd apps/cli && bun add",
     "add:prompts": "cd packages/prompts && bun add",
     "rm:cli": "cd apps/cli && bun rm",
@@ -12,7 +12,5 @@
     "dev:cli": "bun apps/cli/src/main.ts"
   },
   "workspaces": ["apps/*", "packages/*"],
-  "dependencies": {
-    "@sinclair/typebox": "^0.33.17"
-  }
+  "sideEffects": false
 }
