@@ -1,11 +1,12 @@
-import { selectWithConfig } from "~/prompts";
+import { selectWithConfig } from "~/utils/promptsUtils";
 import { outro } from "@clack/prompts";
 import color from "picocolors";
-import { projectKinds } from "~/config";
+import { projectKinds } from "~/prompts";
+import { title } from "~/utils/generalUtils";
 
-export async function handleProjectSelection(): Promise<string | undefined> {
+export async function askProjectSelection(): Promise<string | undefined> {
   const kind = await selectWithConfig(
-    color.cyanBright(color.bold("What would you like to work on today?")),
+    title("What would you like to work on today?"),
     projectKinds,
     5,
   );
@@ -26,5 +27,5 @@ export async function handleProjectSelection(): Promise<string | undefined> {
     return;
   }
 
-  return kind; // Type 'unknown' is not assignable to type 'string | undefined'.
+  return kind;
 }

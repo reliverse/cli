@@ -1,11 +1,12 @@
-import { selectWithConfig } from "~/prompts";
+import { selectWithConfig } from "~/utils/promptsUtils";
 import { outro } from "@clack/prompts";
 import color from "picocolors";
-import { modes, menuModes } from "~/config";
+import { modes, menuModes } from "~/prompts";
+import { title } from "~/utils/generalUtils";
 
-export async function handleModeSelection(): Promise<string | undefined> {
+export async function askModeSelection(): Promise<string | undefined> {
   const mode = await selectWithConfig(
-    color.cyanBright(color.bold("https://docs.reliverse.org")),
+    title("https://docs.reliverse.org"),
     menuModes,
   );
 

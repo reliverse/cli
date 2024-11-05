@@ -7,6 +7,6 @@ export async function getPackageManagerName() {
   return pm?.name;
 }
 
-export function formatPromptMessage(message: string): string {
+export function title(message: string): string {
   return color.cyanBright(color.bold(message));
 }

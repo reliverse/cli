@@ -1,62 +1,69 @@
-import { select, text, isCancel, cancel } from "@clack/prompts";
-import color from "picocolors";
-import { promptsConfig } from "~/config";
+export const modes = {
+  create: "create",
+  modify: "modify",
+  exit: "exit",
+};
 
-export function validateText(
-  value: string,
-  cannotBeEmpty: boolean,
-): string | undefined {
-  if (cannotBeEmpty && (!value || value.trim() === "")) {
-    return "This field cannot be empty.";
-  }
-  if (value !== "" && !/^[a-z0-9-_]+$/.test(value)) {
-    return "Use lowercase alphanumeric characters, with - or _ instead of spaces.";
-  }
-}
+export const menuModes = [
+  { value: modes.create, label: "Create a new web dev project" },
+  { value: modes.modify, label: "Modify the existing project" },
+  { value: modes.exit, label: "Exit" },
+];
 
-export async function promptWithConfig(
-  key: keyof typeof promptsConfig,
-  message: string,
-) {
-  const placeholder = promptsConfig[key];
-  const response = await text({
-    message,
-    placeholder,
-    defaultValue: placeholder,
-    validate: (value) => validateText(value, false),
-  });
+export const projectKinds = [
+  { value: "app", label: "Web app with Next.js, Deno, Nuxt, Astro, etc" },
+  {
+    value: "site",
+    label: "Classic site with WordPress, HTML/CSS/JS, etc",
+    disabled: true,
+  },
+  {
+    value: "native",
+    label: "Native app with Electron, React Native, etc",
+    disabled: true,
+  },
+  { value: "exit", label: "Exit" },
+  {
+    value: "cli",
+    label: "CLI tool with Node.js, Deno, Python, Go, etc",
+    disabled: true,
+  },
+  {
+    value: "library",
+    label: "Library for Node.js, ESLint, Python, Rust, etc",
+    disabled: true,
+  },
+  {
+    value: "extension",
+    label: "Extension for browser, VSCode, Reliverse, etc",
+    disabled: true,
+  },
+  {
+    value: "monorepo",
+    label: "Monorepo with Turborepo, Moonrepo, Nx, etc",
+    disabled: true,
+  },
+  {
+    value: "game",
+    label: "Game with web, Godot, UE5, Unity, Pawn, etc",
+    disabled: true,
+  },
+  {
+    value: "ci",
+    label: "CI/CD with GitHub Actions, package.json, etc",
+    disabled: true,
+  },
+];
 
-  if (isCancel(response)) {
-    cancelOperation();
-  }
+export const promptsConfig = {
+  projectName: "relivator",
+  userHandle: "blefnk",
+  orgHandle: "reliverse",
+  userName: "Nazar Kornienko",
+  orgName: "Bleverse Reliverse",
+};
 
-  return response;
-}
-
-export async function selectWithConfig(
-  message: string,
-  options: Array<{ value: string; label: string; disabled?: boolean }>,
-  maxItems?: number,
-): Promise<string | undefined> {
-  const response = await select({
-    message,
-    options: options.map((option) => ({
-      ...option,
-      label: option.disabled ? color.gray(option.label) : option.label,
-      disabled: option.disabled,
-      hint: option.disabled ? "Coming soon" : undefined,
-    })),
-    maxItems,
-  });
-
-  if (isCancel(response)) {
-    cancelOperation();
-  }
-
-  return response as string | undefined;
-}
-
-export function cancelOperation() {
-  cancel("https://discord.gg/Pb8uKbwpsJ");
-  process.exit(0);
-}
+export const languages = [
+  { value: "ts", label: "TypeScript" },
+  { value: "js", label: "JavaScript" },
+];
