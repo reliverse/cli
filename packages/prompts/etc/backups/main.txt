@@ -1,0 +1,95 @@
+// prompts.ts
+
+import { createInterface } from "node:readline";
+
+interface PromptOptions {
+  message: string;
+  initial?: string;
+  validate?: (input: string) => boolean | string;
+  hidden?: boolean;
+}
+
+export async function text(options: PromptOptions): Promise<string> {
+  const { message, initial, validate, hidden } = options;
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true,
+  });
+
+  return new Promise((resolve, reject) => {
+    const promptMessage = `${message}${initial ? ` (${initial})` : ""}: `;
+    let input = "";
+
+    const onData = (char: Buffer) => {
+      char = char.toString();
+      switch (char) {
+        case "\n":
+        case "\r":
+        case "\u0004":
+          process.stdin.removeListener("data", onData);
+          rl.close();
+          input = input || initial || "";
+          if (validate) {
+            const validation = validate(input);
+            if (validation !== true) {
+              console.error(`\n${validation || "Invalid input."}`);
+              resolve(text(options));
+            } else {
+              resolve(input);
+            }
+          } else {
+            resolve(input);
+          }
+          break;
+        case "\u0003": // Ctrl+C
+          process.stdin.removeListener("data", onData);
+          rl.close();
+          reject(new Error("Input cancelled"));
+          break;
+        default:
+          if (char === "\u007F") {
+            // Backspace
+            input = input.slice(0, -1);
+            readlineClearLine();
+            rl.write(hidden ? "*".repeat(input.length) : input);
+          } else {
+            input += char;
+            rl.write(hidden ? "*" : char);
+          }
+          break;
+      }
+    };
+
+    process.stdin.on("data", onData);
+    rl.question(promptMessage, () => {});
+  });
+}
+
+export async function number(options: PromptOptions): Promise<number> {
+  const { validate } = options;
+  const validation = (input: string) => {
+    const num = Number.parseFloat(input);
+    if (Number.isNaN(num)) {
+      return "Please enter a valid number.";
+    }
+    if (validate) {
+      return validate(input);
+    }
+    return true;
+  };
+
+  const input = await text({ ...options, validate: validation });
+  return Number.parseFloat(input);
+}
+
+export async function confirm(options: PromptOptions): Promise<boolean> {
+  const { message, initial } = options;
+  const input = await text({ message: `${message} (y/n)`, initial });
+  return ["y", "yes"].includes(input.toLowerCase());
+}
+
+function readlineClearLine() {
+  process.stdout.clearLine(0);
+  process.stdout.cursorTo(0);
+}

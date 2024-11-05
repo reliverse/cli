@@ -20,6 +20,7 @@
       ".turbo/",
       ".vercel/",
       "apps/cli/bin/",
+      "packages/prompts/bin/",
       "addons/.output/",
       "build/",
       "cluster/",
@@ -52,6 +53,7 @@
       ".turbo/",
       ".vercel/",
       "apps/cli/bin/",
+      "packages/prompts/bin/",
       "addons/.output/",
       "build/",
       "cluster/",
@@ -116,6 +118,22 @@
     }
   },
   "overrides": [
+    {
+      "include": ["packages/prompts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noGlobalIsNan": "off"
+          },
+          "style": {
+            "useTemplate": "off",
+            "noUselessElse": "off",
+            "noParameterAssign": "off"
+          }
+        }
+      }
+    },
     {
       "include": ["apps/docs/**"],
       "linter": {

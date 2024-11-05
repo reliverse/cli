@@ -1,32 +1,22 @@
 {
-  "name": "reliverse",
-  "version": "1.0.54",
-  "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
+  "name": "@reliverse/prompts",
+  "version": "0.3.0",
+  "description": "A modern, type-safe, crash-resistant prompt library designed to be simple and beautiful.",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blefnk/reliverse.git",
     "directory": "apps/cli"
   },
-  "exports": "./bin/main.js",
-  "bin": {
-    "reliverse": "./bin/main.js"
-  },
+  "exports": "./dist/main.js",
   "bugs": {
     "url": "https://github.com/blefnk/reliverse/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": ["bin", "README.md"],
+  "files": ["dist", "README.md"],
   "homepage": "https://github.com/blefnk/reliverse",
   "keywords": ["cli", "reliverse"],
   "license": "MIT",
-  "dependencies": {
-    "@clack/prompts": "^0.7.0",
-    "@reliverse/prompts": "workspace:*",
-    "@types/prompts": "^2.4.9",
-    "nypm": "^0.3.12",
-    "prompts": "^2.4.2"
-  },
   "devDependencies": {
     "@types/bun": "^1.1.13",
     "terser": "^5.36.0",
