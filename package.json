@@ -1,16 +1,55 @@
 {
-  "name": "@blefnk/reliverse",
+  "name": "reliverse",
+  "version": "1.0.59",
+  "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "scripts": {
-    "build:cli": "cd apps/cli && bun build-pub.ts --bundler-bun --build-only",
-    "build:prompts": "cd packages/prompts && bun build-pub.ts --bundler-bun --build-only",
-    "pub:cli": "cd apps/cli && bun build-pub.ts --bundler-bun",
-    "pub:prompts": "cd packages/prompts && bun build-pub.ts --bundler-bun",
-    "add:cli": "cd apps/cli && bun add",
-    "add:prompts": "cd packages/prompts && bun add",
-    "rm:cli": "cd apps/cli && bun rm",
-    "rm:prompts": "cd packages/prompts && bun rm",
-    "dev:cli": "bun apps/cli/src/main.ts"
+    "appts": "bun typecheck && bun lint && bun format",
+    "lint": "eslint --cache --fix .",
+    "format": "biome check --write .",
+    "pub": "unbuild && bun publish",
+    "unpub": "npm unpublish",
+    "dev": "bun src/main.ts",
+    "build": "unbuild",
+    "knip": "knip"
   },
-  "workspaces": ["apps/*", "packages/*"],
-  "sideEffects": false
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blefnk/reliverse.git"
+  },
+  "module": "./dist/main.js",
+  "exports": {
+    ".": "./dist/main.js"
+  },
+  "bin": {
+    "reliverse": "./dist/main.js"
+  },
+  "bugs": {
+    "url": "https://github.com/blefnk/reliverse/issues",
+    "email": "blefnk@gmail.com"
+  },
+  "files": ["package.json", "README.md", "LICENSE.md", "dist"],
+  "homepage": "https://github.com/blefnk/reliverse",
+  "keywords": ["cli", "reliverse"],
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "@sinclair/typebox": "^0.33.19",
+    "@types/prompts": "^2.4.9",
+    "nypm": "^0.3.12",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@eslint/js": "^9.14.0",
+    "@types/bun": "^1.1.13",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^22.9.0",
+    "eslint": "^9.14.0",
+    "eslint-plugin-perfectionist": "^3.9.1",
+    "knip": "^5.36.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0",
+    "unbuild": "^2.0.0"
+  }
 }

@@ -15,11 +15,15 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "noImplicitAny": false,
     "module": "preserve",
     "noEmit": true,
     "lib": ["es2022"]
   },
-  "include": ["src/**/*.ts", "build-pub.ts", "tsup.config.ts"],
-  "exclude": ["bin"]
+  "include": [
+    "src/**/*.ts",
+    "build.config.ts",
+    "eslint.config.js",
+    "addons/**/*.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
 }

@@ -1,16 +1,21 @@
-import readline from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
+// 📚 https://docs.reliverse.org/prompts
+// 🧩 https://github.com/reliverse/prompts
+// 📦 https://npmjs.com/package/@reliverse/prompts
+
 import type { Static, TSchema } from "@sinclair/typebox";
+
 import { Value } from "@sinclair/typebox/value";
+import { stdin as input, stdout as output } from "node:process";
+import readline from "node:readline/promises";
 import color from "picocolors";
 
-interface Choice {
+type Choice = {
   title: string;
   value: any;
   description?: string;
-}
+};
 
-interface PromptOptions<T extends TSchema = any> {
+type PromptOptions<T extends TSchema = any> = {
   type:
     | "text"
     | "number"
@@ -26,11 +31,11 @@ interface PromptOptions<T extends TSchema = any> {
   default?: any;
   choices?: Choice[];
   schema?: T;
-}
+};
 
 export async function prompts<T extends TSchema>(
   options: PromptOptions<T>,
-): Promise<{ [K in (typeof options)["id"]]: Static<T> }> {
+): Promise<Record<(typeof options)["id"], Static<T>>> {
   const { type, id } = options;
   let value: any;
   switch (type) {
@@ -63,12 +68,16 @@ export async function prompts<T extends TSchema>(
 
 async function textPrompt<T extends TSchema>(
   options: PromptOptions<T>,
+  // TODO: Testing functions that interact directly with process.stdin and process.stdout
+  // TODO: can be challenging. So we should refactor the code to make it more testable.
+  // TODO: input: NodeJS.ReadableStream = process.stdin,
+  // TODO: output: NodeJS.WritableStream = process.stdout,
 ): Promise<Static<T>> {
   const { title, hint, validate, default: defaultValue, schema } = options;
   const rl = readline.createInterface({ input, output });
 
   const question = `${title}${
-    hint ? " (" + hint + ")" : ""
+    hint ? ` (${hint})` : ""
   }${defaultValue ? ` [${defaultValue}]` : ""}: `;
 
   while (true) {
@@ -108,7 +117,7 @@ async function numberPrompt<T extends TSchema>(
   const rl = readline.createInterface({ input, output });
 
   const question = `${title}${
-    hint ? " (" + hint + ")" : ""
+    hint ? ` (${hint})` : ""
   }${defaultValue !== undefined ? ` [${defaultValue}]` : ""}: `;
 
   while (true) {
@@ -153,9 +162,13 @@ async function confirmPrompt<T extends TSchema>(
   const rl = readline.createInterface({ input, output });
 
   let defaultHint = "";
-  if (defaultValue === true) defaultHint = "[Y/n]";
-  else if (defaultValue === false) defaultHint = "[y/N]";
-  else defaultHint = "[y/n]";
+  if (defaultValue === true) {
+    defaultHint = "[Y/n]";
+  } else if (defaultValue === false) {
+    defaultHint = "[y/N]";
+  } else {
+    defaultHint = "[y/n]";
+  }
 
   const question = `${title} ${defaultHint}: `;
 
@@ -207,7 +220,7 @@ async function selectPrompt<T extends TSchema>(
       defaultValue === index + 1 || defaultValue === choice.value;
     console.log(
       `${index + 1}) ${choice.title} ${
-        choice.description ? "- " + choice.description : ""
+        choice.description ? `- ${choice.description}` : ""
       }${isDefault ? " (default)" : ""}`,
     );
   });
@@ -259,7 +272,7 @@ async function multiselectPrompt<T extends TSchema>(
   choices.forEach((choice, index) => {
     console.log(
       `${index + 1}) ${choice.title} ${
-        choice.description ? "- " + choice.description : ""
+        choice.description ? `- ${choice.description}` : ""
       }`,
     );
   });
@@ -309,7 +322,7 @@ async function passwordPrompt<T extends TSchema>(
   options: PromptOptions<T>,
 ): Promise<Static<T>> {
   const { title, hint, validate, schema } = options;
-  const question = `${title}${hint ? " (" + hint + ")" : ""}: `;
+  const question = `${title}${hint ? ` (${hint})` : ""}: `;
 
   process.stdout.write(question);
 
@@ -392,7 +405,7 @@ async function datePrompt<T extends TSchema>(
   const rl = readline.createInterface({ input, output });
 
   const question = `${title}${
-    hint ? " (" + hint + ")" : ""
+    hint ? ` (${hint})` : ""
   }${defaultValue ? ` [${defaultValue}]` : ""}: `;
 
   while (true) {

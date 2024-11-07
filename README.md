@@ -2,7 +2,7 @@
 
 [GitHub](https://github.com/reliverse/cli), [npmjs](https://npmjs.com/package/reliverse), [Discord](https://discord.gg/Pb8uKbwpsJ)
 
-👋 Welcome! This tool already can help you create new web projects and make some codebase modifications, with more features coming soon.
+👋 Welcome! This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
 
 **Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
 
@@ -59,12 +59,16 @@ reliverse
 
 ## FAQ
 
-Bun doesn't install the latest version of Reliverse CLI. What should I do?
+**Bun doesn't install the latest version of Reliverse CLI. What should I do?**
 
 ```bash
 bun pm cache rm -g
 bunx reliverse
 ```
+
+**Why you don't use monorepo?**
+
+Our mission is to make web development accessible and understandable for everyone. By everyone, we also mean any tool. Unfortunately, not every web tool works perfectly with monorepo, including Bun, which is critical for us. Strange things can sometimes happen with a monorepo codebase. But it depends on the vision of the project. If there is a real need for monorepo and all the tools work well, we will be free to switch to it. There has already been an attempt to switch to a monorepo structure, the developments were saved and available as a monorepo bootstrap using Reliverse CLI itself.
 
 ## Reliverse Addons
 
