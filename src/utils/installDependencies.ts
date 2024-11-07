@@ -1,4 +1,4 @@
-import { createSpinner } from "~/libs/prompts";
+import { createSpinner } from "@reliverse/prompts";
 
 const spinner = createSpinner("Installing dependencies...");
 

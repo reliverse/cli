@@ -22,5 +22,4 @@ export default defineBuildConfig({
   },
 
   declaration: false,
-  externals: ["picocolors"],
 });

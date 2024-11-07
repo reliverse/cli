@@ -2,7 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@/*": ["./addons/*"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -21,9 +22,10 @@
   },
   "include": [
     "src/**/*.ts",
+    "addons/**/*.ts",
+    "build.paths.ts",
     "build.config.ts",
-    "eslint.config.js",
-    "addons/**/*.ts"
+    "eslint.config.js"
   ],
   "exclude": ["dist", "node_modules"]
 }
