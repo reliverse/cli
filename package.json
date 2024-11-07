@@ -37,7 +37,8 @@
     "@sinclair/typebox": "^0.33.19",
     "@types/prompts": "^2.4.9",
     "nypm": "^0.3.12",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "sisteransi": "^1.0.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

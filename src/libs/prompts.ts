@@ -1,4 +1,6 @@
+// ✨ @reliverse/prompts prototype edition
 // 📚 https://docs.reliverse.org/prompts
+// 👉 Check live edition source code at:
 // 🧩 https://github.com/reliverse/prompts
 // 📦 https://npmjs.com/package/@reliverse/prompts
 
@@ -6,8 +8,10 @@ import type { Static, TSchema } from "@sinclair/typebox";
 
 import { Value } from "@sinclair/typebox/value";
 import { stdin as input, stdout as output } from "node:process";
+import process from "node:process";
 import readline from "node:readline/promises";
 import color from "picocolors";
+import { cursor, erase } from "sisteransi";
 
 type Choice = {
   title: string;
@@ -64,6 +68,50 @@ export async function prompts<T extends TSchema>(
       throw new Error(`Unknown prompt type: ${type}`);
   }
   return { [id]: value } as any;
+}
+
+export function createSpinner(initialMessage: string, delay = 100) {
+  let interval: NodeJS.Timer | null = null;
+  let frameIndex = 0;
+  const unicodeFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  const asciiFrames = ["+", "x", "*"];
+  const frames = color.isColorSupported ? unicodeFrames : asciiFrames;
+  let message = initialMessage;
+
+  const start = (msg = ""): void => {
+    if (interval) {
+      return;
+    } // Prevent multiple starts
+
+    message = msg || message;
+    process.stdout.write(cursor.hide);
+
+    interval = setInterval(() => {
+      const frame = color.magenta(frames[frameIndex]);
+      process.stdout.write(
+        `${cursor.move(-999, 0)}${erase.line}${frame} ${color.cyan(message)}`,
+      );
+      frameIndex = (frameIndex + 1) % frames.length;
+    }, delay);
+  };
+
+  const stop = (finalMessage = "", code = 0): void => {
+    if (!interval) {
+      return;
+    } // Stop only if running
+
+    clearInterval(interval);
+    interval = null;
+    const statusSymbol = code === 0 ? color.green("✔") : color.red("✖");
+    process.stdout.write(`\r${erase.line}${statusSymbol} ${finalMessage}\n`);
+    process.stdout.write(cursor.show); // Restore cursor
+  };
+
+  const updateMessage = (newMessage: string) => {
+    message = newMessage;
+  };
+
+  return { start, stop, updateMessage };
 }
 
 async function textPrompt<T extends TSchema>(

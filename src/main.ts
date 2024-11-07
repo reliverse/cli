@@ -1,6 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 
-import { prompts } from "./libs/prompts";
+import { prompts } from "~/libs/prompts";
+import { installDependencies } from "~/utils/installDependencies";
 
 async function main() {
   // Wrapping everything in a try-catch block for a single error handler
@@ -9,6 +10,7 @@ async function main() {
 
   // Define the schema once and reuse it for each prompt.
   const schema = Type.Object({
+    deps: Type.Boolean(),
     username: Type.String({ minLength: 3, maxLength: 20 }),
     password: Type.String({ minLength: 8 }),
     age: Type.Number({ minimum: 18, maximum: 99 }),
@@ -19,6 +21,13 @@ async function main() {
 
   // Define the type to use in the result object, populated with results from the prompts.
   type UserInput = Static<typeof schema>;
+
+  const depsResult = await prompts({
+    id: "deps",
+    type: "confirm",
+    title: "Do you want to install dependencies?",
+    schema: schema.properties.deps,
+  });
 
   const usernameResult = await prompts({
     // 'id' is the key in the userInput result object.
@@ -128,6 +137,7 @@ async function main() {
 
   // Gather the results
   const userInput: UserInput = {
+    deps: depsResult.deps ?? false,
     // Set default values for missing responses
     username: usernameResult.username ?? "johnny",
     password: passwordResult.password ?? "silverHand2077",
@@ -151,6 +161,10 @@ async function main() {
 
   // Access values by their keys
   console.log("✅ User successfully registered:", userInput.username);
+
+  if (userInput.deps) {
+    await installDependencies();
+  }
 
   // Full intellisense is available when defining choices using an enum
   if (userInput.color === "red") {
