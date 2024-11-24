@@ -1,23 +1,68 @@
-import { prompts } from "@reliverse/prompts";
+// 📚 Docs: https://docs.reliverse.org/relinka
 
-import { installDependencies } from "./utils/installDependencies";
+import { errorHandler } from "@reliverse/relinka";
 
-async function main() {
-  const result = await prompts({
-    id: "name",
-    type: "text",
-    title: "What is your name?",
-  });
+import {
+  askDir,
+  doSomeFunStuff,
+  showAnimatedText,
+  showAnykeyPrompt,
+  showConfirmPrompt,
+  showDatePrompt,
+  showEndPrompt,
+  showMultiselectPrompt,
+  showNextStepsPrompt,
+  showNumberPrompt,
+  showNumMultiselectPrompt,
+  showNumSelectPrompt,
+  showPasswordPrompt,
+  showProgressBar,
+  showResults,
+  showSelectPrompt,
+  showStartPrompt,
+  showTextPrompt,
+  showTogglePrompt,
+} from "./menu/prompts.js";
+import { type UserInput } from "./menu/schema.js";
 
-  await installDependencies();
-
-  console.log(result);
+export default async function main() {
+  await showStartPrompt();
+  await showAnykeyPrompt("privacy");
+  const username = await showTextPrompt();
+  const dir = await askDir(username);
+  const age = await showNumberPrompt();
+  const password = await showPasswordPrompt();
+  const birthday = await showDatePrompt();
+  const lang = await showSelectPrompt();
+  const langs = await showMultiselectPrompt();
+  const color = await showNumSelectPrompt();
+  const features = await showNumMultiselectPrompt();
+  const toggle = await showTogglePrompt();
+  const spinner = await showConfirmPrompt(username);
+  const userInput = {
+    username,
+    dir,
+    age,
+    lang,
+    color,
+    password,
+    birthday,
+    langs,
+    features,
+    spinner,
+    toggle,
+  } satisfies UserInput;
+  await showProgressBar();
+  await showResults(userInput);
+  await doSomeFunStuff(userInput);
+  await showNextStepsPrompt();
+  await showAnimatedText();
+  await showEndPrompt();
 }
 
-await main().catch((error) => {
-  console.error("│  An error occurred:\n", error.message);
-  console.error(
-    "└  Please report this issue at https://github.com/blefnk/reliverse/issues",
-  );
-  process.exit(1);
-});
+await main().catch((error) =>
+  errorHandler(
+    error,
+    "If this issue is related to Reliverse CLI itself, please\n│  report the details at https://github.com/blefnk/reliverse",
+  ),
+);

@@ -1,40 +1,59 @@
 {
   "name": "reliverse",
-  "version": "1.0.61",
+  "version": "1.0.64",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "scripts": {
-    "appts": "bun typecheck && bun lint && bun format",
-    "build": "unbuild && bun build.paths.ts",
-    "pub": "bun run build && bun publish",
+    "appts": "bun typecheck && bun lint && bun format && bun optimize",
+    "build": "unbuild && bun build.optim.ts",
+    "unpub": "npm unpublish",
+    "bunp": "bun publish",
+    "pub:jsr": "bun build.optim.ts --jsr && bun optimize && bunx jsr publish --allow-slow-types --allow-dirty",
+    "pub:jsr-dry": "bun pub:jsr --dry-run",
+    "pub:npm": "redrun build bunp",
+    "pub": "redrun pub:jsr pub:npm",
     "lint": "eslint --cache --fix .",
     "format": "biome check --write .",
-    "unpub": "npm unpublish",
+    "optimize": "putout dist-npm --fix",
+    "check": "bun test",
+    "attw": "attw --pack",
+    "tsc": "tshy",
+    "knip": "knip",
+    "start": "node dist-npm/main.js",
     "dev": "bun src/main.ts",
-    "knip": "knip"
+    "dex": "tsx src/main.ts",
+    "test:tape": "tape test/*.js | tap-spec",
+    "release": "bumpp & bun pub",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blefnk/reliverse.git"
   },
-  "module": "./dist/main.js",
+  "module": "./dist-npm/main.js",
   "exports": {
-    ".": "./dist/main.js"
+    ".": "./dist-npm/main.js"
   },
   "bin": {
-    "reliverse": "./dist/main.js"
+    "reliverse": "./dist-npm/main.js"
   },
   "bugs": {
     "url": "https://github.com/blefnk/reliverse/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": ["package.json", "README.md", "LICENSE.md", "dist"],
+  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
   "homepage": "https://github.com/blefnk/reliverse",
   "keywords": ["cli", "reliverse"],
   "license": "MIT",
   "dependencies": {
-    "@reliverse/prompts": "^0.9.6",
-    "@sinclair/typebox": "^0.33.21",
+    "@reliverse/relinka": "^1.1.3",
+    "@sinclair/typebox": "^0.34.8",
+    "cli-spinners": "^3.2.0",
+    "detect-package-manager": "^3.0.2",
+    "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
     "nypm": "^0.3.12",
     "pathe": "^1.1.2",
@@ -42,16 +61,23 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@eslint/js": "^9.14.0",
+    "@cspell/dict-npm": "^5.1.13",
+    "@eslint/js": "^9.15.0",
     "@types/bun": "^1.1.13",
     "@types/eslint__js": "^8.42.3",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.9.0",
-    "eslint": "^9.14.0",
-    "eslint-plugin-perfectionist": "^3.9.1",
-    "knip": "^5.36.3",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.13.0",
-    "unbuild": "^2.0.0"
+    "@types/node": "^22.9.3",
+    "@types/strip-comments": "^2.0.4",
+    "eslint": "^9.15.0",
+    "eslint-plugin-perfectionist": "^4.0.3",
+    "globals": "^15.12.0",
+    "knip": "^5.37.2",
+    "putout": "^36.13.1",
+    "redrun": "^11.0.5",
+    "strip-comments": "^2.0.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.15.0",
+    "unbuild": "^2.0.0",
+    "vitest": "^2.1.5"
   }
 }

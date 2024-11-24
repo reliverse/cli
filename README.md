@@ -6,6 +6,8 @@
 
 **Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
 
+![Reliverse Cover Image](./reliverse.webp)
+
 It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
 Reliverse is more than just the easiest way to install Relivator. It’s also the most convenient new way to download any repository from GitHub and automatically prepare it for work. Especially if it’s a project from the JavaScript ecosystem.
@@ -63,7 +65,7 @@ reliverse
 
 ```bash
 bun pm cache rm -g
-bunx reliverse
+bunx reliverse # OR bunx reliverse@latest
 ```
 
 **Why you don't use monorepo?**
@@ -218,8 +220,43 @@ Reliverse takes a different, non-standard approach compared to other bootstrappe
 
 This project is licensed under the MIT License—see the [LICENSE](LICENSE) file for more details.
 
----
+## Bootstrapping Tool Comparison
 
-## Wrap Up
+> **Note:** This table currently contains approximate and placeholder values. More detailed assessments will be provided as tools continue to evolve.
 
-Reliverse is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them. It allows you to effortlessly bootstrap projects, including the Relivator Next.js template or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
+**Icon Legend:**
+
+- 🟡: Not yet verified
+- 🟢: Fully supported
+- 🔵: Partially supported
+- 🔴: Not supported
+
+| **Feature**                 | **Reliverse**  | **create-t3-app**  | **create-astro** |
+|-----------------------------|----------------|--------------------|------------------|
+| **Type Safety**             | 🟡             | 🟡                | 🟡               |
+| **Schema Validation**       | 🟡             | 🟡                | 🟡               |  
+| **Crash Resilience**        | 🟡             | 🟡                | 🟡               |
+| **Project Template Options**| 🟡             | 🟡                | 🟡               |
+| **Customizable Setup**      | 🟡             | 🟡                | 🟡               |
+| **Preconfigured Routing**   | 🟡             | 🟡                | 🟡               |
+| **Integrated Testing**      | 🟡             | 🟡                | 🟡               |
+| **Environment Configs**     | 🟡             | 🟡                | 🟡               |
+| **Code Linting/Formatting** | 🟡             | 🟡                | 🟡               |
+| **Automatic Deps Install**  | 🟡             | 🟡                | 🟡               |
+| **Monorepo Support**        | 🟡             | 🟡                | 🟡               |
+| **Error Handling**          | 🟡             | 🟡                | 🟡               |
+| **Documentation**           | 🟡             | 🟡                | 🟡               |
+| **Ease of Setup**           | 🟡             | 🟡                | 🟡               |
+| **Example Projects**        | 🟡             | 🟡                | 🟡               |
+
+**Related Links**: [ESM/CJS](https://dev.to/iggredible/what-the-heck-are-cjs-amd-umd-and-esm-ikm), ["Pure ESM package"](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c), [Clean code](https://github.com/ryanmcdermott/clean-code-javascript#readme), ["UX patterns for CLI tools"](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html), [DX (Developer Experience)](https://github.blog/enterprise-software/collaboration/developer-experience-what-is-it-and-why-should-you-care), [TypeBox](https://github.com/sinclairzx81/typebox#readme)
+
+## Special Thanks
+
+This project wouldn’t exist without the amazing work of the following projects:
+
+[@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js#readme) | [terkelg/prompts](https://github.com/lu-jiejie/prompts-plus#readme#readme) | [@clack/prompts](https://github.com/bombshell-dev/clack#readme) | [create-t3-app](https://github.com/t3-oss/create-t3-app#readme) | [create-astro](https://github.com/withastro/astro/tree/main/packages/create-astro#readme) | [cronvel/terminal-kit](https://github.com/cronvel/terminal-kit#readme) | [unjs/consola](https://github.com/unjs/consola#readme)
+
+## Wrap-Up
+
+Reliverse is a powerful CLI tool designed to simplify the setup process for JavaScript, TypeScript, and various other project types, with a particular focus on Next.js templates—though its capabilities extend beyond them. Leveraging [@reliverse/prompts](https://github.com/reliverse/prompts#readme), Reliverse provides a customizable and engaging setup experience, allowing you to quickly bootstrap projects like the fully customizable Relivator Next.js template or pull templates from GitHub and other Git-based sources. It also helps manage configuration files and seamlessly resolves potential conflicts among tools like ESLint, Prettier, and Biome, ensuring a smooth development environment from the start.

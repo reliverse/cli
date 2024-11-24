@@ -11,7 +11,7 @@
   },
   "formatter": {
     "enabled": true,
-    "ignore": [".git/", "node_modules/", "dist/"],
+    "ignore": [".git/", "node_modules/", "dist-jsr/", "dist-npm/"],
     "indentStyle": "space",
     "attributePosition": "auto",
     "formatWithErrors": false,
@@ -24,7 +24,13 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": [".git/", "node_modules/", "dist/"],
+    "ignore": [
+      ".git/",
+      "node_modules/",
+      "dist-jsr/",
+      "dist-npm/",
+      "examples/deprecated/**/*.ts"
+    ],
     "rules": {
       "recommended": true,
       "a11y": {
@@ -84,6 +90,11 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "style": {
+        "useSingleVarDeclarator": "off",
+        "useExponentiationOperator": "off",
+        "useTemplate": "off",
+        "useConst": "off",
+        "noUnusedTemplateLiteral": "off",
         "noInferrableTypes": "off",
         "noNonNullAssertion": "off",
         "noParameterAssign": "off",
@@ -98,6 +109,7 @@
         "useWhile": "off"
       },
       "suspicious": {
+        "noConfusingVoidType": "off",
         "noApproximativeNumericConstant": "off",
         "noArrayIndexKey": "off",
         "noAssignInExpressions": "off",

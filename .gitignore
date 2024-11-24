@@ -1,4 +1,5 @@
 dist/
+output/
 .DS_Store
 .eslintcache
 node_modules/

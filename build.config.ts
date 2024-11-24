@@ -1,25 +1,22 @@
 import { defineBuildConfig } from "unbuild";
 
 export default defineBuildConfig({
+  declaration: false,
   entries: [
     {
-      outDir: "dist",
       builder: "mkdist",
-      input: "src",
+      outDir: "dist-npm",
       format: "esm",
+      input: "src",
       ext: "js",
-      esbuild: {
-        target: "es2022",
-      },
     },
   ],
-
   rollup: {
     emitCJS: false,
     esbuild: {
-      target: "es2022",
+      exclude: ["**/*.test.ts"],
+      target: "es2023",
+      minify: true,
     },
   },
-
-  declaration: false,
 });

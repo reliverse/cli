@@ -3,29 +3,51 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@/*": ["./addons/*"]
+      "#/*": ["./addons/*"],
+      "@/*": ["./examples/*"]
     },
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "target": "es2022",
-    "allowJs": true,
-    "resolveJsonModule": true,
+    "outDir": "dist-npm",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "target": "ES2023",
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "declaration": true,
+    "newLine": "lf",
+    "stripInternal": true,
     "strict": true,
-    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": false,
     "noImplicitOverride": true,
-    "module": "preserve",
-    "noEmit": true,
-    "lib": ["es2022"]
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noEmitOnError": true,
+    "useDefineForClassFields": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    "strictNullChecks": false,
+    "isolatedModules": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noEmit": true
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": [
+    "build.optim.ts",
+    "build.config.ts",
+    "eslint.config.js",
+    "vitest.config.ts",
     "src/**/*.ts",
     "addons/**/*.ts",
-    "build.paths.ts",
-    "build.config.ts",
-    "eslint.config.js"
+    "examples/**/*.ts"
   ],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist-npm", "dist-jsr", "node_modules"]
 }

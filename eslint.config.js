@@ -9,7 +9,8 @@ export default tseslint.config(
   {
     ignores: [
       "**/.{git,next,astro,wxt}/",
-      "**/{node_modules,dist,public,drizzle}/",
+      "**/{node_modules,dist-jsr,dist-npm,public,drizzle}/",
+      "examples/deprecated/**/*.{js,ts}",
     ],
   },
   eslint.configs.recommended,
@@ -26,6 +27,7 @@ export default tseslint.config(
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
+        warnOnUnsupportedTypeScriptVersion: false,
       },
     },
   },
@@ -40,6 +42,7 @@ export default tseslint.config(
     },
     rules: {
       "perfectionist/sort-imports": "error",
+      "@typescript-eslint/no-invalid-void-type": "off",
       "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/no-confusing-void-expression": "off",
@@ -64,6 +67,7 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-deprecated": "off",
+      "@typescript-eslint/restrict-plus-operands": "off",
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "@typescript-eslint/consistent-type-imports": [
         "warn",
@@ -74,7 +78,7 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/naming-convention": [
-        "warn",
+        "off",
         {
           selector: "import",
           format: ["camelCase", "PascalCase"],
@@ -85,7 +89,7 @@ export default tseslint.config(
       "no-constant-condition": "off",
       "no-case-declarations": "off",
       curly: "warn",
-      eqeqeq: "warn",
+      eqeqeq: "off",
       semi: "warn",
     },
   },
