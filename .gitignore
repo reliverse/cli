@@ -1,6 +1,8 @@
-dist/
-output/
+.venv/
+dist-jsr/
+dist-npm/
 .DS_Store
+merged.txt
 .eslintcache
 node_modules/
 addons/premium/

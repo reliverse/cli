@@ -1,6 +1,6 @@
 // 📚 Docs: https://docs.reliverse.org/relinka
 
-import { errorHandler } from "@reliverse/relinka";
+import { errorHandler } from "@reliverse/prompts";
 
 import {
   askDir,
@@ -20,7 +20,7 @@ import {
   showResults,
   showSelectPrompt,
   showStartPrompt,
-  showTextPrompt,
+  showInputPrompt,
   showTogglePrompt,
 } from "./menu/prompts.js";
 import { type UserInput } from "./menu/schema.js";
@@ -28,7 +28,7 @@ import { type UserInput } from "./menu/schema.js";
 export default async function main() {
   await showStartPrompt();
   await showAnykeyPrompt("privacy");
-  const username = await showTextPrompt();
+  const username = await showInputPrompt();
   const dir = await askDir(username);
   const age = await showNumberPrompt();
   const password = await showPasswordPrompt();
@@ -60,7 +60,7 @@ export default async function main() {
   await showEndPrompt();
 }
 
-await main().catch((error) =>
+await main().catch((error: Error) =>
   errorHandler(
     error,
     "If this issue is related to Reliverse CLI itself, please\n│  report the details at https://github.com/blefnk/reliverse",

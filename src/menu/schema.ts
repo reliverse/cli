@@ -1,4 +1,4 @@
-import { colorMap } from "@reliverse/relinka";
+import { colorMap } from "@reliverse/prompts";
 import { Type, type Static } from "@sinclair/typebox";
 
 export const IDs = {

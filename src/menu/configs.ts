@@ -1,4 +1,4 @@
-import type { OptionalPromptOptions } from "@reliverse/relinka";
+import type { OptionalPromptOptions } from "@reliverse/prompts";
 
 import { emojify } from "node-emoji";
 
@@ -12,7 +12,6 @@ export const extendedConfig = {
   ...basicConfig,
   contentTypography: "italic",
   contentColor: "dim",
-  answerColor: "none",
 } satisfies OptionalPromptOptions;
 
 export const experimentalConfig = {

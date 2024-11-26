@@ -1,7 +1,7 @@
-import type { ChoiceOptions, ColorName } from "@reliverse/relinka";
+import type { ChoiceOptions, ColorName } from "@reliverse/prompts";
 
-import { msg } from "@reliverse/relinka";
-import { colorMap } from "@reliverse/relinka";
+import { msg } from "@reliverse/prompts";
+import { colorMap } from "@reliverse/prompts";
 
 import type { UserInput } from "./schema.js";
 

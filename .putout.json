@@ -209,7 +209,9 @@
     "nodejs/remove-useless-strict-mode": "off",
     "browserlist": "off",
     "filesystem": "off",
-    "conditions/apply-consistent-blocks": "off"
+    "conditions/apply-consistent-blocks": "off",
+    "sort-imports-by-specifiers": "off",
+    "group-imports-by-source": "off"
   },
   "plugins": [
     "apply-at",

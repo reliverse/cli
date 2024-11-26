@@ -1,12 +1,14 @@
 # Reliverse
 
-[GitHub](https://github.com/reliverse/cli), [npmjs](https://npmjs.com/package/reliverse), [Discord](https://discord.gg/Pb8uKbwpsJ)
+[npmjs](https://npmjs.com/package/@reliverse/cli), [GitHub](https://github.com/reliverse/cli), [Discord](https://discord.gg/Pb8uKbwpsJ)
+
+![Reliverse Cover Image](./reliverse.webp)
+
+## Introduction
 
 👋 Welcome! This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
 
 **Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
-
-![Reliverse Cover Image](./reliverse.webp)
 
 It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
@@ -44,10 +46,10 @@ By the way, you might think that a CLI doing so many things would become bloated
 
 You should install [Git](https://git-scm.com), [VSCode](https://code.visualstudio.com), and [Node.js LTS](https://nodejs.org/en/download/package-manager) first. Then use one of the following commands to install **Reliverse**:
 
-- With [bun ](<https://bun> .sh): `bun i -g reliverse`
-- With [pnpm](https://pnpm.io/installation#using-corepack): `bun add -g reliverse`
-- With [yarn](https://yarnpkg.com): `yarn global add reliverse`
-- With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g reliverse`
+- With [bun](https://bun.sh): `bun i -g @reliverse/cli`
+- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm add -g @reliverse/cli`
+- With [yarn](https://yarnpkg.com): `yarn global add @reliverse/cli`
+- With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g @reliverse/cli`
 
 ## Usage
 
@@ -255,7 +257,7 @@ This project is licensed under the MIT License—see the [LICENSE](LICENSE) file
 
 This project wouldn’t exist without the amazing work of the following projects:
 
-[@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js#readme) | [terkelg/prompts](https://github.com/lu-jiejie/prompts-plus#readme#readme) | [@clack/prompts](https://github.com/bombshell-dev/clack#readme) | [create-t3-app](https://github.com/t3-oss/create-t3-app#readme) | [create-astro](https://github.com/withastro/astro/tree/main/packages/create-astro#readme) | [cronvel/terminal-kit](https://github.com/cronvel/terminal-kit#readme) | [unjs/consola](https://github.com/unjs/consola#readme)
+[@reliverse/relinka](https://github.com/SBoudrias/Inquirer.js#readme) | [terkelg/prompts](https://github.com/lu-jiejie/prompts-plus#readme#readme) | [@reliverse/relinka](https://github.com/bombshell-dev/clack#readme) | [create-t3-app](https://github.com/t3-oss/create-t3-app#readme) | [create-astro](https://github.com/withastro/astro/tree/main/packages/create-astro#readme) | [cronvel/terminal-kit](https://github.com/cronvel/terminal-kit#readme) | [unjs/relinka](https://github.com/unjs/relinka#readme)
 
 ## Wrap-Up
 

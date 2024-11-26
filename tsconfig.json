@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
+    "rootDir": ".",
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "#/*": ["./addons/*"],
-      "@/*": ["./examples/*"]
+      "#/*": ["./addons/*"]
     },
     "outDir": "dist-npm",
     "module": "NodeNext",
@@ -26,13 +26,13 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": false,
-    "noEmitOnError": true,
-    "useDefineForClassFields": true,
     "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
     "verbatimModuleSyntax": true,
     "strictNullChecks": false,
     "isolatedModules": true,
     "noImplicitAny": false,
+    "noEmitOnError": true,
     "skipLibCheck": true,
     "allowJs": true,
     "noEmit": true
@@ -47,7 +47,9 @@
     "vitest.config.ts",
     "src/**/*.ts",
     "addons/**/*.ts",
-    "examples/**/*.ts"
+    "reset.d.ts",
+    "build.publish.ts",
+    "bump.config.ts"
   ],
-  "exclude": ["dist-npm", "dist-jsr", "node_modules"]
+  "exclude": ["node_modules", "dist-jsr", "dist-npm"]
 }

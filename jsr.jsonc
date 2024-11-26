@@ -1,7 +1,9 @@
 {
-  "name": "@reliverse/reliverse",
-  "version": "1.0.0",
-  "exports": "./dist-jsr/mod.ts",
+  "name": "@reliverse/cli",
+  "version": "1.1.0",
+  "author": "blefnk",
+  "license": "MIT",
+  "exports": "./dist-jsr/main.ts",
   "publish": {
     "exclude": [
       "!.",
@@ -15,17 +17,22 @@
       ".venv/**",
       ".github/**",
       ".gitignore",
+      ".eslintcache",
       "biome.jsonc",
-      "build.optim.ts",
       "build.config.ts",
+      "build.optim.ts",
+      "build.publish.ts",
+      "bump.config.ts",
       ".putout.json",
       "bun.lockb",
       "knip.jsonc",
       "merged.txt",
       "typestat.json",
       "vitest.config.ts",
-      "eslint.config.ts",
-      "cspell.json"
+      "eslint.config.js",
+      "tsconfig.json",
+      "cspell.json",
+      "reset.d.ts"
     ]
   }
 }
