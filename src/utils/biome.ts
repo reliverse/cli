@@ -18,7 +18,7 @@ export async function configureBiome({
   );
 
   const biome: string | symbol = await selectPrompt({
-    title: `Please select which type of Biome configuration you want to use.`,
+    title: "Please select which type of Biome configuration you want to use.",
     options: [
       {
         label: "Skip",

@@ -4,7 +4,7 @@ import { relinka } from "@reliverse/relinka";
 import { REPO_SHORT_URLS } from "~/app.js";
 import { validate } from "~/utils/validate.js";
 
-import { justInstallRelivator } from "./01-justInstallRelivator.js";
+import { buildBrandNewThing } from "./02-buildBrandNewThing.js";
 import { askProjectDetails } from "./04-askProjectDetails.js";
 
 export async function installAnyGitRepo() {
@@ -109,7 +109,7 @@ export async function installAnyGitRepo() {
     repoToInstall === REPO_SHORT_URLS.relivatorGithubLink ||
     repoToInstall === "blefnk/relivator"
   ) {
-    return justInstallRelivator();
+    return buildBrandNewThing();
   }
 
   await askProjectDetails(

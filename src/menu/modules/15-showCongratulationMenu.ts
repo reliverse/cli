@@ -40,9 +40,9 @@ export async function showCongratulationMenu(
     title: "What would you like to do next?",
     options: [
       {
-        label: "Close Reliverse CLI",
+        label: "Close @reliverse/cli",
         value: "close",
-        hint: "Close Reliverse CLI",
+        hint: "Close @reliverse/cli",
       },
       ...(DEBUG.alphaFeaturesEnabled
         ? [

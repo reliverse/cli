@@ -45,7 +45,6 @@
       "complexity": {
         "noBannedTypes": "off",
         "noForEach": "off",
-        "noUselessFragments": "off",
         "noUselessLoneBlockStatements": "off",
         "useArrowFunction": "off",
         "useFlatMap": "off",
@@ -92,9 +91,7 @@
       "style": {
         "useSingleVarDeclarator": "off",
         "useExponentiationOperator": "off",
-        "useTemplate": "off",
         "useConst": "off",
-        "noUnusedTemplateLiteral": "off",
         "noInferrableTypes": "off",
         "noNonNullAssertion": "off",
         "noParameterAssign": "off",

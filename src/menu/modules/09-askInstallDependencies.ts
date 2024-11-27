@@ -5,7 +5,7 @@ import { choosePackageManager } from "~/utils/choosePackageManager.js";
 import { validate } from "~/utils/validate.js";
 
 export async function askInstallDependencies(
-  mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",
+  mode: "buildBrandNewThing" | "installAnyGitRepo",
 ): Promise<boolean> {
   if (mode === "installAnyGitRepo") {
     const cwd = process.cwd();

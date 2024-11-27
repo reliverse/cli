@@ -1,4 +1,4 @@
-import { msg } from "@reliverse/prompts";
+import { getCurrentTerminalName, msg, pmv } from "@reliverse/prompts";
 import { anykeyPrompt } from "@reliverse/prompts";
 import { multiselectPrompt } from "@reliverse/prompts";
 import { progressbar } from "@reliverse/prompts";
@@ -19,18 +19,12 @@ import { promptsDisplayResults } from "@reliverse/prompts";
 import { numSelectPrompt } from "@reliverse/prompts";
 import { selectPrompt } from "@reliverse/prompts";
 import { spinner } from "@reliverse/prompts";
-import { detect } from "detect-package-manager";
 import { emojify } from "node-emoji";
 import { bold } from "picocolors";
 
-import {
-  basicConfig,
-  experimentalConfig,
-  extendedConfig,
-} from "~/menu/configs.js";
-import { pm, pmv, pkg } from "~/utils/pkg.js";
+import { pkg, pm } from "~/utils/pkg.js";
 
-import { IDs, schema, type UserInput } from "./schema.js";
+import { schema, type UserInput } from "./schema.js";
 import {
   calculateAge,
   createColorChoices,
@@ -41,18 +35,20 @@ import {
 
 export async function showStartPrompt() {
   await startPrompt({
-    title: `reliverse v${pkg.version} | ${pm} v${pmv}`,
-    ...basicConfig,
+    title: `@reliverse/cli v${pkg.version} | ${pm} v${pmv} | ${getCurrentTerminalName()}`,
     titleColor: "inverse",
     clearConsole: true,
   });
 }
 
 export async function showAnykeyPrompt(
-  kind: "pm" | "privacy",
+  kind: "welcome" | "pm" | "privacy",
   username?: string,
 ) {
   let notification = bold("Press any key to continue...");
+  if (kind === "welcome") {
+    notification = `Welcome to @reliverse/cli!\n│  This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.\n│  ============================\n│  ${notification}`;
+  }
   if (kind === "privacy") {
     notification = `Before you continue, please note that you are only testing an example CLI app.\n│  None of your responses will be sent anywhere. No actions, such as installing dependencies, will actually take place;\n│  this is simply a simulation with a sleep timer and spinner. You can always review the source code to learn more.\n│  ============================\n│  ${notification}`;
   }
@@ -62,29 +58,11 @@ export async function showAnykeyPrompt(
   await anykeyPrompt(notification);
 }
 
-export async function showInputPrompt(): Promise<UserInput["username"]> {
-  const username = await inputPrompt({
-    // 'id' is the key in the userInput result object.
-    // Choose any name for it, but ensure it’s unique.
-    // Intellisense will show you all available IDs.
-    title: "We're glad you're testing our interactive prompts library!",
-    content: "Let's get to know each other!\nWhat's your username?",
-    hint: "Press <Enter> to use the default value.",
-    placeholder: "[Default: johnny911]",
-    defaultValue: "johnny911",
-    schema: schema.properties.username,
-    ...extendedConfig,
-  });
-  return username ?? "johnny911";
-}
-
 export async function askDir(username: string): Promise<UserInput["dir"]> {
   const dir = await inputPrompt({
     title: `Great! Nice to meet you, ${username}!`,
     content: "Where should we create your project?",
-
     schema: schema.properties.dir,
-    ...extendedConfig,
     titleVariant: "doubleBox",
     hint: "Default: ./prefilled-default-value",
     defaultValue: "./prefilled-default-value",
@@ -94,14 +72,10 @@ export async function askDir(username: string): Promise<UserInput["dir"]> {
 
 export async function showNumberPrompt(): Promise<UserInput["age"]> {
   const age = await numberPrompt({
-    ...extendedConfig,
     title: "Enter your age",
-
     hint: "Try: 42 | Default: 36",
     defaultValue: "36",
-
     schema: schema.properties.age,
-
     validate: (value) => {
       const num = Number(value);
       if (num === 42) {
@@ -164,7 +138,6 @@ export async function showSelectPrompt(): Promise<UserInput["lang"]> {
       { label: "Other", value: "else", hint: "Other" },
     ],
     defaultValue: "en",
-    ...experimentalConfig,
   });
 
   switch (lang) {
@@ -247,7 +220,6 @@ export async function showMultiselectPrompt(): Promise<UserInput["langs"]> {
       { value: "swift", label: "Swift", hint: "🍎 Safe and performant" },
     ],
     required: true,
-    ...experimentalConfig,
   });
 
   if (!Array.isArray(selectedOptions)) {
@@ -287,7 +259,6 @@ export async function showNumSelectPrompt(): Promise<UserInput["color"]> {
     title: "Choose your favorite color",
     content:
       "You are free to customize everything in your prompts using the following color palette.",
-    ...extendedConfig,
     choices,
     defaultValue: "17",
     hint: "Default: 17",
@@ -354,7 +325,6 @@ export async function showConfirmPrompt(
     titleColor: "red",
     titleVariant: "doubleBox",
     content: "Spinners are helpful for long-running tasks.",
-    ...extendedConfig,
     defaultValue: true,
   });
 
@@ -414,7 +384,6 @@ export async function showNextStepsPrompt() {
   await nextStepsPrompt({
     title: "Next Steps",
     content: "- Set up your profile\n- Review your dashboard\n- Add tasks",
-    ...extendedConfig,
   });
 }
 
@@ -425,7 +394,7 @@ export async function showAnimatedText() {
     ),
     anim: "neon",
     delay: 2000,
-    ...basicConfig,
+
     titleColor: "passionGradient",
     titleTypography: "bold",
   });
@@ -434,10 +403,10 @@ export async function showAnimatedText() {
 export async function showEndPrompt() {
   await endPrompt({
     title: emojify(
-      "ℹ  :books: Learn the docs here: https://docs.reliverse.org/relinka",
+      "ℹ  :books: Learn the docs here: https://docs.reliverse.org/cli",
     ),
     titleAnimation: "glitch",
-    ...basicConfig,
+
     titleColor: "retroGradient",
     titleTypography: "bold",
     titleAnimationDelay: 2000,

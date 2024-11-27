@@ -1,16 +1,48 @@
-# Reliverse
+# @reliverse/cli
 
 [npmjs](https://npmjs.com/package/@reliverse/cli), [GitHub](https://github.com/reliverse/cli), [Discord](https://discord.gg/Pb8uKbwpsJ)
 
+**Reliverse: Open-Source Full-Featured Product Launcher Tool & Assistant**.
+
 ![Reliverse Cover Image](./reliverse.webp)
 
-## Introduction
-
-👋 Welcome! This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
+👋 Welcome! This superapp tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
 
 **Reliverse** is a CLI tool designed to streamline the setup of JavaScript, TypeScript, and other types of projects, with a primary focus on Next.js templates, though it is not limited to them.
 
-It allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
+## Installation
+
+Please make sure you have [Git](https://git-scm.com), [VSCode](https://code.visualstudio.com), and [Node.js LTS](https://nodejs.org/en/download/package-manager) installed first.
+
+Then use one of the following commands to install **Reliverse**:
+
+- With [bun](https://bun.sh): `bun i -g @reliverse/cli`
+- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm add -g @reliverse/cli`
+- With [yarn](https://yarnpkg.com): `yarn global add @reliverse/cli`
+- With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g @reliverse/cli`
+
+## Usage
+
+Once installed, you can use **@reliverse/cli** to create new projects or manage existing ones. Navigate to the root of your desired directory and run:
+
+```bash
+reliverse
+```
+
+## Updating
+
+```bash
+bun rm -g @reliverse/cli
+bun i -g @reliverse/cli
+# OR bun update --latest -g
+# OR use another package manager
+```
+
+## Introduction
+
+A single tool to launch a brand new thing from scratch? Yes.
+
+Reliverse allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
 Reliverse is more than just the easiest way to install Relivator. It’s also the most convenient new way to download any repository from GitHub and automatically prepare it for work. Especially if it’s a project from the JavaScript ecosystem.
 
@@ -20,7 +52,7 @@ The mission of this project is not only to help you install templates in seconds
 
 Things are too overwhelming in our world. Let's make everything easier.
 
-**Reliverse CLI allows you:**
+**@reliverse/cli allows you:**
 
 1. Install the pre-configured Relivator.
 2. Build your own Relivator from scratch.
@@ -30,7 +62,7 @@ Things are too overwhelming in our world. Let's make everything easier.
 6. Update your GitHub clone with the latest changes.
 7. Add, remove, or replace the Relivator's features.
 
-**It's a single tool for everything.** At its current stage, Reliverse CLI is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t be only a website builder in the future, it will be a tool for building anything. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
+**It's a single tool for everything.** At its current stage, @reliverse/cli is a powerful website builder and project bootstrapper, right in your terminal. However, it won’t be only a website builder in the future, it will be a tool for building anything. Even now, you can start from scratch or with a template, setting everything up automatically or customizing it to your exact preferences. With all the tools pre-configured and ready to go, you can build exactly what you envision.
 
 Remember the feeling of empowerment when you first used a website builder like WordPress? It gave you the freedom to create. But eventually, you hit limits—PageSpeed Insights flagged issues, performance lagged, and the bloated size of your site became hard to ignore.
 
@@ -42,28 +74,15 @@ Reliverse is still in its early stages, but it already allows you to bootstrap w
 
 By the way, you might think that a CLI doing so many things would become bloated, like an elephant in the room, but don’t worry—it’s going to be lean. This is the dream of a creator, a dream that must become reality. Everything has to be perfect.
 
-## Installation
+See the [Installation](#installation) section for more details.
 
-You should install [Git](https://git-scm.com), [VSCode](https://code.visualstudio.com), and [Node.js LTS](https://nodejs.org/en/download/package-manager) first. Then use one of the following commands to install **Reliverse**:
+## Collaborate
 
-- With [bun](https://bun.sh): `bun i -g @reliverse/cli`
-- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm add -g @reliverse/cli`
-- With [yarn](https://yarnpkg.com): `yarn global add @reliverse/cli`
-- With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g @reliverse/cli`
-
-## Usage
-
-Once installed, you can use **Reliverse CLI** to create new projects or manage existing ones. Navigate to the root of your desired directory and run:
-
-```bash
-reliverse
-```
-
-> **Temporary issue**: It seems that currently if you build and publish a project using bun , then the project does not run with a global installation, so *now wherever README.md says to use `bun`, please use `pnpm` instead*.
+Reliverse team is open to partnerships and collaborations. If you are interested in working together, please contact us. Discord: <https://discord.gg/Pb8uKbwpsJ>.
 
 ## FAQ
 
-**Bun doesn't install the latest version of Reliverse CLI. What should I do?**
+**Bun doesn't install the latest version of @reliverse/cli. What should I do?**
 
 ```bash
 bun pm cache rm -g
@@ -72,7 +91,7 @@ bunx reliverse # OR bunx reliverse@latest
 
 **Why you don't use monorepo?**
 
-Our mission is to make web development accessible and understandable for everyone. By everyone, we also mean any tool. Unfortunately, not every web tool works perfectly with monorepo, including Bun, which is critical for us. Strange things can sometimes happen with a monorepo codebase. But it depends on the vision of the project. If there is a real need for monorepo and all the tools work well, we will be free to switch to it. There has already been an attempt to switch to a monorepo structure, the developments were saved and available as a monorepo bootstrap using Reliverse CLI itself.
+Our mission is to make web development accessible and understandable for everyone. By everyone, we also mean any tool. Unfortunately, not every web tool works perfectly with monorepo, including Bun, which is critical for us. Strange things can sometimes happen with a monorepo codebase. But it depends on the vision of the project. If there is a real need for monorepo and all the tools work well, we will be free to switch to it. There has already been an attempt to switch to a monorepo structure, the developments were saved and available as a monorepo bootstrap using @reliverse/cli itself.
 
 ## Reliverse Addons
 
@@ -87,12 +106,12 @@ Reliverse Addons, also called as extensions or plugins, are projects that extend
 - **Interactive Setup**: Customize your setup with interactive prompts that let you choose specific file categories to include.
 - **Template-Driven Initialization**: Instantly clone and set up templates from GitHub to jumpstart your development.
 - **Versatile Functionality**: Not just for templates! Planning to clone a JS library or experiment with new setups? Reliverse can support it all.
-- **Enhanced shadcn/ui CLI Integration**: [W.I.P] The Reliverse CLI integrates with the shadcn/ui CLI, enabling seamless addition of components and dependencies to your project. With added features and support for shadcn-vue and shadcn-svelte (community-led ports for Vue and Svelte), you can easily add shadcn/ui components to React, Vue, and Svelte projects. Checkboxes let you select and install multiple components at once. Note: Reliverse and these community-supported ports are not affiliated with @shadcn.
+- **Enhanced shadcn/ui CLI Integration**: [W.I.P] The @reliverse/cli integrates with the shadcn/ui CLI, enabling seamless addition of components and dependencies to your project. With added features and support for shadcn-vue and shadcn-svelte (community-led ports for Vue and Svelte), you can easily add shadcn/ui components to React, Vue, and Svelte projects. Checkboxes let you select and install multiple components at once. Note: Reliverse and these community-supported ports are not affiliated with @shadcn.
 - **Future Expansion**: While currently optimized for JavaScript and TypeScript projects (e.g., React, Astro, Vue, Svelte), Reliverse is envisioned to grow beyond web development into a comprehensive toolset you’ll love. This is the founder’s vision for Reliverse—to become the single tool for everything.
 
 ### Commands
 
-The Reliverse CLI offers a series of interactive prompts to streamline your project setup:
+The @reliverse/cli offers a series of interactive prompts to streamline your project setup:
 
 1. **Create a New Project**: Start from scratch or use predefined templates for a quick setup.
 2. **Install GitHub Templates**: Easily install any JavaScript or TypeScript project by providing a GitHub repository URL.
@@ -102,7 +121,7 @@ The Reliverse CLI offers a series of interactive prompts to streamline your proj
 
 ### Example Workflow
 
-Here’s an example session of using **Reliverse CLI**:
+Here’s an example session of using **@reliverse/cli**:
 
 ```bash
 $ reliverse
@@ -135,7 +154,7 @@ When setting up a project, you can choose from the following file categories:
 
 ## Conflict Management
 
-**Reliverse CLI** helps you handle configuration conflicts for existing files such as `.eslintrc.cjs` or `prettier.config.js`. It prompts you with options to:
+**@reliverse/cli** helps you handle configuration conflicts for existing files such as `.eslintrc.cjs` or `prettier.config.js`. It prompts you with options to:
 
 - **Remove**: Delete the existing file.
 - **Rename**: Rename the file (e.g., add `.txt` to disable it).
@@ -188,7 +207,7 @@ Visit the [Installation](#installation) section and select **Tools Installation*
 
 #### Classical Method
 
-To contribute to **Reliverse CLI**, you can clone the repository and install the dependencies:
+To contribute to **@reliverse/cli**, you can clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/reliverse/cli.git

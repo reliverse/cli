@@ -1,19 +1,6 @@
 import { colorMap } from "@reliverse/prompts";
 import { Type, type Static } from "@sinclair/typebox";
 
-export const IDs = {
-  start: "start",
-  username: "username",
-  dir: "dir",
-  spinner: "spinner",
-  password: "password",
-  age: "age",
-  lang: "lang",
-  color: "color",
-  birthday: "birthday",
-  features: "features",
-};
-
 const colorSchema = Type.Enum(
   Object.keys(colorMap).reduce(
     (acc, key) => {

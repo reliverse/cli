@@ -7,7 +7,7 @@ function showHelp() {
   relinka.info(`Usage: bun build.publish.ts [options]
 
 Options:
-  no options      Publish to npm registry
+  no options      Publish to NPM registry
   --jsr           Publish to JSR registry
   --dry-run       Perform a dry run of the publish process
   -h, --help      Show help

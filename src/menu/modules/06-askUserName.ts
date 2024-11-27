@@ -1,18 +1,24 @@
-import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { inputPrompt, msg } from "@reliverse/prompts";
 import { generate } from "random-words";
 
-import { validate } from "~/utils/validate.js";
-
 export async function askUserName(): Promise<string> {
-  const placeholder = generate({ exactly: 1, join: "-" });
-  const username = await inputPrompt({
-    title: "Enter your GitHub username:",
-    defaultValue: placeholder,
-    placeholder,
+  msg({
+    type: "M_MIDDLE",
   });
 
-  validate(username, "string", "GitHub username prompt canceled.");
+  // const placeholder = generate({ exactly: 2, join: "" });
+  const placeholder = "johnny911";
+
+  const username = await inputPrompt({
+    title:
+      "Your app will contain @handle e.g. in the footer section. What should it be?",
+    defaultValue: placeholder,
+    hint: `Press <Enter> to use the default value. [Default: ${placeholder}]`,
+    content: `Generally it's recommended to use your/org's GitHub @handle (username).
+If you don't have one, you can create a new account here: https://github.com/signup`,
+    contentColor: "dim",
+    // schema: schema.properties.username,
+  });
 
   return username;
 }

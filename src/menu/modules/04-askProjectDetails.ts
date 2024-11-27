@@ -1,7 +1,9 @@
+import { msg } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
+
 // import path from "pathe";
 // import { askAppName } from "~/menu/05-askAppName.js";
-// import { askUserName } from "~/menu/06-askUserName.js";
+import { askUserName } from "./06-askUserName.js";
 // import { askAppDomain } from "~/menu/07-askAppDomain.js";
 // import { askGitInitialization } from "~/menu/08-askGitInitialization.js";
 // import { askInstallDependencies } from "~/menu/09-askInstallDependencies.js";
@@ -20,13 +22,16 @@ import { relinka } from "@reliverse/relinka";
 export async function askProjectDetails(
   template: string,
   message: string,
-  mode: "buildOwnRelivator" | "installAnyGitRepo" | "justInstallRelivator",
+  mode: "buildBrandNewThing" | "installAnyGitRepo",
   allowI18nPrompt: boolean,
 ) {
-  relinka.info(message);
+  msg({
+    type: "M_MIDDLE",
+  });
+  relinka.success(message);
+  const username = await askUserName();
 
   /* const appName = await askAppName();
-  const username = await askUserName();
   const domain = await askAppDomain();
   const git = await askGitInitialization();
   const deps = await askInstallDependencies(mode);
@@ -75,5 +80,5 @@ export async function askProjectDetails(
   // await askCheckAndDownloadFiles(targetDir, appName);
   // await showCongratulationMenu(targetDir, deps, template, targetDir);
 
-  console.log("🎉 Project created successfully!");
+  relinka.success(` 👋 To be continued... See you, ${username}!`);
 }
