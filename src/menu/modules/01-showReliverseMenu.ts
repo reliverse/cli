@@ -1,7 +1,7 @@
 import { deleteLastLine, msg, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import { emojify } from "node-emoji";
-import { dim, italic } from "picocolors";
+import pc from "picocolors";
 
 import { pkg } from "~/utils/pkg.js";
 
@@ -36,7 +36,7 @@ export async function showReliverseMenu() {
       // "5. Run code modifications on the existing codebase",
       // "6. Update your GitHub clone with the latest changes",
       // "7. Add, remove, or replace the Relivator's features",
-      { label: italic(emojify(":key:  Exit...")), value: "exit" },
+      { label: pc.italic(emojify(":key:  Exit...")), value: "exit" },
     ],
     debug: false,
     terminalHeight: 14,

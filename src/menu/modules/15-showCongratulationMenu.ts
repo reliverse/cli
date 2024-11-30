@@ -17,7 +17,7 @@ export async function showCongratulationMenu(
   const cwd = process.cwd();
   const pkgManager = await choosePackageManager(cwd);
 
-  console.info("");
+  relinka.info("");
   relinka.success("🤘 Project created successfully!");
   relinka.info("✨ Next steps to get started:");
   relinka.info(`- Open the project: cd ${targetDir}`);
@@ -32,7 +32,7 @@ export async function showCongratulationMenu(
   relinka.success(`🎉 ${source} was successfully installed to ${dir}.`);
   relinka.info(`- If you have VSCode installed, run: code ${targetDir}`);
 
-  console.info("");
+  relinka.info("");
 
   const vscodeInstalled = isVSCodeInstalled();
 

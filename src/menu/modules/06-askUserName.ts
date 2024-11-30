@@ -1,12 +1,11 @@
 import { inputPrompt, msg } from "@reliverse/prompts";
-import { generate } from "random-words";
 
 export async function askUserName(): Promise<string> {
   msg({
     type: "M_MIDDLE",
   });
 
-  // const placeholder = generate({ exactly: 2, join: "" });
+  // TODO: fetch from GitHub after login
   const placeholder = "johnny911";
 
   const username = await inputPrompt({
@@ -15,7 +14,7 @@ export async function askUserName(): Promise<string> {
     defaultValue: placeholder,
     hint: `Press <Enter> to use the default value. [Default: ${placeholder}]`,
     content: `Generally it's recommended to use your/org's GitHub @handle (username).
-If you don't have one, you can create a new account here: https://github.com/signup`,
+If you don't have one, you can create a new account here: https://github.com/signup \np.s. Don't add a @ symbol, we'll do that automatically.`,
     contentColor: "dim",
     // schema: schema.properties.username,
   });

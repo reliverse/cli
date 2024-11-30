@@ -18,7 +18,7 @@ export async function initializeGitRepository(
       await git.add(".");
       await git.commit("Initial commit from Create Reliverse App");
 
-      console.info("");
+      relinka.info("");
       relinka.success("Git repository initialized and initial commit created.");
 
       // relinka.info("We recommend pushing your commits using GitHub Desktop.");

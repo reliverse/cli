@@ -16,7 +16,7 @@ export async function cloneAndCopyFiles(
   DEBUG.enableVerboseLogging &&
     relinka.info(`Cloning from ${repoUrl} into ${tempRepoDir}...`);
 
-  console.info(
+  relinka.info(
     "✨ Please wait while we make magic. It all depends on your internet speed.",
   );
 

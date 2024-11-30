@@ -20,7 +20,7 @@ import { numSelectPrompt } from "@reliverse/prompts";
 import { selectPrompt } from "@reliverse/prompts";
 import { spinner } from "@reliverse/prompts";
 import { emojify } from "node-emoji";
-import { bold } from "picocolors";
+import pc from "picocolors";
 
 import { pkg, pm } from "~/utils/pkg.js";
 
@@ -35,9 +35,10 @@ import {
 
 export async function showStartPrompt() {
   await startPrompt({
-    title: `@reliverse/cli v${pkg.version} | ${pm} v${pmv} | ${getCurrentTerminalName()}`,
     titleColor: "inverse",
     clearConsole: true,
+    packageName: pkg.name,
+    packageVersion: pkg.version,
   });
 }
 
@@ -45,7 +46,7 @@ export async function showAnykeyPrompt(
   kind: "welcome" | "pm" | "privacy",
   username?: string,
 ) {
-  let notification = bold("Press any key to continue...");
+  let notification = pc.bold("Press any key to continue...");
   if (kind === "welcome") {
     notification = `Welcome to @reliverse/cli!\n│  This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.\n│  ============================\n│  ${notification}`;
   }

@@ -1,11 +1,12 @@
 import { downloadTemplate } from "giget";
 import path from "pathe";
+
 import type { GitOption } from "~/menu/modules/08-askGitInitialization.js";
 
+import { isDev } from "~/app.js";
 import { handleError, verbose } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { initializeGitRepository } from "~/utils/git.js";
-import { isDev } from "~/app.js";
 
 export async function downloadGitRepo(
   name: string,

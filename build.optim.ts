@@ -1,8 +1,10 @@
-import { errorHandler, msg, spinner } from "@reliverse/prompts";
 import glob from "fast-glob";
 import fs from "fs-extra";
 import path from "pathe";
 import strip from "strip-comments";
+import { fileURLToPath } from "url";
+
+import relinka from "~/tmp.js";
 
 // Verbose logging
 const debug = false;
@@ -11,10 +13,13 @@ const debug = false;
 const args: string[] = process.argv.slice(2);
 const isJSR: boolean = args.includes("--jsr");
 
+// Get current directory using import.meta.url
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
 // Define directories based on the presence of '--jsr' flag
-const sourceDir: string = path.resolve(__dirname, "src");
+const sourceDir: string = path.resolve(currentDir, "src");
 const outputDir: string = path.resolve(
-  __dirname,
+  currentDir,
   isJSR ? "dist-jsr" : "dist-npm",
 );
 
@@ -24,9 +29,11 @@ const npmFilesToDelete: string[] = [
   "**/*.test.d.ts",
   "types/internal.js",
   "types/internal.d.ts",
+  "**/*.temp.js",
+  "**/*.temp.d.ts",
 ];
 
-const jsrFilesToDelete: string[] = ["**/*.test.ts"];
+const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts"];
 
 /**
  * Deletes files matching the provided patterns within the base directory.
@@ -41,7 +48,7 @@ async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
     });
 
     if (files.length === 0) {
-      console.log("No files matched the deletion patterns.");
+      relinka.log("No files matched the deletion patterns.");
       return;
     }
 
@@ -49,14 +56,14 @@ async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
       try {
         await fs.remove(filePath);
         if (debug) {
-          console.log(`Deleted: ${filePath}`);
+          relinka.log(`Deleted: ${filePath}`);
         }
       } catch (error) {
-        console.error(`Error deleting file ${filePath}:`, error);
+        relinka.error(`Error deleting file ${filePath}:`, error);
       }
     }
   } catch (error) {
-    console.error("Error processing deletion patterns:", error);
+    relinka.error("Error processing deletion patterns:", error);
   }
 }
 
@@ -104,7 +111,7 @@ function replaceImportPaths(
     updatedContent = updatedContent.replace(/(\.js)(?=['";])/g, ".ts");
 
     if (debug) {
-      console.log("Replaced '.js' with '.ts' in import paths.");
+      relinka.log("Replaced '.js' with '.ts' in import paths.");
     }
   }
 
@@ -128,8 +135,8 @@ function removeComments(content: string, filePath: string): string {
   });
 
   if (debug) {
-    console.log(`\nProcessing file: ${filePath}`);
-    console.log("Stripped all comments.");
+    relinka.log(`\nProcessing file: ${filePath}`);
+    relinka.log("Stripped all comments.");
   }
 
   return stripped;
@@ -161,7 +168,7 @@ async function processFiles(dir: string): Promise<void> {
       filePath.endsWith(".cts")
     ) {
       if (debug) {
-        console.log(`\nProcessing file: ${filePath}`);
+        relinka.log(`\nProcessing file: ${filePath}`);
       }
       try {
         const content: string = await fs.readFile(filePath, "utf8");
@@ -180,11 +187,11 @@ async function processFiles(dir: string): Promise<void> {
         if (content !== updatedContent) {
           await fs.writeFile(filePath, updatedContent, "utf8");
           if (debug) {
-            console.log(`Updated file: ${filePath}`);
+            relinka.log(`Updated file: ${filePath}`);
           }
         }
       } catch (error) {
-        console.error(`Error processing file ${filePath}:`, error);
+        relinka.error(`Error processing file ${filePath}:`, error);
       }
     }
   }
@@ -199,11 +206,11 @@ async function removeOutputDirectory(): Promise<void> {
     if (exists) {
       await fs.remove(outputDir);
       if (debug) {
-        console.log(`Removed existing '${outputDir}' directory.`);
+        relinka.log(`Removed existing '${outputDir}' directory.`);
       }
     }
   } catch (error) {
-    console.error(`Error removing '${outputDir}' directory:`, error);
+    relinka.error(`Error removing '${outputDir}' directory:`, error);
     throw error;
   }
 }
@@ -218,10 +225,10 @@ async function copySrcToOutput(): Promise<void> {
       errorOnExist: false,
     });
     if (debug) {
-      console.log(`Copied 'src' to '${outputDir}'`);
+      relinka.log(`Copied 'src' to '${outputDir}'`);
     }
   } catch (error) {
-    console.error(`Error copying 'src' to '${outputDir}':`, error);
+    relinka.error(`Error copying 'src' to '${outputDir}':`, error);
     throw error;
   }
 }
@@ -231,32 +238,22 @@ async function copySrcToOutput(): Promise<void> {
  * @param dir - The directory to optimize.
  */
 async function optimizeBuildForProduction(dir: string): Promise<void> {
-  await spinner({
-    initialMessage: isJSR
-      ? "Preparing JSR build by removing existing output directory..."
-      : "Creating an optimized production build...",
-    successMessage: isJSR
-      ? "JSR build prepared successfully."
-      : "Optimized production build created successfully.",
-    spinnerSolution: "ora",
-    spinnerType: "arc",
-    action: async (updateMessage: (message: string) => void) => {
-      if (isJSR) {
-        updateMessage("Removing existing output directory...");
-        await removeOutputDirectory(); // Remove outputDir before copying
-        updateMessage("Copying 'src' to output directory...");
-        await copySrcToOutput();
-      }
-      updateMessage("Processing files...");
-      await processFiles(dir);
-      updateMessage("Cleaning up unnecessary files...");
-      // Choose the appropriate files to delete based on the mode
-      const filesToDelete: string[] = isJSR
-        ? jsrFilesToDelete
-        : npmFilesToDelete;
-      await deleteFiles(filesToDelete, dir);
-    },
-  });
+  if (isJSR) {
+    relinka.info(
+      "Preparing JSR build by removing existing output directory...",
+    );
+    await removeOutputDirectory(); // Remove outputDir before copying
+    relinka.info("Copying 'src' to output directory...");
+    await copySrcToOutput();
+    relinka.info("Processing copied files to replace import paths...");
+    await processFiles(outputDir); // Process files after copying
+  } else {
+    relinka.info("Creating an optimized production build...");
+    await processFiles(dir);
+    relinka.info("Cleaning up unnecessary files...");
+    const filesToDelete: string[] = isJSR ? jsrFilesToDelete : npmFilesToDelete;
+    await deleteFiles(filesToDelete, dir);
+  }
 }
 
 async function getDirectorySize(dirPath: string): Promise<number> {
@@ -281,16 +278,12 @@ await optimizeBuildForProduction(outputDir)
   .then(() => {
     getDirectorySize(outputDir)
       .then((size) => {
-        msg({
-          type: "M_INFO",
-          title: `Total size of ${outputDir}: ${size} bytes`,
-        });
+        relinka.info(`Total size of ${outputDir}: ${size} bytes`);
       })
       .catch((error) => {
-        msg({
-          type: "M_ERROR",
-          title: `Error calculating directory size for ${outputDir}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        });
+        relinka.error(
+          `Error calculating directory size for ${outputDir}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
       });
   })
-  .catch((error: Error) => errorHandler(error));
+  .catch((error: Error) => relinka.error(error.message));

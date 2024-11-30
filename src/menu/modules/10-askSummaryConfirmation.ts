@@ -1,10 +1,10 @@
+import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
 import { verbose } from "~/utils/console.js";
 import { validate } from "~/utils/validate.js";
 
 import type { GitOption } from "./08-askGitInitialization.js";
-import { confirmPrompt } from "@reliverse/prompts";
 
 export async function askSummaryConfirmation(
   template: string,

@@ -5,6 +5,7 @@ import {
   getBunVersion,
   getPackageManagerVersion,
 } from "./utils/packageManager.js";
+import relinka from "@reliverse/relinka";
 
 export async function promptForPackageManager(): Promise<string> {
   try {
@@ -30,7 +31,7 @@ export async function promptForPackageManager(): Promise<string> {
             id: pm,
           };
         } catch (err) {
-          console.warn(`Failed to get version for ${pm}:`, err);
+          relinka.warn(`Failed to get version for ${pm}:`, err);
           return {
             title: `${pm} (version unknown)`,
             value: pm,
@@ -57,7 +58,7 @@ export async function promptForPackageManager(): Promise<string> {
 
     return npmClient;
   } catch (error) {
-    console.error("Failed to prompt for package manager:", error);
+    relinka.error("Failed to prompt for package manager:", error);
     // Default to npm as fallback
     return "npm";
   }

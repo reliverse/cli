@@ -1,4 +1,5 @@
 import { prompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { execaCommand } from "execa";
 
 export async function installWithPackageManager(
@@ -16,22 +17,22 @@ export async function installWithPackageManager(
     });
 
     if (!confirmInstall) {
-      console.log("Installation cancelled.");
+      relinka.log("Installation cancelled.");
       return;
     }
   }
 
   try {
-    console.log(`Installing dependencies with ${npmClient}...`);
+    relinka.log(`Installing dependencies with ${npmClient}...`);
     await execaCommand(`${npmClient} install`, { cwd, stdio: "inherit" });
   } catch (error) {
     if (error instanceof Error) {
-      console.error(
+      relinka.error(
         `Error using ${npmClient} for installation:`,
         error.message,
       );
     } else {
-      console.error(
+      relinka.error(
         `An unknown error occurred using ${npmClient} for installation:`,
         error,
       );
