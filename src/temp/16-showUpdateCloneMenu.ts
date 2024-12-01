@@ -4,7 +4,7 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { isDev, REPO_SHORT_URLS } from "~/app.js";
+import { isDev, REPO_SHORT_URLS } from "~/data.js";
 import { verbose } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";

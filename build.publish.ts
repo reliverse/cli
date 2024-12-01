@@ -1,8 +1,7 @@
+import relinka from "@reliverse/relinka";
 import { execaCommand } from "execa";
 import fs from "fs-extra";
 import mri from "mri";
-
-import relinka from "~/tmp.js";
 
 function showHelp() {
   relinka.info(`Usage: bun tsx build.publish.ts [options]
@@ -84,8 +83,12 @@ async function bumpJsrVersion(disable?: boolean) {
   if (disable) {
     return;
   }
-  const pkg = JSON.parse(await fs.readFile("package.json", "utf-8"));
-  const jsrConfig = JSON.parse(await fs.readFile("jsr.jsonc", "utf-8"));
+  const pkg = JSON.parse(await fs.readFile("package.json", "utf-8")) as {
+    version: string;
+  };
+  const jsrConfig = JSON.parse(await fs.readFile("jsr.jsonc", "utf-8")) as {
+    version: string;
+  };
   jsrConfig.version = pkg.version;
   await fs.writeFile("jsr.jsonc", JSON.stringify(jsrConfig, null, 2));
 }

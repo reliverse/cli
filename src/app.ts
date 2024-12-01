@@ -1,104 +1,64 @@
-// Debug settings to control verbose logging and temp clone cleanup behavior
-export const DEBUG = {
-  alphaFeaturesEnabled: true,
-  disableTempCloneRemoving: true, // Control whether the temp clone folder is removed
-  enableVerboseLogging: false, // Toggle verbose logging on or off
-};
+#!/usr/bin/env node
+// 📚 Docs: https://docs.reliverse.org/relinka
 
-// File conflict settings, useful for prompting user to resolve conflicts during project setup
-export const FILE_CONFLICTS = [
-  {
-    description: "ESLint config",
-    fileName: ".eslintrc.cjs",
-    shouldCopy: false, // Deprecated file, don't copy
-  },
-  {
-    customMessage:
-      "Biome will be installed, so Prettier is not necessary. What would you like to do?",
-    description: "Prettier config",
-    fileName: "prettier.config.js",
-  },
-  {
-    description: "TypeScript config",
-    fileName: "tsconfig.json",
-  },
-];
+import { errorHandler } from "@reliverse/prompts";
 
-// Command-line arguments to check if we are in development mode
-const args = process.argv.slice(2);
+import { showReliverseMenu } from "./menu/modules/01-showReliverseMenu.js";
+import { askProjectDetails } from "./menu/modules/04-askProjectDetails.js";
+import {
+  askDir,
+  doSomeFunStuff,
+  showAnimatedText,
+  showAnykeyPrompt,
+  showConfirmPrompt,
+  showDatePrompt,
+  showEndPrompt,
+  showMultiselectPrompt,
+  showNextStepsPrompt,
+  showNumberPrompt,
+  showNumMultiselectPrompt,
+  showNumSelectPrompt,
+  showPasswordPrompt,
+  showProgressBar,
+  showResults,
+  showSelectPrompt,
+  showStartPrompt,
+  showTogglePrompt,
+} from "./menu/prompts.js";
+import { type UserInput } from "./menu/schema.js";
 
-export const isDev = args.includes("--dev");
-
-export const REPO_FULL_URLS = {
-  relivatorGithubLink: "https://github.com/blefnk/relivator-nextjs-template",
-};
-
-export const REPO_SHORT_URLS = {
-  relivatorGithubLink: "blefnk/relivator-nextjs-template",
-  versatorGithubLink: "blefnk/versator-nextjs-template",
-};
-
-// Path settings for important files and directories
-export const FILE_PATHS = {
-  layoutFile: "src/app/layout.tsx", // Path to layout file in the repo
-  pageFile: "src/app/page.tsx", // Path to page file in the repo
-  tempRepoClone: "temp-repo-clone", // Default temp clone folder name
-};
-
-// Files required for i18n setup
-export const FILES_TO_DOWNLOAD = [FILE_PATHS.layoutFile, FILE_PATHS.pageFile];
-
-// File categories used in conflict resolution or file download operations
-export const fileCategories: Record<string, string[]> = {
-  biome: ["biome.json"],
-  eslint: [".eslintrc.cjs", "eslint.config.js"],
-  GitHub: [".github", "README.md"],
-  IDE: [".vscode"],
-  putout: [".putout.json"],
-  "Reliverse configs": ["reliverse.config.ts", "reliverse.info.ts"],
-};
-
-// =======================================================================
-// FUTURE CONFIGURATIONS FOR RELIVATOR BUILDS (Placeholders for future features)
-// =======================================================================
-
-// Example of a configuration for future use
-// export const RELIVATOR_CONFIG = {
-//   authProvider: "clerk" as "authjs" | "clerk" | "none", // Authentication provider options
-//   databaseDialect: "postgresql" as "mysql" | "postgresql" | "sqlite", // Database dialect options
-//   databaseProvider: "neon" as "neon" | "planetscale" | "turso", // Database providers for Reliverse
-//   disableDonateButton: false, // Option to disable donation button
-//   frameworkVersion: "1.2.6", // Framework version
-//   hideEnvInfo: false, // Toggle to hide environment info
-//   packageManager: "bun" as "bun" | "pnpm", // Future: default package manager
-// };
-
-// =======================================================================
-// Helper types for various configurations
-// =======================================================================
-
-// export type PackageManager = "bun" | "pnpm";
-
-// export type AuthProvider = "authjs" | "clerk" | "none";
-
-// export type DatabaseDialect = "mysql" | "postgresql" | "sqlite";
-
-// export type DatabaseProvider =
-//   | "neon"
-//   | "planetscale"
-//   | "private-mysql"
-//   | "private-pg"
-//   | "railway-mysql"
-//   | "railway-pg"
-//   | "turso"
-//   | "vercel";
-
-// =======================================================================
-// Example configurations for potential usage in the future
-// =======================================================================
-
-// export const databaseConfig = {
-//   provider: "neon" as DatabaseProvider,
-//   dialect: "postgresql" as DatabaseDialect,
-//   prefix: process.env.NEXT_PUBLIC_DATABASE_PREFIX || "bleverse",
-// };
+export default async function app() {
+  await showStartPrompt();
+  await showAnykeyPrompt("welcome");
+  await showReliverseMenu();
+  // const username = await showInputPrompt();
+  // const dir = await askDir(username);
+  // const age = await showNumberPrompt();
+  // const password = await showPasswordPrompt();
+  // const birthday = await showDatePrompt();
+  // const lang = await showSelectPrompt();
+  // const langs = await showMultiselectPrompt();
+  // const color = await showNumSelectPrompt();
+  // const features = await showNumMultiselectPrompt();
+  // const toggle = await showTogglePrompt();
+  // const spinner = await showConfirmPrompt(username);
+  // const userInput = {
+  //   username,
+  //   dir,
+  //   age,
+  //   lang,
+  //   color,
+  //   password: "123456",
+  //   birthday: "14.02.1990",
+  //   langs,
+  //   features,
+  //   spinner,
+  //   toggle,
+  // } satisfies UserInput;
+  // await showProgressBar();
+  // await showResults(userInput);
+  // await doSomeFunStuff(userInput);
+  // await showNextStepsPrompt();
+  // await showAnimatedText();
+  await showEndPrompt();
+}

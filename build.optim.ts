@@ -1,10 +1,9 @@
+import relinka from "@reliverse/relinka";
 import glob from "fast-glob";
 import fs from "fs-extra";
 import path from "pathe";
 import strip from "strip-comments";
 import { fileURLToPath } from "url";
-
-import relinka from "~/tmp.js";
 
 // Verbose logging
 const debug = false;
@@ -127,19 +126,19 @@ function replaceImportPaths(
  */
 function removeComments(content: string, filePath: string): string {
   // When not in JSR mode, strip all comments using strip-comments
-  const stripped = strip(content, {
-    line: true,
-    block: true,
-    keepProtected: true,
-    preserveNewlines: false,
-  });
+  // const stripped = strip(content, {
+  //   line: true,
+  //   block: true,
+  //   keepProtected: true,
+  //   preserveNewlines: false,
+  // });
 
-  if (debug) {
-    relinka.log(`\nProcessing file: ${filePath}`);
-    relinka.log("Stripped all comments.");
-  }
+  // if (debug) {
+  //   relinka.log(`\nProcessing file: ${filePath}`);
+  //   relinka.log("Stripped all comments.");
+  // }
 
-  return stripped;
+  return content; // return stripped;
 }
 
 /**

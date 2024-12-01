@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG, FILE_CONFLICTS } from "~/app.js";
+import { DEBUG, FILE_CONFLICTS } from "~/data.js";
 import { removeFile, renameFile } from "~/utils/fileUtils.js";
 
 export const resolveProjectConflicts = async (targetDir: string) => {

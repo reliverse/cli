@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import { DEBUG, FILE_CONFLICTS } from "../app.js";
+import { DEBUG, FILE_CONFLICTS } from "../data.js";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(

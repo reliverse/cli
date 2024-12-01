@@ -2,7 +2,12 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG, FILE_PATHS, FILES_TO_DOWNLOAD, REPO_FULL_URLS } from "~/app.js";
+import {
+  DEBUG,
+  FILE_PATHS,
+  FILES_TO_DOWNLOAD,
+  REPO_FULL_URLS,
+} from "~/data.js";
 import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 
 // Function to download i18n layout.tsx and page.tsx files

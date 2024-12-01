@@ -16,7 +16,7 @@ import { askUserName } from "./06-askUserName.js";
 // import { handleStringReplacements } from "~/utils/handleStringReplacements.js";
 // import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 // import { moveAppToLocale } from "~/utils/moveAppToLocale.js";
-// import { isDev } from "~/app.js";
+// import { isDev } from "~/data.js";
 // import { verbose } from "~/utils/console.js";
 
 export async function askProjectDetails(

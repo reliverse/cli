@@ -2,7 +2,7 @@ import { checkbox, confirm, multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import path from "pathe";
 
-import { DEBUG, FILE_PATHS, fileCategories } from "~/app.js";
+import { DEBUG, FILE_PATHS, fileCategories } from "~/data.js";
 import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 import { verbose } from "~/utils/console.js";
 import { checkFileExists } from "~/utils/fileUtils.js";

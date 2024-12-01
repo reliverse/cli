@@ -1,7 +1,7 @@
 import { deleteLastLine, msg, selectPrompt } from "@reliverse/prompts";
 import relinka from "@reliverse/relinka";
 
-import { REPO_SHORT_URLS } from "~/app.js";
+import { REPO_SHORT_URLS } from "~/data.js";
 
 import { askProjectDetails } from "./04-askProjectDetails.js";
 

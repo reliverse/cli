@@ -1,9 +1,9 @@
 import type { FooterItem } from "~/utils/nav.js";
 import type { MainMenuItem } from "~/utils/with.js";
 
+import { REPO_SHORT_URLS } from "~/data.js";
 import metadata from "~/utils/metadata.js";
 import { productCategories } from "~/utils/products.js";
-import { REPO_SHORT_URLS } from "~/app.js";
 
 export function slugify(str: string) {
   return str

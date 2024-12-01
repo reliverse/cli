@@ -4,7 +4,7 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG, FILE_PATHS, isDev } from "~/app.js";
+import { DEBUG, FILE_PATHS, isDev } from "~/data.js";
 import { choosePackageManager } from "~/utils/choosePackageManager.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 

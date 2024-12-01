@@ -3,7 +3,7 @@ import path from "pathe";
 
 import type { GitOption } from "~/menu/modules/08-askGitInitialization.js";
 
-import { isDev } from "~/app.js";
+import { isDev } from "~/data.js";
 import { handleError, verbose } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { initializeGitRepository } from "~/utils/git.js";

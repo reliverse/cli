@@ -1,7 +1,7 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import { REPO_SHORT_URLS } from "~/app.js";
+import { REPO_SHORT_URLS } from "~/data.js";
 import { validate } from "~/utils/validate.js";
 
 import { buildBrandNewThing } from "./02-buildBrandNewThing.js";

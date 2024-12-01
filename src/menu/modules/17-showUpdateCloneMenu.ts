@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { isDev, REPO_SHORT_URLS } from "~/app.js";
+import { isDev, REPO_SHORT_URLS } from "~/data.js";
 import { replaceImportSymbol } from "~/mods/replaceImportSymbol.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";

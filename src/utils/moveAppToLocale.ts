@@ -2,7 +2,7 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG } from "~/app.js";
+import { DEBUG } from "~/data.js";
 
 // Function to move the content of src/app to src/app/[locale]
 export async function moveAppToLocale(targetDir: string): Promise<void> {
