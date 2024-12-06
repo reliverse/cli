@@ -1,75 +1,38 @@
 #!/usr/bin/env node
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
-import fs from "fs-extra";
-import os from "os";
-import path from "pathe";
-import pc from "picocolors";
 
-import app from "./app.js";
-import { auth } from "./cmds/auth/login.js";
-import { deleteConfig } from "./cmds/auth/logout.js";
-import { CONFIG } from "./data.js";
-import { pkg } from "./utils/pkg.js";
+import app from "./app/mod.js";
+import { auth } from "./args/login/impl.js";
+import { isConfigExists } from "./utils/config.js";
 
-const isConfigExists = async () => {
-  try {
-    const homeDir = os.homedir();
-    const filePath = path.join(homeDir, CONFIG);
-    return await fs.pathExists(filePath);
-  } catch (error) {
-    relinka.error("Error checking if config file exists:", error);
-    return false;
-  }
-};
+// import { pkg } from "./utils/pkg.js";
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: pkg.version,
+    version: "1.3.0",
+    // version: pkg.version,
     description: "@reliverse/cli",
   },
-  run: async () => {
+  args: {
+    dev: {
+      type: "boolean",
+      description: "Runs the CLI in dev mode",
+    },
+  },
+  run: async ({ args }) => {
     const config = await isConfigExists();
     if (!config) {
-      await auth();
+      await auth({ dev: args.dev });
     }
-    await app();
+    await app({ dev: args.dev });
     process.exit(0);
   },
   subCommands: {
-    login: defineCommand({
-      meta: {
-        name: "login",
-        description: "Authenticates your device",
-      },
-      run: async () => {
-        const config = await isConfigExists();
-        if (config) {
-          relinka.info(pc.dim("You're already logged in."));
-          process.exit(0);
-        }
-        await auth();
-        process.exit(0);
-      },
-    }),
-    logout: defineCommand({
-      meta: {
-        name: "logout",
-        description: "Forgets your device",
-      },
-      run: async () => {
-        const config = await isConfigExists();
-        if (!config) {
-          relinka.info(pc.dim("You're not logged in."));
-          process.exit(0);
-        }
-        await deleteConfig();
-        relinka.success(pc.cyanBright("You're logged out now 👋"));
-        process.exit(0);
-      },
-    }),
+    help: () => import("~/args/help/mod.js").then((r) => r.default),
+    login: () => import("~/args/login/mod.js").then((r) => r.default),
+    logout: () => import("~/args/logout/mod.js").then((r) => r.default),
   },
 });
 

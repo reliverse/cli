@@ -1,6 +1,6 @@
 import { relinka } from "@reliverse/relinka";
 
-import { DEBUG } from "~/data.js";
+import { DEBUG } from "~/app/data/constants.js";
 
 // Helper for conditional verbose logging
 export const verbose = (

@@ -7,7 +7,7 @@ import {
   FILE_PATHS,
   FILES_TO_DOWNLOAD,
   REPO_FULL_URLS,
-} from "~/data.js";
+} from "~/app/data/constants.js";
 import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 
 // Function to download i18n layout.tsx and page.tsx files

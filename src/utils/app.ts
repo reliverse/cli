@@ -1,7 +1,7 @@
 import type { FooterItem } from "~/utils/nav.js";
 import type { MainMenuItem } from "~/utils/with.js";
 
-import { REPO_SHORT_URLS } from "~/data.js";
+import { REPO_SHORT_URLS } from "~/app/data/constants.js";
 import metadata from "~/utils/metadata.js";
 import { productCategories } from "~/utils/products.js";
 
@@ -117,7 +117,7 @@ export const siteConfig = {
         },
         {
           external: true,
-          href: "https://github.com/blefnk/reliverse-website-builder",
+          href: "https://github.com/reliverse/cli",
           title: "Reliverse",
         },
       ],

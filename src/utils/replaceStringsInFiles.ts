@@ -2,7 +2,7 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG } from "~/data.js";
+import { DEBUG } from "~/app/data/constants.js";
 
 export async function replaceStringsInFiles(
   targetDir: string,
