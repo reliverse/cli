@@ -11,9 +11,8 @@
     "moduleResolution": "nodenext",
     "moduleDetection": "force",
     "esModuleInterop": true,
-    "target": "ES2023",
-    "lib": ["DOM", "DOM.Iterable", "ES2023"],
-    "jsxImportSource": "hono/jsx",
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "declaration": true,
@@ -50,7 +49,8 @@
     "addons/**/*.ts",
     "reset.d.ts",
     "build.publish.ts",
-    "bump.config.ts"
+    "bump.config.ts",
+    "publish.ts"
   ],
   "exclude": ["node_modules", "dist-jsr", "dist-npm"]
 }

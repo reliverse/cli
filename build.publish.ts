@@ -1,16 +1,20 @@
 import relinka from "@reliverse/relinka";
 import { execaCommand } from "execa";
+import glob from "fast-glob";
 import fs from "fs-extra";
 import mri from "mri";
+import path from "path";
 
 function showHelp() {
-  relinka.info(`Usage: bun tsx build.publish.ts [options]
+  relinka.info(`Usage: bun tsx build.publish.ts [newVersion] [options]
 
+Arguments:
+  newVersion        The new version to set (e.g. 1.3.2)
+  
 Options:
-  no options      Publish to npm registry
-  --jsr           Publish to JSR registry
-  --dry-run       Perform a dry run of the publish process
-  -h, --help      Show help
+  --jsr             Publish to JSR registry
+  --dry-run         Perform a dry run of the publish process
+  -h, --help        Show help
 `);
 }
 
@@ -79,31 +83,59 @@ async function publishJsr(dryRun: boolean) {
   }
 }
 
-async function bumpJsrVersion(disable?: boolean) {
-  if (disable) {
-    return;
-  }
-  const pkg = JSON.parse(await fs.readFile("package.json", "utf-8")) as {
+async function bumpVersions(oldVersion: string, newVersion: string) {
+  // Update package.json
+  const pkgPath = path.resolve("package.json");
+  const pkg = JSON.parse(await fs.readFile(pkgPath, "utf-8")) as {
     version: string;
   };
-  const jsrConfig = JSON.parse(await fs.readFile("jsr.jsonc", "utf-8")) as {
-    version: string;
-  };
-  jsrConfig.version = pkg.version;
-  await fs.writeFile("jsr.jsonc", JSON.stringify(jsrConfig, null, 2));
-}
+  pkg.version = newVersion;
+  await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
-async function bumpNpmVersion() {
-  await execaCommand("bun bumpp", { stdio: "inherit" });
+  // Update jsr.jsonc
+  const jsrPath = path.resolve("jsr.jsonc");
+  if (await fs.pathExists(jsrPath)) {
+    const jsrConfig = JSON.parse(await fs.readFile(jsrPath, "utf-8")) as {
+      version: string;
+    };
+    jsrConfig.version = newVersion;
+    await fs.writeFile(jsrPath, JSON.stringify(jsrConfig, null, 2));
+  }
+
+  // Replace version in src/**/*.ts
+  const tsFiles = await glob("src/**/*.ts");
+  for (const file of tsFiles) {
+    const content = await fs.readFile(file, "utf-8");
+    if (content.includes(oldVersion)) {
+      const updated = content.replaceAll(oldVersion, newVersion);
+      await fs.writeFile(file, updated);
+    }
+  }
+
+  relinka.success(`Version updated from ${oldVersion} to ${newVersion}`);
 }
 
 async function main() {
   const { jsr, "dry-run": dryRun } = argv;
+  const newVersion = argv._[0]; // The new version provided by the user (if any)
+
+  if (newVersion) {
+    // Perform version bump
+    const pkg = JSON.parse(await fs.readFile("package.json", "utf-8")) as {
+      version: string;
+    };
+    const oldVersion = pkg.version;
+    if (oldVersion !== newVersion) {
+      await bumpVersions(oldVersion, newVersion);
+    } else {
+      relinka.info(`No version change required: already at ${oldVersion}`);
+    }
+  }
+
+  // After potential bump, proceed with publishing
   if (jsr) {
-    // await bumpJsrVersion();
     await publishJsr(dryRun);
   } else {
-    // await bumpNpmVersion();
     await publishNpm(dryRun);
   }
 }

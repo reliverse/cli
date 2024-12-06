@@ -12,7 +12,7 @@ async function main() {
   const { pmName, pmVersion } = await getPackageManager(args, cwd);
 
   relinka.log(
-    `\n✨ @reliverse/cli 1.3.0 | 🧩 ${pmName} ${pmVersion ? `v${pmVersion}` : ""}\n`,
+    `\n✨ @reliverse/cli 1.3.1 | 🧩 ${pmName} ${pmVersion ? `v${pmVersion}` : ""}\n`,
   );
 
   // relinka.log(

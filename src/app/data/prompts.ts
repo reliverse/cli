@@ -40,7 +40,7 @@ export async function showStartPrompt() {
     titleColor: "inverse",
     clearConsole: true,
     packageName: "@reliverse/cli",
-    packageVersion: "1.3.0",
+    packageVersion: "1.3.1",
     // packageName: pkg.name,
     // packageVersion: pkg.version,
   });

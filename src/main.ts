@@ -6,13 +6,10 @@ import app from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { isConfigExists } from "./utils/config.js";
 
-// import { pkg } from "./utils/pkg.js";
-
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.0",
-    // version: pkg.version,
+    version: "1.3.1",
     description: "@reliverse/cli",
   },
   args: {

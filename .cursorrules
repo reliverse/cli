@@ -1,6 +1,0 @@
-// @reliverse/cli
-// A CLI tool which helps users create new projects and manage existing ones.
-
-// General Guidelines
-Always use bun as the package manager.
-Never repeat an existing text. Always suggest something different but still related.

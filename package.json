@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "author": "blefnk",
   "type": "module",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
@@ -52,10 +52,9 @@
   "keywords": ["cli", "reliverse"],
   "license": "MIT",
   "dependencies": {
-    "@hono/node-server": "^1.13.7",
     "@reliverse/core": "^0.1.0",
     "@reliverse/fs": "^0.6.0",
-    "@reliverse/prompts": "^1.3.7",
+    "@reliverse/prompts": "^1.3.8",
     "@reliverse/relinka": "^1.2.4",
     "@sinclair/typebox": "^0.34.11",
     "async-listen": "^3.0.1",
@@ -70,7 +69,6 @@
     "fs-extra": "^11.2.0",
     "giget": "^1.2.3",
     "glob": "^11.0.0",
-    "hono": "^4.6.12",
     "magic-regexp": "^0.8.0",
     "nanoid": "^5.0.9",
     "node-emoji": "^2.2.0",
