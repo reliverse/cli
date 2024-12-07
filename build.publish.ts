@@ -1,3 +1,5 @@
+// 👉 usage example: `bun pub --bump=1.2.3`
+
 import relinka from "@reliverse/relinka";
 import { execaCommand } from "execa";
 import glob from "fast-glob";
@@ -9,7 +11,7 @@ function showHelp() {
   relinka.info(`Usage: bun tsx build.publish.ts [newVersion] [options]
 
 Arguments:
-  newVersion        The new version to set (e.g. 1.3.2)
+  newVersion        The new version to set (e.g. 1.2.3)
   
 Options:
   --jsr             Publish to JSR registry

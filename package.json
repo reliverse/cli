@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "author": "blefnk",
   "type": "module",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
@@ -12,13 +12,13 @@
     "dev:logout": "bun src/main.ts logout --dev",
     "check": "bun typecheck && bun lint && bun format",
     "release": "bumpp && bun check && bun pub",
-    "build:npm": "unbuild && tsx build.optim.ts",
-    "build:jsr": "tsx build.optim.ts --jsr",
+    "build:npm": "unbuild && bun build.optim.ts",
+    "build:jsr": "bun build.optim.ts --jsr",
     "build": "bun build:npm && bun build:jsr",
-    "pub:npm": "tsx build.publish.ts",
-    "pub:jsr": "tsx build.publish.ts --jsr",
-    "pub:dry": "tsx build.publish.ts --dry-run",
-    "pub": "bun pub:npm && bun pub:jsr",
+    "pub:npm": "bun build.publish.ts",
+    "pub:jsr": "bun build.publish.ts --jsr",
+    "pub:dry": "bun build.publish.ts --dry-run",
+    "pub": "bun publish.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache --fix .",
     "lint:i": "eslint --inspect-config",
@@ -41,7 +41,7 @@
     ".": "./dist-npm/main.js"
   },
   "bin": {
-    "reliverse": "./dist-npm/main.js"
+    "reliverse": "dist-npm/main.js"
   },
   "bugs": {
     "url": "https://github.com/reliverse/cli/issues",

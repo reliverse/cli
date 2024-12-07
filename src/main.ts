@@ -10,7 +10,7 @@ import { isConfigExists } from "./utils/config.js";
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.1",
+    version: "1.3.2",
     description: "@reliverse/cli",
   },
   args: {
