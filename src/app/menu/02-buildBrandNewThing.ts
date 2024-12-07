@@ -1,4 +1,4 @@
-import { msg, selectPrompt } from "@reliverse/prompts";
+import { selectPrompt } from "@reliverse/prompts";
 import relinka from "@reliverse/relinka";
 
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
@@ -17,7 +17,7 @@ export async function buildBrandNewThing() {
     title: initialMessage,
     options: [
       {
-        label: "🖥️  Development",
+        label: "Development",
         value: "development",
         hint: "apps, sites, plugins, etc",
       },
@@ -34,10 +34,6 @@ export async function buildBrandNewThing() {
     ],
   });
 
-  msg({
-    type: "M_MIDDLE",
-  });
-
   if (category === "development") {
     let template = "";
 
@@ -47,7 +43,7 @@ export async function buildBrandNewThing() {
         "Fantastic! Let me help you craft a solid plan for your new project. Which subcategory best describes what you're working on?",
       options: [
         {
-          label: "💻 Web Development",
+          label: "Web Development",
           value: "website",
           hint: "web apps, sites, plugins, and more",
         },
@@ -77,10 +73,6 @@ export async function buildBrandNewThing() {
       ],
     });
 
-    msg({
-      type: "M_MIDDLE",
-    });
-
     // if (devProjectType === "game-dev") {
     //   const gameSubcategory = await selectPrompt({
     //     endTitle,
@@ -91,9 +83,7 @@ export async function buildBrandNewThing() {
     //       { label: "🖥️  3D-based Web App", value: "3d-web-app", disabled: true },
     //     ],
     //   });
-    //   msg({
-    //     type: "M_MIDDLE",
-    //   });
+
     // } else if (devProjectType === "native-dev") {
     //   const nativeSubcategory = await selectPrompt({
     //     endTitle,
@@ -107,16 +97,14 @@ export async function buildBrandNewThing() {
     //       },
     //     ],
     //   });
-    //   msg({
-    //     type: "M_MIDDLE",
-    //   });
+
     if (devProjectType === "website") {
       const websiteSubcategory = await selectPrompt({
         endTitle,
         title: "What type of website do you want me to help you build?",
         options: [
           {
-            label: "📱 Web App & Static Site",
+            label: "Web App & Static Site",
             value: "web-app",
             hint: "Next.js, Vite, Astro, Vue, etc",
           },
@@ -135,16 +123,12 @@ export async function buildBrandNewThing() {
         ],
       });
 
-      msg({
-        type: "M_MIDDLE",
-      });
-
       const framework = await selectPrompt({
         endTitle,
         title: "Time to make a choice! Which framework would you like to use?",
         options: [
           {
-            label: "✨ Next.js",
+            label: "Next.js",
             value: "nextjs",
             hint: "recommended for most projects",
           },
@@ -169,15 +153,11 @@ export async function buildBrandNewThing() {
         ],
       });
 
-      msg({
-        type: "M_MIDDLE",
-      });
-
       const websiteCategory = await selectPrompt({
         endTitle,
         title: "Let's narrow it down: What category best fits your website?",
         options: [
-          { label: "🛒 E-commerce", value: "e-commerce" },
+          { label: "E-commerce", value: "e-commerce" },
           // { label: "[Coming soon] Blog", value: "blog", disabled: true },
           // {
           //   label: "[Coming soon] Portfolio",
@@ -188,7 +168,7 @@ export async function buildBrandNewThing() {
       });
 
       if (websiteCategory === "e-commerce") {
-        template = REPO_SHORT_URLS.relivatorGithubLink;
+        template = REPO_SHORT_URLS.versatorGithubLink;
       }
 
       await askProjectDetails(
@@ -197,9 +177,6 @@ export async function buildBrandNewThing() {
         "buildBrandNewThing",
         true,
       );
-      msg({
-        type: "M_MIDDLE",
-      });
       /* END OF WEBSITE CATEGORY */
     }
 
@@ -220,10 +197,6 @@ export async function buildBrandNewThing() {
     //       },
     //       { label: "📝 ESLint Plugin", value: "eslint-plugin", disabled: true },
     //     ],
-    //   });
-
-    //   msg({
-    //     type: "M_MIDDLE",
     //   });
 
     //   const projectType = await selectPrompt({
@@ -260,9 +233,6 @@ export async function buildBrandNewThing() {
   //     ],
   //   });
 
-  //   msg({
-  //     type: "M_MIDDLE",
-  //   });
   //   /* END OF DIGITAL CATEGORY */
   // }
 
@@ -286,10 +256,6 @@ export async function buildBrandNewThing() {
   //         disabled: true,
   //       },
   //     ],
-  //   });
-
-  //   msg({
-  //     type: "M_MIDDLE",
   //   });
   //   /* END OF MARKETING CATEGORY */
   // }

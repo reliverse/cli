@@ -42,7 +42,7 @@ bun i -g @reliverse/cli
 
 A single tool to launch a brand new thing from scratch? Yes.
 
-Reliverse allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator-nextjs-template) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
+Reliverse allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
 Reliverse is more than just the easiest way to install Relivator. It’s also the most convenient new way to download any repository from GitHub and automatically prepare it for work. Especially if it’s a project from the JavaScript ecosystem.
 

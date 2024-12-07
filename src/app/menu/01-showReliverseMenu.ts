@@ -1,4 +1,4 @@
-import { deleteLastLine, msg, selectPrompt } from "@reliverse/prompts";
+import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import { emojify } from "node-emoji";
 import pc from "picocolors";
@@ -17,6 +17,7 @@ export async function showReliverseMenu() {
   // let template = "";
 
   // TODO: if config contains at least one project, show "Open project" option
+  // TODO: implement "Edit Reliverse Memory" option (configuration data editor)
 
   const option = await selectPrompt({
     title:
@@ -24,7 +25,7 @@ export async function showReliverseMenu() {
     titleColor: "retroGradient",
     options: [
       {
-        label: emojify(":sparkles:  Build a brand new thing from scratch"),
+        label: "Build a brand new thing from scratch",
         value: "1",
       },
       // {
@@ -38,7 +39,7 @@ export async function showReliverseMenu() {
       // "5. Run code modifications on the existing codebase",
       // "6. Update your GitHub clone with the latest changes",
       // "7. Add, remove, or replace the Relivator's features",
-      { label: pc.italic(emojify(":key:  Exit...")), value: "exit" },
+      { label: pc.italic("Exit"), value: "exit" },
     ],
     // debug: false,
     // terminalHeight: 14,
@@ -50,14 +51,6 @@ export async function showReliverseMenu() {
     // shouldRenderTopEllipsis: false,
     // shouldRenderBottomEllipsis: false,
     // linesRendered: 5,
-  });
-
-  deleteLastLine();
-  deleteLastLine();
-  deleteLastLine();
-  deleteLastLine();
-  msg({
-    type: "M_MIDDLE",
   });
 
   if (option === "1") {

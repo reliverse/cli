@@ -1,5 +1,6 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
+import pc from "picocolors";
 
 import { verbose } from "~/utils/console.js";
 import { validate } from "~/utils/validate.js";
@@ -18,19 +19,19 @@ export async function askSummaryConfirmation(
     ? "Yes, install dependencies"
     : "No, skip dependencies";
 
-  const message = `You have chosen the following options for your project:
-  - Template: ${template}
-  - Project Name: ${projectName}
-  - GitHub Username: ${githubUser}
-  - Website: ${website}
-  - Git Option: ${gitOption}
-  - Install Dependencies: ${depsMessage}
+  const bar = pc.cyanBright("│ ");
 
-  Do you want to proceed?`;
+  const message = `You have chosen the following options for your project:
+${bar} - Template: ${template}
+${bar} - Project Name: ${projectName}
+${bar} - GitHub Username: ${githubUser}
+${bar} - Website: ${website}
+${bar} - Git Option: ${gitOption}
+${bar} - Install Dependencies: ${depsMessage}
+${bar} Do you want to proceed?`;
 
   const confirmed = await confirmPrompt({
     title: message,
-    defaultValue: false,
   });
 
   verbose("info", "Installation confirmed by the user (1)."); // TODO: remove if random bun crash is fixed

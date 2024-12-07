@@ -33,12 +33,12 @@ const args = process.argv.slice(2);
 export const isDev = args.includes("--dev");
 
 export const REPO_FULL_URLS = {
-  relivatorGithubLink: "https://github.com/blefnk/relivator-nextjs-template",
+  relivatorGithubLink: "https://github.com/blefnk/relivator",
 };
 
 export const REPO_SHORT_URLS = {
-  relivatorGithubLink: "blefnk/relivator-nextjs-template",
-  versatorGithubLink: "blefnk/versator-nextjs-template",
+  relivatorGithubLink: "blefnk/relivator",
+  versatorGithubLink: "blefnk/versator",
 };
 
 // Path settings for important files and directories

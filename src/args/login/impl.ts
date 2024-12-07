@@ -1,6 +1,6 @@
 import type { ParsedUrlQuery } from "querystring";
 
-import { deleteLastLine, spinner } from "@reliverse/prompts";
+import { spinner } from "@reliverse/prompts";
 import relinka from "@reliverse/relinka";
 import { listen } from "async-listen";
 import fs from "fs-extra";
@@ -145,10 +145,6 @@ export async function auth({ dev }: { dev: boolean }) {
       const confirmationUrl = new URL(`${clientUrl}/confirm`);
       confirmationUrl.searchParams.append("code", code);
       confirmationUrl.searchParams.append("redirect", redirect);
-
-      deleteLastLine();
-      console.log("");
-      deleteLastLine();
 
       relinka.info(
         `${pc.bold("The following URL will be opened in your default browser:")}\n│ ${pc.dim(

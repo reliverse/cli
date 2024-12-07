@@ -19,7 +19,7 @@ export async function showUpdateCloneMenu() {
 
   const options = [
     REPO_SHORT_URLS.relivatorGithubLink,
-    ...(isDev ? ["🚧 relivator-nextjs-template (local dev only)"] : []),
+    ...(isDev ? ["🚧 relivator (local dev only)"] : []),
   ];
 
   const option = await selectPrompt({
@@ -33,13 +33,13 @@ export async function showUpdateCloneMenu() {
   validate(option, "string", "Invalid option selected. Exiting.");
 
   // For test development purposes only
-  if (option === "🚧 relivator-nextjs-template (local dev only)") {
+  if (option === "🚧 relivator (local dev only)") {
     relinka.warn(
       "Make sure to run this script from the root folder of your reliverse/cli clone.",
     );
     const projectPath = await downloadGitRepo(
       "relivator-dev-test",
-      "relivator-nextjs-template",
+      "relivator",
       false,
       "doNothing",
     );

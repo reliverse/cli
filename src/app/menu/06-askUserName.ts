@@ -1,10 +1,6 @@
-import { inputPrompt, msg } from "@reliverse/prompts";
+import { inputPrompt } from "@reliverse/prompts";
 
 export async function askUserName(): Promise<string> {
-  msg({
-    type: "M_MIDDLE",
-  });
-
   // TODO: fetch from GitHub after login
   const placeholder = "johnny911";
 

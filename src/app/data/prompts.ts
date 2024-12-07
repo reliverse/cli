@@ -1,4 +1,4 @@
-import { getCurrentTerminalName, msg, pmv } from "@reliverse/prompts";
+import { msg } from "@reliverse/prompts";
 import { anykeyPrompt } from "@reliverse/prompts";
 import { multiselectPrompt } from "@reliverse/prompts";
 import { progressbar } from "@reliverse/prompts";
@@ -258,10 +258,6 @@ export async function showMultiselectPrompt() {
       addNewLineBefore: false,
       addNewLineAfter: false,
     });
-  });
-
-  msg({
-    type: "M_NEWLINE",
   });
 
   return selectedOptions;
