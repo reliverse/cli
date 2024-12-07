@@ -9,7 +9,8 @@ export async function buildBrandNewThing() {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org/cli";
   const initialMessage =
-    "Let's build your own brand new digital thing from scratch! After that, you can customize everything however you like.";
+    // "Let's build your own brand new digital thing from scratch! After that, you can customize everything however you like.";
+    "Let's bring your vision to life by building something brand new from scratch! Once we're done, you'll have full freedom to customize it however you like. What category describes your project best?";
 
   const category = await selectPrompt({
     endTitle,
@@ -43,7 +44,7 @@ export async function buildBrandNewThing() {
     const devProjectType = await selectPrompt({
       endTitle,
       title:
-        "Great, let's now compose a plan for your new project! What subcategory describes your project best?",
+        "Fantastic! Let me help you craft a solid plan for your new project. Which subcategory best describes what you're working on?",
       options: [
         {
           label: "💻 Web Development",
@@ -112,7 +113,7 @@ export async function buildBrandNewThing() {
     if (devProjectType === "website") {
       const websiteSubcategory = await selectPrompt({
         endTitle,
-        title: "What kind of website do you want to build?",
+        title: "What type of website do you want me to help you build?",
         options: [
           {
             label: "📱 Web App & Static Site",
@@ -140,7 +141,7 @@ export async function buildBrandNewThing() {
 
       const framework = await selectPrompt({
         endTitle,
-        title: "Choose a framework",
+        title: "Time to make a choice! Which framework would you like to use?",
         options: [
           {
             label: "✨ Next.js",
@@ -174,7 +175,7 @@ export async function buildBrandNewThing() {
 
       const websiteCategory = await selectPrompt({
         endTitle,
-        title: "Choose a website category",
+        title: "Let's narrow it down: What category best fits your website?",
         options: [
           { label: "🛒 E-commerce", value: "e-commerce" },
           // { label: "[Coming soon] Blog", value: "blog", disabled: true },
@@ -192,7 +193,7 @@ export async function buildBrandNewThing() {
 
       await askProjectDetails(
         template,
-        " The plan is ready! Now please provide details about you and the app itself.",
+        " Your initial plan is all set! Now, let’s add some personal touches. Please share a few details about yourself and the app so I can personalize everything for you.",
         "buildBrandNewThing",
         true,
       );

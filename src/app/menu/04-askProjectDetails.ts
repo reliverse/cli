@@ -1,5 +1,6 @@
 import { msg } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
+import pc from "picocolors";
 
 // import path from "pathe";
 // import { askAppName } from "~/menu/05-askAppName.js";
@@ -80,5 +81,7 @@ export async function askProjectDetails(
   // await askCheckAndDownloadFiles(targetDir, appName);
   // await showCongratulationMenu(targetDir, deps, template, targetDir);
 
-  relinka.success(` 👋 To be continued... See you, ${username}!`);
+  relinka.success(
+    pc.cyanBright(` 👋 To be continued... See you soon, ${username}!`),
+  );
 }

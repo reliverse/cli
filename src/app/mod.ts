@@ -29,7 +29,6 @@ import { askProjectDetails } from "./menu/04-askProjectDetails.js";
 
 export default async function app({ dev }: { dev: boolean }) {
   await showStartPrompt();
-  await showAnykeyPrompt("welcome");
   await showReliverseMenu();
   // const username = await showInputPrompt();
   // const dir = await askDir(username);

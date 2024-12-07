@@ -16,9 +16,11 @@ import { buildBrandNewThing } from "./02-buildBrandNewThing.js";
 export async function showReliverseMenu() {
   // let template = "";
 
+  // TODO: if config contains at least one project, show "Open project" option
+
   const option = await selectPrompt({
     title:
-      "Reliverse is a single tool to develop anything. What do you want to work on today?",
+      "🤖 What would you like to create today? I'm your all-in-one tool for developing anything!",
     titleColor: "retroGradient",
     options: [
       {

@@ -2,6 +2,7 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
+import { showAnykeyPrompt } from "./app/data/prompts.js";
 import app from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { isConfigExists } from "./utils/config.js";
@@ -17,10 +18,16 @@ const main = defineCommand({
       type: "boolean",
       description: "Runs the CLI in dev mode",
     },
+    nodata: {
+      type: "boolean",
+      description: "Runs the CLI without collecting any data",
+    },
   },
   run: async ({ args }) => {
     const config = await isConfigExists();
     if (!config) {
+      await showAnykeyPrompt("welcome");
+      await showAnykeyPrompt("privacy");
       await auth({ dev: args.dev });
     }
     await app({ dev: args.dev });

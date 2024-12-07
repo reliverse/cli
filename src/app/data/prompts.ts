@@ -51,15 +51,19 @@ export async function showAnykeyPrompt(
   username?: string,
 ) {
   let notification = pc.bold("Press any key to continue...");
+
   if (kind === "welcome") {
-    notification = `Welcome to @reliverse/cli!\n│  This tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.\n│  ============================\n│  ${notification}`;
+    notification = `👋 Hello, my name is Reliverse!\n│  🤖 I'm your assistant for creating new web projects and making advanced codebase modifications automatically.\n│  ✨ I'm constantly evolving, with more features on the way.\n│  ============================\n│  ${notification}`;
   }
+
   if (kind === "privacy") {
-    notification = `Before you continue, please note that you are only testing an example CLI app.\n│  None of your responses will be sent anywhere. No actions, such as installing dependencies, will actually take place;\n│  this is simply a simulation with a sleep timer and spinner. You can always review the source code to learn more.\n│  ============================\n│  ${notification}`;
+    notification = `🤖 Before we proceed, let me share something important:\n│  I may collect minimal data about your projects, such as their name, to help me remember your preferences and provide smarter, more personalized suggestions.\n│  Rest assured, your data will be used solely to enhance your experience with me, and I won't share it with anyone. If you wish, you can choose to share some data with other users.\n│  If you'd prefer not to allow any data collection, you can always run me with the '--nodata' option (please note that authentication is still required). Keep in mind that this may limit my capabilities.\n│  ============================\n│  ${notification}`;
   }
+
   if (kind === "pm" && pm === "bun" && username) {
-    notification += `\n│  ============================\n│  ${username}, did you know? Bun currently may crash if you press Enter while setTimeout\n│  is running. So please avoid doing that in the prompts after this one! 😅`;
+    notification += `\n│  ============================\n│  Hey ${username}, a quick tip from me: Bun might crash if you press Enter while setTimeout\n│  is running. Please avoid doing that in the upcoming prompts! 😅`;
   }
+
   await anykeyPrompt(notification);
 }
 
@@ -413,6 +417,7 @@ export async function showAnimatedText() {
   });
 }
 
+// Want to learn more about how I work? Check out my documentation here: https://docs.reliverse.org/cli
 export async function showEndPrompt() {
   await endPrompt({
     title: emojify(
