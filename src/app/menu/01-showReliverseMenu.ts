@@ -1,60 +1,72 @@
 import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
-import { emojify } from "node-emoji";
 import pc from "picocolors";
+
+import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { buildBrandNewThing } from "./02-buildBrandNewThing.js";
 
-// import { installAnyGitRepo } from "./03-installAnyGitRepo.js";
-// import { askProjectDetails } from "./04-askProjectDetails.js";
-// import { pkg } from "~/utils/pkg.js";
-
-// import { installAnyGitRepo } from "./03-installAnyGitRepo";
-// import { shadcnComponents } from "~/utils/shadcnComponents";
-
-// export async function showReliverseMenu(program: Command) {
-export async function showReliverseMenu() {
-  // let template = "";
-
+export async function showReliverseMenu(isDev: boolean) {
   // TODO: if config contains at least one project, show "Open project" option
   // TODO: implement "Edit Reliverse Memory" option (configuration data editor)
 
+  const memory = await readReliverseMemory();
+  const username = memory.user?.name;
+
+  const welcomeBackMessages = [
+    `Welcome back, ${username}!`,
+    `It's great to see you again, ${username}!`,
+    `Nice to see you back, ${username}!`,
+    `Hey ${username}, welcome back!`,
+    `Good to have you back, ${username}!`,
+    `Look who's back - it's ${username}!`,
+    `${username} has returned! Welcome back!`,
+    `Welcome back to your dev journey, ${username}!`,
+  ];
+
+  const randomReliverseMenuTitle = [
+    "What would you like to create today? I'm your all-in-one tool for developing anything!",
+    "Ready to build something amazing? I'm here to help you develop your next big project!",
+    "Let's create something special today! I'm your development companion for any kind of project.",
+    "Looking to start a new project? I've got all the tools you need to build anything!",
+    "Welcome to your development journey! What would you like to create today?",
+    "Got an idea? Let's turn it into reality! I'm here to help you build anything you imagine.",
+    "Time to start building! What kind of project can I help you develop today?",
+  ];
+
   const option = await selectPrompt({
-    title:
-      "🤖 What would you like to create today? I'm your all-in-one tool for developing anything!",
+    title: `🤖 ${
+      username &&
+      welcomeBackMessages[
+        Math.floor(Math.random() * welcomeBackMessages.length)
+      ]
+    } ${
+      randomReliverseMenuTitle[
+        Math.floor(Math.random() * randomReliverseMenuTitle.length)
+      ]
+    }`,
     titleColor: "retroGradient",
     options: [
       {
         label: "Build a brand new thing from scratch",
         value: "1",
       },
-      // {
-      //   label: emojify(
-      //     ":toolbox:  [Maintenance] Clone and configure any GitHub repo",
-      //   ),
-      //   value: "2",
-      //   disabled: true,
-      // },
+      {
+        label: "Clone and configure any GitHub repo",
+        hint: "coming soon",
+        value: "2",
+        disabled: true,
+      },
       // "4. Add shadcn/ui components to your React/Vue/Svelte project",
       // "5. Run code modifications on the existing codebase",
       // "6. Update your GitHub clone with the latest changes",
       // "7. Add, remove, or replace the Relivator's features",
       { label: pc.italic("Exit"), value: "exit" },
     ],
-    // debug: false,
-    // terminalHeight: 14,
-    // availableHeight: 10,
-    // computedMaxItems: 3,
-    // displayItems: 3,
-    // startIdx: 0,
-    // endIdx: 2,
-    // shouldRenderTopEllipsis: false,
-    // shouldRenderBottomEllipsis: false,
-    // linesRendered: 5,
   });
 
   if (option === "1") {
-    await buildBrandNewThing();
+    await buildBrandNewThing(isDev);
   }
   // else if (option === "2") {
   //   // await installAnyGitRepo();
@@ -75,6 +87,4 @@ export async function showReliverseMenu() {
   } else {
     relinka.error("Invalid option selected. Exiting.");
   }
-
-  // return template;
 }

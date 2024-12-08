@@ -27,9 +27,9 @@ import { askProjectDetails } from "./menu/04-askProjectDetails.js";
 
 // import { type UserInput } from "./data/schema.js";
 
-export default async function app({ dev }: { dev: boolean }) {
+export default async function app({ isDev }: { isDev: boolean }) {
   await showStartPrompt();
-  await showReliverseMenu();
+  await showReliverseMenu(isDev);
   // const username = await showInputPrompt();
   // const dir = await askDir(username);
   // const age = await showNumberPrompt();

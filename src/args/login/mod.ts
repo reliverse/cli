@@ -9,12 +9,12 @@ import { auth } from "./impl.js";
 export default defineCommand({
   meta: {
     name: "login",
-    description: "Authenticates your device",
+    description: "Authenticate your device",
   },
   args: {
     dev: {
       type: "boolean",
-      description: "Runs the CLI in dev mode",
+      description: "Run the CLI in dev mode",
     },
   },
   run: async ({ args }) => {

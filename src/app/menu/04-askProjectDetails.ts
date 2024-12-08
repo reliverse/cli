@@ -1,8 +1,10 @@
-import { msg } from "@reliverse/prompts";
+import { msg, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
+import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
 
+import { updateReliverseMemory } from "~/args/memory/impl.js";
 import { verbose } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { downloadI18nFiles } from "~/utils/downloadI18nFiles.js";
@@ -22,6 +24,7 @@ export async function askProjectDetails(
   message: string,
   mode: "buildBrandNewThing" | "installAnyGitRepo",
   allowI18nPrompt: boolean,
+  isDev: boolean,
 ) {
   relinka.success(message);
 
@@ -32,7 +35,22 @@ export async function askProjectDetails(
   const username = await askUserName();
 
   const appName = await askAppName();
-  const domain = await askAppDomain();
+
+  const deployService = await selectPrompt({
+    title:
+      "Which deployment service do you want to use? (You can deploy anywhere, this choice is just to prepare specific code for each platform)",
+    options: [
+      { label: "Vercel", value: "vercel" },
+      {
+        label: "...",
+        value: "coming-soon",
+        hint: "coming soon",
+        disabled: true,
+      },
+    ],
+  });
+
+  const domain = await askAppDomain(appName);
   const git = await askGitInitialization();
   const deps = await askInstallDependencies(mode);
 
@@ -54,12 +72,25 @@ export async function askProjectDetails(
 
   verbose("info", "Installation confirmed by the user (4).");
 
-  // await downloadGitRepo(appName, template, deps, git);
+  await downloadGitRepo(appName, template, isDev); // template = blefnk/versator
 
-  // const cwd = getCurrentWorkingDirectory();
-  // const targetDir = isDev
-  //   ? path.join(cwd, "..", appName)
-  //   : path.join(cwd, appName);
+  const cwd = getCurrentWorkingDirectory();
+  const targetDir = isDev
+    ? path.join(cwd, "..", appName)
+    : path.join(cwd, appName);
+
+  msg({
+    type: "M_INFO",
+    title: "🚀 Initializing project in:",
+    titleColor: "dim",
+    content: targetDir,
+    contentColor: "dim",
+    addNewLineAfter: true,
+  });
+
+  // todo: handle deps installing (not using `giget` anymore - for some reason it was not downloading all files from the repos)
+  // gitOption && (await initializeGitRepository(targetDir, gitOption)); // todo: rewrite, `simple-git` already has .git folder
+  await fs.remove(path.join(targetDir, ".git"));
 
   // await handleStringReplacements(
   //   targetDir,

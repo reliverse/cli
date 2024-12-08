@@ -1,4 +1,3 @@
-export const CONFIG = ".reliverse";
 export const verbose = false;
 
 // Debug settings to control verbose logging and temp clone cleanup behavior
@@ -30,8 +29,6 @@ export const FILE_CONFLICTS = [
 // Command-line arguments to check if we are in development mode
 const args = process.argv.slice(2);
 
-export const isDev = args.includes("--dev");
-
 export const REPO_FULL_URLS = {
   relivatorGithubLink: "https://github.com/blefnk/relivator",
 };
@@ -40,6 +37,8 @@ export const REPO_SHORT_URLS = {
   relivatorGithubLink: "blefnk/relivator",
   versatorGithubLink: "blefnk/versator",
 };
+
+export const MEMORY_FILE = ".reliverse/.reliverse";
 
 // Path settings for important files and directories
 export const FILE_PATHS = {

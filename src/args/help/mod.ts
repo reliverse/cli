@@ -10,7 +10,7 @@ export default defineCommand({
   args: {
     dev: {
       type: "boolean",
-      description: "Runs the CLI in dev mode",
+      description: "Run the CLI in dev mode",
     },
   },
   run: async ({ args }) => {

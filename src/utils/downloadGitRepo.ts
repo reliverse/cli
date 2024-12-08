@@ -1,9 +1,11 @@
-import { downloadTemplate } from "giget";
+import { msg } from "@reliverse/prompts";
+import relinka from "@reliverse/relinka";
 import path from "pathe";
+import pc from "picocolors";
+import { simpleGit } from "simple-git";
 
 import type { GitOption } from "~/app/menu/08-askGitInitialization.js";
 
-import { isDev } from "~/app/data/constants.js";
 import { handleError, verbose } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { initializeGitRepository } from "~/utils/git.js";
@@ -11,25 +13,30 @@ import { initializeGitRepository } from "~/utils/git.js";
 export async function downloadGitRepo(
   name: string,
   template: string,
-  deps: boolean,
-  gitOption: GitOption,
+  isDev: boolean,
 ): Promise<string | undefined> {
   try {
+    isDev
+      ? relinka.info(pc.dim(" ✨ Downloading initial files (dev mode)..."))
+      : relinka.info(pc.dim(" ✨ Downloading initial files..."));
+
+    msg({
+      type: "M_MIDDLE",
+    });
+
     const cwd = getCurrentWorkingDirectory();
     const targetDir = path.join(cwd, isDev ? ".." : "", name);
 
     verbose("info", `Installing template in: ${targetDir}`);
 
-    const { dir, source } = await downloadTemplate(`github:${template}`, {
-      dir: targetDir,
-      install: deps,
-    });
+    const git = simpleGit();
+    const repoUrl = `https://github.com/${template}.git`;
 
-    verbose("success", `${source} was downloaded to ${dir}.`);
+    await git.clone(repoUrl, targetDir);
 
-    gitOption && (await initializeGitRepository(targetDir, gitOption));
+    verbose("success", `${template} was downloaded to ${targetDir}.`);
 
-    return dir;
+    return targetDir;
   } catch (error) {
     handleError(error);
   }

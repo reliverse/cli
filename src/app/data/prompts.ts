@@ -40,7 +40,7 @@ export async function showStartPrompt() {
     titleColor: "inverse",
     clearConsole: true,
     packageName: "@reliverse/cli",
-    packageVersion: "1.3.2",
+    packageVersion: "1.3.4",
     // packageName: pkg.name,
     // packageVersion: pkg.version,
   });
@@ -312,17 +312,15 @@ export async function showTogglePrompt() {
   const result = await togglePrompt({
     title: "Do you like @reliverse/relinka library?",
     options: ["Yes", "No"],
-    initial: "Yes",
   });
 
-  const agree = result === "Yes";
   msg({
     type: "M_INFO",
     title: "Your response:",
-    content: agree ? "You like it! 🥰" : "You don't like it... 😔",
+    content: result ? "You like it! 🥰" : "You don't like it... 😔",
   });
 
-  return agree;
+  return result;
 }
 
 export async function showConfirmPrompt(

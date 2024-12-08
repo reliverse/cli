@@ -7,7 +7,7 @@ import { validate } from "~/utils/validate.js";
 import { buildBrandNewThing } from "./02-buildBrandNewThing.js";
 import { askProjectDetails } from "./04-askProjectDetails.js";
 
-export async function installAnyGitRepo() {
+export async function installAnyGitRepo(isDev: boolean) {
   relinka.info(
     "At the moment, the current mode is optimized for installing any package.json-based projects from GitHub. Support for other types of projects and git providers will be added in the future.",
   );
@@ -109,7 +109,7 @@ export async function installAnyGitRepo() {
     repoToInstall === REPO_SHORT_URLS.relivatorGithubLink ||
     repoToInstall === "blefnk/relivator"
   ) {
-    return buildBrandNewThing();
+    return buildBrandNewThing(isDev);
   }
 
   await askProjectDetails(
@@ -117,5 +117,6 @@ export async function installAnyGitRepo() {
     `Setting up the repository: ${repoToInstall}...`,
     "installAnyGitRepo",
     false,
+    isDev,
   );
 }

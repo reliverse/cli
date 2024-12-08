@@ -4,7 +4,7 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG, FILE_PATHS, isDev } from "~/app/data/constants.js";
+import { DEBUG, FILE_PATHS } from "~/app/data/constants.js";
 import { choosePackageManager } from "~/utils/choosePackageManager.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 
@@ -13,6 +13,7 @@ export async function showCongratulationMenu(
   deps: boolean,
   source: string,
   dir: string,
+  isDev: boolean,
 ) {
   const cwd = process.cwd();
   const pkgManager = await choosePackageManager(cwd);

@@ -1,9 +1,7 @@
 import type { ParsedUrlQuery } from "querystring";
 
 import { spinner } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
 import { listen } from "async-listen";
-import fs from "fs-extra";
 import http from "http";
 import { customAlphabet } from "nanoid";
 import { setTimeout } from "node:timers";
@@ -15,7 +13,9 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
-import { CONFIG, verbose } from "~/app/data/constants.js";
+import { MEMORY_FILE, verbose } from "~/app/data/constants.js";
+
+import { updateReliverseMemory } from "../memory/impl.js";
 
 /**
  * Custom error for when a user cancels the process.
@@ -24,35 +24,6 @@ class UserCancellationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "UserCancellationError";
-  }
-}
-
-async function writeToConfigFile(data: ParsedUrlQuery) {
-  try {
-    const homeDir = os.homedir();
-    const filePath = path.join(homeDir, CONFIG);
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    verbose && console.log(`Configuration written to ${filePath}`);
-  } catch (error) {
-    console.error("Error writing to local config file:", error);
-    throw error;
-  }
-}
-
-async function readFromConfigFile() {
-  const homeDir = os.homedir();
-  const filePath = path.join(homeDir, CONFIG);
-  try {
-    const exists = await fs.pathExists(filePath);
-    if (!exists) {
-      verbose && console.log(`Config file not found at ${filePath}`);
-      return null;
-    }
-    const data = await fs.readFile(filePath, "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Error reading config file:", error);
-    return null;
   }
 }
 
@@ -146,7 +117,7 @@ export async function auth({ dev }: { dev: boolean }) {
       confirmationUrl.searchParams.append("code", code);
       confirmationUrl.searchParams.append("redirect", redirect);
 
-      relinka.info(
+      console.log(
         `${pc.bold("The following URL will be opened in your default browser:")}\n│ ${pc.dim(
           confirmationUrl.toString(),
         )}`,
@@ -185,15 +156,15 @@ export async function auth({ dev }: { dev: boolean }) {
 
       const homeDir = os.homedir();
       const configFilePath = isWindows
-        ? path.join(homeDir, CONFIG)
-        : `~/${CONFIG}`;
+        ? path.join(homeDir, MEMORY_FILE)
+        : `~/${MEMORY_FILE}`;
 
       try {
         const authData = await authPromise;
         clearTimeout(authTimeout);
         verbose && console.log("Authentication data received:", authData);
 
-        await writeToConfigFile(authData);
+        await updateReliverseMemory(authData);
         server.close(() => {
           verbose &&
             console.log(

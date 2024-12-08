@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import { isDev, REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { REPO_SHORT_URLS } from "~/app/data/constants.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
@@ -12,7 +12,7 @@ import { validate } from "~/utils/validate.js";
 
 const cwd = getCurrentWorkingDirectory();
 
-export async function showUpdateCloneMenu() {
+export async function showUpdateCloneMenu(isDev: boolean) {
   relinka.info(
     "🔥 The current mode is in active development and may not be stable. ✨ Select the supported repository you have cloned from GitHub to update it with the latest changes.",
   );
@@ -38,10 +38,9 @@ export async function showUpdateCloneMenu() {
       "Make sure to run this script from the root folder of your reliverse/cli clone.",
     );
     const projectPath = await downloadGitRepo(
-      "relivator-dev-test",
-      "relivator",
-      false,
-      "doNothing",
+      "test-name",
+      "blefnk/versator",
+      isDev,
     );
     if (projectPath) {
       await loadAndRunConfig(

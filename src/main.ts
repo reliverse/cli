@@ -10,17 +10,17 @@ import { isConfigExists } from "./utils/config.js";
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.2",
+    version: "1.3.4",
     description: "@reliverse/cli",
   },
   args: {
     dev: {
       type: "boolean",
-      description: "Runs the CLI in dev mode",
+      description: "Run the CLI in dev mode",
     },
     nodata: {
       type: "boolean",
-      description: "Runs the CLI without collecting any data",
+      description: "Run the CLI without collecting any data (coming soon)",
     },
   },
   run: async ({ args }) => {
@@ -30,13 +30,14 @@ const main = defineCommand({
       await showAnykeyPrompt("privacy");
       await auth({ dev: args.dev });
     }
-    await app({ dev: args.dev });
+    await app({ isDev: args.dev });
     process.exit(0);
   },
   subCommands: {
     help: () => import("~/args/help/mod.js").then((r) => r.default),
     login: () => import("~/args/login/mod.js").then((r) => r.default),
     logout: () => import("~/args/logout/mod.js").then((r) => r.default),
+    memory: () => import("~/args/memory/mod.js").then((r) => r.default),
   },
 });
 
