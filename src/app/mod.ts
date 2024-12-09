@@ -1,63 +1,78 @@
 // 📚 Docs: https://docs.reliverse.org/cli
 
-import { errorHandler } from "@reliverse/prompts";
+import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
+import pc from "picocolors";
 
-import {
-  askDir,
-  doSomeFunStuff,
-  showAnimatedText,
-  showAnykeyPrompt,
-  showConfirmPrompt,
-  showDatePrompt,
-  showEndPrompt,
-  showMultiselectPrompt,
-  showNextStepsPrompt,
-  showNumberPrompt,
-  showNumMultiselectPrompt,
-  showNumSelectPrompt,
-  showPasswordPrompt,
-  showProgressBar,
-  showResults,
-  showSelectPrompt,
-  showStartPrompt,
-  showTogglePrompt,
-} from "./data/prompts.js";
-import { showReliverseMenu } from "./menu/01-showReliverseMenu.js";
-import { askProjectDetails } from "./menu/04-askProjectDetails.js";
+import { readReliverseMemory } from "~/args/memory/impl.js";
 
-// import { type UserInput } from "./data/schema.js";
+import { randomReliverseMenuTitle } from "./data/messages.js";
+import { randomWelcomeMessages } from "./data/messages.js";
+import { showEndPrompt, showStartPrompt } from "./data/prompts.js";
+import { buildBrandNewThing } from "./menu/buildBrandNewThing.js";
 
-export default async function app({ isDev }: { isDev: boolean }) {
+export async function app({ isDev }: { isDev: boolean }) {
   await showStartPrompt();
-  await showReliverseMenu(isDev);
-  // const username = await showInputPrompt();
-  // const dir = await askDir(username);
-  // const age = await showNumberPrompt();
-  // const password = await showPasswordPrompt();
-  // const birthday = await showDatePrompt();
-  // const lang = await showSelectPrompt();
-  // const langs = await showMultiselectPrompt();
-  // const color = await showNumSelectPrompt();
-  // const features = await showNumMultiselectPrompt();
-  // const toggle = await showTogglePrompt();
-  // const spinner = await showConfirmPrompt(username);
-  // const userInput = {
-  //   username,
-  //   dir,
-  //   age,
-  //   lang,
-  //   color,
-  //   password: "123456",
-  //   birthday: "14.02.1990",
-  //   langs,
-  //   features,
-  //   spinner,
-  //   toggle,
-  // } satisfies UserInput;
-  // await showProgressBar();
-  // await showResults(userInput);
-  // await doSomeFunStuff(userInput);
-  // await showNextStepsPrompt();
-  // await showAnimatedText();
+
+  // TODO: if config contains at least one project, show "Open project" option
+  // TODO: implement "Edit Reliverse Memory" option (configuration data editor)
+
+  const memory = await readReliverseMemory();
+  const username = memory.user?.name;
+
+  const option = await selectPrompt({
+    title: `🤖 ${
+      username
+        ? randomWelcomeMessages(username)[
+            Math.floor(Math.random() * randomWelcomeMessages(username).length)
+          ]
+        : ""
+    } ${
+      randomReliverseMenuTitle[
+        Math.floor(Math.random() * randomReliverseMenuTitle.length)
+      ]
+    }`,
+    titleColor: "retroGradient",
+    options: [
+      {
+        label: "Build a brand new thing from scratch",
+        value: "1",
+      },
+      {
+        label: "Clone and configure any GitHub repo",
+        hint: "coming soon",
+        value: "2",
+        disabled: true,
+      },
+      // "4. Add shadcn/ui components to your React/Vue/Svelte project",
+      // "5. Run code modifications on the existing codebase",
+      // "6. Update your GitHub clone with the latest changes",
+      // "7. Add, remove, or replace the Relivator's features",
+      { label: pc.italic("Exit"), value: "exit" },
+    ],
+  });
+
+  if (option === "1") {
+    await buildBrandNewThing(isDev);
+  }
+  // else if (option === "2") {
+  //   await installAnyGitRepo();
+  // }
+  // else if ( option === "4. Add shadcn/ui components to your React/Vue/Svelte project" ) {
+  //   await shadcnComponents(program);
+  // }
+  // else if (option === "5. Run code modifications on the existing codebase") {
+  //   await askCodemodUserCodebase();
+  // } else if (option === "6. Update your GitHub clone with the latest changes") {
+  //   await showUpdateCloneMenu();
+  // } else if (option === "7. Add, remove, or replace the Relivator's features") {
+  //   await showRelivatorFeatEditor();
+  // }
+  else if (option === "exit") {
+    process.exit(0);
+  } else {
+    relinka.error("Invalid option selected. Exiting.");
+  }
+
   await showEndPrompt();
 }

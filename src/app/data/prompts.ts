@@ -18,7 +18,7 @@ import {
 import { promptsDisplayResults } from "@reliverse/prompts";
 import { numSelectPrompt } from "@reliverse/prompts";
 import { selectPrompt } from "@reliverse/prompts";
-import { spinner } from "@reliverse/prompts";
+import { task } from "@reliverse/prompts";
 import { emojify } from "node-emoji";
 import pc from "picocolors";
 
@@ -33,14 +33,13 @@ import {
 } from "./utils.js";
 
 // import { pkg } from "~/utils/pkg.js";
-// import { schema, type UserInput } from "./schema.js";
 
 export async function showStartPrompt() {
   await startPrompt({
     titleColor: "inverse",
     clearConsole: true,
     packageName: "@reliverse/cli",
-    packageVersion: "1.3.4",
+    packageVersion: "1.3.8",
     // packageName: pkg.name,
     // packageVersion: pkg.version,
   });
@@ -72,7 +71,6 @@ export async function askDir(username: string) {
   const dir = await inputPrompt({
     title: `Great! Nice to meet you, ${username}!`,
     content: "Where should we create your project?",
-    // schema: schema.properties.dir,
     titleVariant: "doubleBox",
     hint: "Default: ./prefilled-default-value",
     defaultValue: "./prefilled-default-value",
@@ -80,13 +78,11 @@ export async function askDir(username: string) {
   return dir ?? "./prefilled-default-value";
 }
 
-// export async function showNumberPrompt(): Promise<UserInput["age"]> {
 export async function showNumberPrompt() {
   const age = await numberPrompt({
     title: "Enter your age",
     hint: "Try: 42 | Default: 36",
     defaultValue: "36",
-    // schema: schema.properties.age,
     validate: (value) => {
       const num = Number(value);
       if (num === 42) {
@@ -98,14 +94,12 @@ export async function showNumberPrompt() {
   return age ?? 34;
 }
 
-// export async function showPasswordPrompt(): Promise<UserInput["password"]> {
 export async function showPasswordPrompt() {
   let password = "silverHand2077";
 
   try {
     password = await passwordPrompt({
       title: "Imagine a password",
-      // schema: schema.properties.password,
       defaultValue: "silverHand2077",
       hint: "Default: silverHand2077",
       validate: (input) => {
@@ -125,7 +119,6 @@ export async function showPasswordPrompt() {
   return password ?? "silverHand2077";
 }
 
-// export async function showDatePrompt(): Promise<UserInput["birthday"]> {
 export async function showDatePrompt() {
   const birthdayDate = await datePrompt({
     dateKind: "birthday",
@@ -134,12 +127,10 @@ export async function showDatePrompt() {
     hint: "Default: 16.11.1988",
 
     defaultValue: "16.11.1988",
-    // schema: schema.properties.birthday,
   });
   return birthdayDate ?? "16.11.1988";
 }
 
-// export async function showSelectPrompt(): Promise<UserInput["lang"]> {
 export async function showSelectPrompt() {
   const lang = await selectPrompt({
     title: "Choose your language",
@@ -181,7 +172,6 @@ export async function showSelectPrompt() {
   return lang;
 }
 
-// export async function showMultiselectPrompt(): Promise<UserInput["langs"]> {
 export async function showMultiselectPrompt() {
   const jokes: Record<string, string> = {
     TypeScript:
@@ -263,7 +253,6 @@ export async function showMultiselectPrompt() {
   return selectedOptions;
 }
 
-// export async function showNumSelectPrompt(): Promise<UserInput["color"]> {
 export async function showNumSelectPrompt() {
   const choices = createColorChoices();
 
@@ -274,7 +263,6 @@ export async function showNumSelectPrompt() {
     choices,
     defaultValue: "17",
     hint: "Default: 17",
-    // schema: schema.properties.color,
   });
 
   return color.toString() ?? "red";
@@ -302,12 +290,10 @@ export async function showNumMultiselectPrompt() {
         description: "A tool for identifying patterns in JavaScript code.",
       },
     ] as const,
-    // schema: schema.properties.features,
   });
   return features ?? ["react", "typescript"];
 }
 
-// export async function showTogglePrompt(): Promise<UserInput["toggle"]> {
 export async function showTogglePrompt() {
   const result = await togglePrompt({
     title: "Do you like @reliverse/relinka library?",
@@ -323,10 +309,7 @@ export async function showTogglePrompt() {
   return result;
 }
 
-export async function showConfirmPrompt(
-  username: string,
-  // ): Promise<UserInput["spinner"]> {
-) {
+export async function showConfirmPrompt(username: string) {
   await showAnykeyPrompt("pm", username);
 
   const spinner = await confirmPrompt({
@@ -345,7 +328,7 @@ export async function showConfirmPrompt(
 }
 
 export async function showSpinner() {
-  await spinner({
+  await task({
     initialMessage: "Installing dependencies...",
     successMessage: "Hooray! Dependencies installed successfully!",
     errorMessage: "An error occurred while installing dependencies!",
@@ -394,7 +377,11 @@ export async function doSomeFunStuff(userInput) {
 export async function showNextStepsPrompt() {
   await nextStepsPrompt({
     title: "Next Steps",
-    content: "- Set up your profile\n- Review your dashboard\n- Add tasks",
+    content: [
+      "- Set up your profile",
+      "- Review your dashboard",
+      "- Add tasks",
+    ],
   });
 }
 

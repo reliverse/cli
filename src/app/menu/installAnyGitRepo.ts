@@ -4,8 +4,8 @@ import { relinka } from "@reliverse/relinka";
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
 import { validate } from "~/utils/validate.js";
 
-import { buildBrandNewThing } from "./02-buildBrandNewThing.js";
-import { askProjectDetails } from "./04-askProjectDetails.js";
+import { askProjectDetails } from "./askProjectDetails.js";
+import { buildBrandNewThing } from "./buildBrandNewThing.js";
 
 export async function installAnyGitRepo(isDev: boolean) {
   relinka.info(
@@ -112,11 +112,11 @@ export async function installAnyGitRepo(isDev: boolean) {
     return buildBrandNewThing(isDev);
   }
 
-  await askProjectDetails(
-    repoToInstall,
-    `Setting up the repository: ${repoToInstall}...`,
-    "installAnyGitRepo",
-    false,
+  await askProjectDetails({
+    template: repoToInstall,
+    message: `Setting up the repository: ${repoToInstall}...`,
+    mode: "installAnyGitRepo",
+    allowI18nPrompt: false,
     isDev,
-  );
+  });
 }

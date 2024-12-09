@@ -1,3 +1,4 @@
+import { msg } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
@@ -14,48 +15,70 @@ export async function cloneAndCopyFiles(
   tempRepoDir: string,
 ): Promise<void> {
   DEBUG.enableVerboseLogging &&
-    relinka.info(`Cloning from ${repoUrl} into ${tempRepoDir}...`);
+    msg({
+      type: "M_INFO",
+      title: `Cloning from ${repoUrl} into ${tempRepoDir}...`,
+      titleColor: "retroGradient",
+    });
 
-  relinka.info(
-    "✨ Please wait while we make magic. It all depends on your internet speed.",
-  );
+  // msg({
+  //   type: "M_INFO",
+  //   title:
+  //     "✨ Please wait while I'm making magic... It all also depends on your internet speed...",
+  //   titleColor: "retroGradient",
+  // });
+
+  const git = simpleGit();
+  DEBUG.enableVerboseLogging && relinka.log("tempRepoDir", tempRepoDir);
 
   try {
-    const git = simpleGit();
+    // Step 0: Ensure the temporary directory is ready for cloning
+    try {
+      if (await fs.pathExists(tempRepoDir)) {
+        const filesInDir = await fs.readdir(tempRepoDir);
+        if (filesInDir.length > 0) {
+          // If directory is not empty and overwrite is not allowed
+          if (!overwrite) {
+            // msg({
+            //   type: "M_ERROR",
+            //   title: `Error: Destination path '${tempRepoDir}' already exists and is not empty.`,
+            //   titleColor: "retroGradient",
+            // });
+            return;
+          }
 
-    DEBUG.enableVerboseLogging && relinka.log("tempRepoDir", tempRepoDir);
-
-    // Step 0: Check if the tempRepoDir already exists and is not empty
-    if (await fs.pathExists(tempRepoDir)) {
-      const isDirEmpty = await fs.readdir(tempRepoDir);
-
-      if (isDirEmpty.length > 0) {
-        // If directory is not empty and overwrite is not allowed
-        if (!overwrite) {
-          relinka.error(
-            `Error: Destination path '${tempRepoDir}' already exists and is not an empty directory.`,
-          );
-
-          return;
+          // If overwrite is allowed, empty the directory
+          await fs.emptyDir(tempRepoDir);
+          DEBUG.enableVerboseLogging &&
+            msg({
+              type: "M_INFO",
+              title: `Temp directory '${tempRepoDir}' emptied for overwrite.`,
+              titleColor: "retroGradient",
+            });
         }
-
-        // If overwrite is allowed, clean the directory
-        await fs.emptyDir(tempRepoDir);
-        DEBUG.enableVerboseLogging &&
-          relinka.info(
-            `[cloneAndCopyFiles] Temp directory '${tempRepoDir}' is now empty to overwrite existing folder content.`,
-          );
       }
+    } catch (dirError: any) {
+      relinka.error(
+        `Error checking or preparing directory: ${dirError.message || dirError}`,
+      );
+      return;
     }
 
     // Step 1: Clone the repository into tempRepoDir
-    await git.clone(repoUrl, tempRepoDir, ["--depth", "1"]);
-    DEBUG.enableVerboseLogging &&
-      relinka.success("Temporary repository cloned successfully.");
+    try {
+      await git.clone(repoUrl, tempRepoDir, ["--depth", "1"]);
+      DEBUG.enableVerboseLogging &&
+        relinka.success("Temporary repository cloned successfully.");
+    } catch (cloneError: any) {
+      relinka.error(
+        `Error during repository cloning: ${cloneError.message || cloneError}`,
+      );
+      return;
+    }
 
     // Step 2: Copy the necessary files to the target directory
     for (const fileName of filesToDownload) {
-      // Find if the file is in FILE_CONFLICTS and has shouldCopy: false
+      // Check conflicts
       const fileConflict = FILE_CONFLICTS.find(
         (file) => file.fileName === fileName && !file.shouldCopy,
       );
@@ -63,42 +86,69 @@ export async function cloneAndCopyFiles(
       // Skip copying if shouldCopy is false
       if (fileConflict) {
         DEBUG.enableVerboseLogging &&
-          relinka.info(
-            `Skipping ${fileName} as it is marked with shouldCopy: false.`,
-          );
+          msg({
+            type: "M_INFO",
+            title: `Skipping ${fileName} as it is marked with shouldCopy: false.`,
+            titleColor: "retroGradient",
+          });
         continue;
       }
 
       const sourcePath = path.join(tempRepoDir, fileName);
       const destPath = path.join(targetDir, fileName);
 
-      // Log source and destination paths for debugging
+      // Debug info
       DEBUG.enableVerboseLogging &&
-        relinka.info(`Copying from '${sourcePath}' to '${destPath}'...`);
+        msg({
+          type: "M_INFO",
+          title: `Copying from '${sourcePath}' to '${destPath}'...`,
+          titleColor: "retroGradient",
+        });
 
-      // Check if source and destination are the same
+      // Ensure source and destination differ
       if (path.resolve(sourcePath) === path.resolve(destPath)) {
         relinka.error(
-          `Error: Source and destination paths must not be the same. Source: ${sourcePath}, Destination: ${destPath}`,
+          `Error: Source and destination must not be the same. Source: ${sourcePath}, Destination: ${destPath}`,
         );
-        continue; // Skip the file if source and destination are the same
+        continue; // Skip this file
       }
 
-      if ((await fs.pathExists(destPath)) && !overwrite) {
-        relinka.warn(`${fileName} already exists in ${targetDir}.`);
-      } else {
-        await fs.copy(sourcePath, destPath);
-        DEBUG.enableVerboseLogging &&
-          relinka.success(`${fileName} copied to ${destPath}.`);
+      try {
+        if ((await fs.pathExists(destPath)) && !overwrite) {
+          // If the file already exists and we do not overwrite
+          relinka.warn(`${fileName} already exists in ${targetDir}.`);
+        } else {
+          // Copy the file
+          await fs.copy(sourcePath, destPath);
+          DEBUG.enableVerboseLogging &&
+            relinka.success(`${fileName} copied to ${destPath}.`);
+        }
+      } catch (copyError: any) {
+        relinka.error(
+          `Error copying ${fileName}: ${copyError.message || copyError}`,
+        );
       }
     }
 
     // Step 3: Clean up the temporary clone directory if specified
     if (!DEBUG.disableTempCloneRemoving) {
-      await fs.remove(tempRepoDir);
-      relinka.info("Temporary clone removed.");
+      try {
+        await fs.remove(tempRepoDir);
+        msg({
+          type: "M_INFO",
+          title: "Temporary clone removed.",
+          titleColor: "retroGradient",
+        });
+      } catch (cleanupError: any) {
+        relinka.warn(
+          `Could not remove temporary clone: ${cleanupError.message || cleanupError}`,
+        );
+      }
     }
-  } catch (error) {
-    relinka.error(`Error during file cloning: ${error}`);
+  } catch (error: any) {
+    // Catch any unexpected errors during the entire process
+    relinka.error(
+      `Unexpected error during file cloning and copying: ${error.message || error}`,
+    );
   }
 }

@@ -12,12 +12,13 @@ export async function choosePackageManager(
   let pkgManager: PackageManagerName = detectedPkgManager;
 
   if (pkgManager === "bun") {
-    relinka.warn("bun might not work for installing dependencies.");
+    // relinka.warn("bun might not work for installing dependencies.");
     const selectedPkgManager = await selectPrompt({
       title:
-        "bun was detected. Do you want to use `pnpm`, `npm`, `yarn`, or continue with bun ?",
-      defaultValue: "pnpm",
+        "Let's install the dependencies. I see you have bun installed. Do you want to use pnpm, npm, yarn, or continue with bun?",
+      defaultValue: "bun",
       options: [
+        { label: "bun", value: "bun", hint: "The fastest package manager" },
         {
           label: "pnpm",
           value: "pnpm",
@@ -28,8 +29,11 @@ export async function choosePackageManager(
           value: "npm",
           hint: "The most compatible package manager",
         },
-        { label: "yarn", value: "yarn", hint: "The safest package manager" },
-        { label: "bun", value: "bun", hint: "The fastest package manager" },
+        {
+          label: "yarn",
+          value: "yarn",
+          hint: "The most resilient package manager",
+        },
       ],
     });
 

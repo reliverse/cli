@@ -28,7 +28,7 @@ export default defineCommand({
     }
     await showAnykeyPrompt("welcome");
     await showAnykeyPrompt("privacy");
-    await auth({ dev: args.dev });
+    await auth({ dev: args.dev, useLocalhost: false });
     args.dev
       ? relinka.success("You can run `bun dev` now! Happy Reliversing! 🎉")
       : relinka.success("You can run `reliverse` now! Happy Reliversing! 🎉");

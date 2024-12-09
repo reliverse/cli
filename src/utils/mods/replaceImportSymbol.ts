@@ -1,6 +1,6 @@
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import { glob } from "glob";
+import { globby } from "globby";
 import path from "pathe";
 
 export async function replaceImportSymbol(
@@ -11,7 +11,7 @@ export async function replaceImportSymbol(
   relinka.info(`Replacing import symbols from "${from}" to "${to}" in ${repo}`);
 
   // Find files in the specified repo folder
-  const files = await glob("**/*.{js,ts,tsx}", {
+  const files = await globby("**/*.{js,ts,tsx}", {
     cwd: path.resolve(repo),
   });
 

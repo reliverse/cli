@@ -1,6 +1,6 @@
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import { glob } from "glob";
+import { globby } from "globby";
 import path from "pathe";
 
 type ReplaceImportSymbolOptions = {
@@ -16,7 +16,7 @@ export async function replaceImportSymbol({
 }: ReplaceImportSymbolOptions) {
   relinka.info(`Replacing ${from} with ${to} in files under ${projectPath}`);
 
-  const files = await glob("**/*.{js,ts,tsx}", {
+  const files = await globby("**/*.{js,ts,tsx}", {
     cwd: projectPath,
   });
 

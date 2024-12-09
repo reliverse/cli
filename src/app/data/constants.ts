@@ -2,7 +2,6 @@ export const verbose = false;
 
 // Debug settings to control verbose logging and temp clone cleanup behavior
 export const DEBUG = {
-  alphaFeaturesEnabled: true,
   disableTempCloneRemoving: true, // Control whether the temp clone folder is removed
   enableVerboseLogging: false, // Toggle verbose logging on or off
 };
@@ -51,13 +50,15 @@ export const FILE_PATHS = {
 export const FILES_TO_DOWNLOAD = [FILE_PATHS.layoutFile, FILE_PATHS.pageFile];
 
 // File categories used in conflict resolution or file download operations
+// todo: figure out the better approach to get the files
+// todo: instead of just getting them from the template repo
 export const fileCategories: Record<string, string[]> = {
   biome: ["biome.json"],
   eslint: [".eslintrc.cjs", "eslint.config.js"],
   GitHub: [".github", "README.md"],
   IDE: [".vscode"],
-  putout: [".putout.json"],
-  "Reliverse configs": ["reliverse.config.ts", "reliverse.info.ts"],
+  // putout: [".putout.json"], // todo: doesnt exist in versator repo
+  // "Reliverse configs": ["reliverse.config.ts", "reliverse.info.ts"],
 };
 
 // =======================================================================

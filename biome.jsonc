@@ -24,13 +24,7 @@
   },
   "linter": {
     "enabled": true,
-    "ignore": [
-      ".git/",
-      "node_modules/",
-      "dist-jsr/",
-      "dist-npm/",
-      "examples/deprecated/**/*.ts"
-    ],
+    "ignore": [".git/", "node_modules/", "dist-jsr/", "dist-npm/"],
     "rules": {
       "recommended": true,
       "a11y": {

@@ -1,4 +1,5 @@
 import {
+  confirmPrompt,
   defineCommand,
   deleteLastLine,
   msg,
@@ -30,12 +31,13 @@ export default defineCommand({
         : relinka.info("Try `reliverse login` cmd.");
       process.exit(0);
     }
-    const danger = await togglePrompt({
+    // const danger = await togglePrompt({
+    const danger = await confirmPrompt({
       title:
         "Are you sure you want to log out? Reliverse will delete its local memory. This action cannot be undone.",
       titleColor: "redBright",
-      options: ["Yes", "No"],
-      defaultValue: "No",
+      // options: ["Yes", "No"],
+      // defaultValue: "No",
     });
     if (danger) {
       await deleteConfig();

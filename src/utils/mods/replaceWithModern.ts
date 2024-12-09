@@ -1,7 +1,7 @@
 import { inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import { glob } from "glob";
+import { globby } from "globby";
 import path from "pathe";
 
 type ReplaceWithModernOptions = {
@@ -13,7 +13,7 @@ export async function replaceWithModern({
 }: ReplaceWithModernOptions) {
   relinka.info("Starting replacement of 'fs' and 'path' imports...");
 
-  const files = await glob("**/*.{js,ts,tsx}", {
+  const files = await globby("**/*.{js,ts,tsx}", {
     cwd: projectPath,
     absolute: true,
     ignore: ["node_modules/**", "dist/**"],

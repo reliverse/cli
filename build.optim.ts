@@ -1,8 +1,7 @@
 import relinka from "@reliverse/relinka";
-import glob from "fast-glob";
 import fs from "fs-extra";
+import { globby } from "globby";
 import path from "pathe";
-import strip from "strip-comments";
 import { fileURLToPath } from "url";
 
 // Verbose logging
@@ -41,7 +40,7 @@ const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts"];
  */
 async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
   try {
-    const files: string[] = await glob(patterns, {
+    const files: string[] = await globby(patterns, {
       cwd: baseDir,
       absolute: true,
     });

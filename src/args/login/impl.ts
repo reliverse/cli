@@ -1,6 +1,6 @@
 import type { ParsedUrlQuery } from "querystring";
 
-import { spinner } from "@reliverse/prompts";
+import { task } from "@reliverse/prompts";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
@@ -29,10 +29,16 @@ class UserCancellationError extends Error {
 
 const nanoid = customAlphabet("123456789QAZWSXEDCRFVTGBYHNUJMIKOLP", 5);
 
-export async function auth({ dev }: { dev: boolean }) {
-  console.log(pc.cyanBright("✨ Let's authenticate you..."));
+export async function auth({
+  dev,
+  useLocalhost,
+}: {
+  dev: boolean;
+  useLocalhost: boolean;
+}) {
+  console.log(pc.cyanBright("◆  Let's authenticate you..."));
 
-  await spinner({
+  await task({
     initialMessage: "Waiting for user confirmation...",
     successMessage: "Authentication successful!",
     errorMessage: "Authentication failed!",
@@ -110,15 +116,20 @@ export async function auth({ dev }: { dev: boolean }) {
 
       const redirect = `http://localhost:${port}`;
       const code = nanoid();
-      const clientUrl = dev ? "http://localhost:3000" : "https://reliverse.org";
+      const clientUrl = dev
+        ? useLocalhost
+          ? "http://localhost:3000"
+          : "https://reliverse.org"
+        : "https://reliverse.org";
       verbose && console.log(`Using client URL: ${clientUrl}`);
 
       const confirmationUrl = new URL(`${clientUrl}/confirm`);
       confirmationUrl.searchParams.append("code", code);
       confirmationUrl.searchParams.append("redirect", redirect);
 
+      process.stdout.write("\x1b[2K\r"); // Clear the current line, so misplacement of "Waiting for user confirmation..." is overwritten
       console.log(
-        `${pc.bold("The following URL will be opened in your default browser:")}\n│ ${pc.dim(
+        `${pc.bold("│  The following URL will be opened in your default browser:")}\n│  ${pc.dim(
           confirmationUrl.toString(),
         )}`,
       );
@@ -137,7 +148,9 @@ export async function auth({ dev }: { dev: boolean }) {
       }
 
       updateMessage(
-        `Waiting for confirmation. Please confirm code: ${pc.bold(code)}`,
+        ` Please visit it and confirm there if you see the same code: ${pc.bold(
+          code,
+        )}`,
       );
 
       // Set up a 5-minute timeout
@@ -148,7 +161,8 @@ export async function auth({ dev }: { dev: boolean }) {
           server.close(() => {
             verbose && console.warn("Local server closed due to timeout.");
             // Throwing will cause the spinner to show error and exit
-            throw new Error("Authentication timed out.");
+            // throw new Error("Authentication timed out.");
+            process.exit(1);
           });
         },
         5 * 60 * 1000,

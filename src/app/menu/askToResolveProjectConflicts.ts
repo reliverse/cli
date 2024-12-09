@@ -1,5 +1,4 @@
-import { confirm, select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { confirmPrompt, msg, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -8,15 +7,16 @@ import { removeFile, renameFile } from "~/utils/fileUtils.js";
 
 export const resolveProjectConflicts = async (targetDir: string) => {
   // Ask user if they want to decide what to do with each file conflict
-  const manualHandling = await confirm({
-    default: false, // Default to 'No'
-    message:
-      "Do you want to manually handle file conflicts? \n  If you choose 'N' then all the conflicting files will be automatically removed.",
+  const automaticConflictHandling = await confirmPrompt({
+    title:
+      "I see some files already exist... Press 'Y' to allow me to handle them for you.",
+    content:
+      "If you choose 'Y' then I will remove the conflicting files for you, and replace them with recommended by me ones. Otherwise, I will ask you what to do with each file.",
   });
 
   await handleFileConflicts({
     files: FILE_CONFLICTS,
-    manualHandling, // Pass this flag to the handler
+    automaticConflictHandling,
     targetDir,
   });
 };
@@ -29,14 +29,14 @@ type FileConflict = {
 
 type ConflictHandlerOptions = {
   files: FileConflict[]; // List of files to check for conflicts
-  manualHandling: boolean; // Whether to ask the user or automatically remove files
+  automaticConflictHandling: boolean; // Whether to ask the user or automatically remove files
   targetDir: string; // Directory where the conflicts may happen
 };
 
 // Universal conflict handler function
 const handleFileConflicts = async ({
   files,
-  manualHandling,
+  automaticConflictHandling,
   targetDir,
 }: ConflictHandlerOptions): Promise<void> => {
   for (const { customMessage, description, fileName } of files) {
@@ -46,13 +46,19 @@ const handleFileConflicts = async ({
       const fileDescription = description || fileName;
 
       DEBUG.enableVerboseLogging &&
-        relinka.info(`${fileDescription} file exists at ${targetDir}.`);
+        msg({
+          type: "M_INFO",
+          title: `${fileDescription} file exists at ${targetDir}.`,
+        });
 
-      if (!manualHandling) {
+      if (automaticConflictHandling) {
         // Automatically remove file without asking the user
         await removeFile(filePath);
         DEBUG.enableVerboseLogging &&
-          relinka.success(`${fileDescription} removed automatically.`);
+          msg({
+            type: "M_INFO",
+            title: `${fileDescription} removed automatically.`,
+          });
         continue; // Skip to the next file
       }
 
@@ -72,16 +78,26 @@ const handleFileConflicts = async ({
       if (action === "remove") {
         await removeFile(filePath);
         DEBUG.enableVerboseLogging &&
-          relinka.success(`${fileDescription} removed.`);
+          msg({
+            type: "M_INFO",
+            title: `${fileDescription} removed.`,
+            titleColor: "retroGradient",
+          });
       } else if (action === "rename") {
         const renamedFilePath = `${filePath}.txt`;
 
         await renameFile(filePath, renamedFilePath);
-        relinka.success(
-          `${fileDescription} renamed to ${fileDescription}.txt.`,
-        );
+        msg({
+          type: "M_INFO",
+          title: `${fileDescription} renamed to ${fileDescription}.txt.`,
+          titleColor: "retroGradient",
+        });
       } else {
-        relinka.info(`No changes made to ${fileDescription}.`);
+        msg({
+          type: "M_INFO",
+          title: `No changes made to ${fileDescription}.`,
+          titleColor: "retroGradient",
+        });
       }
     }
   }

@@ -4,7 +4,7 @@ import path from "pathe";
 import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
-import type { GitOption } from "~/app/menu/08-askGitInitialization.js";
+import type { GitOption } from "~/app/menu/askGitInitialization.js";
 
 import { handleError, verbose } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
@@ -16,16 +16,8 @@ export async function downloadGitRepo(
   isDev: boolean,
 ): Promise<string | undefined> {
   try {
-    isDev
-      ? relinka.info(pc.dim(" ✨ Downloading initial files (dev mode)..."))
-      : relinka.info(pc.dim(" ✨ Downloading initial files..."));
-
-    msg({
-      type: "M_MIDDLE",
-    });
-
     const cwd = getCurrentWorkingDirectory();
-    const targetDir = path.join(cwd, isDev ? ".." : "", name);
+    const targetDir = path.join(cwd, isDev ? "tests-runtime" : "", name);
 
     verbose("info", `Installing template in: ${targetDir}`);
 

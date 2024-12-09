@@ -5,7 +5,7 @@ import pc from "picocolors";
 import { verbose } from "~/utils/console.js";
 import { validate } from "~/utils/validate.js";
 
-import type { GitOption } from "./08-askGitInitialization.js";
+import type { GitOption } from "./askGitInitialization.js";
 
 export async function askSummaryConfirmation(
   template: string,

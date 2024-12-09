@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { msg } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -16,7 +16,7 @@ export async function downloadI18nFiles(
   isDev: boolean,
 ): Promise<void> {
   const tempRepoDir = isDev
-    ? path.join(targetDir, "..", FILE_PATHS.tempRepoClone) // Adjust for development
+    ? path.join(targetDir, "tests-runtime", FILE_PATHS.tempRepoClone) // For development
     : path.join(targetDir, FILE_PATHS.tempRepoClone); // For production
 
   try {
@@ -30,9 +30,10 @@ export async function downloadI18nFiles(
 
       if (!isDirEmpty) {
         DEBUG.enableVerboseLogging &&
-          relinka.info(
-            `Temp directory '${tempRepoDir}' already exists and is not empty.`,
-          );
+          msg({
+            type: "M_ERROR",
+            title: `Temp directory '${tempRepoDir}' already exists and is not empty.`,
+          });
 
         // Prompt the user to decide if they want to skip or clean up the directory
         const skipClone = true;
@@ -44,16 +45,21 @@ export async function downloadI18nFiles(
 
         if (skipClone) {
           DEBUG.enableVerboseLogging &&
-            relinka.info(
-              `Skipping cloning and using the existing '${tempRepoDir}' folder.`,
-            );
+            msg({
+              type: "M_INFO",
+              title: `Skipping cloning and using the existing '${tempRepoDir}' folder.`,
+            });
         } else {
-          relinka.info("Cleaning up the temp directory and cloning again...");
+          msg({
+            type: "M_INFO",
+            title: "Cleaning up the temp directory and cloning again...",
+          });
           await fs.emptyDir(tempRepoDir); // Clean up the directory
           DEBUG.enableVerboseLogging &&
-            relinka.info(
-              `[downloadI18nFiles] Temp directory '${tempRepoDir}' is now empty to overwrite existing folder content.`,
-            );
+            msg({
+              type: "M_INFO",
+              title: `[downloadI18nFiles] Temp directory '${tempRepoDir}' is now empty to overwrite existing folder content.`,
+            });
           isDirEmpty = true;
         }
       }
@@ -61,9 +67,11 @@ export async function downloadI18nFiles(
 
     if (isDirEmpty) {
       DEBUG.enableVerboseLogging &&
-        relinka.info(
-          "Cloning repository for i18n-specific layout.tsx and page.tsx...",
-        );
+        msg({
+          type: "M_INFO",
+          title:
+            "Cloning repository for i18n-specific layout.tsx and page.tsx...",
+        });
 
       // Step 1: Clone the repository
       await cloneAndCopyFiles(
@@ -81,43 +89,70 @@ export async function downloadI18nFiles(
       const targetFilePath = path.join(targetDir, file);
 
       DEBUG.enableVerboseLogging &&
-        relinka.info(`Checking if ${tempFilePath} exists...`);
+        msg({
+          type: "M_INFO",
+          title: `Checking if ${tempFilePath} exists...`,
+        });
 
       if (await fs.pathExists(tempFilePath)) {
         DEBUG.enableVerboseLogging &&
-          relinka.info(`File ${tempFilePath} exists. Copying to target...`);
+          msg({
+            type: "M_INFO",
+            title: `File ${tempFilePath} exists. Copying to target...`,
+          });
 
         if (path.resolve(tempFilePath) !== path.resolve(targetFilePath)) {
           await fs.copy(tempFilePath, targetFilePath);
           DEBUG.enableVerboseLogging &&
-            relinka.success(`Copied ${file} to ${targetFilePath}.`);
+            msg({
+              type: "M_INFO",
+              title: `Copied ${file} to ${targetFilePath}.`,
+            });
         } else {
-          relinka.warn(
-            `Skipping copying file ${file} because source and destination are the same.`,
-          );
+          msg({
+            type: "M_ERROR",
+            title: `Skipping copying file ${file} because source and destination are the same.`,
+          });
         }
       } else {
-        relinka.error(
-          `File ${tempFilePath} not found in the cloned repository.`,
-        );
+        msg({
+          type: "M_ERROR",
+          title: `File ${tempFilePath} not found in the cloned repository.`,
+        });
 
         throw new Error(`File ${tempFilePath} not found.`);
       }
     }
 
-    DEBUG.enableVerboseLogging &&
-      relinka.success(
-        "i18n-specific files downloaded and copied successfully.",
-      );
-    relinka.success("Internationalization (i18n) was successfully integrated.");
+    if (DEBUG.enableVerboseLogging) {
+      msg({
+        type: "M_INFO",
+        title:
+          "[debug] i18n-specific files downloaded and copied successfully.",
+      });
+      msg({
+        type: "M_INFO",
+        title: "[debug] Internationalization was successfully integrated.",
+      });
+    }
   } catch (error) {
-    relinka.error("Error during file cloning or copying:", error);
+    msg({
+      type: "M_ERROR",
+      title: "Error during file cloning or copying:",
+      content: error.toString(),
+    });
   } finally {
     // Step 3: Conditionally clean up the temp directory after all operations are completed
     if (!DEBUG.disableTempCloneRemoving && (await fs.pathExists(tempRepoDir))) {
-      relinka.info("Cleaning up temporary repository directory...");
+      msg({
+        type: "M_INFO",
+        title: "Cleaning up temporary repository directory...",
+      });
       await fs.remove(tempRepoDir); // Ensure the temp folder is removed after all tasks
-      relinka.success("Temporary repository directory removed.");
+      msg({
+        type: "M_INFO",
+        title: "Temporary repository directory removed.",
+      });
     }
   }
 }

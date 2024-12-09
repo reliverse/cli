@@ -1,3 +1,4 @@
+import { msg } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
@@ -13,6 +14,7 @@ export async function replaceStringsInFiles(
     ".ts",
     ".json",
     ".md",
+    ".mdx",
     ".html",
     ".jsx",
     ".tsx",
@@ -61,5 +63,4 @@ export async function replaceStringsInFiles(
   }
 
   await traverseDirectory(targetDir);
-  relinka.success("All string replacements have been made.");
 }

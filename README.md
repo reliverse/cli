@@ -2,7 +2,11 @@
 
 [npmjs](https://npmjs.com/package/@reliverse/cli), [GitHub](https://github.com/reliverse/cli), [Discord](https://discord.gg/Pb8uKbwpsJ)
 
-**Reliverse: Open-Source Full-Featured Product Launcher Tool & Assistant**.
+Please consider following this project's author, [Nazar Kornienko](https://github.com/blefnk), and consider starring the project to show your ❤️ and support.
+
+---
+
+## Reliverse: Open-Source Full-Featured Product Launcher Tool & Assistant
 
 ![Reliverse Cover Image](./reliverse.webp)
 
@@ -241,7 +245,7 @@ Reliverse takes a different, non-standard approach compared to other bootstrappe
 
 This project is licensed under the MIT License—see the [LICENSE](LICENSE) file for more details.
 
-## Bootstrapping Tool Comparison
+<!-- ## Bootstrapping Tool Comparison
 
 > **Note:** This table currently contains approximate and placeholder values. More detailed assessments will be provided as tools continue to evolve.
 
@@ -255,7 +259,6 @@ This project is licensed under the MIT License—see the [LICENSE](LICENSE) file
 | **Feature**                 | **Reliverse**  | **create-t3-app**  | **create-astro** |
 |-----------------------------|----------------|--------------------|------------------|
 | **Type Safety**             | 🟡             | 🟡                | 🟡               |
-| **Schema Validation**       | 🟡             | 🟡                | 🟡               |  
 | **Crash Resilience**        | 🟡             | 🟡                | 🟡               |
 | **Project Template Options**| 🟡             | 🟡                | 🟡               |
 | **Customizable Setup**      | 🟡             | 🟡                | 🟡               |
@@ -270,7 +273,7 @@ This project is licensed under the MIT License—see the [LICENSE](LICENSE) file
 | **Ease of Setup**           | 🟡             | 🟡                | 🟡               |
 | **Example Projects**        | 🟡             | 🟡                | 🟡               |
 
-**Related Links**: [ESM/CJS](https://dev.to/iggredible/what-the-heck-are-cjs-amd-umd-and-esm-ikm), ["Pure ESM package"](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c), [Clean code](https://github.com/ryanmcdermott/clean-code-javascript#readme), ["UX patterns for CLI tools"](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html), [DX (Developer Experience)](https://github.blog/enterprise-software/collaboration/developer-experience-what-is-it-and-why-should-you-care), [TypeBox](https://github.com/sinclairzx81/typebox#readme)
+**Related Links**: [ESM/CJS](https://dev.to/iggredible/what-the-heck-are-cjs-amd-umd-and-esm-ikm), ["Pure ESM package"](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c), [Clean code](https://github.com/ryanmcdermott/clean-code-javascript#readme), ["UX patterns for CLI tools"](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html), [DX (Developer Experience)](https://github.blog/enterprise-software/collaboration/developer-experience-what-is-it-and-why-should-you-care), [TypeBox](https://github.com/sinclairzx81/typebox#readme) -->
 
 ## Special Thanks
 

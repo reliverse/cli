@@ -7,43 +7,51 @@ import path from "pathe";
 import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
+import type { GitOption } from "~/app/menu/askGitInitialization.js";
+
 // Initialize Git repository or keep existing .git folder
 export async function initializeGitRepository(
   dir: string,
-  gitOption: string,
+  gitOption: GitOption,
 ): Promise<void> {
   try {
-    if (gitOption === "Initialize new Git repository") {
-      const git: SimpleGit = simpleGit({ baseDir: dir });
+    if (gitOption === "initializeNewGitRepository") {
+      await fs.remove(path.join(dir, ".git"));
 
+      const git: SimpleGit = simpleGit({ baseDir: dir });
       await git.init();
       await git.add(".");
-      await git.commit("Initial commit from Create Reliverse App");
+      await git.commit("Initial commit by @reliverse/cli");
 
-      relinka.info("");
       relinka.success(
-        pc.dim("  Git repository initialized and initial commit created."),
+        pc.cyanBright(
+          " 📂 Git repository initialized and initial commit created.",
+        ),
       );
 
-      // relinka.info("We recommend pushing your commits using GitHub Desktop.");
-      // relinka.info(
-      //   "Learn more and find other tips by visiting https://reliverse.org.",
-      // );
-    } else if (
-      gitOption ===
-      "Keep existing .git folder (for forking later) [🚨 option is under development, may not work]"
-    ) {
+      relinka.info(
+        pc.dim(" I recommend pushing your commits using GitHub Desktop:"),
+      );
+      relinka.info(
+        `${pc.dim(` "Add local repository" -> Paste:`)} ${pc.cyan(dir)}`,
+      );
+      relinka.info(
+        pc.dim(
+          " Learn more and find other tips by visiting https://docs.reliverse.org",
+        ),
+      );
+    } else if (gitOption === "keepExistingGitFolder") {
       if (await fs.pathExists(path.join(dir, ".git"))) {
-        relinka.info(
+        relinka.success(
           pc.dim(
-            " 📂 .git folder has been kept. You can make a fork from this repo later.",
+            " .git folder has been kept. You can make a fork from this repo later.",
           ),
         );
       } else {
-        relinka.warn(pc.dim(" 📂 No .git folder found in the template."));
+        relinka.warn(pc.dim("  No .git folder found in the template."));
       }
     } else {
-      relinka.info(pc.dim(" 📂 No Git initialization performed."));
+      relinka.success(pc.dim(" No Git initialization performed."));
     }
     msg({
       type: "M_MIDDLE",

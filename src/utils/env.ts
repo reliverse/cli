@@ -1,5 +1,5 @@
 import { getRootDirname } from "@reliverse/fs";
-import { confirm, input, password } from "@reliverse/prompts";
+import { confirm, confirmPrompt, input, password } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { join } from "pathe";
@@ -23,18 +23,23 @@ function createPrompt(
   message: string,
   defaultValue?: boolean | string,
 ) {
-  const options: { default?: boolean | string; message: string } = { message };
+  const options: { defaultValue?: boolean | string; title: string } = {
+    title: message,
+  };
 
   if (defaultValue !== undefined) {
-    options.default = defaultValue;
+    options.defaultValue = defaultValue;
   }
 
   if (type === "input") {
-    return input(options as { default?: string; message: string });
+    return input(options as { defaultValue?: string; title: string });
   } else if (type === "password") {
-    return password(options as { default?: string; message: string });
+    return password(options as { defaultValue?: string; title: string });
   } else {
-    return confirm(options as { default?: boolean; message: string });
+    return confirmPrompt({
+      defaultValue: options.defaultValue as boolean,
+      title: options.title,
+    });
   }
 }
 
@@ -191,9 +196,9 @@ async function main() {
     relinka.log("\nPlease review your answers:");
     relinka.log(generateEnvContent(answers));
 
-    const confirmed = await confirm({
-      default: true,
-      message: "Do you want to save these settings to .env file?",
+    const confirmed = await confirmPrompt({
+      defaultValue: true,
+      title: "Do you want to save these settings to .env file?",
     });
 
     if (confirmed) {

@@ -2,8 +2,8 @@
 
 import relinka from "@reliverse/relinka";
 import { execaCommand } from "execa";
-import glob from "fast-glob";
 import fs from "fs-extra";
+import { globby } from "globby";
 import mri from "mri";
 import path from "path";
 
@@ -105,7 +105,7 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
   }
 
   // Replace version in src/**/*.ts
-  const tsFiles = await glob("src/**/*.ts");
+  const tsFiles = await globby("src/**/*.ts");
   for (const file of tsFiles) {
     const content = await fs.readFile(file, "utf-8");
     if (content.includes(oldVersion)) {

@@ -4,6 +4,9 @@ import path from "pathe";
 
 import { DEBUG } from "~/app/data/constants.js";
 
+// Paths that should be ignored when moving files to [locale]
+const IGNORED_PATHS = ["api"];
+
 // Function to move the content of src/app to src/app/[locale]
 export async function moveAppToLocale(targetDir: string): Promise<void> {
   const appDir = path.join(targetDir, "src", "app");
@@ -33,7 +36,10 @@ export async function moveAppToLocale(targetDir: string): Promise<void> {
       const newPath = path.join(localeDir, file);
 
       // Skip moving the [locale] folder itself to prevent infinite recursion
-      if (file === "[locale]") {
+      // Also skip any paths that are in the ignore list
+      if (file === "[locale]" || IGNORED_PATHS.includes(file)) {
+        DEBUG.enableVerboseLogging &&
+          relinka.info(`Skipping ${file} as it's in the ignore list`);
         continue;
       }
 

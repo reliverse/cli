@@ -3,8 +3,6 @@ import type { ChoiceOptions, ColorName } from "@reliverse/prompts";
 import { msg } from "@reliverse/prompts";
 import { colorMap } from "@reliverse/prompts";
 
-// import type { UserInput } from "./schema.js";
-
 export function createColorChoices(): ChoiceOptions[] {
   return Object.keys(colorMap).map((key) => ({
     title: colorMap[key](key.charAt(0).toUpperCase() + key.slice(1)),

@@ -7,3 +7,4 @@ merged.txt
 node_modules/
 addons/premium/
 addons/**/premium/
+tests-runtime/

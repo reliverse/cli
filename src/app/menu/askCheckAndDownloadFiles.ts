@@ -1,4 +1,4 @@
-import { checkbox, confirm, multiselectPrompt } from "@reliverse/prompts";
+import { confirmPrompt, multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import path from "pathe";
 
@@ -8,7 +8,7 @@ import { verbose } from "~/utils/console.js";
 import { checkFileExists } from "~/utils/fileUtils.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
-import { resolveProjectConflicts } from "./12-askToResolveProjectConflicts.js";
+import { resolveProjectConflicts } from "./askToResolveProjectConflicts.js";
 
 export const askCheckAndDownloadFiles = async (
   targetDir: string,
@@ -53,6 +53,9 @@ export const askCheckAndDownloadFiles = async (
 
     const categoriesToDownload = await multiselectPrompt({
       title: "Select the file categories you want to download:",
+      titleColor: "cyanBright",
+      // content:
+      // "I have already chosen the recommended categories. Please modify the selections if you want something else.",
       options: Object.keys(fileCategories).map((category) => ({
         label: category,
         value: category,
@@ -70,15 +73,17 @@ export const askCheckAndDownloadFiles = async (
 
     // Handle conflicts for already existing files
     if (existingFiles.length > 0) {
-      const replaceAll = await confirm({
-        default: true,
-        message:
+      const replaceAll = await confirmPrompt({
+        defaultValue: true,
+        title:
           "Some files already exist. Do you want to replace all existing files? (N opens Conflict Management menu)",
+        titleColor: "cyanBright",
       });
 
       if (!replaceAll) {
         const filesToReplace = await multiselectPrompt({
           title: "Select the files you want to replace:",
+          titleColor: "cyanBright",
           options: existingFiles.map((file) => ({
             label: file,
             value: file,

@@ -3,14 +3,14 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
 import { showAnykeyPrompt } from "./app/data/prompts.js";
-import app from "./app/mod.js";
+import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { isConfigExists } from "./utils/config.js";
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.4",
+    version: "1.3.8",
     description: "@reliverse/cli",
   },
   args: {
@@ -28,7 +28,7 @@ const main = defineCommand({
     if (!config) {
       await showAnykeyPrompt("welcome");
       await showAnykeyPrompt("privacy");
-      await auth({ dev: args.dev });
+      await auth({ dev: args.dev, useLocalhost: false });
     }
     await app({ isDev: args.dev });
     process.exit(0);
