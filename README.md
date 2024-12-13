@@ -35,6 +35,7 @@ reliverse
 bun rm -g @reliverse/cli
 bun i -g @reliverse/cli
 # OR bun update --latest -g
+# OR bun i -g @reliverse/cli@latest
 ```
 
 ## Introduction

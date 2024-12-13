@@ -75,7 +75,11 @@ export async function app({ isDev }: { isDev: boolean }) {
       // "5. Run code modifications on the existing codebase",
       // "6. Update your GitHub clone with the latest changes",
       // "7. Add, remove, or replace the Relivator's features",
-      { label: pc.italic("Exit"), value: "exit" },
+      {
+        label: pc.italic("Exit"),
+        value: "exit",
+        hint: pc.dim("ctrl+c anywhere"),
+      },
     ],
   });
 

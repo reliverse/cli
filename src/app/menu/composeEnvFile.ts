@@ -12,7 +12,6 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-// Type Definitions
 type KeyType =
   | "string"
   | "email"
@@ -52,7 +51,6 @@ type KnownService = {
   keys: ServiceKey[];
 };
 
-// Known Services
 const KNOWN_SERVICES: Record<string, KnownService> = {
   GENERAL: {
     name: "General",
@@ -366,36 +364,23 @@ async function promptAndSetMissingValues(
           ...(service.dashboardUrl && {
             hint: `Opening ${service.dashboardUrl} website...`,
           }),
-          validate: (input) => {
-            if (
-              keyConfig.type === "email" &&
-              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)
-            ) {
-              return "Invalid email.";
-            }
-            if (
-              keyConfig.type === "database" &&
-              input.trim() !== "" &&
-              !input.startsWith("postgresql://")
-            ) {
-              return "Database URL must start with postgresql://";
-            }
-            return null;
-          },
         });
 
         if (value.trim()) {
-          // First remove any key=value format if present
-          const valueOnly = value.includes("=") ? value.split("=")[1] : value;
-          // Strip surrounding quotes (single or double) if they exist, then wrap in double quotes
-          const rawValue = valueOnly.trim().replace(/^['"](.*)['"]$/, "$1");
+          // Extract the actual value, handling both direct values and key=value format
+          const rawValue = value.startsWith(`${keyConfig.key}=`)
+            ? value.substring(value.indexOf("=") + 1)
+            : value;
+
+          // Strip surrounding quotes (both single and double) if they exist
+          const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
 
           // Find and update existing line or append new one
           const lineIndex = envLines.findIndex((line) =>
             line.startsWith(`${keyConfig.key}=`),
           );
-          // Always wrap the value in quotes
-          const newLine = `${keyConfig.key}="${rawValue}"`;
+
+          const newLine = `${keyConfig.key}="${cleanValue}"`;
 
           if (lineIndex !== -1) {
             envLines[lineIndex] = newLine;
@@ -492,12 +477,43 @@ export async function composeEnvFile(
       options: [
         { label: "Yes, please help me", value: "auto" },
         { label: "No, I want to do it manually", value: "manual" },
+        {
+          label: "I have already .env file, let me provide path to it",
+          value: "existing",
+        },
       ],
     });
 
     if (response === "manual") {
       relinka("info-verbose", "Opening .env for manual editing...");
       await execa("code", [ENV_PATH]);
+    } else if (response === "existing") {
+      const existingPath = await inputPrompt({
+        title:
+          "Please provide the path to your existing .env file or directory:",
+        placeholder:
+          "Enter the path (e.g. C:\\project\\.env or C:\\project)...",
+        content:
+          "You can provide either the .env file path or the directory containing it.",
+        contentColor: "yellowBright",
+      });
+
+      // Determine if the path is a directory or file
+      let fullEnvPath = existingPath;
+      if (await fs.pathExists(existingPath)) {
+        const stats = await fs.stat(existingPath);
+        if (stats.isDirectory()) {
+          fullEnvPath = path.join(existingPath, ".env");
+        }
+      }
+
+      if (await fs.pathExists(fullEnvPath)) {
+        await fs.copy(fullEnvPath, ENV_PATH);
+        relinka("info", "Existing .env file has been copied successfully!");
+      } else {
+        relinka("error", `Could not find .env file at ${fullEnvPath}`);
+        return;
+      }
     } else {
       await promptAndSetMissingValues(missingKeys, ENV_PATH);
       relinka(

@@ -23,7 +23,7 @@ async function main() {
 
   relinka(
     "info",
-    `\n✨ @reliverse/cli 1.3.15 | 🧩 ${pm} ${pmv ? `v${pmv}` : ""}\n`,
+    `\n✨ @reliverse/cli 1.3.21 | 🧩 ${pm} ${pmv ? `v${pmv}` : ""}\n`,
   );
 
   if (pmName !== "unknown") {
