@@ -1,5 +1,6 @@
 import { selectPrompt } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
+
+import { relinka } from "~/utils/console.js";
 
 import {
   PACKAGE_MANAGERS,
@@ -31,7 +32,7 @@ export async function promptForPackageManager(): Promise<string> {
             id: pm,
           };
         } catch (err) {
-          relinka.warn(`Failed to get version for ${pm}:`, err);
+          relinka("warn", `Failed to get version for ${pm}:`, err.toString());
           return {
             title: `${pm} (version unknown)`,
             value: pm,
@@ -62,7 +63,7 @@ export async function promptForPackageManager(): Promise<string> {
 
     return npmClient;
   } catch (error) {
-    relinka.error("Failed to prompt for package manager:", error);
+    relinka("error", "Failed to prompt for package manager:", error.toString());
     // Default to npm as fallback
     return "npm";
   }

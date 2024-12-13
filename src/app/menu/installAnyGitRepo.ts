@@ -1,14 +1,15 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 import { validate } from "~/utils/validate.js";
 
-import { askProjectDetails } from "./askProjectDetails.js";
 import { buildBrandNewThing } from "./buildBrandNewThing.js";
+import { createWebProject } from "./createWebProject.js";
 
 export async function installAnyGitRepo(isDev: boolean) {
-  relinka.info(
+  relinka(
+    "info",
     "At the moment, the current mode is optimized for installing any package.json-based projects from GitHub. Support for other types of projects and git providers will be added in the future.",
   );
 
@@ -52,6 +53,10 @@ export async function installAnyGitRepo(isDev: boolean) {
         {
           label: "reliverse/versator",
           value: REPO_SHORT_URLS.versatorGithubLink,
+        },
+        {
+          label: "reliverse/relivator",
+          value: REPO_SHORT_URLS.relivatorGithubLink,
         },
         {
           label: "reliverse/template-browser-extension",
@@ -101,7 +106,7 @@ export async function installAnyGitRepo(isDev: boolean) {
     repoToInstall =
       customLink.toString() ?? "https://github.com/reliverse/acme";
   } else {
-    relinka.error("Invalid option selected. Exiting.");
+    relinka("error", "Invalid option selected. Exiting.");
     throw new Error("Unexpected template selection error.");
   }
 
@@ -112,7 +117,7 @@ export async function installAnyGitRepo(isDev: boolean) {
     return buildBrandNewThing(isDev);
   }
 
-  await askProjectDetails({
+  await createWebProject({
     template: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
     mode: "installAnyGitRepo",

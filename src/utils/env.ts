@@ -1,8 +1,9 @@
 import { getRootDirname } from "@reliverse/fs";
-import { confirm, confirmPrompt, input, password } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { confirmPrompt, input, password } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { join } from "pathe";
+
+import { relinka } from "~/utils/console.js";
 
 // TODO: 🐞 Still in development! Please use at own risk!
 
@@ -193,8 +194,8 @@ async function main() {
   try {
     const answers = await askQuestions();
 
-    relinka.log("\nPlease review your answers:");
-    relinka.log(generateEnvContent(answers));
+    relinka("info", "\nPlease review your answers:");
+    relinka("info", generateEnvContent(answers));
 
     const confirmed = await confirmPrompt({
       defaultValue: true,
@@ -203,15 +204,19 @@ async function main() {
 
     if (confirmed) {
       fs.writeFileSync(envFilePath, generateEnvContent(answers).trim());
-      relinka.log(`.env file has been generated at ${envFilePath}`);
+      relinka("info", `.env file has been generated at ${envFilePath}`);
     } else {
-      relinka.log("Aborted! The .env file was not generated.");
+      relinka("info", "Aborted! The .env file was not generated.");
     }
   } catch (error) {
-    relinka.error("An error occurred:", error);
+    relinka("error", "An error occurred:", error.toString());
   }
 }
 
 main().catch((error) => {
-  relinka.error("An error occurred while generating the .env file:", error);
+  relinka(
+    "error",
+    "An error occurred while generating the .env file:",
+    error.toString(),
+  );
 });

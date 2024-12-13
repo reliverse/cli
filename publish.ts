@@ -3,6 +3,8 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { execa } from "execa";
 
+import { relinka } from "~/utils/console.js";
+
 const main = defineCommand({
   meta: {
     name: "pub",
@@ -28,23 +30,23 @@ const main = defineCommand({
   },
   run: async ({ args }) => {
     if (args.jsr) {
-      console.log("Publishing the JSR version");
+      relinka("info", "Publishing the JSR version");
       await execa("bun", ["build.publish.ts", args.bump, "--jsr"], {
         stdio: "inherit",
       });
     } else if (args.npm) {
-      console.log("Publishing the NPM version");
+      relinka("info", "Publishing the NPM version");
       await execa("bun", ["build.publish.ts", args.bump], { stdio: "inherit" });
     } else if (args.dryRun) {
-      console.log("Dry run the publish process");
+      relinka("info", "Dry run the publish process");
       await execa("bun", ["pub:jsr", "--dry-run"], { stdio: "inherit" });
       await execa("bun", ["pub:npm", "--dry-run"], { stdio: "inherit" });
     } else {
-      console.log("Publishing the JSR version");
+      relinka("info", "Publishing the JSR version");
       await execa("bun", ["build.publish.ts", args.bump, "--jsr"], {
         stdio: "inherit",
       });
-      console.log("Publishing the NPM version");
+      relinka("info", "Publishing the NPM version");
       await execa("bun", ["pub:npm", args.bump], { stdio: "inherit" });
     }
   },

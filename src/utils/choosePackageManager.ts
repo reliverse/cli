@@ -1,7 +1,6 @@
 import type { PackageManagerName } from "nypm";
 
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import { detectPackageManager } from "nypm";
 
 export async function choosePackageManager(
@@ -12,7 +11,7 @@ export async function choosePackageManager(
   let pkgManager: PackageManagerName = detectedPkgManager;
 
   if (pkgManager === "bun") {
-    // relinka.warn("bun might not work for installing dependencies.");
+    // relinka("warn", "bun might not work for installing dependencies.");
     const selectedPkgManager = await selectPrompt({
       title:
         "Let's install the dependencies. I see you have bun installed. Do you want to use pnpm, npm, yarn, or continue with bun?",

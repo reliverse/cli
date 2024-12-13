@@ -1,14 +1,18 @@
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
+
+import { relinka } from "~/utils/console.js";
 
 export async function replaceImportSymbol(
   repo: string,
   from: string,
   to: string,
 ) {
-  relinka.info(`Replacing import symbols from "${from}" to "${to}" in ${repo}`);
+  relinka(
+    "info",
+    `Replacing import symbols from "${from}" to "${to}" in ${repo}`,
+  );
 
   // Find files in the specified repo folder
   const files = await globby("**/*.{js,ts,tsx}", {
@@ -24,6 +28,6 @@ export async function replaceImportSymbol(
       `from '${to}`,
     );
     await fs.writeFile(filePath, updatedContent, "utf-8");
-    relinka.info(`Updated imports in ${filePath}`);
+    relinka("info", `Updated imports in ${filePath}`);
   }
 }

@@ -1,10 +1,10 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
@@ -13,7 +13,8 @@ import { validate } from "~/utils/validate.js";
 const cwd = getCurrentWorkingDirectory();
 
 export async function showUpdateCloneMenu(isDev: boolean) {
-  relinka.info(
+  relinka(
+    "info",
     "🔥 The current mode is in active development and may not be stable. ✨ Select the supported repository you have cloned from GitHub to update it with the latest changes.",
   );
 
@@ -34,12 +35,13 @@ export async function showUpdateCloneMenu(isDev: boolean) {
 
   // For test development purposes only
   if (option === "🚧 relivator (local dev only)") {
-    relinka.warn(
+    relinka(
+      "warn",
       "Make sure to run this script from the root folder of your reliverse/cli clone.",
     );
     const projectPath = await downloadGitRepo(
       "test-name",
-      "blefnk/versator",
+      "blefnk/relivator",
       isDev,
     );
     if (projectPath) {
@@ -51,7 +53,7 @@ export async function showUpdateCloneMenu(isDev: boolean) {
     await downloadAndRunConfig(option);
   }
 
-  relinka.success("The repository has been updated successfully.");
+  relinka("success", "The repository has been updated successfully.");
 }
 
 async function downloadAndRunConfig(repoShortUrl: string) {
@@ -66,12 +68,12 @@ async function downloadFileFromUrl(url: string, destinationPath: string) {
   const response = await ofetch(url);
   const fileBuffer = await response.arrayBuffer();
   await fs.writeFile(destinationPath, Buffer.from(fileBuffer));
-  relinka.info(`Downloaded the update configuration to ${destinationPath}`);
+  relinka("info", `Downloaded the update configuration to ${destinationPath}`);
 }
 
 async function loadAndRunConfig(configPath: string) {
   if (!(await fs.pathExists(configPath))) {
-    relinka.error("The configuration file is missing.");
+    relinka("error", "The configuration file is missing.");
     return;
   }
 
@@ -90,7 +92,7 @@ async function executeActions(actions: any[]) {
         );
         break;
       default:
-        relinka.warn(`Unknown action type: ${action.type}`);
+        relinka("warn", `Unknown action type: ${action.type}`);
     }
   }
 }

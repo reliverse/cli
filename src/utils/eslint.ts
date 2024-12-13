@@ -1,9 +1,10 @@
 import { config } from "@reliverse/core";
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import pc from "picocolors";
+
+import { relinka } from "~/utils/console.js";
 
 import type { EslintConfig } from "./types.js";
 
@@ -45,7 +46,7 @@ export async function configureEslint({
   }
 
   if (eslint === "Skip") {
-    relinka.success("ESLint configuration was skipped.");
+    relinka("success", "ESLint configuration was skipped.");
 
     return; // Exit early if the user chose to skip
   }
@@ -61,10 +62,11 @@ export async function configureEslint({
   }
 
   if (await fileExists(eslintConfig)) {
-    relinka.success(`ESLint configuration has been set to ${eslint}`);
+    relinka("success", `ESLint configuration has been set to ${eslint}`);
     await updateFileToJs(eslintConfig);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `eslint.config.js` file was not found!",
     );
   }
@@ -91,6 +93,6 @@ async function updateFileToJs(filePath: string) {
 
     await fs.writeFile(filePath, fileContent, "utf8");
   } catch (error) {
-    relinka.error("Error updating file content:", error);
+    relinka("error", "Error updating file content:", error.toString());
   }
 }

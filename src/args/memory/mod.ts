@@ -1,7 +1,7 @@
 import { defineCommand } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
 
 import { isConfigExists } from "~/utils/config.js";
+import { relinka } from "~/utils/console.js";
 
 import { readReliverseMemory } from "./impl.js";
 
@@ -13,13 +13,13 @@ export default defineCommand({
   run: async () => {
     const config = await isConfigExists();
     if (!config) {
-      relinka.warn("Reliverse could not recognize you. Please login first.");
+      relinka("warn", "Reliverse could not recognize you. Please login first.");
       process.exit(0);
     }
 
-    relinka.info("What Reliverse knows about you:");
+    relinka("info", "What Reliverse knows about you:");
     const { user } = await readReliverseMemory();
-    console.log({ user });
+    relinka("info", JSON.stringify(user, null, 2));
 
     process.exit(0);
   },

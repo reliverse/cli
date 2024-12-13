@@ -1,6 +1,6 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 
+import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
 
@@ -15,5 +15,9 @@ async function runReliverseUpdater() {
 }
 
 runReliverseUpdater().catch((err) =>
-  relinka.error("Failed to update project with reliverse updater", err),
+  relinka(
+    "error",
+    "Failed to update project with reliverse updater",
+    err.toString(),
+  ),
 );

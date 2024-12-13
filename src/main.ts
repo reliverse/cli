@@ -2,7 +2,7 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
-import { showAnykeyPrompt } from "./app/data/prompts.js";
+import { showAnykeyPrompt } from "./app/menu/showAnykeyPrompt.js";
 import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { isConfigExists } from "./utils/config.js";

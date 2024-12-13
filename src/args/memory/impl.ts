@@ -1,11 +1,11 @@
 import type { ParsedUrlQuery } from "querystring";
 
-import relinka from "@reliverse/relinka";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE, verbose } from "~/app/data/constants.js";
+import { MEMORY_FILE } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 
 type MemoryFileData = {
   code?: string | null;
@@ -28,6 +28,7 @@ export async function updateReliverseMemory(
     try {
       const fileContent = await fs.readFile(filePath, "utf8");
       existingData = JSON.parse(fileContent);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       // File might not exist yet, that's ok
     }
@@ -36,9 +37,9 @@ export async function updateReliverseMemory(
     const mergedData = { ...existingData, ...data };
 
     await fs.writeFile(filePath, JSON.stringify(mergedData, null, 2));
-    verbose && console.log(`Memory updated in ${filePath}`);
+    relinka("success-verbose", `Memory updated in ${filePath}`);
   } catch (error) {
-    relinka.error("Error updating memory:", error);
+    relinka("error", "Error updating memory:", error.toString());
     throw error;
   }
 }
@@ -49,7 +50,7 @@ export async function readReliverseMemory(): Promise<MemoryFileData> {
   try {
     const exists = await fs.pathExists(filePath);
     if (!exists) {
-      verbose && console.log(`Memory file not found at ${filePath}`);
+      relinka("info-verbose", `Memory file not found at ${filePath}`);
       return { code: null, key: null, user: null };
     }
     const data = await fs.readFile(filePath, "utf8");
@@ -57,7 +58,7 @@ export async function readReliverseMemory(): Promise<MemoryFileData> {
     const { code, key, user } = parsedData;
     return { code, key, user };
   } catch (error) {
-    relinka.error("Error reading memory file:", error);
+    relinka("error", "Error reading memory file:", error.toString());
     return { code: null, key: null, user: null };
   }
 }

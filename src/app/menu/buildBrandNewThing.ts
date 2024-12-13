@@ -1,7 +1,7 @@
 import { selectPrompt } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
 
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 
 import {
   randomDevProjectTypeTitle,
@@ -11,11 +11,11 @@ import {
   randomWebsiteDetailsTitle,
   randomWebsiteSubcategoryTitle,
 } from "../data/messages.js";
-import { askProjectDetails } from "./askProjectDetails.js";
+import { createWebProject } from "./createWebProject.js";
 
 export async function buildBrandNewThing(isDev: boolean) {
   const endTitle =
-    "📚 Check the docs to learn more: https://docs.reliverse.org/cli";
+    "📚 Check the docs to learn more: https://docs.reliverse.org/reliverse/cli";
   const initialMessage =
     randomInitialMessage[
       Math.floor(Math.random() * randomInitialMessage.length)
@@ -122,6 +122,7 @@ export async function buildBrandNewThing(isDev: boolean) {
     //   });
 
     if (devProjectType === "website") {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const websiteSubcategory = await selectPrompt({
         endTitle,
         title:
@@ -155,6 +156,7 @@ export async function buildBrandNewThing(isDev: boolean) {
         ],
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const framework = await selectPrompt({
         endTitle,
         title:
@@ -218,10 +220,10 @@ export async function buildBrandNewThing(isDev: boolean) {
       });
 
       if (websiteCategory === "e-commerce") {
-        template = REPO_SHORT_URLS.versatorGithubLink;
+        template = REPO_SHORT_URLS.relivatorGithubLink;
       }
 
-      await askProjectDetails({
+      await createWebProject({
         template,
         message:
           randomWebsiteDetailsTitle[
@@ -263,7 +265,8 @@ export async function buildBrandNewThing(isDev: boolean) {
     //   });
     // }
     else {
-      relinka.warn(
+      relinka(
+        "warn",
         "⚠️ The selected development project type is currently unavailable. Please choose another option.",
       );
     }
@@ -272,7 +275,7 @@ export async function buildBrandNewThing(isDev: boolean) {
   }
 
   // else if (category === "digital") {
-  //   relinka.warn(
+  //   relinka("warn",
   //     "🎨 Digital projects creation mode is currently under maintenance. Please check back later.",
   //   );
   //   const digitalSubcategory = await selectPrompt({
@@ -291,7 +294,7 @@ export async function buildBrandNewThing(isDev: boolean) {
   // }
 
   // else if (category === "marketing") {
-  //   relinka.warn(
+  //   relinka("warn",
   //     "💰 Marketing projects creation mode is currently under maintenance. Please check back later.",
   //   );
   //   const marketingSubcategory = await selectPrompt({

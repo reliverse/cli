@@ -1,9 +1,7 @@
-import { msg } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEBUG } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 
 export async function replaceStringsInFiles(
   targetDir: string,
@@ -42,8 +40,7 @@ export async function replaceStringsInFiles(
 
     if (newContent !== fileContent) {
       await fs.promises.writeFile(filePath, newContent, "utf8");
-      DEBUG.enableVerboseLogging &&
-        relinka.info(`Replaced strings in ${filePath}`);
+      relinka("info-verbose", `Replaced strings in ${filePath}`);
     }
   }
 

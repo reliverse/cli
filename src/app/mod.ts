@@ -1,18 +1,45 @@
-// 📚 Docs: https://docs.reliverse.org/cli
+// 📚 Docs: https://docs.reliverse.org/reliverse/cli
 
-import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import fs from "fs-extra";
+import path from "pathe";
 import pc from "picocolors";
 
 import { readReliverseMemory } from "~/args/memory/impl.js";
+import { relinka } from "~/utils/console.js";
+import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
 import { randomReliverseMenuTitle } from "./data/messages.js";
 import { randomWelcomeMessages } from "./data/messages.js";
-import { showEndPrompt, showStartPrompt } from "./data/prompts.js";
 import { buildBrandNewThing } from "./menu/buildBrandNewThing.js";
+import { showEndPrompt, showStartPrompt } from "./menu/showStartEndPrompt.js";
 
 export async function app({ isDev }: { isDev: boolean }) {
   await showStartPrompt();
+
+  if (isDev) {
+    const cwd = getCurrentWorkingDirectory();
+    const testRuntimePath = path.join(cwd, "tests-runtime");
+
+    try {
+      if (await fs.pathExists(testRuntimePath)) {
+        const shouldDeleteTestData = await confirmPrompt({
+          title:
+            "[--dev] Found tests-runtime folder. Do you want me to delete it?",
+        });
+
+        if (shouldDeleteTestData) {
+          await fs.remove(testRuntimePath);
+        }
+      }
+    } catch (error) {
+      relinka(
+        "error",
+        "Error checking/removing test runtime path:",
+        error.toString(),
+      );
+    }
+  }
 
   // TODO: if config contains at least one project, show "Open project" option
   // TODO: implement "Edit Reliverse Memory" option (configuration data editor)
@@ -71,7 +98,7 @@ export async function app({ isDev }: { isDev: boolean }) {
   else if (option === "exit") {
     process.exit(0);
   } else {
-    relinka.error("Invalid option selected. Exiting.");
+    relinka("error", "Invalid option selected. Exiting.");
   }
 
   await showEndPrompt();

@@ -1,8 +1,8 @@
 import { fileExists, removeFile } from "@reliverse/fs";
-import { select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
-import pc from "picocolors";
+
+import { relinka } from "~/utils/console.js";
 
 import type { KnipConfig } from "./types.js";
 
@@ -43,7 +43,7 @@ export async function configureKnip({
   }
 
   if (knip === "Skip") {
-    relinka.success("Knip configuration was skipped.");
+    relinka("success", "Knip configuration was skipped.");
 
     return;
   }
@@ -59,9 +59,10 @@ export async function configureKnip({
   }
 
   if (await fileExists(knipConfig)) {
-    relinka.success(`Knip configuration has been set to ${knip}`);
+    relinka("success", `Knip configuration has been set to ${knip}`);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `knip.json` file was not found!",
     );
   }

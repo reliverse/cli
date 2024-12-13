@@ -1,11 +1,12 @@
 import { fileExists, removeFile } from "@reliverse/fs";
-import { select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { readFile, writeFile } from "node:fs/promises";
 import pc from "picocolors";
 
 import type { EnvJsConfig } from "~/utils/types.js";
+
+import { relinka } from "~/utils/console.js";
 
 export async function configureEnv({
   envConfig,
@@ -45,7 +46,7 @@ export async function configureEnv({
   }
 
   if (env === "Skip") {
-    relinka.success("src/env.js configuration was skipped.");
+    relinka("success", "src/env.js configuration was skipped.");
 
     return;
   }
@@ -61,10 +62,11 @@ export async function configureEnv({
   }
 
   if (await fileExists(envConfig)) {
-    relinka.success(`env.js configuration has been set to ${env}`);
+    relinka("success", `env.js configuration has been set to ${env}`);
     await updateFileToJs(envConfig);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `src/env.js` file was not found!",
     );
   }
@@ -99,6 +101,6 @@ async function updateFileToJs(filePath: string) {
 
     await writeFile(filePath, fileContent, "utf8");
   } catch (error) {
-    relinka.error("Error updating file content:", error);
+    relinka("error", "Error updating file content:", error.toString());
   }
 }

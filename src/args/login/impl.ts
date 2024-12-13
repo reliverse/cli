@@ -13,7 +13,8 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
-import { MEMORY_FILE, verbose } from "~/app/data/constants.js";
+import { MEMORY_FILE } from "~/app/data/constants.js";
+import { relinka } from "~/utils/console.js";
 
 import { updateReliverseMemory } from "../memory/impl.js";
 
@@ -36,7 +37,7 @@ export async function auth({
   dev: boolean;
   useLocalhost: boolean;
 }) {
-  console.log(pc.cyanBright("◆  Let's authenticate you..."));
+  relinka("info", "Let's authenticate you...");
 
   await task({
     initialMessage: "Waiting for user confirmation...",
@@ -55,19 +56,26 @@ export async function auth({
           host: "localhost",
         });
         port = serverListen.port;
-        verbose &&
-          console.log(`Local server listening on http://localhost:${port}`);
+        relinka(
+          "success-verbose",
+          `Local server listening on http://localhost:${port}`,
+        );
       } catch (listenError) {
-        console.error("Failed to start local server:", listenError);
+        relinka(
+          "error",
+          "Failed to start local server:",
+          listenError.toString(),
+        );
         throw listenError;
       }
 
       // Handle incoming requests (auth or cancellation)
       const authPromise = new Promise<ParsedUrlQuery>((resolve, reject) => {
         server.on("request", async (req, res) => {
-          if (verbose) {
-            console.log(`Received ${req.method} request on ${req.url}`);
-          }
+          relinka(
+            "success-verbose",
+            `Received ${req.method} request on ${req.url}`,
+          );
 
           res.setHeader("Access-Control-Allow-Origin", "*");
           res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -77,17 +85,20 @@ export async function auth({
           );
 
           if (req.method === "OPTIONS") {
-            verbose && console.log("Handling OPTIONS request");
+            relinka("info-verbose", "Handling OPTIONS request");
             res.writeHead(200);
             res.end();
           } else if (req.method === "GET") {
             const parsedUrl = url.parse(req.url || "", true);
             const queryParams = parsedUrl.query;
-            verbose && console.log("Parsed query parameters:", queryParams);
+            relinka("info-verbose", `Parsed query parameters: ${queryParams}`);
 
             if (queryParams.cancelled) {
-              verbose && console.log("User cancelled the login process...");
-              verbose && console.log("Sleep 2s to finish the fetch process...");
+              relinka("info-verbose", "User cancelled the login process...");
+              relinka(
+                "info-verbose",
+                "Sleep 2s to finish the fetch process...",
+              );
               await new Promise((r) => setTimeout(r, 2000));
               res.writeHead(200);
               res.end();
@@ -95,21 +106,27 @@ export async function auth({
                 new UserCancellationError("Login process cancelled by user."),
               );
             } else {
-              verbose &&
-                console.log("Received authentication data:", queryParams);
+              relinka(
+                "info-verbose",
+                `Received authentication data: ${queryParams}`,
+              );
               res.writeHead(200);
               res.end();
               resolve(queryParams);
             }
           } else {
-            console.warn(`Unhandled request method: ${req.method}`);
+            relinka("error", `Unhandled request method: ${req.method}`);
             res.writeHead(405);
             res.end();
           }
         });
 
         server.on("error", (error) => {
-          console.error("Local server encountered an error:", error);
+          relinka(
+            "error",
+            "Local server encountered an error:",
+            error.toString(),
+          );
           reject(error);
         });
       });
@@ -121,15 +138,16 @@ export async function auth({
           ? "http://localhost:3000"
           : "https://reliverse.org"
         : "https://reliverse.org";
-      verbose && console.log(`Using client URL: ${clientUrl}`);
+      relinka("info-verbose", `Using client URL: ${clientUrl}`);
 
       const confirmationUrl = new URL(`${clientUrl}/confirm`);
       confirmationUrl.searchParams.append("code", code);
       confirmationUrl.searchParams.append("redirect", redirect);
 
       process.stdout.write("\x1b[2K\r"); // Clear the current line, so misplacement of "Waiting for user confirmation..." is overwritten
-      console.log(
-        `${pc.bold("│  The following URL will be opened in your default browser:")}\n│  ${pc.dim(
+      relinka(
+        "info",
+        `The following URL will be opened in your default browser: ${pc.dim(
           confirmationUrl.toString(),
         )}`,
       );
@@ -137,10 +155,15 @@ export async function auth({
       // Open the URL in the default browser
       try {
         await open(confirmationUrl.toString());
-        verbose && console.log("Opened browser with confirmation URL.");
+        relinka("info-verbose", "Opened browser with confirmation URL.");
       } catch (error) {
-        console.warn("Failed to open the browser automatically:", error);
-        console.warn(
+        relinka(
+          "error",
+          "Failed to open the browser automatically:",
+          error.toString(),
+        );
+        relinka(
+          "error",
           `Please manually open the following URL in your browser: ${pc.bold(
             confirmationUrl.toString(),
           )}\n`,
@@ -157,9 +180,9 @@ export async function auth({
       const authTimeout = setTimeout(
         () => {
           // Timeout scenario
-          console.error("Authentication timed out.");
+          relinka("error", "Authentication timed out.");
           server.close(() => {
-            verbose && console.warn("Local server closed due to timeout.");
+            relinka("error", "Local server closed due to timeout.");
             // Throwing will cause the spinner to show error and exit
             // throw new Error("Authentication timed out.");
             process.exit(1);
@@ -176,16 +199,18 @@ export async function auth({
       try {
         const authData = await authPromise;
         clearTimeout(authTimeout);
-        verbose && console.log("Authentication data received:", authData);
+        relinka("info-verbose", `Authentication data received: ${authData}`);
 
         await updateReliverseMemory(authData);
         server.close(() => {
-          verbose &&
-            console.log(
-              `Wrote key to config file. To view it, type: code ~/${configFilePath}`,
-            );
-          verbose &&
-            console.log("Local server closed after successful authentication.");
+          relinka(
+            "info",
+            `Wrote key to config file. To view it, type: code ~/${configFilePath}`,
+          );
+          relinka(
+            "info-verbose",
+            "Local server closed after successful authentication.",
+          );
         });
         // Success scenario: just return, spinner will show successMessage
         return;
@@ -195,16 +220,18 @@ export async function auth({
           // User cancelled scenario: let's end gracefully
           updateMessage("Authentication cancelled by the user.");
           server.close(() => {
-            verbose &&
-              console.log("Local server closed due to user cancellation.");
+            relinka(
+              "info-verbose",
+              "Local server closed due to user cancellation.",
+            );
             process.exit(0);
           });
         } else {
           server.close(() => {
-            verbose &&
-              console.warn(
-                "Local server closed due to authentication failure.",
-              );
+            relinka(
+              "error-verbose",
+              "Local server closed due to authentication failure.",
+            );
           });
           // Throwing will trigger spinner error handling
           throw error;

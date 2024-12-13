@@ -1,13 +1,12 @@
 import { fileExists, removeFile } from "@reliverse/fs";
-import { select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { readFile, writeFile } from "node:fs/promises";
 import pc from "picocolors";
 
 import type { NextJsConfig } from "~/utils/types.js";
 
-const debugEnabled = false;
+import { relinka } from "~/utils/console.js";
 
 export async function configureNext({
   nextConfig,
@@ -47,7 +46,7 @@ export async function configureNext({
   }
 
   if (next === "Skip") {
-    relinka.success("Next.js configuration was skipped.");
+    relinka("success", "Next.js configuration was skipped.");
 
     return;
   }
@@ -63,11 +62,12 @@ export async function configureNext({
   }
 
   if (await fileExists(nextConfig)) {
-    relinka.success(`Next.js configuration has been set to ${next}`);
+    relinka("success", `Next.js configuration has been set to ${next}`);
     await updateFileToJs(nextConfig);
     await replaceEnvImport(nextConfig);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `next.config.js` file was not found!",
     );
   }
@@ -87,7 +87,7 @@ async function updateFileToJs(filePath: string) {
 
     await writeFile(filePath, fileContent, "utf8");
   } catch (error) {
-    relinka.error("Error updating file content:", error);
+    relinka("error", "Error updating file content:", error.toString());
   }
 }
 
@@ -102,13 +102,11 @@ async function replaceEnvImport(filePath: string) {
       fileContent = fileContent.replace(oldImportStatement, newImportStatement);
       await writeFile(filePath, fileContent, "utf8");
 
-      if (debugEnabled) {
-        relinka.success(`Replaced import statement in ${filePath}`);
-      }
+      relinka("success-verbose", `Replaced import statement in ${filePath}`);
     } else {
-      relinka.info(`Import statement not found in ${filePath}`);
+      relinka("info", `Import statement not found in ${filePath}`);
     }
   } catch (error) {
-    relinka.error("Error replacing import statement:", error);
+    relinka("error", "Error replacing import statement:", error.toString());
   }
 }

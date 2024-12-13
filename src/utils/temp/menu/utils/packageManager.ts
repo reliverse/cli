@@ -6,7 +6,6 @@ import { promptForPackageManager } from "../askPackageManager.js";
 
 const isBun = typeof globalThis.Bun !== "undefined";
 
-// Supported package managers
 export const PACKAGE_MANAGERS = {
   bun: "bun",
   pnpm: "pnpm",

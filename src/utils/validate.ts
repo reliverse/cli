@@ -1,8 +1,8 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "~/utils/console.js";
 
 function handlePromptCancellation(input: unknown, exitMessage: string): void {
   if (typeof input === "symbol" && String(input) === "Symbol(clack:cancel)") {
-    relinka.info(exitMessage);
+    relinka("info", exitMessage);
     process.exit(0);
   }
 }
@@ -28,7 +28,7 @@ export function validate(
     input === null ||
     (type === "string" && input === "")
   ) {
-    relinka.error(exitMessage);
+    relinka("error", exitMessage);
     process.exit(0);
   }
 }

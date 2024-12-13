@@ -1,13 +1,13 @@
 import { selectPrompt } from "@reliverse/prompts";
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 
+import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
 import { validate } from "~/utils/validate.js";
 
 export async function askCodemodUserCodebase() {
-  relinka.info("The code modification process will start now.");
+  relinka("info", "The code modification process will start now.");
 
   // Prompt for project path or use the current working directory
   const projectPath = await inputPrompt({

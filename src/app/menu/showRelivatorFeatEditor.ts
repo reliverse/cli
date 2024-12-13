@@ -1,11 +1,12 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+
+import { relinka } from "~/utils/console.js";
 
 export async function showRelivatorFeatEditor() {
-  relinka.info("Relivator feature editor");
-  relinka.info("--------------------------------");
-  relinka.info("This feature is not yet implemented.");
-  relinka.info("Note: This is an advanced feature. Use with caution.");
+  relinka("info", "Relivator feature editor");
+  relinka("info", "--------------------------------");
+  relinka("info", "This feature is not yet implemented.");
+  relinka("info", "Note: This is an advanced feature. Use with caution.");
   const option = await selectPrompt({
     title: "What would you like to do?",
     options: [
@@ -25,13 +26,13 @@ export async function showRelivatorFeatEditor() {
 }
 
 async function addNewRelivatorFeature() {
-  relinka.info("Add a new feature");
+  relinka("info", "Add a new feature");
 }
 
 async function removeRelivatorFeature() {
-  relinka.info("Remove a feature");
+  relinka("info", "Remove a feature");
 }
 
 async function replaceRelivatorFeature() {
-  relinka.info("Replace a feature");
+  relinka("info", "Replace a feature");
 }

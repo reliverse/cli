@@ -123,7 +123,7 @@ The @reliverse/cli offers a series of interactive prompts to streamline your pro
 4. **Select Configuration Categories**: Choose from a range of configuration options for your setup, including ESLint, Biome, Putout, GitHub settings, and IDE preferences.
 5. **Ongoing Support**: Reliverse supports you throughout your entire development process. You can run `reliverse` even on an existing project, and if your project’s `package.json` contains an `appts` script, it acts as a local instance of `reliverse` within your project.
 
-### Example Workflow
+<!-- ### Example Workflow
 
 Here’s an example session of using **@reliverse/cli**:
 
@@ -141,9 +141,9 @@ $ reliverse
   ◉ Reliverse configs
 
 ? Do you want to replace all existing files? (N opens Conflict Management menu) (y/N)
-```
+``` -->
 
-## Configuration Categories
+<!-- ## Configuration Categories
 
 When setting up a project, you can choose from the following file categories:
 
@@ -154,35 +154,35 @@ When setting up a project, you can choose from the following file categories:
 3. **IDE**
    - `.vscode`
 4. **Reliverse configs**
-   - `reliverse.config.ts`, `reliverse.info.ts`
+   - `reliverse.config.ts`, `reliverse.info.ts` -->
 
-## Conflict Management
+<!-- ## Conflict Management
 
 **@reliverse/cli** helps you handle configuration conflicts for existing files such as `.eslintrc.cjs` or `prettier.config.js`. It prompts you with options to:
 
 - **Remove**: Delete the existing file.
 - **Rename**: Rename the file (e.g., add `.txt` to disable it).
-- **Do Nothing**: Keep the existing file.
+- **Do Nothing**: Keep the existing file. -->
 
-### Conflict Example
+<!-- ### Conflict Example
 
 ```bash
 ? .eslintrc.cjs file exists. Do you want to remove or rename it?
   1. Remove
   2. Rename to .eslintrc.cjs.txt
   3. Do nothing
-```
+``` -->
 
-### Prettier Conflict Example
+<!-- ### Prettier Conflict Example
 
 ```bash
 ? prettier.config.js found. Biome will be installed, so Prettier is not necessary.
   1. Remove
   2. Rename to prettier.config.js.txt
   3. Do nothing
-```
+``` -->
 
-## Installing Other Templates
+<!-- ## Installing Other Templates
 
 You can install any JavaScript/TypeScript project (not just Next.js templates—anything, including JS libraries) from a GitHub repository by providing the repository URL during the interactive setup:
 
@@ -197,7 +197,7 @@ $ reliverse
 ? Enter the GitHub repository link: (e.g., `https://github.com/user/repo`)
 ```
 
-Reliverse will then clone the repository and set up the project.
+Reliverse will then clone the repository and set up the project. -->
 
 ## Development
 

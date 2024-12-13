@@ -6,9 +6,9 @@
     "**/*.lock",
     "**/*.txt",
     "pnpm-lock.yaml",
-    "examples/deprecated",
     "dist-jsr",
-    "dist-npm"
+    "dist-npm",
+    "tests-runtime"
   ],
   "words": [
     "alacritty",

@@ -1,5 +1,4 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 
 import { validate } from "~/utils/validate.js";
 

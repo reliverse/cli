@@ -1,7 +1,6 @@
 import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import {
   loadFile as loadFileUsingMagicast,
@@ -13,6 +12,7 @@ import pc from "picocolors";
 
 import type { ApptsConfig } from "~/utils/types.js";
 
+import { relinka } from "~/utils/console.js";
 import metadata from "~/utils/metadata.js";
 
 export async function configureAppts({ apptsConfig }: ApptsConfig) {
@@ -20,7 +20,8 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   const metadataConfigPath = join(apptsConfig, "constants/metadata.ts");
 
   if (!(await fileExists(apptsConfigPath))) {
-    relinka.error(
+    relinka(
+      "error",
       "Oops! It seems like the configuration file `src/app.ts` has gone missing! ⛔",
     );
 
@@ -28,7 +29,8 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   }
 
   if (!(await fileExists(metadataConfigPath))) {
-    relinka.error(
+    relinka(
+      "error",
       `Uh-oh! We couldn't find the configuration file! (${metadataConfigPath}) ⛔`,
     );
 
@@ -42,9 +44,10 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
     currentConfig = mod.exports.default || {};
   } catch (error) {
-    relinka.error(
+    relinka(
+      "error",
       "Whoops! Something went wrong while loading the configuration file:",
-      error,
+      error.toString(),
     );
 
     return process.exit(0);
@@ -157,13 +160,16 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       handle: handle,
     });
 
-    relinka.success(
-      pc.italic(
-        "🎉 Advanced configuration complete! Visit `src/app.ts` to fine-tune your settings further.",
-      ),
+    relinka(
+      "success",
+      "🎉 Advanced configuration complete! Visit `src/app.ts` to fine-tune your settings further.",
     );
   } catch (error) {
-    relinka.error("Error updating configuration file content:", error);
+    relinka(
+      "error",
+      "Error updating configuration file content:",
+      error.toString(),
+    );
   }
 }
 
@@ -218,6 +224,10 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     // Adding a blank new line at the end of the file
     await fs.appendFile(filePath, "\n");
   } catch (error) {
-    relinka.error("Error updating configuration file content:", error);
+    relinka(
+      "error",
+      "Error updating configuration file content:",
+      error.toString(),
+    );
   }
 }

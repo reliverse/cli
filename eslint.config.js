@@ -8,9 +8,9 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      "**/.{git,next,astro,wxt}/",
-      "**/{node_modules,dist-jsr,dist-npm,public,drizzle}/",
-      "examples/deprecated/**/*.{js,ts}",
+      "**/.git/",
+      "**/{node_modules,dist-jsr,dist-npm}/",
+      "**/tests-runtime/",
     ],
   },
   eslint.configs.recommended,
@@ -41,7 +41,7 @@ export default tseslint.config(
       perfectionist,
     },
     rules: {
-      "perfectionist/sort-imports": "error",
+      "perfectionist/sort-imports": "warn",
       "@typescript-eslint/no-invalid-void-type": "off",
       "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
@@ -49,7 +49,6 @@ export default tseslint.config(
       "@typescript-eslint/prefer-nullish-coalescing": "off",
       "@typescript-eslint/no-unnecessary-condition": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unused-expressions": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-empty-object-type": "off",
@@ -62,7 +61,6 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/require-await": "off",

@@ -1,14 +1,10 @@
-import { msg } from "@reliverse/prompts";
-import relinka from "@reliverse/relinka";
+import fs from "fs-extra";
+import os from "os";
 import path from "pathe";
-import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
-import type { GitOption } from "~/app/menu/askGitInitialization.js";
-
-import { handleError, verbose } from "~/utils/console.js";
+import { relinka, throwError } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
-import { initializeGitRepository } from "~/utils/git.js";
 
 export async function downloadGitRepo(
   name: string,
@@ -17,19 +13,37 @@ export async function downloadGitRepo(
 ): Promise<string | undefined> {
   try {
     const cwd = getCurrentWorkingDirectory();
-    const targetDir = path.join(cwd, isDev ? "tests-runtime" : "", name);
 
-    verbose("info", `Installing template in: ${targetDir}`);
+    // Determine initial target directory based on isDev flag
+    let targetDir = isDev
+      ? path.join(cwd, "tests-runtime", name)
+      : path.join(os.homedir(), ".reliverse", "projects", name);
+
+    relinka("info-verbose", `Installing template in: ${targetDir}`);
+
+    // Create target directory if it doesn't exist
+    await fs.ensureDir(targetDir);
 
     const git = simpleGit();
     const repoUrl = `https://github.com/${template}.git`;
 
     await git.clone(repoUrl, targetDir);
 
-    verbose("success", `${template} was downloaded to ${targetDir}.`);
+    relinka("success-verbose", `${template} was downloaded to ${targetDir}.`);
+
+    // If not in dev mode, move project to final destination (cwd)
+    if (!isDev) {
+      const finalDir = path.join(cwd, name);
+      await fs.move(targetDir, finalDir);
+      targetDir = finalDir;
+      relinka(
+        "success-verbose",
+        `Project moved to final location: ${finalDir}`,
+      );
+    }
 
     return targetDir;
   } catch (error) {
-    handleError(error);
+    throwError(error);
   }
 }

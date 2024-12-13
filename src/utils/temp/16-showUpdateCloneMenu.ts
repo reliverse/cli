@@ -1,12 +1,11 @@
-import { selectPrompt, inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { REPO_SHORT_URLS } from "~/app/data/constants.js";
-import { verbose } from "~/utils/console.js";
+import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { validate } from "~/utils/validate.js";
@@ -14,7 +13,8 @@ import { validate } from "~/utils/validate.js";
 const cwd = getCurrentWorkingDirectory();
 
 export async function showUpdateCloneMenu(isDev: boolean) {
-  relinka.info(
+  relinka(
+    "info",
     "🔥 The current mode is in active development and may not be stable. ✨ Select the supported repository you have cloned from GitHub to update it with the latest changes.",
   );
 
@@ -32,12 +32,13 @@ export async function showUpdateCloneMenu(isDev: boolean) {
 
   // for test development purposes only
   if (option === "🚧 relivator (local dev only)") {
-    relinka.warn(
+    relinka(
+      "warn",
       "Make sure to run this script from the root folder of your reliverse/cli clone.",
     );
     const projectPath = await downloadGitRepo(
       "test-name",
-      "blefnk/versator",
+      "blefnk/relivator",
       isDev,
     );
     if (projectPath) {
@@ -47,7 +48,7 @@ export async function showUpdateCloneMenu(isDev: boolean) {
     await downloadRunUpdaterTSScript(option);
   }
 
-  relinka.success("The repository has been updated successfully.");
+  relinka("success", "The repository has been updated successfully.");
 }
 
 async function downloadRunUpdaterTSScript(repoShortUrl: string) {
@@ -62,10 +63,10 @@ async function downloadFileFromUrl(url: string, path: string) {
   const response = await ofetch(url);
   const fileBuffer = await response.arrayBuffer();
   await fs.writeFile(path, Buffer.from(fileBuffer));
-  relinka.info(`Downloaded the updater script to ${path}`);
+  relinka("info", `Downloaded the updater script to ${path}`);
 }
 
 async function runScript(path: string) {
-  verbose("info", `Running the updater script at ${path}`);
+  relinka("info-verbose", `Running the updater script at ${path}`);
   await execa(`tsx ${path}`);
 }

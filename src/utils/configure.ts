@@ -1,13 +1,13 @@
 import { config } from "@reliverse/core";
 import { getCurrentDirname, getRootDirname } from "@reliverse/fs";
 import { confirmPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import { join } from "pathe";
 import pc from "picocolors";
 
 import { siteConfig } from "~/utils/app.js";
 import { configureAppts } from "~/utils/appts.js";
 import { configureBiome } from "~/utils/biome.js";
+import { relinka } from "~/utils/console.js";
 import { configureEnv } from "~/utils/envjs.js";
 import { configureEslint } from "~/utils/eslint.js";
 import { configureKnip } from "~/utils/knip.js";
@@ -129,23 +129,20 @@ export async function runReliverseSetup() {
       apptsConfig,
     });
 
-    relinka.success(
-      pc.green(
-        `🎉 ${config.framework.name} setup completed successfully! Have a perfect day!`,
-      ),
+    relinka(
+      "success",
+      `🎉 ${config.framework.name} setup completed successfully! Have a perfect day!`,
     );
-    relinka.info(
+    relinka(
+      "info",
       "⚙️  By the way, run `bun reli:vscode` to choose VSCode settings preset!",
     );
-    relinka.info(
-      pc.blue(
-        "😉 It is recommended to open the desired configs and customize the specific options to your preferences, because it all belongs to you! Have fun and enjoy!",
-      ),
+    relinka(
+      "info",
+      "😉 It is recommended to open the desired configs and customize the specific options to your preferences, because it all belongs to you! Have fun and enjoy!",
     );
-    relinka.info(
-      pc.magenta("🔥 Please restart your code editor to apply the changes!"),
-    );
+    relinka("info", "🔥 Please restart your code editor to apply the changes!");
   } else {
-    relinka.info("Setup was canceled by the user.");
+    relinka("info", "Setup was canceled by the user.");
   }
 }

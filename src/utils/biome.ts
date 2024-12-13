@@ -1,8 +1,8 @@
 import { fileExists, removeFile } from "@reliverse/fs";
-import { select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
-import pc from "picocolors";
+
+import { relinka } from "~/utils/console.js";
 
 import type { BiomeConfig } from "./types.ts";
 
@@ -43,7 +43,7 @@ export async function configureBiome({
   }
 
   if (biome === "Skip") {
-    relinka.success("Biome configuration was skipped.");
+    relinka("success", "Biome configuration was skipped.");
 
     return;
   }
@@ -59,9 +59,10 @@ export async function configureBiome({
   }
 
   if (await fileExists(biomeConfig)) {
-    relinka.success(`Biome configuration has been set to ${biome}`);
+    relinka("success", `Biome configuration has been set to ${biome}`);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `biome.json` file was not found!",
     );
   }

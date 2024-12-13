@@ -1,8 +1,9 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
+
+import { relinka } from "~/utils/console.js";
 
 type ReplaceWithModernOptions = {
   projectPath: string;
@@ -11,7 +12,7 @@ type ReplaceWithModernOptions = {
 export async function replaceWithModern({
   projectPath,
 }: ReplaceWithModernOptions) {
-  relinka.info("Starting replacement of 'fs' and 'path' imports...");
+  relinka("info", "Starting replacement of 'fs' and 'path' imports...");
 
   const files = await globby("**/*.{js,ts,tsx}", {
     cwd: projectPath,
@@ -28,11 +29,11 @@ export async function replaceWithModern({
 
     if (updatedContent !== content) {
       await fs.writeFile(file, updatedContent, "utf8");
-      relinka.success(`Updated imports in ${file}`);
+      relinka("success", `Updated imports in ${file}`);
     }
   }
 
-  relinka.info("Replacement process completed.");
+  relinka("info", "Replacement process completed.");
 }
 
 async function runCodemod() {
@@ -46,5 +47,5 @@ async function runCodemod() {
 }
 
 runCodemod().catch((err) => {
-  relinka.error("Codemod failed:", err);
+  relinka("error", "Codemod failed:", err.toString());
 });

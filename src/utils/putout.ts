@@ -1,10 +1,11 @@
 import { fileExists, removeFile } from "@reliverse/fs";
-import { select, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import pc from "picocolors";
 
 import type { PutoutConfig } from "~/utils/types.js";
+
+import { relinka } from "~/utils/console.js";
 
 export async function configurePutout({
   putoutConfig,
@@ -48,7 +49,7 @@ export async function configurePutout({
   }
 
   if (putout === "Skip") {
-    relinka.success("Putout configuration was skipped.");
+    relinka("success", "Putout configuration was skipped.");
 
     return;
   }
@@ -64,9 +65,10 @@ export async function configurePutout({
   }
 
   if (await fileExists(putoutConfig)) {
-    relinka.success(`Putout configuration has been set to ${putout}`);
+    relinka("success", `Putout configuration has been set to ${putout}`);
   } else {
-    relinka.error(
+    relinka(
+      "error",
       "Something went wrong! Newly created `.putout.json` file was not found!",
     );
   }
