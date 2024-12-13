@@ -72,13 +72,12 @@ async function publishNpm(dryRun: boolean) {
 async function publishJsr(dryRun: boolean) {
   try {
     if (dryRun) {
-      await execaCommand(
-        "bunx jsr publish --allow-slow-types --allow-dirty --dry-run",
-        { stdio: "inherit" },
-      );
+      await execaCommand("bunx jsr publish --allow-dirty --dry-run", {
+        stdio: "inherit",
+      });
     } else {
       await execaCommand("bun build:jsr", { stdio: "inherit" });
-      await execaCommand("bunx jsr publish --allow-slow-types --allow-dirty", {
+      await execaCommand("bunx jsr publish --allow-dirty", {
         stdio: "inherit",
       });
     }

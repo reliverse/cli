@@ -4,7 +4,16 @@ import { detectPackageManager } from "nypm";
 
 import { promptForPackageManager } from "../askPackageManager.js";
 
-const isBun = typeof globalThis.Bun !== "undefined";
+export const isBun = typeof globalThis.Bun !== "undefined";
+
+export async function isBunInstalled() {
+  try {
+    await execa("bun", ["--version"]);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const PACKAGE_MANAGERS = {
   bun: "bun",
@@ -66,8 +75,8 @@ export async function getPackageManagerVersion(pm: string): Promise<string> {
   }
 }
 
-export async function getPackageManager(args: string[], cwd: string) {
-  const preferredPMFlag = args.find((arg) => arg.startsWith("--use-"));
+export async function getPackageManager(cwd: string, args?: string[]) {
+  const preferredPMFlag = args?.find((arg) => arg.startsWith("--use-"));
   const preferredPM = preferredPMFlag
     ? (preferredPMFlag.replace("--use-", "") as PackageManagerKey)
     : await promptForPackageManager();
@@ -82,7 +91,7 @@ export async function getPackageManager(args: string[], cwd: string) {
     pmVersion = pmVersion || (await getPnpmVersion());
   }
 
-  // TODO: fix this temporary hardcoded version check
+  // TODO: eliminate this temporary hardcoded version check
   if ((pmVersion === "9.12.2" || pmVersion === "v9.12.2") && pmName === "bun") {
     pmVersion = await getBunVersion();
   }

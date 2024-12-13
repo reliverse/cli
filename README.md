@@ -4,11 +4,7 @@
 
 Please consider following this project's author, [Nazar Kornienko](https://github.com/blefnk), and consider starring the project to show your ❤️ and support.
 
----
-
 ## Reliverse: Open-Source Full-Featured Product Launcher Tool & Assistant
-
-![Reliverse Cover Image](./reliverse.webp)
 
 👋 Welcome! This superapp tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
 
@@ -21,30 +17,31 @@ Please make sure you have [Git](https://git-scm.com), [VSCode](https://code.visu
 Then use one of the following commands to install **Reliverse**:
 
 - With [bun](https://bun.sh): `bun i -g @reliverse/cli`
-- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm add -g @reliverse/cli`
+- With [pnpm](https://pnpm.io/installation#using-corepack): `pnpm i -g @reliverse/cli`
 - With [yarn](https://yarnpkg.com): `yarn global add @reliverse/cli`
 - With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g @reliverse/cli`
 
-## Usage
+> **Note:** If you run it using `bun`, but see `pnpm` at the top, it's just a strange detector bug, everything will be handled by bun, so no worries (we'll fix it in the future).
 
-Once installed, you can use **@reliverse/cli** to create new projects or manage existing ones. Navigate to the root of your desired directory and run:
+**Once installed**: You can use **@reliverse/cli** to create new projects or manage existing ones. Navigate to the root of your desired directory and run:
 
 ```bash
 reliverse
 ```
 
-## Updating
+**To update the CLI**: You can use the following commands (the process should be similar for other package managers):
 
 ```bash
 bun rm -g @reliverse/cli
 bun i -g @reliverse/cli
 # OR bun update --latest -g
-# OR use another package manager
 ```
 
 ## Introduction
 
 A single tool to launch a brand new thing from scratch? Yes.
+
+![Reliverse Cover Image](./reliverse.webp)
 
 Reliverse allows you to effortlessly bootstrap projects, including the [Relivator Next.js template](https://github.com/blefnk/relivator) or any other template from GitHub or other Git-based sources. Additionally, Reliverse assists in managing configuration files and resolving potential conflicts between tools like ESLint, Prettier, and Biome.
 
@@ -224,13 +221,7 @@ bun i # OR bun i OR yarn install OR npm i
 To run the CLI locally for development purposes, use:
 
 ```bash
-bun run dev
-# or
-bun run dev
-# or
-yarn dev
-# or
-npm dev
+bun dev # OR pnpm dev OR yarn dev OR npm dev
 ```
 
 ## Contributing

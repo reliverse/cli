@@ -1,5 +1,5 @@
 import { confirmPrompt, selectPrompt, task } from "@reliverse/prompts";
-import { multiselectPrompt, nextStepsPrompt, pm } from "@reliverse/prompts";
+import { multiselectPrompt, nextStepsPrompt } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
@@ -24,6 +24,8 @@ import { askAppName } from "./askAppName.js";
 import { askCheckAndDownloadFiles } from "./askCheckAndDownloadFiles.js";
 import { askUserName } from "./askUserName.js";
 import { composeEnvFile } from "./composeEnvFile.js";
+
+// import { isBunInstalled, getPackageManager } from "~/utils/temp/menu/utils/packageManager.js";
 
 export async function createWebProject({
   template,
@@ -145,7 +147,13 @@ export async function createWebProject({
   await askCheckAndDownloadFiles(targetDir, appName);
 
   const cwd = getCurrentWorkingDirectory();
-  const pkgManager = pm;
+
+  // const { pmName } = await getPackageManager(cwd);
+  // let pm = pmName;
+  // if (await isBunInstalled()) {
+  //   pm = "bun";
+  // }
+
   const gitOption = await askGitInitialization();
   const vscodeInstalled = isVSCodeInstalled();
 
@@ -156,7 +164,7 @@ export async function createWebProject({
   await initializeGitRepository(targetDir, gitOption);
 
   const shouldInstallDependencies = await confirmPrompt({
-    title: `Do you want me to execute '${pkgManager} i' to install dependencies? (it takes some time)`,
+    title: "Do you want me to install dependencies? (it may take some time)",
     titleColor: "retroGradient",
     defaultValue: true,
   });
@@ -224,9 +232,9 @@ export async function createWebProject({
     content: [
       `- If you have VSCode installed, run: code ${targetDir}`,
       `- You can open the project in your terminal: cd ${targetDir}`,
-      `- Install dependencies manually if needed: ${pkgManager} i`,
-      `- Apply linting and formatting: ${pkgManager} check`,
-      `- Run the project: ${pkgManager} dev`,
+      "- Install dependencies manually if needed: bun i OR pnpm i",
+      "- Apply linting and formatting: bun check OR pnpm check",
+      "- Run the project: bun dev OR pnpm dev",
     ],
   });
 

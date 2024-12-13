@@ -13,10 +13,6 @@ export const FILE_CONFLICTS = [
     description: "Prettier config",
     fileName: "prettier.config.js",
   },
-  {
-    description: "TypeScript config",
-    fileName: "tsconfig.json",
-  },
 ];
 
 export const REPO_FULL_URLS = {

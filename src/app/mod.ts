@@ -65,12 +65,12 @@ export async function app({ isDev }: { isDev: boolean }) {
         label: "Build a brand new thing from scratch",
         value: "1",
       },
-      {
-        label: "Clone and configure any GitHub repo",
-        hint: "coming soon",
-        value: "2",
-        disabled: true,
-      },
+      // {
+      //   label: "Clone and configure any GitHub repo",
+      //   hint: "coming soon",
+      //   value: "2",
+      //   disabled: true,
+      // },
       // "4. Add shadcn/ui components to your React/Vue/Svelte project",
       // "5. Run code modifications on the existing codebase",
       // "6. Update your GitHub clone with the latest changes",

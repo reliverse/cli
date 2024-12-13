@@ -72,7 +72,7 @@ const KNOWN_SERVICES: Record<string, KnownService> = {
         key: KeyVars.DATABASE_URL,
         type: "database",
         instruction:
-          "For Neon, create a new project there and copy the connection string. Should start with 'postgresql://'",
+          "For Neon, create a new project there and copy the connection string. Should start with: postgresql://",
       },
     ],
     dashboardUrl: "https://neon.tech",
