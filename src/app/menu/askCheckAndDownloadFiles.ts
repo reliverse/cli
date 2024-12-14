@@ -1,179 +1,94 @@
-import { confirmPrompt, multiselectPrompt, task } from "@reliverse/prompts";
+import { task } from "@reliverse/prompts";
+import fs from "fs-extra";
 import path from "pathe";
 
-import { FILE_PATHS, fileCategories } from "~/app/data/constants.js";
+import { fileCategories } from "~/app/data/constants.js";
 import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 import { relinka } from "~/utils/console.js";
-import { checkFileExists } from "~/utils/fileUtils.js";
-import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
-import { resolveProjectConflicts } from "./askToResolveProjectConflicts.js";
+const RELIVATOR_REPO = "https://github.com/blefnk/relivator";
 
 // Helper function to download files
 async function downloadFiles(
   filesToDownload: string[],
-  filesToReplace: string[],
   targetDir: string,
-  replaceAll: boolean,
-  tempCloneRepo: string,
-  tempRepoDir: string,
-) {
+  overwrite: boolean,
+): Promise<void> {
+  if (filesToDownload.length === 0) {
+    relinka("info", "No files to download");
+    return;
+  }
+
   await task({
     spinnerSolution: "ora",
-    initialMessage: "Downloading files...",
-    successMessage: "✅ Files downloaded successfully!",
-    errorMessage: "❌ Failed to download files...",
-    async action(updateMessage) {
-      updateMessage("Some magic is happening... This may take a while...");
-      const filesToFetch = replaceAll
-        ? [...filesToDownload, ...filesToReplace]
-        : filesToDownload;
-      await cloneAndCopyFiles(
-        filesToFetch.filter(Boolean),
-        targetDir,
-        replaceAll,
-        tempCloneRepo,
-        tempRepoDir,
-      );
+    initialMessage: "Downloading configuration files...",
+    successMessage: "✅ Configuration files downloaded successfully!",
+    errorMessage: "❌ Failed to download configuration files",
+    async action() {
+      // Create a temporary directory within the target project
+      const tempRepoDir = path.join(targetDir, ".temp-config");
+
+      try {
+        // Ensure target directory exists
+        await fs.ensureDir(targetDir);
+
+        await cloneAndCopyFiles(
+          filesToDownload,
+          targetDir,
+          overwrite,
+          RELIVATOR_REPO,
+          tempRepoDir,
+        );
+      } finally {
+        // Clean up temporary directory if it exists
+        await fs.remove(tempRepoDir).catch(() => {
+          // Ignore cleanup errors
+        });
+      }
     },
   });
 }
 
 // Main function to check and download files
-export const askCheckAndDownloadFiles = async (
+export async function askCheckAndDownloadFiles(
   targetDir: string,
-  projectName: string,
-): Promise<void> => {
-  const missingFiles: string[] = [];
-  const existingFiles: string[] = [];
+): Promise<void> {
+  try {
+    // Get list of files to check
+    const filesToCheck = Object.values(fileCategories).flat();
 
-  relinka(
-    "info-verbose",
-    `Checking if all required files are present in ${projectName} located in ${targetDir}`,
-  );
-
-  // Check if any files in each category are missing or already exist
-  for (const category in fileCategories) {
-    const filesInCategory = fileCategories[category];
-
-    if (!filesInCategory) {
-      continue;
-    }
-
-    for (const file of filesInCategory) {
-      const filePath = path.join(targetDir, file);
-
-      if (!checkFileExists(filePath)) {
-        missingFiles.push(file);
-      } else {
-        existingFiles.push(file);
-      }
-    }
-  }
-
-  // Handle project files conflicts
-  await resolveProjectConflicts(targetDir);
-
-  // If there are missing files, prompt the user to download them
-  if (missingFiles.length > 0) {
-    relinka(
-      "info-verbose",
-      `The following files are missing in ${targetDir}: ${missingFiles.join(", ")}`,
+    // Check which files exist using Promise.all for parallel checks
+    const fileExistsChecks = await Promise.all(
+      filesToCheck.map(async (file) => {
+        const filePath = path.join(targetDir, file);
+        const exists = await fs.pathExists(filePath);
+        return { file, exists };
+      }),
     );
 
-    // Ask user for the categories to download
-    const shouldAskAboutCategories = false;
-    let filesToDownload: string[] = [];
-
-    if (shouldAskAboutCategories) {
-      const categoriesToDownload = await multiselectPrompt({
-        title: "Select the file categories you want to download:",
-        titleColor: "cyanBright",
-        options: Object.keys(fileCategories).map((category) => ({
-          label: category,
-          value: category,
-          hint: category,
-        })),
-      });
-
-      filesToDownload = categoriesToDownload
-        .flatMap((category) => fileCategories[category] || [])
-        .filter(Boolean);
-    }
-
-    const cwd = getCurrentWorkingDirectory();
-    const tempCloneRepo = "https://github.com/blefnk/relivator";
-
-    // TODO: maybe we should reimplement this in a better way
-    const tempRepoDir = path.resolve(cwd, `../${FILE_PATHS.tempRepoClone}`);
-    relinka("info-verbose", `⚙️  tempRepoDir set to ${tempRepoDir}`);
-
-    // Handle conflicts for already existing files
-    const shouldAskAboutReplacingFiles = false;
-    let replaceAll = false;
+    const existingFiles = fileExistsChecks
+      .filter((check) => check.exists)
+      .map((check) => check.file);
+    const filesToDownload = fileExistsChecks
+      .filter((check) => !check.exists)
+      .map((check) => check.file);
 
     if (existingFiles.length > 0) {
-      if (shouldAskAboutReplacingFiles) {
-        replaceAll = await confirmPrompt({
-          defaultValue: true,
-          title:
-            "Some files already exist. Do you want to replace all existing files? (N opens Conflict Management menu)",
-          titleColor: "cyanBright",
-        });
-      }
-
-      if (!replaceAll) {
-        const shouldAskAboutFilesToReplace = false;
-        let filesToReplace: string[] = [];
-
-        if (shouldAskAboutFilesToReplace) {
-          // Select the files to replace
-          filesToReplace = await multiselectPrompt({
-            title: "Select the files you want to replace:",
-            titleColor: "cyanBright",
-            options: existingFiles.map((file) => ({
-              label: file,
-              value: file,
-              hint: file,
-            })),
-          });
-        }
-
-        // Download files with the selected ones to replace
-        await downloadFiles(
-          filesToDownload,
-          filesToReplace,
-          targetDir,
-          false,
-          tempCloneRepo,
-          tempRepoDir,
-        );
-      } else {
-        // Replace all existing files
-        await downloadFiles(
-          filesToDownload,
-          [],
-          targetDir,
-          true,
-          tempCloneRepo,
-          tempRepoDir,
-        );
-      }
-    } else {
-      // No conflicts, just download the files
-      await downloadFiles(
-        filesToDownload,
-        [],
-        targetDir,
-        false,
-        tempCloneRepo,
-        tempRepoDir,
+      relinka(
+        "info",
+        `Found ${existingFiles.length} existing configuration files`,
       );
+      // Download missing files without overwriting existing ones
+      await downloadFiles(filesToDownload, targetDir, false);
+    } else {
+      // No existing files, download everything
+      await downloadFiles(filesToDownload, targetDir, true);
     }
-  } else {
+  } catch (error) {
     relinka(
-      "success",
-      `All required files are present in ${targetDir}. Codemod is finished.`,
+      "error",
+      `Failed to download configuration files: ${error instanceof Error ? error.message : String(error)}`,
     );
+    throw error; // Re-throw to allow caller to handle the error
   }
-};
+}

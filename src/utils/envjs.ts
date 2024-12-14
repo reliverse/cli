@@ -1,106 +1,145 @@
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { readFile, writeFile } from "node:fs/promises";
-import pc from "picocolors";
-
-import type { EnvJsConfig } from "~/utils/types.js";
+import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-export async function configureEnv({
-  envConfig,
-  envRecommendedConfig,
-  envRulesDisabledConfig,
-}: EnvJsConfig) {
-  const envConfigExists = await fileExists(envConfig);
-  const envRulesDisabledConfigExists = await fileExists(envRulesDisabledConfig);
-  const envRecommendedConfigExists = await fileExists(envRecommendedConfig);
+import { type ConfigPaths } from "./types.js";
 
-  const env: string | symbol = await selectPrompt({
-    maxItems: 5,
-    title: pc.cyan(
-      "Please select which type of env.js configuration you want to use.",
-    ),
-    options: [
-      {
-        hint: "Skip src/env.js configuration",
-        label: "Skip",
-        value: "Skip",
-      },
-      {
-        hint: "[✅ Default] RulesDisabled: builds will NOT fail if env is not set",
-        label: "env.rules-disabled.ts",
-        value: "RulesDisabled",
-      },
-      {
-        hint: "Recommended: builds WILL FAIL if specific env variables is not set",
-        label: "env.recommended.ts",
-        value: "Recommended",
-      },
-    ],
-  });
+const ENV_DEFAULT_CONFIG = `import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
-  if (typeof env !== "string") {
-    process.exit(0);
+export const env = createEnv({
+  server: {
+    NODE_ENV: z.enum(["development", "production", "test"]),
+    DATABASE_URL: z.string().url(),
+    NEXTAUTH_URL: z.string().url(),
+    NEXTAUTH_SECRET: z.string().min(1),
+    GITHUB_ID: z.string().min(1),
+    GITHUB_SECRET: z.string().min(1),
+    RESEND_API_KEY: z.string().min(1),
+    STRIPE_API_KEY: z.string().min(1),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  },
+  client: {
+    NEXT_PUBLIC_APP_URL: z.string().url(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+  },
+  runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
+    DATABASE_URL: process.env.DATABASE_URL,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    GITHUB_ID: process.env.GITHUB_ID,
+    GITHUB_SECRET: process.env.GITHUB_SECRET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    STRIPE_API_KEY: process.env.STRIPE_API_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  },
+  skipValidation: process.env.NODE_ENV === "development",
+});`;
+
+const ENV_MINIMAL_CONFIG = `import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    NODE_ENV: z.enum(["development", "production", "test"]),
+    DATABASE_URL: z.string().url(),
+  },
+  client: {
+    NEXT_PUBLIC_APP_URL: z.string().url(),
+  },
+  runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
+    DATABASE_URL: process.env.DATABASE_URL,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  },
+  skipValidation: process.env.NODE_ENV === "development",
+});`;
+
+async function validateTargetDir(targetDir: string): Promise<void> {
+  if (!targetDir) {
+    throw new Error("Target directory is required");
   }
 
-  if (env === "Skip") {
-    relinka("success", "src/env.js configuration was skipped.");
-
-    return;
+  if (!(await fs.pathExists(targetDir))) {
+    throw new Error(`Target directory does not exist: ${targetDir}`);
   }
 
-  if (envConfigExists) {
-    await removeFile(envConfig);
-  }
-
-  if (env === "RulesDisabled" && envRulesDisabledConfigExists) {
-    await fs.copy(envRulesDisabledConfig, envConfig);
-  } else if (env === "Recommended" && envRecommendedConfigExists) {
-    await fs.copy(envRecommendedConfig, envConfig);
-  }
-
-  if (await fileExists(envConfig)) {
-    relinka("success", `env.js configuration has been set to ${env}`);
-    await updateFileToJs(envConfig);
-  } else {
-    relinka(
-      "error",
-      "Something went wrong! Newly created `src/env.js` file was not found!",
-    );
+  if (!(await fs.stat(targetDir).then((stat) => stat.isDirectory()))) {
+    throw new Error(`Target path is not a directory: ${targetDir}`);
   }
 }
 
-async function updateFileToJs(filePath: string) {
+export async function configureEnv(
+  paths: Pick<
+    ConfigPaths,
+    "envConfig" | "envRecommendedConfig" | "envRulesDisabledConfig"
+  >,
+) {
   try {
-    let fileContent = await readFile(filePath, "utf8");
+    const targetDir = path.dirname(paths.envConfig);
+    await validateTargetDir(targetDir);
 
-    // Remove lines containing `ts-expect-error`
-    const lines = fileContent.split("\n");
-    const filteredLines = lines.filter(
-      (line) => !line.includes("// @ts-expect-error TODO: fix"),
-    );
+    const envConfigPath = paths.envConfig;
+    const envConfigExists = await fileExists(envConfigPath);
 
-    fileContent = filteredLines.join("\n");
+    const env = await selectPrompt({
+      title:
+        "Please select which type of env.js configuration you want to use.",
+      options: [
+        {
+          label: "Continue without env.js",
+          value: "Skip",
+          hint: "Continue without environment validation",
+        },
+        {
+          label: "Default Configuration",
+          value: "Default",
+          hint: "Full set of environment variables with validation",
+        },
+        {
+          label: "Minimal Configuration",
+          value: "Minimal",
+          hint: "Basic environment variables only",
+        },
+      ],
+    });
 
-    // Replace const _knownVariables with export const knownVariables
-    fileContent = fileContent.replaceAll(
-      "const _knownVariables",
-      "export const knownVariables",
-    );
+    if (typeof env !== "string") {
+      process.exit(0);
+    }
 
-    // Replace const _recommendedEnvVariables with export const recommendedEnvVariables
-    fileContent = fileContent.replaceAll(
-      "const _recommendedEnvVariables",
-      "export const recommendedEnvVariables",
-    );
+    if (env === "Skip") {
+      relinka("info", "Continuing without env.js configuration.");
+      return;
+    }
 
-    // Replace const _env with export const env
-    fileContent = fileContent.replaceAll("const _env", "export const env");
+    // Remove existing config if it exists
+    if (envConfigExists) {
+      await removeFile(envConfigPath);
+    }
 
-    await writeFile(filePath, fileContent, "utf8");
+    // Create src directory if it doesn't exist
+    const srcDir = `${targetDir}/src`;
+    if (!(await fs.pathExists(srcDir))) {
+      await fs.mkdir(srcDir, { recursive: true });
+    }
+
+    // Generate new config
+    const configData =
+      env === "Default" ? ENV_DEFAULT_CONFIG : ENV_MINIMAL_CONFIG;
+    await fs.writeFile(envConfigPath, configData);
+    relinka("success", `Generated ${env.toLowerCase()} env.js configuration.`);
   } catch (error) {
-    relinka("error", "Error updating file content:", error.toString());
+    relinka(
+      "error",
+      "Failed to generate env.js configuration:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }

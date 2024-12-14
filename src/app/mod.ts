@@ -10,6 +10,8 @@ import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 
+import type { ReliverseConfig } from "~/types/config.js";
+
 import { readReliverseMemory } from "~/args/memory/impl.js";
 import {
   clearCheckpoint,
@@ -23,17 +25,23 @@ import { randomWelcomeMessages } from "./data/messages.js";
 import { buildBrandNewThing } from "./menu/buildBrandNewThing.js";
 import { showEndPrompt, showStartPrompt } from "./menu/showStartEndPrompt.js";
 
-export async function app({ isDev }: { isDev: boolean }) {
+export async function app({
+  isDev,
+  config,
+}: { isDev: boolean; config: ReliverseConfig }) {
   await showStartPrompt();
 
   const cwd = getCurrentWorkingDirectory();
 
   if (isDev) {
-    const shouldRemoveTestsRuntime = await confirmPrompt({
-      title: "[--dev] Do you want to remove the entire tests-runtime folder?",
-    });
-    if (shouldRemoveTestsRuntime) {
-      await fs.remove(path.join(cwd, "tests-runtime"));
+    const testsRuntimePath = path.join(cwd, "tests-runtime");
+    if (await fs.pathExists(testsRuntimePath)) {
+      const shouldRemoveTestsRuntime = await confirmPrompt({
+        title: "[--dev] Do you want to remove the entire tests-runtime folder?",
+      });
+      if (shouldRemoveTestsRuntime) {
+        await fs.remove(testsRuntimePath);
+      }
     }
   }
 
@@ -68,7 +76,7 @@ export async function app({ isDev }: { isDev: boolean }) {
   }
 
   const memory = await readReliverseMemory();
-  const username = memory.user?.name;
+  const username = memory.user?.name || config.defaultUsername;
 
   const option = await selectPrompt({
     title: `🤖 ${
@@ -88,7 +96,7 @@ export async function app({ isDev }: { isDev: boolean }) {
 
   if (option === "continue") {
     if (existingCheckpoints.length === 1) {
-      await buildBrandNewThing(isDev, existingCheckpoints[0]);
+      await buildBrandNewThing(isDev, existingCheckpoints[0], config);
     } else {
       const projectToResume = await selectPrompt({
         title: "Which project would you like to continue?",
@@ -97,10 +105,10 @@ export async function app({ isDev }: { isDev: boolean }) {
           value: project,
         })),
       });
-      await buildBrandNewThing(isDev, projectToResume);
+      await buildBrandNewThing(isDev, projectToResume, config);
     }
   } else if (option === "1") {
-    await buildBrandNewThing(isDev);
+    await buildBrandNewThing(isDev, undefined, config);
   } else if (option === "delete") {
     const projectsToDelete = await multiselectPrompt({
       title: "Select projects to delete",

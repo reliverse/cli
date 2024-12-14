@@ -30,9 +30,6 @@ export const MEMORY_FILE = ".reliverse/.reliverse";
 export const FILE_PATHS = {
   layoutFile: "src/app/layout.tsx", // Path to layout file in the repo
   pageFile: "src/app/page.tsx", // Path to page file in the repo
-
-  // TODO: maybe we should reimplement this in a better way
-  tempRepoClone: "temp-repo-clone", // Default temp clone folder name
 };
 
 // Files required for i18n setup

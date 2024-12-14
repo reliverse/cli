@@ -1,98 +1,159 @@
-import { config } from "@reliverse/core";
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
-import pc from "picocolors";
+import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-import type { EslintConfig } from "./types.js";
+import { type ConfigPaths } from "./types.js";
 
-export async function configureEslint({
-  eslintConfig,
-  eslintRulesDisabledConfig,
-  eslintUltimateConfig,
-}: EslintConfig) {
-  const eslintConfigExists = await fileExists(eslintConfig);
-  const eslintUltimateConfigExists = await fileExists(eslintUltimateConfig);
+const ESLINT_DEFAULT_CONFIG = `// @ts-check
 
-  const eslintRulesDisabledConfigExists = await fileExists(
-    eslintRulesDisabledConfig,
-  );
+import js from "@eslint/js";
+import ts from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import prettier from "eslint-config-prettier";
+import nextPlugin from "@next/eslint-plugin-next";
 
-  const eslint: string | symbol = await selectPrompt({
-    title: `${config.framework.name} uses various tools to automate code improvement. One of these tools is ESLint. Let's configure @reliverse/eslint-config to meet your needs.\n${pc.cyan("Please select the type of ESLint configuration you want to use.")} If you are a complete beginner, choose the "eslint.config.rules-disabled.ts" config preset, where almost all rules are disabled.\n${pc.dim("Please note that your current configurations will be replaced with the selected ones. If you do not want to lose anything, choose Skip or commit your changes to Git first.")}`,
-    options: [
-      {
-        label: "Skip",
-        value: "Skip",
-        hint: "Skip ESLint configuration",
-      },
-      {
-        label: "eslint.config.ultimate.ts",
-        value: "Ultimate",
-        hint: "[✅ Default] Enables almost all rules",
-      },
-      {
-        label: "eslint.config.rules-disabled.ts",
-        value: "RulesDisabled",
-        hint: "Disables almost all rules",
-      },
+/** @type {import("eslint").Linter.FlatConfig[]} */
+export default [
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.coverage/**",
     ],
-  });
+  },
+  js.configs.recommended,
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: "./tsconfig.json",
+      },
+    },
+    plugins: {
+      "@typescript-eslint": ts,
+      "@next/next": nextPlugin,
+    },
+    rules: {
+      ...ts.configs.recommended.rules,
+      ...nextPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": "error",
+      "no-console": "warn",
+    },
+  },
+  prettier,
+];`;
 
-  if (typeof eslint !== "string") {
-    process.exit(0);
+const ESLINT_MINIMAL_CONFIG = `// @ts-check
+
+import js from "@eslint/js";
+import prettier from "eslint-config-prettier";
+
+/** @type {import("eslint").Linter.FlatConfig[]} */
+export default [
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.coverage/**",
+    ],
+  },
+  js.configs.recommended,
+  prettier,
+];`;
+
+async function validateTargetDir(targetDir: string): Promise<void> {
+  if (!targetDir) {
+    throw new Error("Target directory is required");
   }
 
-  if (eslint === "Skip") {
-    relinka("success", "ESLint configuration was skipped.");
-
-    return; // Exit early if the user chose to skip
+  if (!(await fs.pathExists(targetDir))) {
+    throw new Error(`Target directory does not exist: ${targetDir}`);
   }
 
-  if (eslintConfigExists) {
-    await removeFile(eslintConfig);
-  }
-
-  if (eslint === "Ultimate" && eslintUltimateConfigExists) {
-    await fs.copy(eslintUltimateConfig, eslintConfig);
-  } else if (eslint === "RulesDisabled" && eslintRulesDisabledConfigExists) {
-    await fs.copy(eslintRulesDisabledConfig, eslintConfig);
-  }
-
-  if (await fileExists(eslintConfig)) {
-    relinka("success", `ESLint configuration has been set to ${eslint}`);
-    await updateFileToJs(eslintConfig);
-  } else {
-    relinka(
-      "error",
-      "Something went wrong! Newly created `eslint.config.js` file was not found!",
-    );
+  if (!(await fs.stat(targetDir).then((stat) => stat.isDirectory()))) {
+    throw new Error(`Target path is not a directory: ${targetDir}`);
   }
 }
 
-async function updateFileToJs(filePath: string) {
+export async function configureEslint(
+  config: Pick<
+    ConfigPaths,
+    "eslintConfig" | "eslintRulesDisabledConfig" | "eslintUltimateConfig"
+  >,
+) {
   try {
-    let fileContent = await fs.readFile(filePath, "utf8");
+    const targetDir = path.dirname(config.eslintConfig);
+    await validateTargetDir(targetDir);
 
-    // Replace TypeScript type annotations in function parameters
-    const paramPattern = /(\w+): string/g;
-    const paramReplacement = "/** @type {string} */ $1";
+    const eslintConfigPath = config.eslintConfig;
+    const eslintConfigExists = await fileExists(eslintConfigPath);
 
-    fileContent = fileContent.replace(paramPattern, paramReplacement);
+    const eslint = await selectPrompt({
+      title:
+        "Please select which type of ESLint configuration you want to use.",
+      options: [
+        {
+          label: "Continue without ESLint",
+          value: "Skip",
+          hint: "Continue without ESLint configuration",
+        },
+        {
+          label: "Default Configuration",
+          value: "Default",
+          hint: "Full TypeScript and Next.js linting",
+        },
+        {
+          label: "Minimal Configuration",
+          value: "Minimal",
+          hint: "Basic JavaScript linting only",
+        },
+      ],
+    });
 
-    // Remove lines containing `ts-expect-error`
-    const lines = fileContent.split("\n");
+    if (typeof eslint !== "string") {
+      process.exit(0);
+    }
 
-    const filteredLines = lines.filter(
-      (line) => !line.includes("// @ts-expect-error TODO: fix"),
-    );
+    if (eslint === "Skip") {
+      relinka("info", "Continuing without ESLint configuration.");
+      return;
+    }
 
-    fileContent = filteredLines.join("\n");
+    // Remove existing config if it exists
+    if (eslintConfigExists) {
+      await removeFile(eslintConfigPath);
+    }
 
-    await fs.writeFile(filePath, fileContent, "utf8");
+    try {
+      // Generate new config
+      const config =
+        eslint === "Default" ? ESLINT_DEFAULT_CONFIG : ESLINT_MINIMAL_CONFIG;
+      await fs.writeFile(eslintConfigPath, config);
+      relinka(
+        "success",
+        `Generated ${eslint.toLowerCase()} ESLint configuration.`,
+      );
+    } catch (error) {
+      relinka(
+        "error",
+        "Failed to generate ESLint configuration:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   } catch (error) {
-    relinka("error", "Error updating file content:", error.toString());
+    relinka(
+      "error",
+      "Failed to configure ESLint:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }

@@ -10,11 +10,11 @@ import fs from "fs-extra";
 import { installDependencies } from "nypm";
 import { Octokit } from "octokit";
 import open from "open";
-import os from "os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import { FILE_PATHS } from "~/app/data/constants.js";
+import type { ReliverseConfig } from "~/types/config.js";
+
 import {
   readReliverseMemory,
   updateReliverseMemory,
@@ -42,6 +42,7 @@ import { askAppDomain } from "./askAppDomain.js";
 import { askAppName } from "./askAppName.js";
 import { askCheckAndDownloadFiles } from "./askCheckAndDownloadFiles.js";
 import { askGithubName } from "./askGithubName.js";
+import { askGitInitialization } from "./askGitInitialization.js";
 import { askUserName } from "./askUserName.js";
 import { askVercelName } from "./askVercelName.js";
 import { composeEnvFile } from "./composeEnvFile.js";
@@ -142,6 +143,7 @@ export async function createWebProject({
   allowI18nPrompt,
   isDev,
   checkpointName,
+  config,
 }: {
   template: string;
   message: string;
@@ -149,6 +151,7 @@ export async function createWebProject({
   allowI18nPrompt: boolean;
   isDev: boolean;
   checkpointName?: string;
+  config?: ReliverseConfig;
 }) {
   relinka("info", message);
 
@@ -170,17 +173,18 @@ export async function createWebProject({
     }
   }
 
-  // let defaultShouldDeploy = true;
-  // if (isDev) {
-  //   defaultShouldDeploy = false;
-  // }
   let shouldDeploy = false;
 
   try {
-    shouldDeploy = await confirmPrompt({
-      title: "Do you plan to deploy this project right after creation?",
-      defaultValue: false,
-    });
+    // Only ask about deployment if not specified in config
+    if (config === undefined || !("shouldDeploy" in config)) {
+      shouldDeploy = await confirmPrompt({
+        title: "Do you plan to deploy this project right after creation?",
+        defaultValue: false,
+      });
+    } else {
+      shouldDeploy = config.shouldDeploy ?? false;
+    }
 
     // Store shouldDeploy in memory
     await updateReliverseMemory({
@@ -191,29 +195,40 @@ export async function createWebProject({
     });
 
     // Get usernames based on deployment plan
-    const username = await askUserName();
+    const username = config?.defaultUsername || (await askUserName());
     let githubUsername = "";
     let vercelTeamName = "";
     let deployService = "";
 
     if (shouldDeploy) {
-      deployService = await selectPrompt({
-        title: "Which deployment service do you want to use?",
-        content:
-          "You can deploy anywhere. This allows me to prepare the necessary tools for deployment.",
-        options: [
-          { label: "Vercel", value: "Vercel" },
-          {
-            label: "...",
-            value: "coming-soon",
-            hint: "coming soon",
-            disabled: true,
-          },
-        ],
-      });
+      // Handle deployment service selection
+      if (
+        config?.defaultDeploymentService &&
+        config.defaultDeploymentService !== "none"
+      ) {
+        deployService = config.defaultDeploymentService;
+      } else {
+        deployService = await selectPrompt({
+          title: "Which deployment service do you want to use?",
+          content:
+            "You can deploy anywhere. This allows me to prepare the necessary tools for deployment.",
+          options: [
+            { label: "Vercel", value: "Vercel" },
+            {
+              label: "...",
+              value: "coming-soon",
+              hint: "coming soon",
+              disabled: true,
+            },
+          ],
+        });
+      }
 
-      githubUsername = await askGithubName();
-      vercelTeamName = await askVercelName();
+      // Get GitHub username if not in config
+      githubUsername = config?.defaultGithubUsername || (await askGithubName());
+
+      // Get Vercel team name if not in config
+      vercelTeamName = config?.defaultVercelUsername || (await askVercelName());
 
       // Store GitHub and Vercel usernames in memory
       await updateReliverseMemory({
@@ -226,7 +241,10 @@ export async function createWebProject({
       });
     }
 
-    const appName = await askAppName();
+    // Get app name if not in config
+    const appName = config?.defaultTemplate
+      ? path.basename(config.defaultTemplate)
+      : await askAppName();
 
     // Save initial checkpoint
     if (!checkpointName) {
@@ -245,7 +263,8 @@ export async function createWebProject({
       isDev,
     );
 
-    const domain = await askAppDomain(appName);
+    // Get domain if not in config
+    const domain = config?.defaultDomain || (await askAppDomain(appName));
     let targetDir: string | undefined;
 
     relinka("info", `Now I'm downloading the ${template} template...`);
@@ -295,7 +314,7 @@ export async function createWebProject({
       if (i18nFolderExists) {
         relinka(
           "info-verbose",
-          "i18n is already enabled for this project. Skipping...",
+          "i18n is already enabled for this project. No changes needed.",
         );
       }
 
@@ -311,7 +330,7 @@ export async function createWebProject({
               updateMessage(
                 "Some magic is happening... This may take a while...",
               );
-              await downloadI18nFiles(targetDir, isDev);
+              await downloadI18nFiles(targetDir);
             } catch (error) {
               relinka("error", "Error during i18n move:", error.toString());
               throw error;
@@ -336,13 +355,13 @@ export async function createWebProject({
             updateMessage(
               "Some magic is happening... This may take a while...",
             );
-            await downloadI18nFiles(targetDir, isDev);
+            await downloadI18nFiles(targetDir);
           },
         });
       }
     }
 
-    await askCheckAndDownloadFiles(targetDir, appName);
+    await askCheckAndDownloadFiles(targetDir);
 
     const cwd = getCurrentWorkingDirectory();
 
@@ -352,141 +371,100 @@ export async function createWebProject({
     //   pm = "bun";
     // }
 
-    // const gitOption = await askGitInitialization();
+    // Skip git initialization if configured
+    if (!config?.shouldInitGit) {
+      const gitOption = await askGitInitialization();
+      await initializeGitRepository(targetDir, gitOption);
+    }
+
+    // Skip dependency installation if configured
+    let shouldInstallDependencies = !config?.shouldInstallDependencies;
+    if (shouldInstallDependencies && !isDev) {
+      shouldInstallDependencies = await confirmPrompt({
+        title:
+          "Do you want me to install dependencies? (it may take some time)",
+        titleColor: "retroGradient",
+        defaultValue: true,
+      });
+    }
+
+    if (shouldInstallDependencies) {
+      await installDependencies({
+        cwd: targetDir,
+      });
+
+      // Skip database scripts if configured
+      if (!config?.shouldRunDbScripts) {
+        const hasDbPush = await checkScriptExists(targetDir, "db:push");
+        const hasDbSeed = await checkScriptExists(targetDir, "db:seed");
+        const hasCheck = await checkScriptExists(targetDir, "check");
+
+        if (hasDbPush) {
+          const shouldRunDbPush = await confirmPrompt({
+            title: "Do you want to run `bun db:push`?",
+            defaultValue: true,
+          });
+          if (shouldRunDbPush) {
+            try {
+              await execa("bun", ["db:push"], {
+                cwd: targetDir,
+                stdio: "inherit",
+              });
+            } catch (error) {
+              relinka(
+                "error",
+                "Error running `bun db:push`:",
+                error.toString(),
+              );
+            }
+          }
+        }
+
+        if (hasDbSeed) {
+          const shouldRunDbSeed = await confirmPrompt({
+            title: "Do you want to run `bun db:seed`?",
+            defaultValue: true,
+          });
+          if (shouldRunDbSeed) {
+            try {
+              await execa("bun", ["db:seed"], {
+                cwd: targetDir,
+                stdio: "inherit",
+              });
+            } catch (error) {
+              relinka(
+                "error",
+                "Error running `bun db:seed`:",
+                error.toString(),
+              );
+            }
+          }
+        }
+
+        if (hasCheck) {
+          const shouldRunCheck = await confirmPrompt({
+            title: "Do you want to run `bun check`?",
+            defaultValue: true,
+          });
+          if (shouldRunCheck) {
+            try {
+              await execa("bun", ["check"], {
+                cwd: targetDir,
+                stdio: "inherit",
+              });
+            } catch (error) {
+              relinka("error", "Error running `bun check`:", error.toString());
+            }
+          }
+        }
+      }
+    }
+
     const vscodeInstalled = isVSCodeInstalled();
 
     const tempGitURL =
       "https://raw.githubusercontent.com/blefnk/relivator/main/.env.example";
     await composeEnvFile(targetDir, tempGitURL);
-
-    let shouldInstallByDefault = true;
-    if (isDev) {
-      shouldInstallByDefault = false;
-    }
-    const shouldInstallDependencies = await confirmPrompt({
-      title: "Do you want me to install dependencies? (it may take some time)",
-      titleColor: "retroGradient",
-      defaultValue: shouldInstallByDefault,
-    });
-
-    if (!shouldInstallDependencies) {
-      relinka("info", "You can always install dependencies manually later.");
-    } else {
-      await installDependencies({
-        cwd: targetDir,
-      });
-
-      // deprecated
-      /* Ask user if they want to install dependencies
-      const installDeps = await confirmPrompt({
-        title: "Would you like to install dependencies now?",
-        defaultValue: true,
-      });
-
-      if (installDeps) {
-        // Detect package manager and install dependencies
-        const hasYarn = await fs.pathExists(path.join(targetDir, "yarn.lock"));
-        const hasPnpm = await fs.pathExists(
-          path.join(targetDir, "pnpm-lock.yaml"),
-        );
-        const hasBun = await fs.pathExists(path.join(targetDir, "bun.lockb"));
-
-        const installCmd = hasBun
-          ? "bun install"
-          : hasPnpm
-            ? "pnpm install"
-            : hasYarn
-              ? "yarn"
-              : "npm install";
-
-        await execa(installCmd.split(" ")[0], installCmd.split(" ").slice(1), {
-          cwd: targetDir,
-        });
-        relinka("success-verbose", "Dependencies installed successfully");
-      } */
-    }
-
-    if (!isDev && shouldInstallDependencies) {
-      const hasDbPush = await checkScriptExists(targetDir, "db:push");
-      const hasDbSeed = await checkScriptExists(targetDir, "db:seed");
-      const hasCheck = await checkScriptExists(targetDir, "check");
-
-      if (hasDbPush) {
-        const shouldRunDbPush = await confirmPrompt({
-          title: "Do you want to run `bun db:push`?",
-          defaultValue: true,
-        });
-        if (shouldRunDbPush) {
-          try {
-            await execa("bun", ["db:push"], {
-              cwd: targetDir,
-              stdio: "inherit",
-            });
-          } catch (error) {
-            relinka("error", "Error running `bun db:push`:", error.toString());
-          }
-        }
-      }
-
-      if (hasDbSeed) {
-        const shouldRunDbSeed = await confirmPrompt({
-          title: "Do you want to run `bun db:seed`?",
-          defaultValue: true,
-        });
-        if (shouldRunDbSeed) {
-          try {
-            await execa("bun", ["db:seed"], {
-              cwd: targetDir,
-              stdio: "inherit",
-            });
-          } catch (error) {
-            relinka("error", "Error running `bun db:seed`:", error.toString());
-          }
-        }
-      }
-
-      if (hasCheck) {
-        const shouldRunCheck = await confirmPrompt({
-          title: "Do you want to run `bun check`?",
-          defaultValue: true,
-        });
-        if (shouldRunCheck) {
-          try {
-            await execa("bun", ["check"], {
-              cwd: targetDir,
-              stdio: "inherit",
-            });
-          } catch (error) {
-            relinka("error", "Error running `bun check`:", error.toString());
-          }
-        }
-      }
-    } else {
-      const scripts = [];
-      if (await checkScriptExists(targetDir, "db:push")) {
-        scripts.push("`bun db:push`");
-      }
-      if (await checkScriptExists(targetDir, "db:seed")) {
-        scripts.push("`bun db:seed`");
-      }
-      if (await checkScriptExists(targetDir, "check")) {
-        scripts.push("`bun check`");
-      }
-
-      if (scripts.length > 0) {
-        relinka(
-          "info",
-          `Please run \`bun i\`, ${scripts.join(", ")} manually.`,
-          "It's recommended to do it before starting the project at the first time.",
-        );
-      } else {
-        relinka(
-          "info",
-          "Please run `bun i` manually.",
-          "It's recommended to do it before starting the project at the first time.",
-        );
-      }
-    }
 
     if (shouldDeploy) {
       relinka(
@@ -555,7 +533,7 @@ export async function createWebProject({
       // Handle pushing to remote
       const shouldPushCommit = await confirmPrompt({
         title: "Are you ready to push the commit?",
-        content: "`N` will skip pushing and deploying.",
+        content: "Select 'No' to continue without pushing and deploying",
         defaultValue: true,
       });
 
@@ -577,7 +555,7 @@ export async function createWebProject({
           return;
         }
       } else {
-        relinka("info", "Okay... Skipping commit push and deployment...");
+        relinka("info", "Continuing without pushing and deploying...");
       }
 
       if (shouldPushCommit && deployService === "Vercel") {
@@ -815,19 +793,13 @@ export async function createWebProject({
 
     const shouldRemoveTemp = true;
     if (shouldRemoveTemp) {
-      // TODO: maybe we should reimplement this in a better way
       const tempRepoDir = isDev
-        ? path.join(cwd, "tests-runtime", FILE_PATHS.tempRepoClone)
-        : path.join(
-            os.homedir(),
-            ".reliverse",
-            "checkpoints",
-            FILE_PATHS.tempRepoClone,
-          );
+        ? path.join(cwd, "tests-runtime", ".temp")
+        : path.join(targetDir, ".temp");
 
       if (await fs.pathExists(tempRepoDir)) {
         await fs.remove(tempRepoDir);
-        relinka("info-verbose", "Temporary clone folder removed.");
+        relinka("info-verbose", "Temporary directory removed.");
       }
     }
 

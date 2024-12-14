@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.3.21",
+  "version": "1.3.22",
   "author": "blefnk",
   "type": "module",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",

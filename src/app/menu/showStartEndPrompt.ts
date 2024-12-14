@@ -6,7 +6,7 @@ export async function showStartPrompt() {
     titleColor: "inverse",
     clearConsole: true,
     packageName: "@reliverse/cli",
-    packageVersion: "1.3.21",
+    packageVersion: "1.3.22",
     terminalSizeOptions: {
       minWidth: 100,
       minHeight: 15,

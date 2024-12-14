@@ -1,6 +1,5 @@
 import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
-import os from "os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
@@ -15,10 +14,10 @@ export async function downloadGitRepo(
   try {
     const cwd = getCurrentWorkingDirectory();
 
-    // Determine initial target directory based on isDev flag
-    let targetDir = isDev
+    // Create target directory directly in cwd (or tests-runtime for dev mode)
+    const targetDir = isDev
       ? path.join(cwd, "tests-runtime", name)
-      : path.join(os.homedir(), ".reliverse", "projects", name);
+      : path.join(cwd, name);
 
     relinka("info-verbose", `Installing template in: ${targetDir}`);
 
@@ -94,18 +93,6 @@ export async function downloadGitRepo(
       }
 
       relinka("success-verbose", `${template} was downloaded to ${targetDir}.`);
-
-      // If not in dev mode, move project to final destination (cwd)
-      if (!isDev) {
-        const finalDir = path.join(cwd, name);
-        await fs.move(targetDir, finalDir);
-        targetDir = finalDir;
-        relinka(
-          "success-verbose",
-          `Project moved to final location: ${finalDir}`,
-        );
-      }
-
       return targetDir;
     } catch (error) {
       // Restore .reliverserules if operation failed
