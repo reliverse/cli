@@ -72,8 +72,9 @@ export async function getConfigValue(key: ConfigKey): Promise<string | null> {
     try {
       return decrypt(result[0].value);
     } catch {
-      // If decryption fails (e.g., old unencrypted value), return as is
-      return result[0].value;
+      // If decryption fails, delete the corrupted value and return null
+      await deleteConfigValue(key);
+      return null;
     }
   } catch (error) {
     relinka(

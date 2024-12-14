@@ -15,14 +15,15 @@ export const FILE_CONFLICTS = [
   },
 ];
 
-export const REPO_FULL_URLS = {
-  relivatorGithubLink: "https://github.com/blefnk/relivator",
-};
-
-export const REPO_SHORT_URLS = {
-  relivatorGithubLink: "blefnk/relivator",
-  versatorGithubLink: "blefnk/versator",
-};
+export const REPO_URLS = {
+  "blefnk/relivator": "https://github.com/blefnk/relivator",
+  "blefnk/next-react-ts-src-minimal":
+    "https://github.com/blefnk/next-react-ts-src-minimal",
+  "microsoft/vscode-extension-samples":
+    "https://github.com/microsoft/vscode-extension-samples",
+  "microsoft/vscode-extension-template":
+    "https://github.com/microsoft/vscode-extension-template",
+} as const;
 
 export const MEMORY_FILE = ".reliverse/.reliverse";
 
@@ -44,3 +45,8 @@ export const fileCategories: Record<string, string[]> = {
   GitHub: [".github", "README.md"],
   IDE: [".vscode"],
 };
+
+// Get full URL from short name
+export function getRepoUrl(shortName: keyof typeof REPO_URLS): string {
+  return REPO_URLS[shortName];
+}

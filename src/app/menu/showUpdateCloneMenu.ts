@@ -3,11 +3,11 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import { REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { getRepoUrl } from "~/app/data/constants.js";
+import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
 import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
-import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
 import { validate } from "~/utils/validate.js";
 
 const cwd = getCurrentWorkingDirectory();
@@ -19,7 +19,7 @@ export async function showUpdateCloneMenu(isDev: boolean) {
   );
 
   const options = [
-    REPO_SHORT_URLS.relivatorGithubLink,
+    getRepoUrl("blefnk/relivator"),
     ...(isDev ? ["🚧 relivator (local dev only)"] : []),
   ];
 

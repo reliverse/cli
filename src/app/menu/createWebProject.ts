@@ -14,20 +14,12 @@ import path from "pathe";
 import { simpleGit } from "simple-git";
 
 import type { ReliverseConfig } from "~/types/config.js";
+import type { ReliverseRules } from "~/types/rules.js";
 
 import {
   readReliverseMemory,
   updateReliverseMemory,
 } from "~/args/memory/impl.js";
-import {
-  CHECKPOINT_STEPS,
-  type CheckpointStep,
-  clearCheckpoint,
-  getPreviousStep,
-  isValidCheckpointStep,
-  readCheckpoint,
-  saveCheckpoint,
-} from "~/utils/checkpoint.js";
 import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { downloadI18nFiles } from "~/utils/downloadI18nFiles.js";
@@ -37,6 +29,7 @@ import { initializeGitRepository } from "~/utils/git.js";
 import { i18nMove } from "~/utils/i18nMove.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles.js";
+import { getDefaultRules, writeReliverseRules } from "~/utils/rules.js";
 
 import { askAppDomain } from "./askAppDomain.js";
 import { askAppName } from "./askAppName.js";
@@ -142,7 +135,6 @@ export async function createWebProject({
   message,
   allowI18nPrompt,
   isDev,
-  checkpointName,
   config,
 }: {
   template: string;
@@ -150,29 +142,12 @@ export async function createWebProject({
   mode: "buildBrandNewThing" | "installAnyGitRepo";
   allowI18nPrompt: boolean;
   isDev: boolean;
-  checkpointName?: string;
   config?: ReliverseConfig;
 }) {
   relinka("info", message);
 
   // Track deployment state from memory
   const memory = await readReliverseMemory();
-  let currentStep: CheckpointStep = CHECKPOINT_STEPS.NOT_STARTED;
-
-  // If checkpoint exists, try to restore state
-  if (checkpointName) {
-    const checkpoint = await readCheckpoint(checkpointName, isDev);
-    if (checkpoint && isValidCheckpointStep(checkpoint.step)) {
-      relinka("info", `Resuming project from checkpoint: ${checkpoint.step}`);
-      currentStep = checkpoint.step;
-
-      // If we're resuming from a failed state, start from the previous successful step
-      if (currentStep === CHECKPOINT_STEPS.FAILED) {
-        currentStep = getPreviousStep(currentStep);
-      }
-    }
-  }
-
   let shouldDeploy = false;
 
   try {
@@ -185,14 +160,6 @@ export async function createWebProject({
     } else {
       shouldDeploy = config.shouldDeploy ?? false;
     }
-
-    // Store shouldDeploy in memory
-    await updateReliverseMemory({
-      user: {
-        ...memory.user,
-        shouldDeploy,
-      },
-    });
 
     // Get usernames based on deployment plan
     const username = config?.defaultUsername || (await askUserName());
@@ -245,23 +212,6 @@ export async function createWebProject({
     const appName = config?.defaultTemplate
       ? path.basename(config.defaultTemplate)
       : await askAppName();
-
-    // Save initial checkpoint
-    if (!checkpointName) {
-      checkpointName = appName;
-    }
-
-    currentStep = CHECKPOINT_STEPS.INITIAL_SETUP;
-    await saveCheckpoint(
-      checkpointName,
-      {
-        step: currentStep,
-        data: {
-          appName,
-        },
-      },
-      isDev,
-    );
 
     // Get domain if not in config
     const domain = config?.defaultDomain || (await askAppDomain(appName));
@@ -881,69 +831,40 @@ export async function createWebProject({
       }
     }
 
+    // After all setup is done, write the .reliverserules file
+    const rules: ReliverseRules = getDefaultRules(appName, username);
+
+    // Update rules based on project setup
+    rules.features = {
+      ...rules.features,
+      i18n: allowI18nPrompt,
+      authentication: shouldDeploy,
+      database: shouldInstallDependencies,
+    };
+
+    if (shouldDeploy) {
+      rules.deployPlatform = deployService as ReliverseRules["deployPlatform"];
+      rules.deployUrl = domain
+        ? `https://${domain}`
+        : `https://${appName}.vercel.app`;
+      rules.appRepository = `https://github.com/${githubUsername}/${appName}`;
+      rules.productionBranch = "main";
+    }
+
+    await writeReliverseRules(targetDir, rules);
+
     relinka(
       "info",
       `👋 I'll have some more features coming soon! See you soon, ${username}!`,
     );
 
-    // Update checkpoint before potentially risky operations
-    currentStep = CHECKPOINT_STEPS.DEPLOYMENT_SETUP;
-    await saveCheckpoint(
-      checkpointName,
-      {
-        step: currentStep,
-        data: {
-          username,
-          appName,
-          domain,
-          deployService,
-          targetDir,
-          template,
-        },
-      },
-      isDev,
-    );
-
-    // Mark as completed at the end
-    if (checkpointName) {
-      await saveCheckpoint(
-        checkpointName,
-        {
-          step: CHECKPOINT_STEPS.COMPLETED,
-          data: {
-            username,
-            appName,
-            domain,
-            deployService,
-            targetDir,
-            template,
-          },
-        },
-        isDev,
-      );
-      await clearCheckpoint(checkpointName, isDev);
-      relinka("success", "✅ Project created successfully!");
-      relinka("success-verbose", "Checkpoint cleared.");
-    }
+    relinka("success", "✅ Project created successfully!");
   } catch (error) {
-    // Save failed state if something goes wrong
-    if (checkpointName) {
-      await saveCheckpoint(
-        checkpointName,
-        {
-          step: CHECKPOINT_STEPS.FAILED,
-          data: {
-            error: error instanceof Error ? error.message : String(error),
-            lastStep: currentStep,
-          },
-        },
-        isDev,
-      );
-      relinka(
-        "error",
-        "Project creation failed. You can resume from the last successful step later.",
-      );
-    }
+    relinka(
+      "error",
+      "Project creation failed:",
+      error instanceof Error ? error.message : String(error),
+    );
     throw error;
   }
 }

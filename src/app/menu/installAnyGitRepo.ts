@@ -1,6 +1,5 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 
-import { REPO_SHORT_URLS } from "~/app/data/constants.js";
 import { relinka } from "~/utils/console.js";
 import { validate } from "~/utils/validate.js";
 
@@ -51,12 +50,12 @@ export async function installAnyGitRepo(isDev: boolean) {
           value: "blefnk/astro-starlight-template",
         },
         {
-          label: "reliverse/versator",
-          value: REPO_SHORT_URLS.versatorGithubLink,
+          label: "blefnk/versator",
+          value: "blefnk/versator",
         },
         {
-          label: "reliverse/relivator",
-          value: REPO_SHORT_URLS.relivatorGithubLink,
+          label: "blefnk/relivator",
+          value: "blefnk/relivator",
         },
         {
           label: "reliverse/template-browser-extension",
@@ -111,7 +110,7 @@ export async function installAnyGitRepo(isDev: boolean) {
   }
 
   if (
-    repoToInstall === REPO_SHORT_URLS.relivatorGithubLink ||
+    repoToInstall === "blefnk/relivator" ||
     repoToInstall === "blefnk/relivator"
   ) {
     return buildBrandNewThing(isDev);

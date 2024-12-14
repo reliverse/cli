@@ -69,7 +69,13 @@ export function parseCliArgs(args: string[]): Partial<ReliverseConfig> {
     switch (arg) {
       case "--template":
         if (i + 1 < args.length) {
-          config.defaultTemplate = args[++i];
+          const templateValue = args[++i];
+          if (
+            templateValue === "blefnk/relivator" ||
+            templateValue === "blefnk/next-react-ts-src-minimal"
+          ) {
+            config.defaultTemplate = templateValue;
+          }
         }
         break;
       case "--username":

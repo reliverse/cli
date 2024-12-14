@@ -1,8 +1,8 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 
+import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
-import { replaceImportSymbol } from "~/utils/mods/replaceImportSymbol.js";
 import { validate } from "~/utils/validate.js";
 
 export async function askCodemodUserCodebase() {

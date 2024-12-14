@@ -1,19 +1,41 @@
+export type DeploymentService = "Vercel" | "Netlify" | "Railway" | "none";
+
+export type TemplateOption =
+  | "blefnk/relivator"
+  | "blefnk/next-react-ts-src-minimal";
+
+export type VSCodeExtensionFeature =
+  | "commands"
+  | "webview"
+  | "language"
+  | "themes";
+export type VSCodeExtensionActivation = "onCommand" | "onLanguage" | "startup";
+
+export type VSCodeExtensionConfig = {
+  displayName: string;
+  description: string;
+  features: VSCodeExtensionFeature[];
+  activation: VSCodeExtensionActivation;
+  publisher: string;
+};
+
 export type ReliverseConfig = {
-  shouldDeploy?: boolean;
-  shouldInstallDependencies?: boolean;
-  shouldInitGit?: boolean;
-  shouldUseI18n?: boolean;
-  shouldRunDbScripts?: boolean;
-  defaultDeploymentService?: "Vercel" | "none" | "";
-  defaultTemplate?: string;
+  defaultFramework?: string;
+  defaultTemplate?: TemplateOption;
   defaultUsername?: string;
   defaultGithubUsername?: string;
   defaultVercelUsername?: string;
   defaultDomain?: string;
-  defaultCategory?: "development" | "";
-  defaultProjectType?: "website" | "";
-  defaultFramework?: "nextjs" | "";
-  defaultWebsiteCategory?: "e-commerce" | "";
+  defaultDeploymentService?: DeploymentService;
+  defaultCategory?: "development";
+  defaultProjectType?: "website" | "vscode";
+  defaultWebsiteCategory?: "e-commerce";
+  shouldDeploy?: boolean;
+  shouldInitGit?: boolean;
+  shouldInstallDependencies?: boolean;
+  shouldRunDbScripts?: boolean;
+  shouldUseI18n?: boolean;
+  vscodeExtension?: VSCodeExtensionConfig;
 };
 
 export const DEFAULT_CONFIG: ReliverseConfig = {
@@ -22,9 +44,6 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   shouldInitGit: true,
   shouldUseI18n: true,
   shouldRunDbScripts: true,
-  defaultDeploymentService: "",
-  defaultCategory: "",
-  defaultProjectType: "",
-  defaultFramework: "",
-  defaultWebsiteCategory: "",
+  defaultDeploymentService: "Vercel",
+  defaultFramework: "nextjs",
 };

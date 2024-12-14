@@ -1,7 +1,7 @@
 import type { FooterItem } from "~/utils/nav.js";
 import type { MainMenuItem } from "~/utils/with.js";
 
-import { REPO_SHORT_URLS } from "~/app/data/constants.js";
+import { getRepoUrl } from "~/app/data/constants.js";
 import metadata from "~/utils/metadata.js";
 import { productCategories } from "~/utils/products.js";
 
@@ -28,7 +28,7 @@ type IconName =
 const socialLinks = {
   discord: "https://discord.gg/Pb8uKbwpsJ",
   facebook: "https://facebook.com/groups/bleverse",
-  github: REPO_SHORT_URLS.relivatorGithubLink,
+  github: getRepoUrl("blefnk/relivator"),
   githubAccount: "https://github.com/blefnk",
   twitter: "https://x.com/blefnk",
 };
@@ -204,7 +204,7 @@ export const siteConfig = {
   socialLinks: {
     discord: "https://discord.gg/Pb8uKbwpsJ",
     facebook: "https://facebook.com/groups/bleverse",
-    github: REPO_SHORT_URLS.relivatorGithubLink,
+    github: getRepoUrl("blefnk/relivator"),
     githubAccount: "https://github.com/blefnk",
     twitter: "https://x.com/blefnk",
   },

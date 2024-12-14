@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { FILES_TO_DOWNLOAD, REPO_FULL_URLS } from "~/app/data/constants.js";
+import { FILES_TO_DOWNLOAD, getRepoUrl } from "~/app/data/constants.js";
 import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 import { relinka } from "~/utils/console.js";
 
@@ -21,7 +21,7 @@ export async function downloadI18nFiles(targetDir: string): Promise<void> {
       FILES_TO_DOWNLOAD,
       targetDir,
       true,
-      REPO_FULL_URLS.relivatorGithubLink,
+      getRepoUrl("blefnk/relivator"),
       tempRepoDir,
     );
 
