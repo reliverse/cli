@@ -1,9 +1,9 @@
 import { defineCommand } from "@reliverse/prompts";
 
 import { showAnykeyPrompt } from "~/app/menu/showAnykeyPrompt.js";
-import { isConfigExists } from "~/utils/config.js";
 import { relinka } from "~/utils/console.js";
 
+import { readReliverseMemory } from "../memory/impl.js";
 import { auth } from "./impl.js";
 
 export default defineCommand({
@@ -18,8 +18,11 @@ export default defineCommand({
     },
   },
   run: async ({ args }) => {
-    const config = await isConfigExists();
-    if (config) {
+    // Check for existing keys in SQLite
+    const memory = await readReliverseMemory();
+    const isAuthenticated = memory.code && memory.key;
+
+    if (isAuthenticated) {
       relinka("success", "You're already logged in.");
       if (args.dev) {
         relinka("info", "Try `bun dev:logout` cmd.");
@@ -28,9 +31,11 @@ export default defineCommand({
       }
       process.exit(0);
     }
+
     await showAnykeyPrompt("welcome");
     await showAnykeyPrompt("privacy");
     await auth({ dev: args.dev, useLocalhost: false });
+
     if (args.dev) {
       relinka("success", "You can run `bun dev` now! Happy Reliversing! 🎉");
     } else {

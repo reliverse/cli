@@ -1,81 +1,84 @@
-import type { ParsedUrlQuery } from "querystring";
+import {
+  getConfigValue,
+  setConfigValue,
+  deleteConfigValue,
+} from "~/db/config.js";
+import { migrateFromFile } from "~/db/migrate.js";
 
-import fs from "fs-extra";
-import os from "os";
-import path from "pathe";
-
-import { MEMORY_FILE } from "~/app/data/constants.js";
-import { relinka } from "~/utils/console.js";
-
-type MemoryFileData = {
-  code?: string | null;
-  key?: string | null;
-  githubKey?: string | null;
-  vercelKey?: string | null;
+export type ReliverseMemory = {
   user?: {
     name?: string;
-    email?: string;
     githubName?: string;
     vercelName?: string;
     shouldDeploy?: boolean;
-  } | null;
+  };
+  githubKey?: string | null;
+  vercelKey?: string | null;
+  code?: string | null;
+  key?: string | null;
 };
 
-export async function updateReliverseMemory(
-  data: MemoryFileData | ParsedUrlQuery,
-) {
-  try {
-    const homeDir = os.homedir();
-    const filePath = path.join(homeDir, MEMORY_FILE);
+// Track if we've already attempted migration
+let migrationAttempted = false;
 
-    // Read existing data first
-    let existingData: MemoryFileData = {};
-    try {
-      const fileContent = await fs.readFile(filePath, "utf8");
-      existingData = JSON.parse(fileContent);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      // File might not exist yet, that's ok
-    }
-
-    // Merge existing data with new data
-    const mergedData = { ...existingData, ...data };
-
-    await fs.writeFile(filePath, JSON.stringify(mergedData, null, 2));
-    relinka("success-verbose", `Memory updated in ${filePath}`);
-  } catch (error) {
-    relinka("error", "Error updating memory:", error.toString());
-    throw error;
+export async function readReliverseMemory(): Promise<ReliverseMemory> {
+  // Attempt migration only once
+  if (!migrationAttempted) {
+    await migrateFromFile();
+    migrationAttempted = true;
   }
+
+  const [githubKey, vercelKey, code, key] = await Promise.all([
+    getConfigValue("githubKey"),
+    getConfigValue("vercelKey"),
+    getConfigValue("code"),
+    getConfigValue("key"),
+  ]);
+
+  return {
+    githubKey,
+    vercelKey,
+    code,
+    key,
+  };
 }
 
-export async function readReliverseMemory(): Promise<MemoryFileData> {
-  const homeDir = os.homedir();
-  const filePath = path.join(homeDir, MEMORY_FILE);
-  try {
-    const exists = await fs.pathExists(filePath);
-    if (!exists) {
-      relinka("info-verbose", `Memory file not found at ${filePath}`);
-      return {
-        code: null,
-        key: null,
-        githubKey: null,
-        vercelKey: null,
-        user: null,
-      };
+export async function updateReliverseMemory(
+  memory: Partial<ReliverseMemory>,
+): Promise<void> {
+  const updates: Promise<void>[] = [];
+
+  if (memory.githubKey !== undefined) {
+    if (memory.githubKey === null) {
+      updates.push(deleteConfigValue("githubKey"));
+    } else {
+      updates.push(setConfigValue("githubKey", memory.githubKey));
     }
-    const data = await fs.readFile(filePath, "utf8");
-    const parsedData = JSON.parse(data) as MemoryFileData;
-    const { code, key, githubKey, vercelKey, user } = parsedData;
-    return { code, key, githubKey, vercelKey, user };
-  } catch (error) {
-    relinka("error", "Error reading memory file:", error.toString());
-    return {
-      code: null,
-      key: null,
-      githubKey: null,
-      vercelKey: null,
-      user: null,
-    };
   }
+
+  if (memory.vercelKey !== undefined) {
+    if (memory.vercelKey === null) {
+      updates.push(deleteConfigValue("vercelKey"));
+    } else {
+      updates.push(setConfigValue("vercelKey", memory.vercelKey));
+    }
+  }
+
+  if (memory.code !== undefined) {
+    if (memory.code === null) {
+      updates.push(deleteConfigValue("code"));
+    } else {
+      updates.push(setConfigValue("code", memory.code));
+    }
+  }
+
+  if (memory.key !== undefined) {
+    if (memory.key === null) {
+      updates.push(deleteConfigValue("key"));
+    } else {
+      updates.push(setConfigValue("key", memory.key));
+    }
+  }
+
+  await Promise.all(updates);
 }

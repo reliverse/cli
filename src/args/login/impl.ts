@@ -147,9 +147,8 @@ export async function auth({
       process.stdout.write("\x1b[2K\r"); // Clear the current line, so misplacement of "Waiting for user confirmation..." is overwritten
       relinka(
         "info",
-        `The following URL will be opened in your default browser: ${pc.dim(
-          confirmationUrl.toString(),
-        )}`,
+        "The following URL will be opened in your default browser:",
+        confirmationUrl.toString(),
       );
 
       // Open the URL in the default browser
@@ -164,9 +163,8 @@ export async function auth({
         );
         relinka(
           "error",
-          `Please manually open the following URL in your browser: ${pc.bold(
-            confirmationUrl.toString(),
-          )}\n`,
+          "Please manually open the following URL in your browser:",
+          confirmationUrl.toString(),
         );
       }
 
@@ -204,8 +202,9 @@ export async function auth({
         await updateReliverseMemory(authData);
         server.close(() => {
           relinka(
-            "info",
-            `Wrote key to config file. To view it, type: code ~/${configFilePath}`,
+            "info-verbose",
+            "Wrote key to config file. To view it, type:",
+            `code ~/${configFilePath}`,
           );
           relinka(
             "info-verbose",

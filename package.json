@@ -27,7 +27,8 @@
     "attw": "bunx @arethetypeswrong/cli",
     "unpub": "npm unpublish",
     "test": "vitest",
-    "knip": "knip"
+    "knip": "knip",
+    "db:studio": "drizzle-kit studio"
   },
   "publishConfig": {
     "access": "public"
@@ -82,12 +83,14 @@
     "random-words": "^2.0.1",
     "simple-git": "^3.27.0",
     "std-env": "^3.8.0",
-    "tasuku": "^2.0.1"
+    "tasuku": "^2.0.1",
+    "@libsql/client": "^0.14.0",
+    "drizzle-orm": "^0.38.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@cspell/dict-npm": "^5.1.16",
-    "@eslint/js": "^9.16.0",
+    "@cspell/dict-npm": "^5.1.17",
+    "@eslint/js": "^9.17.0",
     "@swc/core": "^1.10.1",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.1.14",
@@ -97,7 +100,7 @@
     "@types/node": "^22.10.2",
     "@types/strip-comments": "^2.0.4",
     "bumpp": "^9.9.1",
-    "eslint": "^9.16.0",
+    "eslint": "^9.17.0",
     "eslint-plugin-perfectionist": "^4.3.0",
     "globals": "^15.13.0",
     "knip": "^5.40.0",
@@ -105,7 +108,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.0",
-    "unbuild": "^2.0.0",
-    "vitest": "^2.1.8"
+    "unbuild": "^3.0.1",
+    "vitest": "^2.1.8",
+    "drizzle-kit": "^0.30.1"
   }
 }

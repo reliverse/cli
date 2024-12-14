@@ -5,13 +5,13 @@ import { relinka } from "~/utils/console.js";
 export default defineCommand({
   meta: {
     name: "help",
-    description: "Shows the help message",
+    description: "Displays the help message",
     hidden: true,
   },
   args: {
     dev: {
       type: "boolean",
-      description: "Run the CLI in dev mode",
+      description: "Displays the help message for the dev command",
     },
   },
   run: async ({ args }) => {

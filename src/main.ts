@@ -5,7 +5,9 @@ import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { showAnykeyPrompt } from "./app/menu/showAnykeyPrompt.js";
 import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
-import { readConfig, parseCliArgs, isConfigExists } from "./utils/config.js";
+import { readReliverseMemory } from "./args/memory/impl.js";
+import studioCommand from "./args/studio/mod.js";
+import { readConfig, parseCliArgs } from "./utils/config.js";
 import { getCurrentWorkingDirectory } from "./utils/fs.js";
 
 const main = defineCommand({
@@ -89,8 +91,11 @@ const main = defineCommand({
     // Merge configurations with CLI args taking precedence
     const mergedConfig = { ...config, ...cliConfig };
 
-    const isConfigured = await isConfigExists();
-    if (!isConfigured) {
+    // Check for existing authentication in SQLite
+    const memory = await readReliverseMemory();
+    const isAuthenticated = memory.code && memory.key;
+
+    if (!isAuthenticated) {
       await showAnykeyPrompt("welcome");
       await showAnykeyPrompt("privacy");
       await auth({ dev: args.dev, useLocalhost: false });
@@ -105,6 +110,7 @@ const main = defineCommand({
     logout: () => import("~/args/logout/mod.js").then((r) => r.default),
     memory: () => import("~/args/memory/mod.js").then((r) => r.default),
     config: () => import("~/args/config/mod.js").then((r) => r.default),
+    studio: studioCommand,
   },
 });
 
