@@ -9,10 +9,15 @@ import { relinka } from "~/utils/console.js";
 
 type MemoryFileData = {
   code?: string | null;
-  key?: string | null; // TODO: rename to `token`
+  key?: string | null;
+  githubKey?: string | null;
+  vercelKey?: string | null;
   user?: {
     name?: string;
     email?: string;
+    githubName?: string;
+    vercelName?: string;
+    shouldDeploy?: boolean;
   } | null;
 };
 
@@ -51,14 +56,26 @@ export async function readReliverseMemory(): Promise<MemoryFileData> {
     const exists = await fs.pathExists(filePath);
     if (!exists) {
       relinka("info-verbose", `Memory file not found at ${filePath}`);
-      return { code: null, key: null, user: null };
+      return {
+        code: null,
+        key: null,
+        githubKey: null,
+        vercelKey: null,
+        user: null,
+      };
     }
     const data = await fs.readFile(filePath, "utf8");
     const parsedData = JSON.parse(data) as MemoryFileData;
-    const { code, key, user } = parsedData;
-    return { code, key, user };
+    const { code, key, githubKey, vercelKey, user } = parsedData;
+    return { code, key, githubKey, vercelKey, user };
   } catch (error) {
     relinka("error", "Error reading memory file:", error.toString());
-    return { code: null, key: null, user: null };
+    return {
+      code: null,
+      key: null,
+      githubKey: null,
+      vercelKey: null,
+      user: null,
+    };
   }
 }

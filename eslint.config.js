@@ -65,6 +65,7 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-deprecated": "off",
+      "@typescript-eslint/no-redundant-type-constituents": "off",
       "@typescript-eslint/restrict-plus-operands": "off",
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "@typescript-eslint/consistent-type-imports": [

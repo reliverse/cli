@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import {
   confirmPrompt,
   selectPrompt,
@@ -8,13 +11,20 @@ import { multiselectPrompt, nextStepsPrompt } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
-import { Octokit } from "octokit";
 import open from "open";
 import os from "os";
 import path from "pathe";
-import { simpleGit } from "simple-git";
+import pc from "picocolors";
 
 import { FILE_PATHS } from "~/app/data/constants.js";
+import { askAppDomain } from "~/app/menu/askAppDomain.js";
+import { askAppName } from "~/app/menu/askAppName.js";
+import { askCheckAndDownloadFiles } from "~/app/menu/askCheckAndDownloadFiles.js";
+import { askGithubName } from "~/app/menu/askGithubName.js";
+import { askGitInitialization } from "~/app/menu/askGitInitialization.js";
+import { askUserName } from "~/app/menu/askUserName.js";
+import { askVercelName } from "~/app/menu/askVercelName.js";
+import { composeEnvFile } from "~/app/menu/composeEnvFile.js";
 import {
   readReliverseMemory,
   updateReliverseMemory,
@@ -34,17 +44,12 @@ import { downloadI18nFiles } from "~/utils/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/utils/extractRepoInfo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { initializeGitRepository } from "~/utils/git.js";
+import { ghLogin } from "~/utils/github.js";
 import { i18nMove } from "~/utils/i18nMove.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles.js";
 
-import { askAppDomain } from "./askAppDomain.js";
-import { askAppName } from "./askAppName.js";
-import { askCheckAndDownloadFiles } from "./askCheckAndDownloadFiles.js";
-import { askGithubName } from "./askGithubName.js";
-import { askUserName } from "./askUserName.js";
-import { askVercelName } from "./askVercelName.js";
-import { composeEnvFile } from "./composeEnvFile.js";
+// import { isBunInstalled, getPackageManager } from "~/utils/temp/menu/utils/packageManager.js";
 
 async function checkScriptExists(
   targetDir: string,
@@ -67,75 +72,6 @@ async function checkScriptExists(
   }
 }
 
-async function handleGitHubOperations(
-  octokit: Octokit,
-  githubUsername: string,
-  repoName: string,
-  targetDir: string,
-): Promise<boolean> {
-  try {
-    // First check if repo exists
-    try {
-      await octokit.rest.repos.get({
-        owner: githubUsername,
-        repo: repoName,
-      });
-      relinka(
-        "info",
-        `Repository ${githubUsername}/${repoName} already exists.`,
-      );
-    } catch (error: any) {
-      if (error?.status === 404) {
-        // Create the repository if it doesn't exist
-        await octokit.rest.repos.createForAuthenticatedUser({
-          name: repoName,
-          description: `Created with @reliverse/cli - ${new Date().toISOString()}`,
-          private: false,
-          auto_init: false,
-          has_issues: true,
-          has_projects: true,
-          has_wiki: true,
-        });
-        relinka(
-          "success",
-          `Repository ${githubUsername}/${repoName} created successfully!`,
-        );
-      } else {
-        relinka(
-          "error",
-          "Failed to check repository existence:",
-          error?.message || String(error),
-        );
-        throw error;
-      }
-    }
-
-    // Initialize git repository
-    await initializeGitRepository(targetDir, "initializeNewGitRepository");
-    const git = simpleGit({ baseDir: targetDir });
-
-    // Add remote
-    const remoteUrl = `https://github.com/${githubUsername}/${repoName}.git`;
-    const remotes = await git.getRemotes();
-
-    if (!remotes.find((remote) => remote.name === "origin")) {
-      await git.addRemote("origin", remoteUrl);
-      relinka("success", "Remote 'origin' added successfully.");
-    } else {
-      relinka("info", "Remote 'origin' already exists.");
-    }
-
-    return true;
-  } catch (error: any) {
-    relinka(
-      "error",
-      "GitHub operation failed:",
-      error?.message || String(error),
-    );
-    return false;
-  }
-}
-
 export async function createWebProject({
   template,
   message,
@@ -152,8 +88,10 @@ export async function createWebProject({
 }) {
   relinka("info", message);
 
-  // Track deployment state from memory
+  // Track deployment and GitHub CLI state from memory
   const memory = await readReliverseMemory();
+  let useGitHubCLI = false;
+  let isGitHubCLIInstalled = false;
   let currentStep: CheckpointStep = CHECKPOINT_STEPS.NOT_STARTED;
 
   // If checkpoint exists, try to restore state
@@ -170,50 +108,29 @@ export async function createWebProject({
     }
   }
 
-  // let defaultShouldDeploy = true;
-  // if (isDev) {
-  //   defaultShouldDeploy = false;
-  // }
-  let shouldDeploy = false;
-
   try {
-    shouldDeploy = await confirmPrompt({
-      title: "Do you plan to deploy this project right after creation?",
-      defaultValue: false,
+    const planToDeploy = await confirmPrompt({
+      title: "Do you plan to deploy this project after creation?",
+      content: "This will help me prepare the necessary tools.",
+      defaultValue: true,
     });
 
-    // Store shouldDeploy in memory
+    // Store planToDeploy in memory
     await updateReliverseMemory({
       user: {
         ...memory.user,
-        shouldDeploy,
+        planToDeploy,
       },
     });
 
     // Get usernames based on deployment plan
     const username = await askUserName();
     let githubUsername = "";
-    let vercelTeamName = "";
-    let deployService = "";
+    let vercelUsername = "";
 
-    if (shouldDeploy) {
-      deployService = await selectPrompt({
-        title: "Which deployment service do you want to use?",
-        content:
-          "You can deploy anywhere. This allows me to prepare the necessary tools for deployment.",
-        options: [
-          { label: "Vercel", value: "Vercel" },
-          {
-            label: "...",
-            value: "coming-soon",
-            hint: "coming soon",
-            disabled: true,
-          },
-        ],
-      });
-
+    if (planToDeploy) {
       githubUsername = await askGithubName();
-      vercelTeamName = await askVercelName();
+      vercelUsername = await askVercelName();
 
       // Store GitHub and Vercel usernames in memory
       await updateReliverseMemory({
@@ -221,7 +138,7 @@ export async function createWebProject({
           ...memory.user,
           name: username,
           githubName: githubUsername,
-          vercelName: vercelTeamName,
+          vercelName: vercelUsername,
         },
       });
     }
@@ -244,6 +161,97 @@ export async function createWebProject({
       },
       isDev,
     );
+
+    if (planToDeploy) {
+      relinka("info", "Checking if GitHub CLI is installed...");
+
+      try {
+        const { stdout } = await execa("gh", ["--version"]);
+        isGitHubCLIInstalled = true;
+        useGitHubCLI = true;
+        // Store GitHub CLI state in memory
+        await updateReliverseMemory({
+          user: {
+            ...memory.user,
+            useGitHubCLI,
+            isGitHubCLIInstalled,
+          },
+        });
+        relinka(
+          "success",
+          `GitHub CLI is already installed! (${stdout.split("\n")[0]})`,
+        );
+      } catch (error: unknown) {
+        const gitChoice = await selectPrompt({
+          title: "GitHub CLI is not installed. How would you like to proceed?",
+          endTitle: "After that, please run `reliverse` again.",
+          titleColor: "red",
+          content:
+            "GitHub CLI provides a smoother experience for repository management and deployment.",
+          options: [
+            {
+              label: "Install GitHub CLI (Recommended)",
+              value: "gh",
+              hint: pc.dim("Smoother experience with repository management"),
+            },
+            {
+              label: "Use Classic Git",
+              value: "git",
+              hint: pc.dim(
+                "Basic git commands only | Use it if you don't want to install GitHub CLI",
+              ),
+            },
+          ],
+        });
+
+        if (gitChoice === "gh") {
+          relinka(
+            "info",
+            "Opening GitHub CLI installation page in your browser...",
+          );
+          await open("https://cli.github.com");
+          relinka(
+            "error",
+            "🔴 Please install GitHub CLI, then restart your terminal, and run `reliverse` again.",
+          );
+          return;
+        }
+        // If user chose classic git, continue without GitHub CLI
+        useGitHubCLI = false;
+        // Store GitHub CLI state in memory
+        await updateReliverseMemory({
+          user: {
+            ...memory.user,
+            useGitHubCLI,
+            isGitHubCLIInstalled: false,
+          },
+        });
+
+        if (error) {
+          relinka(
+            "error",
+            "Error checking if GitHub CLI is installed:",
+            error.toString(),
+          );
+          return;
+        }
+      }
+    }
+
+    const deployService = await selectPrompt({
+      title: "Which deployment service do you want to use?",
+      content:
+        "You can deploy anywhere manually. But this choice is allows me to prepare specific code for each platform. If you want, I will also try to deploy your project to the selected platform. Currently, I support only Vercel.",
+      options: [
+        { label: "Vercel", value: "Vercel" },
+        {
+          label: "...",
+          value: "coming-soon",
+          hint: "coming soon",
+          disabled: true,
+        },
+      ],
+    });
 
     const domain = await askAppDomain(appName);
     let targetDir: string | undefined;
@@ -285,7 +293,6 @@ export async function createWebProject({
       const i18nShouldBeEnabled = await confirmPrompt({
         title:
           "Do you want to enable i18n (internationalization) for this project?",
-        content: "Option `N` here may not work currently. Please be patient.",
       });
 
       const i18nFolderExists = await fs.pathExists(
@@ -352,12 +359,14 @@ export async function createWebProject({
     //   pm = "bun";
     // }
 
-    // const gitOption = await askGitInitialization();
+    const gitOption = await askGitInitialization();
     const vscodeInstalled = isVSCodeInstalled();
 
     const tempGitURL =
       "https://raw.githubusercontent.com/blefnk/relivator/main/.env.example";
     await composeEnvFile(targetDir, tempGitURL);
+
+    await initializeGitRepository(targetDir, gitOption);
 
     let shouldInstallByDefault = true;
     if (isDev) {
@@ -488,87 +497,144 @@ export async function createWebProject({
       }
     }
 
+    const shouldDeploy = await confirmPrompt({
+      title: `Do you want to deploy this project to ${deployService}?`,
+      content: "This will start the deployment process.",
+      defaultValue: false,
+    });
+
     if (shouldDeploy) {
-      relinka(
-        "info",
-        "To make deploy, let's create a GitHub repository first...",
-      );
-
-      let octokit: Octokit | null = null;
-
-      // Initialize Octokit with token if available
-      if (memory.githubKey) {
-        octokit = new Octokit({
-          auth: memory.githubKey,
-        });
-      } else {
-        // Get token from user
-        const token = await inputPrompt({
-          title: "Please enter your GitHub personal access token:",
-          content:
-            "Create one at https://github.com/settings/tokens/new \nSet checkmark to `repo` scope and click `Generate token`",
-          validate: (value: string): string | void => {
-            if (!value?.trim()) {
-              return "Token is required";
-            }
-          },
-        });
-
-        octokit = new Octokit({
-          auth: token,
-        });
-
-        // Save token to memory
-        await updateReliverseMemory({
-          githubKey: token,
-        });
+      // Use the existing GitHub CLI state instead of checking again
+      if (!isGitHubCLIInstalled && useGitHubCLI) {
+        relinka(
+          "error",
+          "GitHub CLI is required but not installed. Please restart the process after installing GitHub CLI.",
+        );
+        return;
       }
 
-      // Handle repository setup
+      // Check if repo exists and handle repo creation
       let repoName = appName;
-      let success = false;
+      let repoExists = false;
 
       do {
-        success = await handleGitHubOperations(
-          octokit,
-          githubUsername,
-          repoName,
-          targetDir,
-        );
+        try {
+          if (useGitHubCLI) {
+            // Check GitHub CLI authentication status
+            try {
+              await execa("gh", ["auth", "status"]);
+            } catch (authError: unknown) {
+              relinka("info-verbose", authError.toString());
+              await ghLogin();
+            }
 
-        if (!success) {
-          repoName = await inputPrompt({
-            title: "Please enter a different repository name:",
-            defaultValue: `${repoName}-1`,
-            validate: (value: string): string | void => {
-              if (!value?.trim()) {
-                return "Repository name is required";
-              }
-              if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
-                return "Invalid repository name. Use only letters, numbers, hyphens, and underscores";
-              }
-            },
-          });
+            await execa("gh", [
+              "repo",
+              "view",
+              `${githubUsername}/${repoName}`,
+            ]);
+          } else {
+            // Use git ls-remote for classic git check
+            await execa("git", [
+              "ls-remote",
+              `https://github.com/${githubUsername}/${repoName}.git`,
+            ]);
+          }
+          repoExists = true;
+          relinka(
+            "info",
+            `Repository ${githubUsername}/${repoName} already exists.`,
+          );
+        } catch (error: unknown) {
+          if (error instanceof Error && error.message?.includes("404")) {
+            relinka(
+              "info",
+              `Repository ${githubUsername}/${repoName} is available.`,
+            );
+          } else {
+            relinka("error", "Error checking repository:", error.toString());
+            return;
+          }
+
+          try {
+            relinka("info", "Creating new repository...");
+            if (useGitHubCLI) {
+              await execa(
+                "gh",
+                ["repo", "create", repoName, "--public", "--source", "."],
+                {
+                  cwd: targetDir,
+                },
+              );
+            } else {
+              // Create repo using classic git commands
+              await execa("git", ["init"], { cwd: targetDir });
+              await execa("git", ["add", "."], { cwd: targetDir });
+              await execa("git", ["commit", "-m", "Initial commit"], {
+                cwd: targetDir,
+              });
+              await execa(
+                "git",
+                [
+                  "remote",
+                  "add",
+                  "origin",
+                  `https://github.com/${githubUsername}/${repoName}.git`,
+                ],
+                { cwd: targetDir },
+              );
+            }
+            repoExists = true;
+            relinka(
+              "success",
+              `Repository ${githubUsername}/${repoName} created successfully!`,
+            );
+          } catch (createError: unknown) {
+            if (
+              createError instanceof Error &&
+              createError.message?.includes("already exists")
+            ) {
+              relinka("error", "Repository name already taken.");
+              repoName = await inputPrompt({
+                title: "Please enter a different repository name:",
+                defaultValue: `${repoName}-1`,
+                validate: (value: string): string | void => {
+                  if (!value?.trim()) {
+                    return "Repository name is required";
+                  }
+                  if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
+                    return "Invalid repository name. Use only letters, numbers, hyphens, and underscores";
+                  }
+                },
+              });
+              continue;
+            }
+
+            relinka(
+              "error",
+              "Failed to create repository:",
+              createError instanceof Error
+                ? createError.message
+                : String(createError),
+            );
+            return;
+          }
         }
-      } while (!success);
+      } while (!repoExists);
 
-      // Handle pushing to remote
       const shouldPushCommit = await confirmPrompt({
-        title: "Are you ready to push the commit?",
-        content: "`N` will skip pushing and deploying.",
+        title: "Do you want to push the commit to the remote repository?",
         defaultValue: true,
       });
 
       if (shouldPushCommit) {
         try {
           relinka("info", "Pushing to remote repository...");
-          const git = simpleGit({ baseDir: targetDir });
-
-          // Set up the upstream tracking and push
-          await git.push("origin", "main", ["--set-upstream"]);
-
+          await execa("git", ["push", "origin", "main"], {
+            cwd: targetDir,
+          });
           relinka("success", "Successfully pushed to remote repository!");
-        } catch (pushError) {
+        } catch (pushError: unknown) {
           relinka(
             "error",
             "Failed to push to repository:",
@@ -576,26 +642,68 @@ export async function createWebProject({
           );
           return;
         }
-      } else {
-        relinka("info", "Okay... Skipping commit push and deployment...");
       }
 
-      if (shouldPushCommit && deployService === "Vercel") {
+      if (deployService === "Vercel") {
+        relinka("info", "Let me check if Vercel CLI is installed...");
+
+        let isVercelInstalled = false;
+
+        // Check if vercel is installed
+        try {
+          const { stdout } = await execa("vercel", ["--version"]);
+          isVercelInstalled = true;
+          relinka(
+            "success",
+            `Vercel CLI is already installed! (${stdout.trim()})`,
+          );
+        } catch (error: unknown) {
+          relinka("info", "Vercel CLI is not installed. Installing it now...");
+          relinka("info-verbose", error.toString());
+
+          try {
+            const { stdout: installOutput } = await execa("bun", [
+              "install",
+              "-g",
+              "vercel",
+            ]);
+            isVercelInstalled = true;
+            relinka("success", "Vercel CLI installed successfully!");
+            relinka("info-verbose", installOutput);
+          } catch (installError: unknown) {
+            const errorMessage =
+              installError instanceof Error
+                ? installError.message
+                : String(installError);
+
+            relinka(
+              "error",
+              "Failed to install Vercel CLI. Please install it manually using 'bun install -g vercel'",
+              errorMessage,
+            );
+            return;
+          }
+        }
+
+        if (!isVercelInstalled) {
+          relinka("error", "Unable to proceed without Vercel CLI installed.");
+          return;
+        }
+
         relinka("info", "Checking for Vercel authentication...");
 
         // First try to get token from memory
         let memory = await readReliverseMemory();
-        let vercelToken = memory.vercelKey;
+        let vercelToken = memory.key;
 
-        // Check for both null and undefined cases explicitly
-        if (vercelToken === null || vercelToken === undefined) {
+        // If no token in memory, guide user to create one
+        if (!vercelToken) {
           relinka("info", "Opening Vercel tokens page in your browser...");
+          await open("https://vercel.com/account/tokens");
 
           vercelToken = await inputPrompt({
             title: "Please create and paste your Vercel token:",
-            content: "Visit 👉 https://vercel.com/account/tokens",
-            hint: "🔐 It will be saved securely on your machine.",
-            contentColor: "yellowBright",
+            content: "It will be saved securely on your machine.",
             validate: (value: string): string | void => {
               if (!value?.trim()) {
                 return "Token is required";
@@ -605,12 +713,12 @@ export async function createWebProject({
 
           // Save token to memory
           await updateReliverseMemory({
-            vercelKey: vercelToken,
+            key: vercelToken,
           });
 
           // Verify token was saved
           memory = await readReliverseMemory();
-          if (memory.vercelKey === null || memory.vercelKey === undefined) {
+          if (!memory.key) {
             relinka("error", "Failed to save Vercel token to memory.");
             return;
           }
@@ -624,87 +732,6 @@ export async function createWebProject({
             bearerToken: vercelToken,
           });
 
-          // Create project first
-          try {
-            await vercel.projects.createProject({
-              requestBody: {
-                name: appName,
-                framework: "nextjs",
-                gitRepository: {
-                  type: "github",
-                  repo: `${githubUsername}/${appName}`,
-                },
-              },
-              teamId: vercelTeamName || undefined,
-            });
-            relinka("success", "Project created on Vercel successfully!");
-          } catch (projectError: any) {
-            if (projectError?.response?.status === 409) {
-              relinka(
-                "info",
-                "Project already exists on Vercel, continuing...",
-              );
-            } else {
-              throw projectError;
-            }
-          }
-
-          // Now set up environment variables
-          try {
-            const envVars = [];
-
-            // Always add NEXT_PUBLIC_APP_URL
-            envVars.push({
-              key: "NEXT_PUBLIC_APP_URL",
-              value: domain
-                ? `https://${domain}`
-                : `https://${appName}.vercel.app`,
-              target: ["production", "preview", "development"],
-              type: "plain",
-            });
-
-            // Check if .env file exists and read variables from it
-            const envFilePath = path.join(targetDir, ".env");
-            if (await fs.pathExists(envFilePath)) {
-              const envContent = await fs.readFile(envFilePath, "utf-8");
-              const envLines = envContent.split("\n");
-
-              for (const line of envLines) {
-                const trimmedLine = line.trim();
-                if (trimmedLine && !trimmedLine.startsWith("#")) {
-                  const [key, ...valueParts] = trimmedLine.split("=");
-                  const value = valueParts.join("=").trim();
-                  if (key && value) {
-                    envVars.push({
-                      key: key.trim(),
-                      value: value.replace(/["']/g, ""), // Remove quotes if present
-                      target: ["production", "preview", "development"],
-                      type: "encrypted", // Use encrypted type for .env variables
-                    });
-                  }
-                }
-              }
-            }
-
-            if (envVars.length > 0) {
-              // Add environment variables to the project
-              await vercel.projects.createProjectEnv({
-                idOrName: appName,
-                upsert: "true",
-                requestBody: envVars,
-              });
-
-              relinka("success", "Environment variables set up successfully!");
-            }
-          } catch (envError) {
-            relinka(
-              "error",
-              "Error setting up environment variables:",
-              envError instanceof Error ? envError.message : String(envError),
-            );
-          }
-
-          // Finally, create the deployment
           const createResponse = await vercel.deployments.createDeployment({
             requestBody: {
               name: appName,
@@ -715,14 +742,6 @@ export async function createWebProject({
                 ref: "main",
                 org: githubUsername,
               },
-              projectSettings: {
-                framework: "nextjs",
-                buildCommand: "next build",
-                outputDirectory: ".next",
-                installCommand: "bun install",
-                devCommand: "next dev",
-                rootDirectory: null,
-              },
             },
           });
 
@@ -731,44 +750,30 @@ export async function createWebProject({
             `Deployment created: ID ${createResponse.id} and status ${createResponse.status}`,
           );
 
-          relinka(
-            "info",
-            `You can visit 👉 https://vercel.com 👉 ${appName} 👉 Deployments, to see the deployment process.`,
-          );
-
           // Check deployment status
           let deploymentStatus;
           let deploymentURL;
+          do {
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds between checks
 
-          await task({
-            spinnerSolution: "ora",
-            initialMessage: "Checking deployment status...",
-            successMessage: "✅ Deployment status check complete",
-            errorMessage: "❌ Failed to check deployment status",
-            async action(updateMessage) {
-              do {
-                await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds between checks
+            const statusResponse = await vercel.deployments.getDeployment({
+              idOrUrl: createResponse.id,
+              withGitRepoInfo: "true",
+            });
 
-                const statusResponse = await vercel.deployments.getDeployment({
-                  idOrUrl: createResponse.id,
-                  withGitRepoInfo: "true",
-                });
-
-                deploymentStatus = statusResponse.status;
-                deploymentURL = statusResponse.url;
-                updateMessage(`Deployment status: ${deploymentStatus}`);
-              } while (
-                deploymentStatus === "BUILDING" ||
-                deploymentStatus === "INITIALIZING"
-              );
-            },
-          });
+            deploymentStatus = statusResponse.status;
+            deploymentURL = statusResponse.url;
+            relinka("info", `Deployment status: ${deploymentStatus}`);
+          } while (
+            deploymentStatus === "BUILDING" ||
+            deploymentStatus === "INITIALIZING"
+          );
 
           if (deploymentStatus === "READY") {
             relinka("success", `Deployment successful. URL: ${deploymentURL}`);
 
-            // Set up domain if provided and it's not a .vercel.app domain
-            if (domain && !domain.endsWith(".vercel.app")) {
+            // Set up domain if provided
+            if (domain) {
               try {
                 const addDomainResponse =
                   await vercel.projects.addProjectDomain({
@@ -799,8 +804,7 @@ export async function createWebProject({
             );
             // Remove invalid token from memory
             await updateReliverseMemory({
-              githubKey: null,
-              vercelKey: null,
+              key: null,
             });
           } else {
             relinka(
@@ -856,6 +860,7 @@ export async function createWebProject({
         {
           label: "Close @reliverse/cli",
           value: "close",
+          hint: "Close @reliverse/cli",
         },
         {
           label: "Open Reliverse Documentation",
@@ -950,8 +955,7 @@ export async function createWebProject({
         isDev,
       );
       await clearCheckpoint(checkpointName, isDev);
-      relinka("success", "✅ Project created successfully!");
-      relinka("success-verbose", "Checkpoint cleared.");
+      relinka("success", "Project completed successfully! Checkpoint cleared.");
     }
   } catch (error) {
     // Save failed state if something goes wrong

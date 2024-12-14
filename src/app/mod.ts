@@ -1,11 +1,20 @@
 // 📚 Docs: https://docs.reliverse.org/reliverse/cli
 
-import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import {
+  confirmPrompt,
+  selectPrompt,
+  multiselectPrompt,
+} from "@reliverse/prompts";
 import fs from "fs-extra";
+import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 
 import { readReliverseMemory } from "~/args/memory/impl.js";
+import {
+  clearCheckpoint,
+  findExistingCheckpoints,
+} from "~/utils/checkpoint.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
@@ -17,32 +26,46 @@ import { showEndPrompt, showStartPrompt } from "./menu/showStartEndPrompt.js";
 export async function app({ isDev }: { isDev: boolean }) {
   await showStartPrompt();
 
+  const cwd = getCurrentWorkingDirectory();
+
   if (isDev) {
-    const cwd = getCurrentWorkingDirectory();
-    const testRuntimePath = path.join(cwd, "tests-runtime");
-
-    try {
-      if (await fs.pathExists(testRuntimePath)) {
-        const shouldDeleteTestData = await confirmPrompt({
-          title:
-            "[--dev] Found tests-runtime folder. Do you want me to delete it?",
-        });
-
-        if (shouldDeleteTestData) {
-          await fs.remove(testRuntimePath);
-        }
-      }
-    } catch (error) {
-      relinka(
-        "error",
-        "Error checking/removing test runtime path:",
-        error.toString(),
-      );
+    const shouldRemoveTestsRuntime = await confirmPrompt({
+      title: "[--dev] Do you want to remove the entire tests-runtime folder?",
+    });
+    if (shouldRemoveTestsRuntime) {
+      await fs.remove(path.join(cwd, "tests-runtime"));
     }
   }
 
-  // TODO: if config contains at least one project, show "Open project" option
-  // TODO: implement "Edit Reliverse Memory" option (configuration data editor)
+  const existingCheckpoints = await findExistingCheckpoints(isDev);
+
+  let options = [
+    {
+      label: pc.bold("✨ Build a brand new thing from scratch"),
+      value: "1",
+    },
+    {
+      label: `🔐 ${pc.italic("Exit")}`,
+      value: "exit",
+      hint: pc.dim("ctrl+c anywhere"),
+    },
+  ];
+
+  if (existingCheckpoints.length > 0) {
+    options = [
+      ...options,
+      {
+        label: "📂 Continue existing project",
+        value: "continue",
+        hint: pc.dim(`${existingCheckpoints.length} project(s) in progress`),
+      },
+      {
+        label: "🧼 Delete project(s)",
+        value: "delete",
+        hint: pc.dim("allows to choose what to delete"),
+      },
+    ];
+  }
 
   const memory = await readReliverseMemory();
   const username = memory.user?.name;
@@ -60,46 +83,56 @@ export async function app({ isDev }: { isDev: boolean }) {
       ]
     }`,
     titleColor: "retroGradient",
-    options: [
-      {
-        label: "Build a brand new thing from scratch",
-        value: "1",
-      },
-      // {
-      //   label: "Clone and configure any GitHub repo",
-      //   hint: "coming soon",
-      //   value: "2",
-      //   disabled: true,
-      // },
-      // "4. Add shadcn/ui components to your React/Vue/Svelte project",
-      // "5. Run code modifications on the existing codebase",
-      // "6. Update your GitHub clone with the latest changes",
-      // "7. Add, remove, or replace the Relivator's features",
-      {
-        label: pc.italic("Exit"),
-        value: "exit",
-        hint: pc.dim("ctrl+c anywhere"),
-      },
-    ],
+    options,
   });
 
-  if (option === "1") {
+  if (option === "continue") {
+    if (existingCheckpoints.length === 1) {
+      await buildBrandNewThing(isDev, existingCheckpoints[0]);
+    } else {
+      const projectToResume = await selectPrompt({
+        title: "Which project would you like to continue?",
+        options: existingCheckpoints.map((project) => ({
+          label: project,
+          value: project,
+        })),
+      });
+      await buildBrandNewThing(isDev, projectToResume);
+    }
+  } else if (option === "1") {
     await buildBrandNewThing(isDev);
-  }
-  // else if (option === "2") {
-  //   await installAnyGitRepo();
-  // }
-  // else if ( option === "4. Add shadcn/ui components to your React/Vue/Svelte project" ) {
-  //   await shadcnComponents(program);
-  // }
-  // else if (option === "5. Run code modifications on the existing codebase") {
-  //   await askCodemodUserCodebase();
-  // } else if (option === "6. Update your GitHub clone with the latest changes") {
-  //   await showUpdateCloneMenu();
-  // } else if (option === "7. Add, remove, or replace the Relivator's features") {
-  //   await showRelivatorFeatEditor();
-  // }
-  else if (option === "exit") {
+  } else if (option === "delete") {
+    const projectsToDelete = await multiselectPrompt({
+      title: "Select projects to delete",
+      content: "To exit: press <Ctrl+C> or select nothing.",
+      options: existingCheckpoints.map((project) => ({
+        label: project,
+        value: project,
+      })),
+      defaultValue: existingCheckpoints,
+    });
+
+    if (projectsToDelete.length > 0) {
+      const confirmDelete = await confirmPrompt({
+        title: `Are you sure you want to delete ${projectsToDelete.length} project(s)?`,
+      });
+
+      if (confirmDelete) {
+        for (const project of projectsToDelete) {
+          await clearCheckpoint(project, isDev);
+          await fs.remove(
+            isDev
+              ? path.join(cwd, "tests-runtime", project)
+              : path.join(os.homedir(), ".reliverse", "projects", project),
+          );
+        }
+        relinka(
+          "info",
+          `Successfully deleted ${projectsToDelete.length} project(s)`,
+        );
+      }
+    }
+  } else if (option === "exit") {
     process.exit(0);
   } else {
     relinka("error", "Invalid option selected. Exiting.");

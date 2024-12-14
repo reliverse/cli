@@ -13,7 +13,10 @@ import {
 } from "../data/messages.js";
 import { createWebProject } from "./createWebProject.js";
 
-export async function buildBrandNewThing(isDev: boolean) {
+export async function buildBrandNewThing(
+  isDev: boolean,
+  checkpointName?: string,
+): Promise<void> {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org/reliverse/cli";
   const initialMessage =
@@ -232,6 +235,7 @@ export async function buildBrandNewThing(isDev: boolean) {
         mode: "buildBrandNewThing",
         allowI18nPrompt: true,
         isDev,
+        checkpointName,
       });
       /* END OF WEBSITE CATEGORY */
     }
@@ -308,7 +312,7 @@ export async function buildBrandNewThing(isDev: boolean) {
   //       },
   //       { label: "📝 Copywriting", value: "copywriting", disabled: true },
   //       {
-  //         label: "📊 Social Media Campaign",
+  //         label: "���� Social Media Campaign",
   //         value: "social-media-campaign",
   //         disabled: true,
   //       },

@@ -48,7 +48,7 @@ export async function initializeGitRepository(
 
   relinka(
     "info",
-    "I recommend pushing your commits using GitHub Desktop:",
+    "By the way, I recommend using GitHub Desktop to push your commits later:",
     `"Add local repository" -> Paste: ${dir}\nLearn more and find other tips by visiting https://docs.reliverse.org`,
   );
 }

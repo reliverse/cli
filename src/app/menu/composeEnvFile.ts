@@ -526,6 +526,7 @@ export async function composeEnvFile(
       title:
         "By the way, you can always check the Reliverse Docs to learn more about env variables. Should I open it for you?",
       titleColor: "blueBright",
+      defaultValue: false,
     });
 
     if (shouldOpenDocs) {

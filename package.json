@@ -47,17 +47,9 @@
     "url": "https://github.com/reliverse/cli/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": [
-    "package.json",
-    "README.md",
-    "LICENSE.md",
-    "dist-npm"
-  ],
+  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
   "homepage": "https://github.com/reliverse/cli",
-  "keywords": [
-    "cli",
-    "reliverse"
-  ],
+  "keywords": ["cli", "reliverse"],
   "license": "MIT",
   "dependencies": {
     "@reliverse/core": "^0.1.0",
@@ -80,6 +72,7 @@
     "node-fetch": "^3.3.2",
     "node-fetch-native": "^1.6.4",
     "nypm": "^0.4.1",
+    "octokit": "^4.0.2",
     "ofetch": "^1.4.1",
     "open": "^10.1.0",
     "ora": "^8.1.1",

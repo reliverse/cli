@@ -7,29 +7,31 @@ import {
 } from "~/args/memory/impl.js";
 
 export async function askUserName(): Promise<string> {
-  // TODO: fetch from GitHub after login
-  let placeholder = "johnny911";
-  let content = `I recommend using your or your org's GitHub handle (username).\nIf you don't have one yet, you can create an account here: https://github.com/signup \nDon't worry about adding the @ symbol—I’ll take care of that for you.`;
+  let placeholder = "John Doe";
+  let content =
+    "This name will be used in your project's UI (e.g., footer, about page)";
 
   const memory = await readReliverseMemory();
   if (memory.user?.name) {
     placeholder = memory.user.name;
-    content = `Last time you called yourself ${pc.cyanBright(placeholder)}.`;
+    content = `Last used name: ${pc.cyanBright(placeholder)}`;
   }
 
   const username = await inputPrompt({
-    title:
-      "Your app will feature a handle (e.g., in the footer section). What should it be?",
+    title: "What name would you like to use in your project?",
     defaultValue: placeholder,
-    hint: `Press <Enter> to use the default value. [Default: ${placeholder}]`,
     content,
     contentColor: "dim",
-    // schema: schema.properties.username,
+    validate: (value: string): string | void => {
+      if (!value?.trim()) {
+        return "Name is required";
+      }
+    },
   });
 
-  if (username !== "johnny911") {
+  if (username && username !== placeholder) {
     await updateReliverseMemory({
-      user: { name: username },
+      user: { ...memory.user, name: username },
     });
   }
 
