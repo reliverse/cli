@@ -33,15 +33,10 @@ import { replaceWithModern } from "~/utils/codemods/replaceWithModern.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import {
-  installDrizzle,
-  installPrisma,
-  installStripe,
-  installNextAuth,
-  installResend,
-  installTailwind,
-  installBunTest,
-  installVitest,
-  installJest,
+  installIntegration,
+  INTEGRATION_CONFIGS,
+  REMOVAL_CONFIGS,
+  removeIntegration,
 } from "~/utils/integrations.js";
 import { readReliverseRules } from "~/utils/rules.js";
 
@@ -289,25 +284,33 @@ async function handleIntegrations(cwd: string) {
       },
       { label: "Prisma", value: "prisma" },
       { label: "Supabase", value: "supabase" },
+      { label: "None (Remove existing)", value: "none" },
     ],
     payments: [
       { label: "Stripe", value: "stripe" },
       { label: "Polar", value: "polar" },
+      { label: "None (Remove existing)", value: "none" },
     ],
     auth: [
       { label: "NextAuth.js", value: "next-auth" },
       { label: "Clerk", value: "clerk" },
       { label: "Better-Auth", value: "better-auth" },
+      { label: "None (Remove existing)", value: "none" },
     ],
-    email: [{ label: "Resend", value: "resend" }],
+    email: [
+      { label: "Resend", value: "resend" },
+      { label: "None (Remove existing)", value: "none" },
+    ],
     styling: [
       { label: "Tailwind CSS", value: "tailwind" },
       { label: "shadcn/ui", value: "shadcn" },
+      { label: "None (Remove existing)", value: "none" },
     ],
     testing: [
       { label: "Bun Test", value: "bun-test" },
       { label: "Vitest", value: "vitest" },
       { label: "Jest", value: "jest" },
+      { label: "None (Remove existing)", value: "none" },
     ],
   };
 
@@ -332,67 +335,60 @@ async function handleIntegrations(cwd: string) {
     })),
   });
 
+  // Handle removal case
+  if (selectedIntegration === "none") {
+    const shouldRemove = await confirmPrompt({
+      title: `Are you sure you want to remove all ${category} integrations?`,
+      content: `This will remove all ${category}-related files and dependencies`,
+      defaultValue: false,
+    });
+    if (shouldRemove && REMOVAL_CONFIGS[category]) {
+      await removeIntegration(cwd, REMOVAL_CONFIGS[category]);
+      return;
+    }
+  }
+
   // Handle database-specific sub-options
-  if (category === "database") {
-    if (selectedIntegration === "drizzle") {
-      const option = options.find((opt) => opt.value === "drizzle");
-      const dbType = await selectPrompt({
-        title: "Select database type:",
-        options: option.subOptions.map((sub) => ({
-          label: sub.label,
-          value: sub.value,
-        })),
+  if (category === "database" && selectedIntegration === "drizzle") {
+    const option = options.find((opt) => opt.value === "drizzle");
+    const dbType = await selectPrompt({
+      title: "Select database type:",
+      options: option.subOptions.map((sub) => ({
+        label: sub.label,
+        value: sub.value,
+      })),
+    });
+
+    // Handle provider selection for PostgreSQL
+    if (dbType === "postgres") {
+      const provider = await selectPrompt({
+        title: "Select database provider:",
+        options: option.subOptions
+          .find((sub) => sub.value === "postgres")
+          .providers.map((p) => ({ label: p, value: p.toLowerCase() })),
       });
 
-      // Handle provider selection for PostgreSQL
-      if (dbType === "postgres") {
-        const provider = await selectPrompt({
-          title: "Select database provider:",
-          options: option.subOptions
-            .find((sub) => sub.value === "postgres")
-            .providers.map((p) => ({ label: p, value: p.toLowerCase() })),
-        });
-        await installDrizzle(cwd, dbType, provider);
-        return;
-      }
+      const config = {
+        ...INTEGRATION_CONFIGS.drizzle,
+        dependencies: [
+          ...INTEGRATION_CONFIGS.drizzle.dependencies,
+          provider === "neon" ? "@neondatabase/serverless" : "postgres",
+        ],
+      };
 
-      await installDrizzle(cwd, dbType);
-      return;
-    } else if (selectedIntegration === "prisma") {
-      await installPrisma(cwd);
+      await installIntegration(cwd, config);
       return;
     }
-  } else if (category === "payments") {
-    if (selectedIntegration === "stripe") {
-      await installStripe(cwd);
-      return;
-    }
-  } else if (category === "auth") {
-    if (selectedIntegration === "next-auth") {
-      await installNextAuth(cwd);
-      return;
-    }
-  } else if (category === "email") {
-    if (selectedIntegration === "resend") {
-      await installResend(cwd);
-      return;
-    }
-  } else if (category === "styling") {
-    if (selectedIntegration === "tailwind") {
-      await installTailwind(cwd);
-      return;
-    }
-  } else if (category === "testing") {
-    if (selectedIntegration === "bun-test") {
-      await installBunTest(cwd);
-      return;
-    } else if (selectedIntegration === "vitest") {
-      await installVitest(cwd);
-      return;
-    } else if (selectedIntegration === "jest") {
-      await installJest(cwd);
-      return;
-    }
+
+    await installIntegration(cwd, INTEGRATION_CONFIGS.drizzle);
+    return;
+  }
+
+  // Handle other integrations
+  const integrationKey = selectedIntegration;
+  if (INTEGRATION_CONFIGS[integrationKey]) {
+    await installIntegration(cwd, INTEGRATION_CONFIGS[integrationKey]);
+    return;
   }
 
   relinka(

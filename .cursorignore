@@ -1,6 +1,7 @@
 node_modules/
 dist-jsr/
 dist-npm/
-bun.lockb
 dist/
 *.log
+*.lockb
+*.ipynb
