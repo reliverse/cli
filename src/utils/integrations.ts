@@ -751,6 +751,128 @@ export default function AuthErrorPage() {
       }
     },
   },
+  "next-intl": {
+    name: "next-intl",
+    dependencies: ["next-intl"],
+    files: [
+      {
+        path: "src/i18n.ts",
+        content: `import {getRequestConfig} from 'next-intl/server';
+import {notFound} from 'next/navigation';
+ 
+// Can be imported from a shared config
+const locales = ['en', 'es', 'fr'];
+ 
+export default getRequestConfig(async ({locale}) => {
+  // Validate that the incoming \`locale\` parameter is valid
+  if (!locales.includes(locale as any)) notFound();
+ 
+  return {
+    messages: (await import(\`./messages/\${locale}.json\`)).default
+  };
+});`,
+      },
+      {
+        path: "src/middleware.ts",
+        content: `import createMiddleware from 'next-intl/middleware';
+ 
+export default createMiddleware({
+  // A list of all locales that are supported
+  locales: ['en', 'es', 'fr'],
+ 
+  // Used when no locale matches
+  defaultLocale: 'en'
+});
+ 
+export const config = {
+  // Match only internationalized pathnames
+  matcher: ['/', '/(es|fr)/:path*']
+};`,
+      },
+      {
+        path: "src/messages/en.json",
+        content: `{
+  "Index": {
+    "title": "Hello world!"
+  }
+}`,
+      },
+    ],
+  },
+
+  "next-international": {
+    name: "next-international",
+    dependencies: ["next-international"],
+    files: [
+      {
+        path: "src/i18n/index.ts",
+        content: `import {createI18n} from 'next-international'
+ 
+export const {useI18n, useScopedI18n, I18nProvider, getLocaleProps} = createI18n({
+  en: () => import('./en'),
+  es: () => import('./es'),
+  fr: () => import('./fr'),
+})`,
+      },
+      {
+        path: "src/i18n/en.ts",
+        content: `export default {
+  hello: 'Hello',
+  welcome: 'Welcome to our site',
+} as const`,
+      },
+    ],
+  },
+
+  lingui: {
+    name: "Lingui",
+    dependencies: ["@lingui/react"],
+    devDependencies: ["@lingui/cli", "@lingui/macro"],
+    files: [
+      {
+        path: "lingui.config.ts",
+        content: `import { defineConfig } from '@lingui/conf'
+
+export default defineConfig({
+  locales: ['en', 'es', 'fr'],
+  sourceLocale: 'en',
+  catalogs: [{
+    path: 'src/locales/{locale}/messages',
+    include: ['src'],
+  }],
+  format: 'po',
+})`,
+      },
+      {
+        path: "src/i18n.ts",
+        content: `import { i18n } from '@lingui/core'
+import { en, es, fr } from 'make-plural/plurals'
+
+export const locales = {
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+}
+export const defaultLocale = 'en'
+
+i18n.loadLocaleData({
+  en: { plurals: en },
+  es: { plurals: es },
+  fr: { plurals: fr },
+})
+
+export async function activateLocale(locale: string) {
+  const { messages } = await import(\`./locales/\${locale}/messages.po\`)
+  i18n.load(locale, messages)
+  i18n.activate(locale)
+}`,
+      },
+    ],
+    scripts: {
+      "i18n:extract": "lingui extract",
+      "i18n:compile": "lingui compile",
+    },
+  },
 };
 
 const REMOVAL_CONFIGS: Record<string, RemovalConfig> = {
@@ -868,6 +990,35 @@ const REMOVAL_CONFIGS: Record<string, RemovalConfig> = {
     files: ["jest.config.js", "vitest.config.ts"],
     directories: ["src/__tests__"],
     scripts: ["test", "test:ui", "test:watch"],
+    envVars: [],
+  },
+  i18n: {
+    name: "Internationalization",
+    dependencies: [
+      "next-intl",
+      "next-international",
+      "@lingui/react",
+      "@lingui/core",
+    ],
+    devDependencies: [
+      "@lingui/cli",
+      "@lingui/macro",
+    ],
+    files: [
+      "src/i18n.ts",
+      "src/middleware.ts",
+      "lingui.config.ts",
+      "src/i18n/index.ts",
+    ],
+    directories: [
+      "src/messages",
+      "src/locales",
+      "src/i18n",
+    ],
+    scripts: [
+      "i18n:extract",
+      "i18n:compile",
+    ],
     envVars: [],
   },
 };

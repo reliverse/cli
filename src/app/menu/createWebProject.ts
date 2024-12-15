@@ -22,7 +22,7 @@ import {
 } from "~/args/memory/impl.js";
 import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
-import { downloadI18nFiles } from "~/utils/downloadI18nFiles.js";
+import { setupI18nFiles } from "~/utils/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/utils/extractRepoInfo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { initializeGitRepository } from "~/utils/git.js";
@@ -33,12 +33,12 @@ import { getDefaultRules, writeReliverseRules } from "~/utils/rules.js";
 
 import { askAppDomain } from "./askAppDomain.js";
 import { askAppName } from "./askAppName.js";
-import { askCheckAndDownloadFiles } from "./askCheckAndDownloadFiles.js";
 import { askGithubName } from "./askGithubName.js";
 import { askGitInitialization } from "./askGitInitialization.js";
 import { askUserName } from "./askUserName.js";
 import { askVercelName } from "./askVercelName.js";
 import { composeEnvFile } from "./composeEnvFile.js";
+import { generateProjectConfigs } from "./generateProjectConfigs.js";
 
 async function checkScriptExists(
   targetDir: string,
@@ -199,12 +199,9 @@ export async function createWebProject({
 
       // Store GitHub and Vercel usernames in memory
       await updateReliverseMemory({
-        user: {
-          ...memory.user,
-          name: username,
-          githubName: githubUsername,
-          vercelName: vercelTeamName,
-        },
+        name: username,
+        githubUsername,
+        vercelUsername: vercelTeamName,
       });
     }
 
@@ -280,7 +277,7 @@ export async function createWebProject({
               updateMessage(
                 "Some magic is happening... This may take a while...",
               );
-              await downloadI18nFiles(targetDir);
+              await setupI18nFiles(targetDir);
             } catch (error) {
               relinka("error", "Error during i18n move:", error.toString());
               throw error;
@@ -305,21 +302,15 @@ export async function createWebProject({
             updateMessage(
               "Some magic is happening... This may take a while...",
             );
-            await downloadI18nFiles(targetDir);
+            await setupI18nFiles(targetDir);
           },
         });
       }
     }
 
-    await askCheckAndDownloadFiles(targetDir);
+    await generateProjectConfigs(targetDir);
 
     const cwd = getCurrentWorkingDirectory();
-
-    // const { pmName } = await getPackageManager(cwd);
-    // let pm = pmName;
-    // if (await isBunInstalled()) {
-    //   pm = "bun";
-    // }
 
     // Skip git initialization if configured
     if (!config?.shouldInitGit) {
@@ -337,6 +328,32 @@ export async function createWebProject({
         defaultValue: true,
       });
     }
+
+    // Generate or update .reliverserules
+    const rules = await getDefaultRules(appName || "my-app", username || "user");
+
+    // Update rules based on project setup
+    rules.features = {
+      ...rules.features,
+      i18n: allowI18nPrompt,
+      authentication: shouldDeploy,
+      database: shouldInstallDependencies,
+    };
+
+    if (shouldDeploy) {
+      rules.deployPlatform = deployService as ReliverseRules["deployPlatform"];
+      rules.deployUrl = domain
+        ? `https://${domain}`
+        : `https://${appName}.vercel.app`;
+      rules.appRepository = `https://github.com/${githubUsername}/${appName}`;
+      rules.productionBranch = "main";
+    }
+
+    await writeReliverseRules(targetDir, rules);
+    relinka(
+      "success-verbose",
+      "Generated .reliverserules with project-specific settings",
+    );
 
     if (shouldInstallDependencies) {
       await installDependencies({
@@ -767,6 +784,8 @@ export async function createWebProject({
         "- Install dependencies manually if needed: bun i OR pnpm i",
         "- Apply linting and formatting: bun check OR pnpm check",
         "- Run the project: bun dev OR pnpm dev",
+        "",
+        "- P.S. Run `reliverse` in the project directory to add/remove features.",
       ],
     });
 
@@ -830,28 +849,6 @@ export async function createWebProject({
         }
       }
     }
-
-    // After all setup is done, write the .reliverserules file
-    const rules: ReliverseRules = getDefaultRules(appName, username);
-
-    // Update rules based on project setup
-    rules.features = {
-      ...rules.features,
-      i18n: allowI18nPrompt,
-      authentication: shouldDeploy,
-      database: shouldInstallDependencies,
-    };
-
-    if (shouldDeploy) {
-      rules.deployPlatform = deployService as ReliverseRules["deployPlatform"];
-      rules.deployUrl = domain
-        ? `https://${domain}`
-        : `https://${appName}.vercel.app`;
-      rules.appRepository = `https://github.com/${githubUsername}/${appName}`;
-      rules.productionBranch = "main";
-    }
-
-    await writeReliverseRules(targetDir, rules);
 
     relinka(
       "info",

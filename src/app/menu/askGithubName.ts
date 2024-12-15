@@ -7,37 +7,35 @@ import {
 } from "~/args/memory/impl.js";
 
 export async function askGithubName(): Promise<string> {
-  let placeholder = "";
-  let content =
-    "If you don't have a GitHub account yet, you can create one at: https://github.com/signup";
-
   const memory = await readReliverseMemory();
-  if (memory.user?.githubName) {
-    placeholder = memory.user.githubName;
+
+  let placeholder = "";
+  let content = "";
+
+  if (memory.githubUsername) {
+    placeholder = memory.githubUsername;
     content = `Last used GitHub username: ${pc.cyanBright(placeholder)}`;
   }
 
-  const githubName = await inputPrompt({
+  const githubUsername = await inputPrompt({
     title: "What's your GitHub username?",
-    defaultValue: placeholder,
-    hint: "This will be used for repository creation and deployment",
+    placeholder,
     content,
-    contentColor: "dim",
-    validate: (value: string): string | void => {
+    validate: (value) => {
       if (!value?.trim()) {
         return "GitHub username is required for deployment";
       }
-      if (!/^[a-zA-Z0-9-]+$/.test(value)) {
+      if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
         return "Invalid GitHub username format";
       }
     },
   });
 
-  if (githubName) {
+  if (githubUsername && githubUsername !== placeholder) {
     await updateReliverseMemory({
-      user: { ...memory.user, githubName },
+      githubUsername,
     });
   }
 
-  return githubName;
+  return githubUsername;
 }

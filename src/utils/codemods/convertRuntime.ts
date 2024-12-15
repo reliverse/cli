@@ -1,8 +1,16 @@
+import { destr } from "destr";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
+
+// Add type definition
+type TSConfig = {
+  compilerOptions?: {
+    types?: string[];
+  };
+};
 
 const RUNTIME_REPLACEMENTS = {
   bun: {
@@ -79,10 +87,10 @@ export async function convertRuntime(
     if (targetRuntime === "bun") {
       // Convert package.json scripts
       if (file === "package.json") {
-        const packageJson = JSON.parse(updatedContent) as {
-          scripts?: Record<string, string>;
-        };
-        if (packageJson.scripts) {
+        const packageJson = destr<{ scripts?: Record<string, string> }>(
+          updatedContent,
+        );
+        if (packageJson?.scripts) {
           for (const [key, value] of Object.entries(packageJson.scripts)) {
             if (typeof value === "string") {
               packageJson.scripts[key] = value
@@ -115,13 +123,13 @@ export async function convertRuntime(
         );
 
         // Create import map for third-party dependencies
-        const packageJson = JSON.parse(content) as {
-          dependencies?: Record<string, string>;
-        };
+        const packageJson = destr<{ dependencies?: Record<string, string> }>(
+          content,
+        );
         const importMap = {
           imports: {},
         };
-        if (packageJson.dependencies) {
+        if (packageJson?.dependencies) {
           for (const dep of Object.keys(packageJson.dependencies)) {
             importMap.imports[dep] = `https://esm.sh/${dep}`;
           }
@@ -144,7 +152,9 @@ export async function convertRuntime(
     // Convert tsconfig.json for Bun
     const tsconfigPath = path.join(projectPath, "tsconfig.json");
     if (await fs.pathExists(tsconfigPath)) {
-      const tsconfig = await fs.readJSON(tsconfigPath);
+      const tsconfig = destr<TSConfig>(
+        await fs.readFile(tsconfigPath, "utf-8"),
+      );
       tsconfig.compilerOptions = {
         ...tsconfig.compilerOptions,
         types: [...(tsconfig.compilerOptions?.types || []), "bun-types"],

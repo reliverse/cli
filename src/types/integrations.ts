@@ -18,6 +18,7 @@ export type IntegrationCategory =
   | "auth"
   | "email"
   | "styling"
-  | "testing";
+  | "testing"
+  | "i18n";
 
 export type IntegrationOptions = Record<string, IntegrationOption[]>;

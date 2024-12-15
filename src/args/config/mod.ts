@@ -35,7 +35,7 @@ export default defineCommand({
         process.exit(1);
       }
 
-      const rules = getDefaultRules("my-app", "user");
+      const rules = await getDefaultRules("my-app", "user");
       // Add all codemod configurations
       rules.codeStyle = {
         ...rules.codeStyle,

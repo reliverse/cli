@@ -16,37 +16,23 @@ export const FILE_CONFLICTS = [
 ];
 
 export const REPO_URLS = {
-  "blefnk/relivator": "https://github.com/blefnk/relivator",
-  "blefnk/next-react-ts-src-minimal":
-    "https://github.com/blefnk/next-react-ts-src-minimal",
-  "microsoft/vscode-extension-samples":
-    "https://github.com/microsoft/vscode-extension-samples",
-  "microsoft/vscode-extension-template":
-    "https://github.com/microsoft/vscode-extension-template",
+  "blefnk/relivator": "blefnk/relivator",
+  "blefnk/next-react-ts-src-minimal": "blefnk/next-react-ts-src-minimal",
+  "microsoft/vscode-extension-samples": "microsoft/vscode-extension-samples",
+  "microsoft/vscode-extension-template": "microsoft/vscode-extension-template",
 } as const;
 
-export const MEMORY_FILE = ".reliverse/.reliverse";
+export const MEMORY_FILE = ".reliverse/reliverse.db";
 
-// Path settings for important files and directories
-export const FILE_PATHS = {
-  layoutFile: "src/app/layout.tsx", // Path to layout file in the repo
-  pageFile: "src/app/page.tsx", // Path to page file in the repo
-};
-
-// Files required for i18n setup
-export const FILES_TO_DOWNLOAD = [FILE_PATHS.layoutFile, FILE_PATHS.pageFile];
-
-// File categories used in conflict resolution or file download operations
-// todo: figure out the better approach to get the files
-// todo: instead of just getting them from the template repo
-export const fileCategories: Record<string, string[]> = {
-  biome: ["biome.json"],
-  eslint: [".eslintrc.cjs", "eslint.config.js"],
-  GitHub: [".github", "README.md"],
-  IDE: [".vscode"],
-};
+// Configuration file categories for generation
+export const CONFIG_CATEGORIES = {
+  core: [".reliverserules", "reliverse.json"],
+  linting: ["biome.json"],
+  ide: [".vscode/settings.json"],
+  git: [".gitignore"],
+} as const;
 
 // Get full URL from short name
 export function getRepoUrl(shortName: keyof typeof REPO_URLS): string {
-  return REPO_URLS[shortName];
+  return `https://github.com/${REPO_URLS[shortName]}`;
 }

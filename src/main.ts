@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
+import fs from "fs-extra";
+import os from "os";
+import path from "pathe";
 
+import { MEMORY_FILE } from "./app/data/constants.js";
 import { showAnykeyPrompt } from "./app/menu/showAnykeyPrompt.js";
 import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { readReliverseMemory } from "./args/memory/impl.js";
-import studioCommand from "./args/studio/mod.js";
 import { readConfig, parseCliArgs } from "./utils/config.js";
+import { relinka } from "./utils/console.js";
 import { getCurrentWorkingDirectory } from "./utils/fs.js";
 
 const main = defineCommand({
@@ -38,52 +42,14 @@ const main = defineCommand({
       type: "boolean",
       description: "Automatically answer 'no' to git initialization prompt",
     },
-    "no-i18n": {
-      type: "boolean",
-      description: "Automatically answer 'no' to i18n configuration prompt",
-    },
-    "no-db": {
-      type: "boolean",
-      description: "Automatically answer 'no' to database scripts prompts",
-    },
-    template: {
-      type: "string",
-      description: "Template to use (GitHub repository URL)",
-    },
-    username: {
-      type: "string",
-      description: "Your name for project attribution",
-    },
-    "github-username": {
-      type: "string",
-      description: "Your GitHub username for deployment",
-    },
-    "vercel-username": {
-      type: "string",
-      description: "Your Vercel team name for deployment",
-    },
-    domain: {
-      type: "string",
-      description: "Domain for the project",
-    },
-    category: {
-      type: "string",
-      description: "Project category (currently only 'development')",
-    },
-    "project-type": {
-      type: "string",
-      description: "Project type (currently only 'website')",
-    },
-    framework: {
-      type: "string",
-      description: "Framework to use (currently only 'nextjs')",
-    },
-    "website-category": {
-      type: "string",
-      description: "Website category (currently only 'e-commerce')",
-    },
   },
   run: async ({ args }) => {
+    const homeDir = os.homedir();
+    const memoryFile = path.join(homeDir, MEMORY_FILE);
+
+    // Ensure .reliverse directory exists
+    await fs.ensureDir(path.dirname(memoryFile));
+
     const cwd = getCurrentWorkingDirectory();
     const config = await readConfig(cwd);
     const cliConfig = parseCliArgs(process.argv.slice(2));
@@ -93,12 +59,28 @@ const main = defineCommand({
 
     // Check for existing authentication in SQLite
     const memory = await readReliverseMemory();
-    const isAuthenticated = memory.code && memory.key;
+    const isAuthenticated =
+      memory.code &&
+      memory.code !== "missing" &&
+      memory.key &&
+      memory.key !== "missing";
 
     if (!isAuthenticated) {
-      await showAnykeyPrompt("welcome");
-      await showAnykeyPrompt("privacy");
+      await showAnykeyPrompt();
       await auth({ dev: args.dev, useLocalhost: false });
+
+      // Re-check authentication after auth flow
+      const updatedMemory = await readReliverseMemory();
+      const authSuccess =
+        updatedMemory.code &&
+        updatedMemory.code !== "missing" &&
+        updatedMemory.key &&
+        updatedMemory.key !== "missing";
+
+      if (!authSuccess) {
+        relinka("error", "Authentication failed. Please try again.");
+        process.exit(1);
+      }
     }
 
     await app({ isDev: args.dev, config: mergedConfig });
@@ -108,9 +90,9 @@ const main = defineCommand({
     help: () => import("~/args/help/mod.js").then((r) => r.default),
     login: () => import("~/args/login/mod.js").then((r) => r.default),
     logout: () => import("~/args/logout/mod.js").then((r) => r.default),
-    memory: () => import("~/args/memory/mod.js").then((r) => r.default),
     config: () => import("~/args/config/mod.js").then((r) => r.default),
-    studio: studioCommand,
+    memory: () => import("~/args/memory/mod.js").then((r) => r.default),
+    studio: () => import("~/args/studio/mod.js").then((r) => r.default),
   },
 });
 

@@ -7,37 +7,35 @@ import {
 } from "~/args/memory/impl.js";
 
 export async function askVercelName(): Promise<string> {
-  let placeholder = "";
-  let content =
-    "If you don't have a Vercel account yet, you can create one at: https://vercel.com/signup";
-
   const memory = await readReliverseMemory();
-  if (memory.user?.vercelName) {
-    placeholder = memory.user.vercelName;
+
+  let placeholder = "";
+  let content = "";
+
+  if (memory.vercelUsername) {
+    placeholder = memory.vercelUsername;
     content = `Last used Vercel username: ${pc.cyanBright(placeholder)}`;
   }
 
-  const vercelName = await inputPrompt({
-    title: "What's your Vercel team name?",
-    defaultValue: placeholder,
-    hint: "This will be used for project deployment. Your teams are here: https://vercel.com/account (All accounts have a default Hobby team)",
+  const vercelUsername = await inputPrompt({
+    title: "What's your Vercel username or team slug?",
+    placeholder,
     content,
-    contentColor: "dim",
-    validate: (value: string): string | void => {
+    validate: (value) => {
       if (!value?.trim()) {
-        return "Vercel team name is required for deployment";
+        return "Vercel username is required for deployment";
       }
-      if (!/^[a-zA-Z0-9-]+$/.test(value)) {
-        return "Invalid Vercel team name format";
+      if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
+        return "Invalid Vercel username format";
       }
     },
   });
 
-  if (vercelName) {
+  if (vercelUsername && vercelUsername !== placeholder) {
     await updateReliverseMemory({
-      user: { ...memory.user, vercelName },
+      vercelUsername,
     });
   }
 
-  return vercelName;
+  return vercelUsername;
 }

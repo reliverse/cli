@@ -1,29 +1,79 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { FILES_TO_DOWNLOAD, getRepoUrl } from "~/app/data/constants.js";
-import { cloneAndCopyFiles } from "~/utils/cloneAndCopyFiles.js";
 import { relinka } from "~/utils/console.js";
 
-export async function downloadI18nFiles(targetDir: string): Promise<void> {
-  // Create a temporary directory within the target project
-  const tempRepoDir = path.join(targetDir, ".temp-i18n");
-
+export async function setupI18nFiles(targetDir: string): Promise<void> {
   try {
-    // Ensure temp directory exists and is empty
-    await fs.emptyDir(tempRepoDir);
-    relinka("info", "Cloning repository for i18n-specific files...");
-
     // Ensure target directory exists
     await fs.ensureDir(targetDir);
 
-    await cloneAndCopyFiles(
-      FILES_TO_DOWNLOAD,
-      targetDir,
-      true,
-      getRepoUrl("blefnk/relivator"),
-      tempRepoDir,
-    );
+    // Generate i18n layout file
+    const layoutPath = path.join(targetDir, "src/app/layout.tsx");
+    await fs.ensureDir(path.dirname(layoutPath));
+    const layoutContent = `
+import { dir } from "i18next";
+import { languages } from "~/config/i18n";
+import { type Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Internationalized App",
+    description: "App with i18n support",
+  };
+}
+
+export default function RootLayout({
+  children,
+  params: { lang },
+}: {
+  children: React.ReactNode;
+  params: { lang: string };
+}) {
+  return (
+    <html lang={lang} dir={dir(lang)}>
+      <body>{children}</body>
+    </html>
+  );
+}
+
+export function generateStaticParams() {
+  return languages.map((lang) => ({ lang }));
+}`;
+    await fs.writeFile(layoutPath, layoutContent);
+    relinka("success", "Generated i18n layout file");
+
+    // Generate i18n page file
+    const pagePath = path.join(targetDir, "src/app/page.tsx");
+    const pageContent = `
+import { useTranslation } from "~/utils/i18n";
+
+export default async function Home() {
+  const { t } = await useTranslation();
+  
+  return (
+    <main>
+      <h1>{t("welcome")}</h1>
+    </main>
+  );
+}`;
+    await fs.writeFile(pagePath, pageContent);
+    relinka("success", "Generated i18n page file");
+
+    // Generate i18n config
+    const i18nConfigPath = path.join(targetDir, "src/config/i18n.ts");
+    await fs.ensureDir(path.dirname(i18nConfigPath));
+    const i18nConfigContent = `
+export const languages = ["en", "es", "fr"];
+export const defaultLanguage = "en";
+
+export const languageNames = {
+  en: "English",
+  es: "Español",
+  fr: "Français",
+} as const;`;
+    await fs.writeFile(i18nConfigPath, i18nConfigContent);
+    relinka("success", "Generated i18n configuration");
 
     relinka("success", "Internationalization was successfully integrated.");
   } catch (error) {
@@ -31,11 +81,6 @@ export async function downloadI18nFiles(targetDir: string): Promise<void> {
       "error",
       `Error during i18n setup: ${error instanceof Error ? error.message : String(error)}`,
     );
-    throw error; // Re-throw to allow caller to handle the error
-  } finally {
-    // Clean up temporary directory if it exists
-    await fs.remove(tempRepoDir).catch(() => {
-      // Ignore cleanup errors
-    });
+    throw error;
   }
 }

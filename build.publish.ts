@@ -5,6 +5,7 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import mri from "mri";
 import path from "path";
+import { destr } from "destr";
 
 import { relinka } from "~/utils/console.js";
 
@@ -91,18 +92,14 @@ async function publishJsr(dryRun: boolean) {
 async function bumpVersions(oldVersion: string, newVersion: string) {
   // Update package.json
   const pkgPath = path.resolve("package.json");
-  const pkg = JSON.parse(await fs.readFile(pkgPath, "utf-8")) as {
-    version: string;
-  };
+  const pkg = destr<{ version: string }>(await fs.readFile(pkgPath, "utf-8"));
   pkg.version = newVersion;
   await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
   // Update jsr.jsonc
   const jsrPath = path.resolve("jsr.jsonc");
   if (await fs.pathExists(jsrPath)) {
-    const jsrConfig = JSON.parse(await fs.readFile(jsrPath, "utf-8")) as {
-      version: string;
-    };
+    const jsrConfig = destr<{ version: string }>(await fs.readFile(jsrPath, "utf-8"));
     jsrConfig.version = newVersion;
     await fs.writeFile(jsrPath, JSON.stringify(jsrConfig, null, 2));
   }
@@ -126,9 +123,7 @@ async function main() {
 
   if (newVersion) {
     // Perform version bump
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf-8")) as {
-      version: string;
-    };
+    const pkg = destr<{ version: string }>(await fs.readFile("package.json", "utf-8"));
     const oldVersion = pkg.version;
     if (oldVersion !== newVersion) {
       await bumpVersions(oldVersion, newVersion);

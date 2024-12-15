@@ -13,18 +13,14 @@ export default defineCommand({
     const memory = await readReliverseMemory();
     relinka("info", "Current memory values:");
     console.log({
-      code: memory.code ? "exists" : "missing",
-      key: memory.key ? "exists" : "missing",
-      githubKey: memory.githubKey ? "exists" : "missing",
-      vercelKey: memory.vercelKey ? "exists" : "missing",
-      user: memory.user
-        ? {
-            name: memory.user.name || "missing",
-            githubName: memory.user.githubName || "missing",
-            vercelName: memory.user.vercelName || "missing",
-            shouldDeploy: memory.user.shouldDeploy ?? "missing",
-          }
-        : "missing",
+      code: memory.code === "missing" ? "missing" : "exists",
+      key: memory.key === "missing" ? "missing" : "exists",
+      githubKey: memory.githubKey === "missing" ? "missing" : "exists",
+      vercelKey: memory.vercelKey === "missing" ? "missing" : "exists",
+      name: memory.name || "missing",
+      email: memory.email || "missing",
+      githubUsername: memory.githubUsername || "missing",
+      vercelUsername: memory.vercelUsername || "missing",
     });
     process.exit(0);
   },

@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
+import { destr } from "destr";
 
 import { relinka } from "~/utils/console.js";
 
@@ -24,7 +25,7 @@ export async function migrateFromFile(): Promise<void> {
 
       // Read old file
       const fileContent = await fs.readFile(oldFilePath, "utf8");
-      const oldData = JSON.parse(fileContent) as OldMemoryFileData;
+      const oldData = destr<OldMemoryFileData>(fileContent);
 
       // Migrate keys
       const migrations: Promise<void>[] = [];

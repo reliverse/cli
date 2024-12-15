@@ -1,84 +1,120 @@
+import fs from "fs-extra";
+import os from "os";
+import path from "pathe";
+
+import { MEMORY_FILE } from "~/app/data/constants.js";
+import { db } from "~/db/client.js";
+import { encrypt, decrypt, type ConfigKey } from "~/db/config.js";
 import {
-  getConfigValue,
-  setConfigValue,
-  deleteConfigValue,
-} from "~/db/config.js";
-import { migrateFromFile } from "~/db/migrate.js";
+  configKeysTable,
+  userDataTable,
+  type UserDataKeys,
+} from "~/db/schema.js";
+import { relinka } from "~/utils/console.js";
 
-export type ReliverseMemory = {
-  user?: {
-    name?: string;
-    githubName?: string;
-    vercelName?: string;
-    shouldDeploy?: boolean;
-  };
-  githubKey?: string | null;
-  vercelKey?: string | null;
-  code?: string | null;
-  key?: string | null;
-};
+import type { Memory } from "./types.js";
 
-// Track if we've already attempted migration
-let migrationAttempted = false;
+const homeDir = os.homedir();
+const dbPath = path.join(homeDir, MEMORY_FILE);
 
-export async function readReliverseMemory(): Promise<ReliverseMemory> {
-  // Attempt migration only once
-  if (!migrationAttempted) {
-    await migrateFromFile();
-    migrationAttempted = true;
+// Ensure directory exists
+await fs.ensureDir(path.dirname(dbPath));
+
+export async function readReliverseMemory(): Promise<Memory> {
+  try {
+    // Read encrypted data from config_keys
+    const configRows = await db.select().from(configKeysTable);
+    const configData = configRows.reduce<Record<string, string>>((acc, row) => {
+      try {
+        acc[row.key] = decrypt(row.value);
+      } catch {
+        acc[row.key] = "missing";
+      }
+      return acc;
+    }, {});
+
+    // Read non-encrypted data from user_data
+    const userRows = await db.select().from(userDataTable);
+    const userData = userRows.reduce<Record<string, string>>((acc, row) => {
+      acc[row.key] = row.value;
+      return acc;
+    }, {});
+
+    return {
+      // Encrypted data
+      code: configData.code || "missing",
+      key: configData.key || "missing",
+      githubKey: configData.githubKey || "missing",
+      vercelKey: configData.vercelKey || "missing",
+      // Non-encrypted data
+      name: userData.name || "missing",
+      email: userData.email || "missing",
+      githubUsername: userData.githubUsername || "missing",
+      vercelUsername: userData.vercelUsername || "missing",
+    };
+  } catch (error) {
+    relinka("error", "Error reading memory:", error.toString());
+    return {
+      code: "missing",
+      key: "missing",
+      githubKey: "missing",
+      vercelKey: "missing",
+      name: "missing",
+      email: "missing",
+      githubUsername: "missing",
+      vercelUsername: "missing",
+    };
   }
-
-  const [githubKey, vercelKey, code, key] = await Promise.all([
-    getConfigValue("githubKey"),
-    getConfigValue("vercelKey"),
-    getConfigValue("code"),
-    getConfigValue("key"),
-  ]);
-
-  return {
-    githubKey,
-    vercelKey,
-    code,
-    key,
-  };
 }
 
 export async function updateReliverseMemory(
-  memory: Partial<ReliverseMemory>,
+  data: Partial<Memory>,
 ): Promise<void> {
-  const updates: Promise<void>[] = [];
+  try {
+    // Split updates into encrypted and non-encrypted data
+    const configUpdates = Object.entries(data)
+      .filter(([key]) =>
+        ["code", "key", "githubKey", "vercelKey"].includes(key),
+      )
+      .map(([key, value]) => ({
+        key: key as ConfigKey,
+        value: encrypt(value),
+      }));
 
-  if (memory.githubKey !== undefined) {
-    if (memory.githubKey === null) {
-      updates.push(deleteConfigValue("githubKey"));
-    } else {
-      updates.push(setConfigValue("githubKey", memory.githubKey));
+    const userDataUpdates = Object.entries(data)
+      .filter(([key]) =>
+        ["name", "email", "githubUsername", "vercelUsername"].includes(key),
+      )
+      .map(([key, value]) => ({
+        key: key as UserDataKeys,
+        value: value,
+      }));
+
+    // Update encrypted data in config_keys
+    for (const update of configUpdates) {
+      await db
+        .insert(configKeysTable)
+        .values(update)
+        .onConflictDoUpdate({
+          target: configKeysTable.key,
+          set: { value: update.value },
+        });
     }
-  }
 
-  if (memory.vercelKey !== undefined) {
-    if (memory.vercelKey === null) {
-      updates.push(deleteConfigValue("vercelKey"));
-    } else {
-      updates.push(setConfigValue("vercelKey", memory.vercelKey));
+    // Update non-encrypted data in user_data
+    for (const update of userDataUpdates) {
+      await db
+        .insert(userDataTable)
+        .values(update)
+        .onConflictDoUpdate({
+          target: userDataTable.key,
+          set: { value: update.value },
+        });
     }
-  }
 
-  if (memory.code !== undefined) {
-    if (memory.code === null) {
-      updates.push(deleteConfigValue("code"));
-    } else {
-      updates.push(setConfigValue("code", memory.code));
-    }
+    relinka("success-verbose", "Memory updated successfully");
+  } catch (error) {
+    relinka("error", "Error updating memory:", error.toString());
+    throw error;
   }
-
-  if (memory.key !== undefined) {
-    if (memory.key === null) {
-      updates.push(deleteConfigValue("key"));
-    } else {
-      updates.push(setConfigValue("key", memory.key));
-    }
-  }
-
-  await Promise.all(updates);
 }

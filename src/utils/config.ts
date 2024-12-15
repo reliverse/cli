@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
+import { destr } from "destr";
 
 import { relinka } from "~/utils/console.js";
 
@@ -26,7 +27,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
   try {
     if (await fs.pathExists(configPath)) {
       const configContent = await fs.readFile(configPath, "utf-8");
-      const userConfig = JSON.parse(configContent) as Partial<ReliverseConfig>;
+      const userConfig = destr<Partial<ReliverseConfig>>(configContent);
       return { ...DEFAULT_CONFIG, ...userConfig };
     }
   } catch (error) {

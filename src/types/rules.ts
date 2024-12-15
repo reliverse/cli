@@ -4,10 +4,16 @@ export type PreferredLibraries = {
   stateManagement?: "zustand" | "jotai" | "redux-toolkit" | "none";
   formManagement?: "react-hook-form" | "formik" | "none";
   styling?: "tailwind" | "styled-components" | "css-modules" | "sass";
-  uiComponents?: "shadcn-ui" | "material-ui" | "chakra-ui" | "none";
-  testing?: "jest" | "vitest" | "playwright" | "cypress" | "none";
-  authentication?: "next-auth" | "clerk" | "auth0" | "supabase-auth" | "none";
-  database?: "prisma" | "drizzle" | "mongoose" | "none";
+  uiComponents?: "shadcn-ui" | "chakra-ui" | "material-ui" | "none";
+  testing?: "bun" | "vitest" | "jest" | "playwright" | "cypress" | "none";
+  authentication?:
+    | "better-auth"
+    | "next-auth"
+    | "clerk"
+    | "supabase-auth"
+    | "auth0"
+    | "none";
+  database?: "drizzle" | "prisma" | "mongoose" | "none";
   api?: "trpc" | "graphql" | "rest" | "none";
 };
 
@@ -18,7 +24,7 @@ export type CodeStylePreferences = {
   importOrRequire: "import" | "require" | "mixed";
   quoteMark: "single" | "double";
   semicolons: boolean;
-  maxLineLength: number;
+  lineWidth: number;
   indentStyle: "space" | "tab";
   indentSize: 2 | 4 | 8;
   cjsToEsm?: boolean;
@@ -90,6 +96,9 @@ export type ReliverseRules = {
     docker: boolean;
     ci: boolean;
   };
+
+  // Dependencies Management
+  ignoreDependencies?: string[];
 
   // Custom Extensions
   customRules?: Record<string, unknown>;

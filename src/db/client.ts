@@ -1,5 +1,5 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client/node";
+import { drizzle } from "drizzle-orm/libsql/node";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
@@ -18,15 +18,21 @@ const client = createClient({
   url: `file:${dbPath}`,
 });
 
+const db = drizzle(client);
+
 // Initialize database schema
 async function initializeDatabase() {
   try {
-    await client.execute(`
-      CREATE TABLE IF NOT EXISTS config_keys (
+    await client.batch([
+      `CREATE TABLE IF NOT EXISTS config_keys (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
-      );
-    `);
+      )`,
+      `CREATE TABLE IF NOT EXISTS user_data (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )`,
+    ]);
   } catch (error) {
     relinka(
       "error",
@@ -39,4 +45,4 @@ async function initializeDatabase() {
 // Initialize database on first connection
 await initializeDatabase();
 
-export const db = drizzle(client);
+export { db };

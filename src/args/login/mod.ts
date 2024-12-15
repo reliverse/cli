@@ -32,8 +32,7 @@ export default defineCommand({
       process.exit(0);
     }
 
-    await showAnykeyPrompt("welcome");
-    await showAnykeyPrompt("privacy");
+    await showAnykeyPrompt();
     await auth({ dev: args.dev, useLocalhost: false });
 
     if (args.dev) {

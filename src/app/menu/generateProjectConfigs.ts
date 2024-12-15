@@ -2,11 +2,9 @@ import { task } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { CONFIG_CATEGORIES } from "~/app/data/constants.js";
 import { DEFAULT_CONFIG } from "~/types/config.js";
 import { relinka } from "~/utils/console.js";
-import { getDefaultRules } from "~/utils/rules.js";
-
-import { CONFIG_CATEGORIES } from "../data/constants.js";
 
 async function generateConfigFiles(
   targetDir: string,
@@ -19,14 +17,6 @@ async function generateConfigFiles(
     errorMessage: "❌ Failed to generate configuration files",
     async action() {
       try {
-        // Generate .reliverserules
-        const rulesPath = path.join(targetDir, ".reliverserules");
-        if (overwrite || !(await fs.pathExists(rulesPath))) {
-          const rules = getDefaultRules("my-app", "user");
-          await fs.writeFile(rulesPath, JSON.stringify(rules, null, 2));
-          relinka("success", "Generated .reliverserules");
-        }
-
         // Generate reliverse.json
         const configPath = path.join(targetDir, "reliverse.json");
         if (overwrite || !(await fs.pathExists(configPath))) {

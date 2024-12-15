@@ -9,19 +9,17 @@ export async function showStartPrompt() {
     packageVersion: "1.3.22",
     terminalSizeOptions: {
       minWidth: 100,
-      minHeight: 15,
+      minHeight: 16,
     },
   });
 }
 
 export async function showEndPrompt() {
   await endPrompt({
-    title: emojify(
-      "ℹ  :books: Learn the docs here: https://docs.reliverse.org/reliverse/cli",
-    ),
+    title: emojify("ℹ  :books: https://docs.reliverse.org/reliverse/cli"),
     titleAnimation: "glitch",
     titleColor: "retroGradient",
     titleTypography: "bold",
-    titleAnimationDelay: 2000,
+    titleAnimationDelay: 500,
   });
 }

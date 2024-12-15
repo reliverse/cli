@@ -3,6 +3,7 @@ import {
   inputPrompt,
   multiselectPrompt,
 } from "@reliverse/prompts";
+import pc from "picocolors";
 
 import type { ReliverseConfig, TemplateOption } from "~/types/config.js";
 
@@ -21,12 +22,12 @@ const TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
     label: "Relivator",
     value: "blefnk/relivator",
-    hint: "Full-featured e-commerce template with auth, payments, etc.",
+    hint: pc.dim("Full-featured e-commerce template with auth, payments, etc."),
   },
   "blefnk/next-react-ts-src-minimal": {
-    label: "Next.js Minimal",
+    label: "Next.js Only",
     value: "blefnk/next-react-ts-src-minimal",
-    hint: "Minimal Next.js + React + TypeScript template",
+    hint: pc.dim("Essentials only: minimal Next.js with TypeScript template"),
   },
 } as const;
 
@@ -34,12 +35,12 @@ const VSCODE_TEMPLATE_OPTIONS = {
   "microsoft/vscode-extension-samples": {
     label: "VS Code Extension Sample",
     value: "microsoft/vscode-extension-samples",
-    hint: "Official VS Code extension samples",
+    hint: pc.dim("Official VS Code extension samples"),
   },
   "microsoft/vscode-extension-template": {
     label: "VS Code Extension Template",
     value: "microsoft/vscode-extension-template",
-    hint: "Basic VS Code extension template",
+    hint: pc.dim("Basic VS Code extension template"),
   },
 } as const;
 
@@ -69,22 +70,22 @@ async function configureVSCodeExtension() {
         {
           label: "Commands",
           value: "commands",
-          hint: "Add custom commands to VS Code",
+          hint: pc.dim("Add custom commands to VS Code"),
         },
         {
           label: "WebView",
           value: "webview",
-          hint: "Create custom UI panels",
+          hint: pc.dim("Create custom UI panels"),
         },
         {
           label: "Language Support",
           value: "language",
-          hint: "Add support for a programming language",
+          hint: pc.dim("Add support for a programming language"),
         },
         {
           label: "Themes",
           value: "themes",
-          hint: "Create custom color themes",
+          hint: pc.dim("Create custom color themes"),
         },
       ],
     }),
@@ -94,17 +95,17 @@ async function configureVSCodeExtension() {
         {
           label: "On Command",
           value: "onCommand",
-          hint: "Activate when a specific command is run",
+          hint: pc.dim("Activate when a specific command is run"),
         },
         {
           label: "On Language",
           value: "onLanguage",
-          hint: "Activate for specific file types",
+          hint: pc.dim("Activate for specific file types"),
         },
         {
           label: "On Startup",
           value: "startup",
-          hint: "Activate when VS Code starts",
+          hint: pc.dim("Activate when VS Code starts"),
         },
       ],
     }),
@@ -143,11 +144,11 @@ export async function buildBrandNewThing(
       {
         label: "Development",
         value: "development",
-        hint: "apps, sites, plugins, etc",
+        hint: pc.dim("apps, sites, plugins, etc"),
       },
       {
         label: "...",
-        hint: "coming soon",
+        hint: pc.dim("coming soon"),
         value: "coming-soon",
         disabled: true,
       },
@@ -162,12 +163,19 @@ export async function buildBrandNewThing(
       {
         label: "Web Application",
         value: "web",
-        hint: "Create a web application with Next.js",
+        hint: pc.dim("Create a web application with Next.js"),
       },
       {
         label: "VS Code Extension",
         value: "vscode",
-        hint: "Create a VS Code extension",
+        hint: pc.dim("Create a VS Code extension"),
+      },
+      { separator: true },
+      {
+        label: "More types of projects and frameworks coming soon",
+        hint: pc.dim("❤️"),
+        value: "coming-soon",
+        disabled: true,
       },
     ],
   });
@@ -208,11 +216,11 @@ export async function buildBrandNewThing(
         {
           label: "Next.js",
           value: "nextjs",
-          hint: "recommended for most projects",
+          hint: pc.dim("recommended for most projects"),
         },
         {
           label: "...",
-          hint: "coming soon",
+          hint: pc.dim("coming soon"),
           value: "coming-soon",
           disabled: true,
         },
@@ -235,7 +243,7 @@ export async function buildBrandNewThing(
       { label: "E-commerce", value: "e-commerce" },
       {
         label: "...",
-        hint: "coming soon",
+        hint: pc.dim("coming soon"),
         value: "coming-soon",
         disabled: true,
       },

@@ -19,7 +19,7 @@ function getDerivedKey(): Buffer {
   return createHash("sha256").update(machineId).digest();
 }
 
-function encrypt(text: string): string {
+export function encrypt(text: string): string {
   try {
     const iv = randomBytes(16);
     const key = getDerivedKey();
@@ -36,7 +36,7 @@ function encrypt(text: string): string {
   }
 }
 
-function decrypt(text: string): string {
+export function decrypt(text: string): string {
   try {
     const [ivHex, encryptedHex] = text.split(":");
     const iv = Buffer.from(ivHex, "hex");

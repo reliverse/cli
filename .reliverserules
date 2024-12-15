@@ -1,0 +1,60 @@
+{
+  // Project metadata
+  "appName": "@reliverse/cli",
+  "appAuthor": "blefnk",
+  "appDescription": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
+  "appVersion": "1.3.22",
+  "appLicense": "MIT",
+  "appRepository": "git+https://github.com/reliverse/cli.git",
+  "framework": "nextjs",
+  "packageManager": "bun",
+  
+  // Library preferences
+  "preferredLibraries": {
+    "stateManagement": "zustand",
+    "formManagement": "react-hook-form",
+    "styling": "tailwind",
+    "uiComponents": "shadcn-ui",
+    "testing": "bun",
+    "authentication": "clerk",
+    "database": "drizzle",
+    "api": "trpc"
+  },
+  
+  // Code style settings
+  "codeStyle": {
+    "dontRemoveComments": true,
+    "shouldAddComments": true,
+    "typeOrInterface": "type",
+    "importOrRequire": "import",
+    "quoteMark": "double",
+    "semicolons": true,
+    "lineWidth": 80,
+    "indentStyle": "space",
+    "indentSize": 2,
+    "importSymbol": [
+      {
+        "from": "~/utils/console",
+        "to": "@/utils/console",
+        "description": "Update import path to use @/ instead of ~/"
+      }
+    ]
+  },
+  
+  // Feature flags
+  "features": {
+    "i18n": true,
+    "pwa": false,
+    "seo": true,
+    "analytics": false,
+    "darkMode": true,
+    "authentication": true,
+    "authorization": true,
+    "api": true,
+    "database": true,
+    "testing": false,
+    "storybook": false,
+    "docker": false,
+    "ci": false
+  }
+}
