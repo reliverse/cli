@@ -47,15 +47,13 @@ export default defineCommand({
         projectLicense: rules.projectLicense,
         projectRepository: rules.projectRepository,
 
-        // Technical stack
-        framework: rules.framework,
-        frameworkVersion: rules.frameworkVersion,
+        // Development preferences
+        projectFramework: rules.projectFramework,
+        projectFrameworkVersion: rules.projectFrameworkVersion,
         nodeVersion: rules.nodeVersion,
         runtime: rules.runtime,
-        packageManager: rules.packageManager,
+        projectPackageManager: rules.projectPackageManager,
         monorepo: rules.monorepo,
-
-        // Development preferences
         preferredLibraries: rules.preferredLibraries,
         codeStyle: {
           ...rules.codeStyle,
@@ -73,14 +71,14 @@ export default defineCommand({
         // Project features
         features: rules.features,
 
-        // Dependencies Management
+        // Dependencies management
         ignoreDependencies: rules.ignoreDependencies,
 
         // Config revalidation
         configLastRevalidate: rules.configLastRevalidate,
         configRevalidateFrequency: rules.configRevalidateFrequency,
 
-        // Custom Extensions
+        // Custom rules
         customRules: rules.customRules,
       };
 

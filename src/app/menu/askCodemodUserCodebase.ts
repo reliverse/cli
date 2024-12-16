@@ -31,15 +31,11 @@ export async function askCodemodUserCodebase() {
   validate(action, "string", "Invalid option selected. Exiting.");
 
   if (action === "replaceImportSymbol") {
-    const from = await inputPrompt({
-      title: "Enter the import symbol to replace",
-      defaultValue: "@",
-    });
     const to = await inputPrompt({
       title: "Enter the import symbol to replace with",
       defaultValue: "~",
     });
 
-    await replaceImportSymbol(projectPath, from, to);
+    await replaceImportSymbol(projectPath, to);
   }
 }

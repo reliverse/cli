@@ -1,5 +1,5 @@
 // export type PackageManager = "bun" | "pnpm" | "yarn" | "npm";
-// export type SemanticVersionFramework = "1.2.6";
+// export type SemanticVersionprojectFramework = "1.2.6";
 // export type SemanticVersionEngine = "0.4.0";
 export type CamelCase<T extends string> = T extends `${infer U}${infer V}`
   ? `${Uppercase<U>}${V}`

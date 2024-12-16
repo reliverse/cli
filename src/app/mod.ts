@@ -16,7 +16,6 @@ import type {
   IntegrationCategory,
   IntegrationOptions,
   ReliverseConfig,
-  ReliverseRules,
 } from "~/types.js";
 
 import { readReliverseMemory } from "~/args/memory/impl.js";
@@ -43,8 +42,8 @@ import {
   removeIntegration,
 } from "~/utils/integrations.js";
 import {
-  readReliverseRules,
-  writeReliverseRules,
+  readReliverseConfig,
+  writeReliverseConfig,
   getDefaultReliverseConfig,
   validateAndInsertMissingKeys,
   detectProjectType,
@@ -239,7 +238,7 @@ const CONFIG_FILES: ConfigFile[] = [
   },
 ];
 
-async function handleCodemods(rules: ReliverseRules, cwd: string) {
+async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   const availableCodemods = [];
 
   // Push: Tailwind v3 to v4 conversion codemod
@@ -363,24 +362,23 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
         await convertTailwindV3ToV4(cwd);
       }
     } else if (codemod === "import-symbols") {
-      const symbols = rules.codeStyle.importSymbol;
-      if (!symbols) {
+      const targetSymbol = rules.codeStyle.importSymbol;
+      if (!targetSymbol) {
         continue;
       }
 
-      for (const symbol of symbols) {
-        const shouldReplace = await confirmPrompt({
-          title: `Replace "${symbol.from}" with "${symbol.to}"?${symbol.description ? `\n${symbol.description}` : ""}`,
-          defaultValue: true,
-        });
+      const shouldReplace = await confirmPrompt({
+        title: `Replace current import symbol with "${targetSymbol}"?`,
+        content: "The current symbol will be automatically detected.",
+        defaultValue: true,
+      });
 
-        if (shouldReplace) {
-          await replaceImportSymbol(cwd, symbol.from, symbol.to);
-          relinka(
-            "success",
-            `Replaced import symbol "${symbol.from}" with "${symbol.to}"`,
-          );
-        }
+      if (shouldReplace) {
+        await replaceImportSymbol(cwd, targetSymbol);
+        relinka(
+          "success",
+          `Replaced detected import symbol with "${targetSymbol}"`,
+        );
       }
     } else if (codemod === "quote-style") {
       const shouldConvert = await confirmPrompt({
@@ -951,7 +949,7 @@ async function handleCleanup(cwd: string) {
 
   // Read ignoreDependencies from reliverse.json if exists
   try {
-    const rules = await readReliverseRules(cwd);
+    const rules = await readReliverseConfig(cwd);
     if (rules?.ignoreDependencies) {
       ignoredDeps = [...new Set([...ignoredDeps, ...rules.ignoreDependencies])];
     }
@@ -1044,7 +1042,7 @@ async function getMainMenuOptions(
   }
 
   try {
-    let rules: ReliverseRules | null = null;
+    let rules: ReliverseConfig | null = null;
     // First check if file exists and has content
     const rulesPath = path.join(cwd, "reliverse.json");
     const rulesFileExists = await fs.pathExists(rulesPath);
@@ -1055,7 +1053,7 @@ async function getMainMenuOptions(
     // Read file content first
     const fileContent = await fs.readFile(rulesPath, "utf-8");
     const parsedContent = fileContent.trim()
-      ? destr<Partial<ReliverseRules>>(fileContent)
+      ? destr<Partial<ReliverseConfig>>(fileContent)
       : {};
 
     // Get default rules based on project type
@@ -1076,8 +1074,8 @@ async function getMainMenuOptions(
       const mergedRules = {
         projectName: defaultRules.projectName,
         projectAuthor: defaultRules.projectAuthor,
-        framework: defaultRules.framework,
-        packageManager: defaultRules.packageManager,
+        projectFramework: defaultRules.projectFramework,
+        packageManager: defaultRules.projectPackageManager,
         ...parsedContent,
         features: {
           ...defaultRules.features,
@@ -1103,7 +1101,7 @@ async function getMainMenuOptions(
         );
 
         if (hasNewFields) {
-          await writeReliverseRules(cwd, mergedRules);
+          await writeReliverseConfig(cwd, mergedRules);
           relinka(
             "info",
             "Updated reliverse.json with missing configurations. Please review and adjust as needed.",
@@ -1178,14 +1176,14 @@ export async function app({
   await showStartPrompt();
 
   // Check for reliverse.json and project type
-  let rules = await readReliverseRules(cwd);
+  let rules = await readReliverseConfig(cwd);
   const projectType = await detectProjectType(cwd);
 
   // If no rules file exists but we detected a project type, generate default rules
   if (!rules && projectType) {
     rules = await generateDefaultRulesForProject(cwd);
     if (rules) {
-      await writeReliverseRules(cwd, rules);
+      await writeReliverseConfig(cwd, rules);
       relinka(
         "success",
         "Generated reliverse.json based on detected project type. Please review it and adjust as needed.",

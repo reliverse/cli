@@ -41,11 +41,11 @@ export const randomWebsiteSubcategoryTitle = [
   "Perfect! Let's get more granular. Which category best describes your intended website?",
 ];
 
-export const randomFrameworkTitle = [
-  "Framework time! Which foundation would you like to build upon?",
-  "Great progress! Let's refine your stack. Which framework best fits your project?",
-  "Excellent choice! To set you up right, which framework are you considering?",
-  "Perfect! Let's zero in on your framework preference. Which option resonates most with your plan?",
+export const randomprojectFrameworkTitle = [
+  "projectFramework time! Which foundation would you like to build upon?",
+  "Great progress! Let's refine your stack. Which projectFramework best fits your project?",
+  "Excellent choice! To set you up right, which projectFramework are you considering?",
+  "Perfect! Let's zero in on your projectFramework preference. Which option resonates most with your plan?",
 ];
 
 export const randomWebsiteCategoryTitle = [

@@ -5,13 +5,16 @@ import {
 } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import type { ReliverseConfig, TemplateOption } from "~/types.js";
-
+import {
+  DEFAULT_CONFIG,
+  type ReliverseConfig,
+  type TemplateOption,
+} from "~/types.js";
 import { relinka } from "~/utils/console.js";
 import { REPO_URLS } from "~/utils/data/constants.js";
 
 import {
-  randomFrameworkTitle,
+  randomprojectFrameworkTitle,
   randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
@@ -131,7 +134,7 @@ export async function buildBrandNewThing(
   config?: ReliverseConfig,
 ): Promise<void> {
   const endTitle =
-    "📚 Check the docs to learn more: https://docs.reliverse.org/reliverse/cli";
+    "📚 Check the docs to learn more: https://docs.reliverse.org";
   const initialMessage =
     randomInitialMessage[
       Math.floor(Math.random() * randomInitialMessage.length)
@@ -172,7 +175,7 @@ export async function buildBrandNewThing(
       },
       { separator: true },
       {
-        label: "More types of projects and frameworks coming soon",
+        label: "More types of projects and projectFrameworks coming soon",
         hint: pc.dim("❤️"),
         value: "coming-soon",
         disabled: true,
@@ -197,20 +200,30 @@ export async function buildBrandNewThing(
       isDev,
       config: {
         ...config,
-        vscodeExtension: extensionConfig,
+        projectDisplayName: extensionConfig.displayName,
+        projectDescription: extensionConfig.description,
+        features: {
+          ...DEFAULT_CONFIG.features,
+          commands: extensionConfig.features.includes("commands") ? ["*"] : [],
+          webview: extensionConfig.features.includes("webview") ? ["*"] : [],
+          language: extensionConfig.features.includes("language") ? ["*"] : [],
+          themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+        },
+        projectActivation: extensionConfig.activation,
+        projectAuthor: extensionConfig.publisher,
       },
     });
     return;
   }
 
-  // Get framework from config or prompt for web applications
-  let framework = config?.framework;
-  if (!framework) {
+  // Get projectFramework from config or prompt for web applications
+  let projectFramework = config?.projectFramework;
+  if (!projectFramework) {
     const result = await selectPrompt({
       endTitle,
       title:
-        randomFrameworkTitle[
-          Math.floor(Math.random() * randomFrameworkTitle.length)
+        randomprojectFrameworkTitle[
+          Math.floor(Math.random() * randomprojectFrameworkTitle.length)
         ],
       options: [
         {
@@ -227,10 +240,10 @@ export async function buildBrandNewThing(
       ],
     });
     if (result !== "nextjs") {
-      relinka("error", "Invalid framework selected");
+      relinka("error", "Invalid projectFramework selected");
       return;
     }
-    framework = result;
+    projectFramework = result;
   }
 
   await selectPrompt({

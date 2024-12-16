@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { readPackageJSON, readTSConfig } from "pkg-types";
 
-import type { ReliverseConfig, ReliverseRules } from "~/types.js";
+import type { ReliverseConfig } from "~/types.js";
 
 import { DEFAULT_CONFIG } from "~/types.js";
 
@@ -90,9 +90,9 @@ async function getBiomeConfig(targetDir: string): Promise<BiomeConfigResult> {
   return null;
 }
 
-export async function writeReliverseRules(
+export async function writeReliverseConfig(
   targetDir: string,
-  rules: ReliverseRules,
+  rules: ReliverseConfig,
 ): Promise<void> {
   try {
     const configPath = path.join(targetDir, "reliverse.json");
@@ -110,19 +110,17 @@ export async function writeReliverseRules(
       // Project features
       features: rules.features,
 
-      // Technical stack
-      framework: rules.framework,
-      packageManager: rules.packageManager,
-      frameworkVersion: rules.frameworkVersion,
+      // Development preferences
+      projectFramework: rules.projectFramework,
+      projectPackageManager: rules.projectPackageManager,
+      projectFrameworkVersion: rules.projectFrameworkVersion,
       nodeVersion: rules.nodeVersion,
       runtime: rules.runtime,
       monorepo: rules.monorepo,
-
-      // Development preferences
       preferredLibraries: rules.preferredLibraries,
       codeStyle: rules.codeStyle,
 
-      // Dependencies Management
+      // Dependencies management
       ignoreDependencies: rules.ignoreDependencies,
 
       // Config revalidation
@@ -130,7 +128,7 @@ export async function writeReliverseRules(
         rules.configLastRevalidate || new Date().toISOString(),
       configRevalidateFrequency: rules.configRevalidateFrequency || "2d",
 
-      // Custom Extensions
+      // Custom rules
       customRules: rules.customRules,
     };
 
@@ -139,12 +137,20 @@ export async function writeReliverseRules(
       // Inject comments above each section
       .replace('"projectAuthor":', '// Project details\n  "projectAuthor":')
       .replace('"features":', '\n  // Project features\n  "features":')
-      .replace('"framework":', '\n  // Technical stack\n  "framework":')
       .replace(
-        '"preferredLibraries":',
-        '\n  // Development preferences\n  "preferredLibraries":',
+        '"projectFramework":',
+        '\n  // Development preferences\n  "projectFramework":',
       )
+      .replace('"codeStyle":', '\n  // Code style preferences\n  "codeStyle":')
       .replace('"projectName":', '\n  // Project metadata\n  "projectName":')
+      .replace(
+        '"autoDeploy":',
+        '\n  // Generation preferences\n  "autoDeploy":',
+      )
+      .replace(
+        '"hideDeployPrompt":',
+        '// Helpful if you want to hide prompt when autoSomething is set\n  // to false; e.g. autoX=false+hideX=true will pass N to promptX\n  "hideDeployPrompt":',
+      )
       .replace(
         '"configLastRevalidate":',
         '\n  // Config revalidation (1h | 1d | 2d | 7d)\n  "configLastRevalidate":',
@@ -161,9 +167,9 @@ export async function writeReliverseRules(
   }
 }
 
-export async function readReliverseRules(
+export async function readReliverseConfig(
   targetDir: string,
-): Promise<ReliverseRules | null> {
+): Promise<ReliverseConfig | null> {
   try {
     const configPath = path.join(targetDir, "reliverse.json");
     if (await fs.pathExists(configPath)) {
@@ -174,7 +180,7 @@ export async function readReliverseRules(
           path.basename(targetDir),
           "user",
         );
-        await writeReliverseRules(targetDir, defaultRules);
+        await writeReliverseConfig(targetDir, defaultRules);
         return defaultRules;
       }
 
@@ -186,7 +192,7 @@ export async function readReliverseRules(
             path.basename(targetDir),
             "user",
           );
-          await writeReliverseRules(targetDir, defaultRules);
+          await writeReliverseConfig(targetDir, defaultRules);
           return defaultRules;
         }
         // Validate config before returning
@@ -195,17 +201,17 @@ export async function readReliverseRules(
           typeof config !== "object" ||
           !("projectName" in config) ||
           !("projectAuthor" in config) ||
-          !("framework" in config) ||
+          !("projectFramework" in config) ||
           !("packageManager" in config)
         ) {
           const defaultRules = await getDefaultReliverseConfig(
             path.basename(targetDir),
             "user",
           );
-          await writeReliverseRules(targetDir, defaultRules);
+          await writeReliverseConfig(targetDir, defaultRules);
           return defaultRules;
         }
-        return config as ReliverseRules;
+        return config as ReliverseConfig;
       } catch (error) {
         relinka("error", "Failed to parse reliverse.json", error.toString());
         return null;
@@ -224,8 +230,8 @@ export async function readReliverseRules(
 export async function getDefaultReliverseConfig(
   projectName: string,
   projectAuthor: string,
-  framework: ReliverseRules["framework"] = "nextjs",
-): Promise<ReliverseRules> {
+  projectFramework: ReliverseConfig["projectFramework"] = "nextjs",
+): Promise<ReliverseConfig> {
   const biomeConfig = await getBiomeConfig(process.cwd());
 
   // Read package.json and tsconfig.json
@@ -245,6 +251,7 @@ export async function getDefaultReliverseConfig(
   }
 
   return {
+    // Project details
     projectName: packageData.name || projectName,
     projectAuthor:
       typeof packageData.author === "object"
@@ -257,10 +264,30 @@ export async function getDefaultReliverseConfig(
       typeof packageData.repository === "string"
         ? packageData.repository
         : packageData.repository?.url,
-    configLastRevalidate: new Date().toISOString(),
-    configRevalidateFrequency: "2d",
-    framework,
-    packageManager: "bun",
+
+    // Project features
+    features: {
+      i18n: true,
+      pwa: false,
+      seo: true,
+      analytics: false,
+      darkMode: true,
+      authentication: true,
+      api: true,
+      database: true,
+      testing: false,
+      storybook: false,
+      docker: false,
+      ci: false,
+      commands: [],
+      webview: [],
+      language: [],
+      themes: [],
+    },
+
+    // Development preferences
+    projectFramework,
+    projectPackageManager: "bun",
     preferredLibraries: {
       stateManagement: "zustand",
       formManagement: "react-hook-form",
@@ -271,6 +298,8 @@ export async function getDefaultReliverseConfig(
       database: "drizzle",
       api: "trpc",
     },
+
+    // Code style preferences
     codeStyle: {
       dontRemoveComments: true,
       shouldAddComments: true,
@@ -283,29 +312,12 @@ export async function getDefaultReliverseConfig(
       lineWidth: biomeConfig?.lineWidth || 80,
       indentStyle: biomeConfig?.indentStyle || "space",
       indentSize: biomeConfig?.indentWidth || 2,
-      importSymbol: [
-        {
-          from: "~/utils/console",
-          to: "@/utils/console",
-          description: "Update import path to use @/ instead of ~/",
-        },
-      ],
+      importSymbol: "~",
     },
-    features: {
-      i18n: true,
-      pwa: false,
-      seo: true,
-      analytics: false,
-      darkMode: true,
-      authentication: true,
-      authorization: true,
-      api: true,
-      database: true,
-      testing: false,
-      storybook: false,
-      docker: false,
-      ci: false,
-    },
+
+    // Config revalidation
+    configLastRevalidate: new Date().toISOString(),
+    configRevalidateFrequency: "2d",
   };
 }
 
@@ -406,16 +418,15 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
           ...(parsedContent.features || {}),
         },
 
-        // Technical stack
-        framework: defaultRules.framework,
-        packageManager: defaultRules.packageManager,
-        frameworkVersion:
-          defaultRules.frameworkVersion || parsedContent.frameworkVersion,
+        // Development preferences
+        projectFramework: defaultRules.projectFramework,
+        projectPackageManager: defaultRules.projectPackageManager,
+        projectFrameworkVersion:
+          defaultRules.projectFrameworkVersion ||
+          parsedContent.projectFrameworkVersion,
         nodeVersion: defaultRules.nodeVersion || parsedContent.nodeVersion,
         runtime: defaultRules.runtime || parsedContent.runtime,
         monorepo: defaultRules.monorepo || parsedContent.monorepo,
-
-        // Development preferences
         preferredLibraries: {
           ...defaultRules.preferredLibraries,
           ...(parsedContent.preferredLibraries || {}),
@@ -426,7 +437,7 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
           ...(parsedContent.codeStyle || {}),
         },
 
-        // Dependencies Management
+        // Dependencies management
         ignoreDependencies:
           parsedContent.ignoreDependencies || defaultRules.ignoreDependencies,
 
@@ -435,7 +446,7 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
         configRevalidateFrequency:
           parsedContent.configRevalidateFrequency || "2d",
 
-        // Custom Extensions
+        // Custom rules
         customRules: {
           ...(defaultRules.customRules || {}),
           ...(parsedContent.customRules || {}),
@@ -491,7 +502,7 @@ export async function detectProjectType(
 
 export async function generateDefaultRulesForProject(
   cwd: string,
-): Promise<ReliverseRules | null> {
+): Promise<ReliverseConfig | null> {
   const projectType = await detectProjectType(cwd);
   if (!projectType) {
     return null;
@@ -546,7 +557,7 @@ export async function generateDefaultRulesForProject(
 
 export async function parseCodeStyleFromConfigs(
   cwd: string,
-): Promise<Partial<ReliverseRules>> {
+): Promise<Partial<ReliverseConfig>> {
   const codeStyle: any = {};
 
   // Try to read TypeScript config

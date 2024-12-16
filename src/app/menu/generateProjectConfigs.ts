@@ -30,15 +30,13 @@ async function generateReliverseConfig(
     // Project features
     features: rc.features,
 
-    // Technical stack
-    framework: rc.framework,
-    frameworkVersion: rc.frameworkVersion,
+    // Development preferences
+    projectFramework: rc.projectFramework,
+    projectFrameworkVersion: rc.projectFrameworkVersion,
     nodeVersion: rc.nodeVersion,
     runtime: rc.runtime,
-    packageManager: rc.packageManager,
+    projectPackageManager: rc.projectPackageManager,
     monorepo: rc.monorepo,
-
-    // Development preferences
     preferredLibraries: rc.preferredLibraries,
     codeStyle: rc.codeStyle,
 

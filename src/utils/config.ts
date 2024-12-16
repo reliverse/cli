@@ -5,7 +5,7 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-import type { ReliverseConfig, ReliverseRules } from "../types.js";
+import type { ReliverseConfig } from "../types.js";
 
 import { DEFAULT_CONFIG } from "../types.js";
 import { MEMORY_FILE } from "./data/constants.js";
@@ -37,7 +37,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
     // Try to read reliverse.json and merge if exists
     if (await fs.pathExists(rulesPath)) {
       const rulesContent = await fs.readFile(rulesPath, "utf-8");
-      let rules: ReliverseRules;
+      let rules: ReliverseConfig;
 
       try {
         // Try parsing as JSONC first
@@ -69,25 +69,27 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
           ...rules.features,
         },
 
-        // Technical stack
-        framework: rules.framework || config.framework,
-        frameworkVersion: rules.frameworkVersion || config.frameworkVersion,
+        // Development preferences
+        projectFramework: rules.projectFramework || config.projectFramework,
+        projectFrameworkVersion:
+          rules.projectFrameworkVersion || config.projectFrameworkVersion,
         nodeVersion: rules.nodeVersion || config.nodeVersion,
         runtime: rules.runtime || config.runtime,
-        packageManager: rules.packageManager || config.packageManager,
+        projectPackageManager:
+          rules.projectPackageManager || config.projectPackageManager,
         monorepo: rules.monorepo || config.monorepo,
-
-        // Development preferences
         preferredLibraries: {
           ...config.preferredLibraries,
           ...rules.preferredLibraries,
         },
+
+        // Code style preferences
         codeStyle: {
           ...config.codeStyle,
           ...rules.codeStyle,
         },
 
-        // Dependencies Management
+        // Dependencies management
         ignoreDependencies:
           rules.ignoreDependencies || config.ignoreDependencies,
 
@@ -97,7 +99,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
         configRevalidateFrequency:
           rules.configRevalidateFrequency || config.configRevalidateFrequency,
 
-        // Custom Extensions
+        // Custom rules
         customRules: {
           ...config.customRules,
           ...rules.customRules,

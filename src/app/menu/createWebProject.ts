@@ -13,7 +13,7 @@ import open from "open";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseConfig, ReliverseRules } from "~/types.js";
+import type { ReliverseConfig } from "~/types.js";
 
 import {
   readReliverseMemory,
@@ -30,7 +30,7 @@ import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles.js";
 import {
   getDefaultReliverseConfig,
-  writeReliverseRules,
+  writeReliverseConfig,
 } from "~/utils/rules.js";
 
 import { askGithubName } from "./askGithubName.js";
@@ -347,7 +347,7 @@ export async function createWebProject({
     };
 
     if (autoDeploy) {
-      rules.deployPlatform = deployService as ReliverseRules["deployPlatform"];
+      rules.deployPlatform = deployService as ReliverseConfig["deployPlatform"];
       rules.deployUrl = domain
         ? `https://${domain}`
         : `https://${projectName}.vercel.app`;
@@ -355,7 +355,7 @@ export async function createWebProject({
       rules.productionBranch = "main";
     }
 
-    await writeReliverseRules(targetDir, rules);
+    await writeReliverseConfig(targetDir, rules);
     relinka(
       "success-verbose",
       "Generated reliverse.json with project-specific settings",

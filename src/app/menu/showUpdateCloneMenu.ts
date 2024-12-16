@@ -85,11 +85,7 @@ async function executeActions(actions: any[]) {
   for (const action of actions) {
     switch (action.type) {
       case "replaceImportSymbol":
-        await replaceImportSymbol(
-          action.params.repo,
-          action.params.from,
-          action.params.to,
-        );
+        await replaceImportSymbol(action.params.repo, action.params.to);
         break;
       default:
         relinka("warn", `Unknown action type: ${action.type}`);

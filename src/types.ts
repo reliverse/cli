@@ -61,11 +61,7 @@ export type CodeStylePreferences = {
     replaceConsole?: boolean;
     replaceEvents?: boolean;
   };
-  importSymbol?: {
-    from: string;
-    to: string;
-    description?: string;
-  }[];
+  importSymbol?: string;
   jsToTs?: boolean;
 };
 
@@ -75,76 +71,43 @@ export type MonorepoType =
   | "bun-workspaces"
   | "pnpm-workspaces";
 
-export type ReliverseRules = {
-  // Project details
-  projectName: string;
-  projectAuthor: string;
-  projectDescription?: string;
-  projectVersion?: string;
-  projectLicense?: string;
-  projectRepository?: string;
-
-  // Project features
-  features?: {
-    i18n: boolean;
-    pwa: boolean;
-    seo: boolean;
-    analytics: boolean;
-    darkMode: boolean;
-    authentication: boolean;
-    authorization: boolean;
-    api: boolean;
-    database: boolean;
-    testing: boolean;
-    storybook: boolean;
-    docker: boolean;
-    ci: boolean;
-  };
-
-  // Technical stack
-  framework: "nextjs" | "react" | "vue" | "svelte" | "astro";
-  frameworkVersion?: string;
-  nodeVersion?: string;
-  runtime?: "nodejs" | "bun" | "deno";
-  packageManager: "npm" | "yarn" | "pnpm" | "bun";
-  monorepo?: {
-    type: MonorepoType;
-    packages?: string[];
-    sharedPackages?: string[];
-  };
-
-  // Deployment
-  deployPlatform?: DeploymentService;
-  deployUrl?: string;
-  productionBranch?: string;
-
-  // Development preferences
-  preferredLibraries: PreferredLibraries;
-  codeStyle: CodeStylePreferences;
-
-  // Dependencies Management
-  ignoreDependencies?: string[];
-
-  // Config revalidation
-  configLastRevalidate?: string; // ISO date string
-  configRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
-
-  // Custom Extensions
-  customRules?: Record<string, unknown>;
-};
-
 export type TemplateOption =
   | "blefnk/relivator"
   | "blefnk/next-react-ts-src-minimal";
 
+// design = graphic|video|audio|3d design
+export type ProjectTypeOtions = "" | "development" | "design" | "marketing";
+
+export type ProjectCategory =
+  | ""
+  | "website"
+  | "mobile"
+  | "desktop"
+  | "crossplatform"
+  | "extension"
+  | "cli";
+
+export type ProjectSubcategory = "" | "e-commerce" | "tool";
+
+export type ProjectState = "" | "creating" | "created";
+
 export type ReliverseConfig = {
   // Project details
   projectName?: string;
+  projectDisplayName?: string;
   projectAuthor?: string;
   projectDescription?: string;
   projectVersion?: string;
   projectLicense?: string;
   projectRepository?: string;
+  projectState?: ProjectState;
+  projectDomain?: string;
+  projectType?: ProjectTypeOtions;
+  projectCategory?: ProjectCategory;
+  projectSubcategory?: ProjectSubcategory;
+  projectTemplate?: TemplateOption;
+  projectDeployService?: DeploymentService;
+  projectActivation?: string;
 
   // Project features
   features?: {
@@ -154,25 +117,16 @@ export type ReliverseConfig = {
     analytics: boolean;
     darkMode: boolean;
     authentication: boolean;
-    authorization: boolean;
     api: boolean;
     database: boolean;
     testing: boolean;
     storybook: boolean;
     docker: boolean;
     ci: boolean;
-  };
-
-  // Technical stack
-  framework?: "nextjs" | "react" | "vue" | "svelte" | "astro";
-  frameworkVersion?: string;
-  nodeVersion?: string;
-  runtime?: "nodejs" | "bun" | "deno";
-  packageManager?: "npm" | "yarn" | "pnpm" | "bun";
-  monorepo?: {
-    type: MonorepoType;
-    packages?: string[];
-    sharedPackages?: string[];
+    commands: string[];
+    webview: string[];
+    language: string[];
+    themes: string[];
   };
 
   // Deployment
@@ -181,55 +135,54 @@ export type ReliverseConfig = {
   productionBranch?: string;
 
   // Development preferences
+  projectFramework?: "nextjs" | "react" | "vue" | "svelte" | "astro";
+  projectFrameworkVersion?: string;
+  nodeVersion?: string;
+  runtime?: "nodejs" | "bun" | "deno";
+  projectPackageManager?: "npm" | "yarn" | "pnpm" | "bun";
+  monorepo?: {
+    type: MonorepoType;
+    packages?: string[];
+    sharedPackages?: string[];
+  };
   preferredLibraries?: PreferredLibraries;
   codeStyle?: CodeStylePreferences;
 
-  // Dependencies Management
+  // Dependencies management
   ignoreDependencies?: string[];
-  projectState?: string;
-  projectDomain?: string;
-  projectType?: "development";
-  projectCategory?: "website";
-  projectSubcategory?: "e-commerce";
-  projectTemplate?: TemplateOption;
-  projectDeployService?: DeploymentService;
+
+  // Generation preferences
   autoDeploy?: boolean;
   autoDepsInstall?: boolean;
   autoGitInit?: boolean;
   autoI18n?: boolean;
   autoDbScripts?: boolean;
-  skipAuto?: boolean;
-  vscodeExtension?: {
-    displayName: string;
-    description: string;
-    features: string[];
-    activation: string;
-    publisher: string;
-  };
+  hideDeployPrompt?: boolean;
+  hideDepsInstallPrompt?: boolean;
+  hideGitInitPrompt?: boolean;
+  hideI18nPrompt?: boolean;
+  hideDbScriptsPrompt?: boolean;
 
   // Config revalidation
   configLastRevalidate?: string; // ISO date string
   configRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
 
-  // Custom Extensions
+  // Custom rules
   customRules?: Record<string, unknown>;
 };
 
 export const DEFAULT_CONFIG: ReliverseConfig = {
+  // Project details
   projectAuthor: "",
   projectState: "",
   projectDomain: "",
-  projectType: "development",
-  projectCategory: "website",
-  projectSubcategory: "e-commerce",
-  autoDeploy: false,
-  autoDepsInstall: true,
-  autoGitInit: true,
-  autoI18n: true,
-  autoDbScripts: true,
-  skipAuto: false,
-  framework: "nextjs",
-  packageManager: "bun",
+  projectType: "",
+  projectCategory: "",
+  projectSubcategory: "",
+
+  // Development preferences
+  projectFramework: "nextjs",
+  projectPackageManager: "bun",
   preferredLibraries: {
     stateManagement: "zustand",
     formManagement: "react-hook-form",
@@ -240,6 +193,8 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
     database: "drizzle",
     api: "trpc",
   },
+
+  // Code style preferences
   codeStyle: {
     dontRemoveComments: true,
     shouldAddComments: true,
@@ -250,14 +205,10 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
     lineWidth: 80,
     indentStyle: "space",
     indentSize: 2,
-    importSymbol: [
-      {
-        from: "~/utils/console",
-        to: "@/utils/console",
-        description: "Update import path to use @/ instead of ~/",
-      },
-    ],
+    importSymbol: "~",
   },
+
+  // Project features
   features: {
     i18n: true,
     pwa: false,
@@ -265,12 +216,27 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
     analytics: false,
     darkMode: true,
     authentication: true,
-    authorization: true,
     api: true,
     database: true,
     testing: false,
     storybook: false,
     docker: false,
     ci: false,
+    commands: [],
+    webview: [],
+    language: [],
+    themes: [],
   },
+
+  // Generation preferences
+  autoDeploy: false,
+  autoDepsInstall: false,
+  autoGitInit: false,
+  autoI18n: false,
+  autoDbScripts: false,
+  hideDeployPrompt: false,
+  hideDepsInstallPrompt: false,
+  hideGitInitPrompt: false,
+  hideI18nPrompt: false,
+  hideDbScriptsPrompt: false,
 };

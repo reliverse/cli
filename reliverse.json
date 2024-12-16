@@ -3,21 +3,13 @@
   "projectAuthor": "blefnk",
   "projectState": "",
   "projectDomain": "",
-  "projectType": "development",
-  "projectCategory": "website",
-  "projectSubcategory": "e-commerce",
-  "autoDeploy": false,
-  "autoDepsInstall": true,
-  "autoGitInit": true,
-  "autoI18n": true,
-  "autoDbScripts": true,
-  "skipAuto": false,
-
-  // Technical stack
-  "framework": "nextjs",
-  "packageManager": "bun",
+  "projectType": "",
+  "projectCategory": "",
+  "projectSubcategory": "",
 
   // Development preferences
+  "projectFramework": "nextjs",
+  "projectPackageManager": "bun",
   "preferredLibraries": {
     "stateManagement": "zustand",
     "formManagement": "react-hook-form",
@@ -28,6 +20,8 @@
     "database": "drizzle",
     "api": "trpc"
   },
+
+  // Code style preferences
   "codeStyle": {
     "dontRemoveComments": true,
     "shouldAddComments": true,
@@ -38,13 +32,7 @@
     "lineWidth": 80,
     "indentStyle": "space",
     "indentSize": 2,
-    "importSymbol": [
-      {
-        "from": "~/utils/console",
-        "to": "@/utils/console",
-        "description": "Update import path to use @/ instead of ~/"
-      }
-    ]
+    "importSymbol": "~"
   },
 
   // Project features
@@ -55,14 +43,31 @@
     "analytics": false,
     "darkMode": true,
     "authentication": true,
-    "authorization": true,
     "api": true,
     "database": true,
     "testing": false,
     "storybook": false,
     "docker": false,
-    "ci": false
+    "ci": false,
+    "commands": [],
+    "webview": [],
+    "language": [],
+    "themes": []
   },
+
+  // Generation preferences
+  "autoDeploy": false,
+  "autoDepsInstall": false,
+  "autoGitInit": false,
+  "autoI18n": false,
+  "autoDbScripts": false,
+  // Helpful if you want to hide prompt when autoSomething is set
+  // to false; e.g. autoX=false+hideX=true will pass N to promptX
+  "hideDeployPrompt": false,
+  "hideDepsInstallPrompt": false,
+  "hideGitInitPrompt": false,
+  "hideI18nPrompt": false,
+  "hideDbScriptsPrompt": false,
 
   // Project metadata
   "projectName": "@reliverse/cli",
@@ -72,6 +77,6 @@
   "projectRepository": "git+https://github.com/reliverse/cli.git",
 
   // Config revalidation (1h | 1d | 2d | 7d)
-  "configLastRevalidate": "2024-12-16T16:35:43.755Z",
+  "configLastRevalidate": "2024-12-16T18:26:13.042Z",
   "configRevalidateFrequency": "2d"
 }
