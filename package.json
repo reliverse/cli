@@ -5,13 +5,9 @@
   "type": "module",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "scripts": {
-    "start": "bun src/main.ts",
     "dev": "bun src/main.ts --dev",
-    "dev:help": "bun src/main.ts help --dev",
-    "dev:login": "bun src/main.ts login --dev",
-    "dev:logout": "bun src/main.ts logout --dev",
+    "db:studio": "drizzle-kit studio",
     "check": "bun typecheck && bun lint && bun format",
-    "release": "bumpp && bun check && bun pub",
     "build:npm": "unbuild && bun build.optim.ts",
     "build:jsr": "bun build.optim.ts --jsr",
     "build": "bun build:npm && bun build:jsr",
@@ -27,9 +23,7 @@
     "attw": "bunx @arethetypeswrong/cli",
     "unpub": "npm unpublish",
     "test": "vitest",
-    "knip": "knip",
-    "db:studio": "drizzle-kit studio",
-    "bs:rebuild": "npm rebuild better_sqlite3 && npm rebuild"
+    "knip": "knip"
   },
   "publishConfig": {
     "access": "public"

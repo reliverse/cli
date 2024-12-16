@@ -3,10 +3,11 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types.js";
+import { CONFIG_CATEGORIES } from "~/app/menu/data/constants.js";
+import { type ReliverseConfig } from "~/types.js";
+import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
+import { getDefaultReliverseConfig } from "~/utils/configs/reliverseReadWrite.js";
 import { relinka } from "~/utils/console.js";
-import { CONFIG_CATEGORIES } from "~/utils/data/constants.js";
-import { getDefaultReliverseConfig } from "~/utils/rules.js";
 
 async function generateReliverseConfig(
   targetDir: string,

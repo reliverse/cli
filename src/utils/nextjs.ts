@@ -3,13 +3,10 @@ import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { type NextJsConfig, type ConfigPaths } from "~/types.js";
 import { relinka } from "~/utils/console.js";
 
-import {
-  type NextJsConfig,
-  type ConfigPaths,
-  addConfigMetadata,
-} from "./types.js";
+import { addConfigMetadata } from "./configs/miscellaneousConfigHelpers.js";
 
 const NEXTJS_DEFAULT_CONFIG: NextJsConfig = addConfigMetadata({
   reactStrictMode: true,

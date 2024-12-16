@@ -1,9 +1,6 @@
 import { selectPrompt } from "@reliverse/prompts";
 
-export type GitOption =
-  | "initializeNewGitRepository"
-  | "keepExistingGitFolder"
-  | "doNothing";
+import type { GitOption } from "~/types.js";
 
 export async function askGitInitialization(): Promise<GitOption> {
   const gitOption = await selectPrompt({

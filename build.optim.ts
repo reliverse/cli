@@ -12,7 +12,7 @@ const isJSR: boolean = args.includes("--jsr");
 // Get current directory using import.meta.url
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
-// Define directories based on the presence of '--jsr' flag
+// Directories based on the presence of '--jsr' flag
 const sourceDir: string = path.resolve(currentDir, "src");
 const outputDir: string = path.resolve(
   currentDir,

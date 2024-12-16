@@ -2,8 +2,10 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ConflictHandlerOptions } from "~/types.js";
+
+import { FILE_CONFLICTS } from "~/app/menu/data/constants.js";
 import { relinka } from "~/utils/console.js";
-import { FILE_CONFLICTS } from "~/utils/data/constants.js";
 import { removeFile, renameFile } from "~/utils/fileUtils.js";
 
 export const resolveProjectConflicts = async (targetDir: string) => {
@@ -25,18 +27,6 @@ export const resolveProjectConflicts = async (targetDir: string) => {
     automaticConflictHandling,
     targetDir,
   });
-};
-
-type FileConflict = {
-  customMessage?: string; // Optional custom message for user prompt
-  description?: string; // Optional custom description for user-facing messages
-  fileName: string; // Name of the file (e.g., '.eslintrc.cjs')
-};
-
-type ConflictHandlerOptions = {
-  files: FileConflict[]; // List of files to check for conflicts
-  automaticConflictHandling: boolean; // Whether to ask the user or automatically remove files
-  targetDir: string; // Directory where the conflicts may happen
 };
 
 // Universal conflict handler function

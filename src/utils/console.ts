@@ -1,16 +1,8 @@
 import { msg } from "@reliverse/prompts";
 
-type MessageKind = "log" | "info" | "warn" | "error" | "success";
-type VerboseKind = `${MessageKind}-verbose`;
-type AllKinds = MessageKind | VerboseKind;
-
-type MessageConfig = {
-  type: "M_INFO" | "M_ERROR";
-  titleColor?: "retroGradient" | "viceGradient" | "yellowBright";
-  titleTypography?: "bold";
-  contentColor?: "dim";
-  contentTypography?: "italic";
-};
+import type { MessageConfig } from "~/types.js";
+import type { MessageKind } from "~/types.js";
+import type { AllKinds } from "~/types.js";
 
 const verboseLogging = false;
 

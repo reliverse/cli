@@ -5,21 +5,18 @@ import {
 } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import {
-  DEFAULT_CONFIG,
-  type ReliverseConfig,
-  type TemplateOption,
-} from "~/types.js";
+import { REPO_URLS } from "~/app/menu/data/constants.js";
+import { type ReliverseConfig, type TemplateOption } from "~/types.js";
+import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
 import { relinka } from "~/utils/console.js";
-import { REPO_URLS } from "~/utils/data/constants.js";
 
+import { createWebProject } from "./createWebProject.js";
 import {
   randomprojectFrameworkTitle,
   randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
-} from "../../utils/data/messages.js";
-import { createWebProject } from "./createWebProject.js";
+} from "./data/messages.js";
 
 const TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
@@ -68,7 +65,7 @@ async function configureVSCodeExtension() {
       },
     }),
     features: await multiselectPrompt({
-      title: "What type of features will your extension include?",
+      title: "What kind of features will your extension include?",
       options: [
         {
           label: "Commands",
@@ -161,7 +158,7 @@ export async function buildBrandNewThing(
   // Get project type
   const projectType = await selectPrompt({
     endTitle,
-    title: "What type of project would you like to create?",
+    title: "What kind of project would you like to create?",
     options: [
       {
         label: "Web Application",

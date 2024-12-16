@@ -2,15 +2,17 @@ import { defineCommand } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types.js";
+import { type ReliverseConfig } from "~/types.js";
+import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
+import { getDefaultReliverseConfig } from "~/utils/configs/reliverseReadWrite.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
-import { getDefaultReliverseConfig } from "~/utils/rules.js";
 
 export default defineCommand({
   meta: {
     name: "config",
     description: "Generate configuration files in the current directory",
+    hidden: true,
   },
   args: {
     defaults: {

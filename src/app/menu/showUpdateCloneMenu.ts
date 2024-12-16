@@ -3,11 +3,11 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
+import { getRepoUrl } from "~/app/menu/data/constants.js";
 import { relinka } from "~/utils/console.js";
-import { getRepoUrl } from "~/utils/data/constants.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
+import { replaceImportSymbol } from "~/utils/handlers/codemods/replaceImportSymbol.js";
 import { validate } from "~/utils/validate.js";
 
 const cwd = getCurrentWorkingDirectory();

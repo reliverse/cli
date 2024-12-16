@@ -3,21 +3,14 @@ import { confirmPrompt, input, password } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { join } from "pathe";
 
+import type { PromptType, Question } from "~/types.js";
+
 import { relinka } from "~/utils/console.js";
 
 // TODO: 🐞 Still in development! Please use at own risk!
 
 const rootDirname = getRootDirname(import.meta.url, 6);
 const envFilePath = join(rootDirname, ".env");
-
-type PromptType = "confirm" | "input" | "password";
-
-type Question = {
-  default?: boolean | string;
-  key: string;
-  message: string;
-  type: PromptType;
-};
 
 function createPrompt(
   type: PromptType,

@@ -12,14 +12,6 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-type KeyType =
-  | "string"
-  | "email"
-  | "password"
-  | "number"
-  | "boolean"
-  | "database";
-
 enum KeyVars {
   NEXT_PUBLIC_APP_URL = "NEXT_PUBLIC_APP_URL",
   DATABASE_URL = "DATABASE_URL",
@@ -37,7 +29,15 @@ enum KeyVars {
   STRIPE_PRO_MONTHLY_PRICE_ID = "STRIPE_PRO_MONTHLY_PRICE_ID",
 }
 
-type ServiceKey = {
+export type KeyType =
+  | "string"
+  | "email"
+  | "password"
+  | "number"
+  | "boolean"
+  | "database";
+
+export type ServiceKey = {
   key: KeyVars;
   type?: KeyType;
   defaultValue?: string;
@@ -45,7 +45,7 @@ type ServiceKey = {
   hidden?: boolean;
 };
 
-type KnownService = {
+export type KnownService = {
   name: string;
   dashboardUrl?: string;
   keys: ServiceKey[];

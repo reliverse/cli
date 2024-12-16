@@ -1,10 +1,17 @@
 # @reliverse/cli
 
+```bash
+bun i -g @reliverse/cli
+reliverse cli
+```
+
+---
+
 [npmjs](https://npmjs.com/package/@reliverse/cli), [GitHub](https://github.com/reliverse/cli), [Discord](https://discord.gg/Pb8uKbwpsJ)
 
 Please consider following this project's author, [Nazar Kornienko](https://github.com/blefnk), and consider starring the project to show your ❤️ and support.
 
-## Reliverse: Open-Source Full-Featured Product Launcher Tool & Assistant
+## Reliverse CLI: Open-Source Project Bootstrapper
 
 👋 Welcome! This superapp tool can help you easily create new web projects and automatically make advanced codebase modifications, with more features coming soon.
 
@@ -21,12 +28,10 @@ Then use one of the following commands to install **Reliverse**:
 - With [yarn](https://yarnpkg.com): `yarn global add @reliverse/cli`
 - With [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager): `npm i -g @reliverse/cli`
 
-> **Note:** If you run it using `bun`, but see `pnpm` at the top, it's just a strange detector bug, everything will be handled by bun, so no worries (we'll fix it in the future).
-
 **Once installed**: You can use **@reliverse/cli** to create new projects or manage existing ones. Navigate to the root of your desired directory and run:
 
 ```bash
-reliverse
+reliverse cli
 ```
 
 **To update the CLI**: You can use the following commands (the process should be similar for other package managers):
@@ -49,6 +54,8 @@ Reliverse allows you to effortlessly bootstrap projects, including the [Relivato
 Reliverse is more than just the easiest way to install Relivator. It’s also the most convenient new way to download any repository from GitHub and automatically prepare it for work. Especially if it’s a project from the JavaScript ecosystem.
 
 The mission of this project is not only to help you install templates in seconds. It is also a desire to make web development more accessible to everyone. It’s a commitment to fixing many things that don’t work in the ecosystem. It’s a wish to share templates, libraries, and tools with the world that deserve attention. It’s also a drive to motivate developers to become contributors to various projects that need and deserve it.
+
+> **Note:** If you run it using `bun`, but see `pnpm` at the top, it's just a strange detector bug, everything will be handled by bun, so no worries (we'll fix it in the future).
 
 ## TL;DR
 
@@ -88,7 +95,8 @@ Reliverse team is open to partnerships and collaborations. If you are interested
 
 ```bash
 bun pm cache rm -g
-bunx reliverse # OR bunx reliverse@latest
+bun i -g @reliverse/cli # OR bunx @reliverse/cli@latest
+reliverse cli
 ```
 
 **Why you don't use monorepo?**
@@ -119,7 +127,7 @@ The @reliverse/cli offers a series of interactive prompts to streamline your pro
 2. **Install GitHub Templates**: Easily install any JavaScript or TypeScript project by providing a GitHub repository URL.
 3. **Manage Configurations**: The CLI detects existing configuration files and helps you resolve any conflicts.
 4. **Select Configuration Categories**: Choose from a range of configuration options for your setup, including ESLint, Biome, Putout, GitHub settings, and IDE preferences.
-5. **Ongoing Support**: Reliverse supports you throughout your entire development process. You can run `reliverse` even on an existing project, and if your project’s `package.json` contains an `appts` script, it acts as a local instance of `reliverse` within your project.
+5. **Ongoing Support**: Reliverse supports you throughout your entire development process. You can run `reliverse cli` even on an existing project, and if your project’s `package.json` contains an `appts` script, it acts as a local instance of `reliverse cli` within your project.
 
 <!-- ### Example Workflow
 

@@ -99,6 +99,7 @@ export default tseslint.config(
       "no-constant-binary-expression": "off",
       "no-constant-condition": "off",
       "no-case-declarations": "off",
+      "max-lines": ["error", 700],
       curly: "warn",
       eqeqeq: "off",
       semi: "warn",

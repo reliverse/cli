@@ -6,6 +6,7 @@ export default defineCommand({
   meta: {
     name: "studio",
     description: "Provides information on how to open Reliverse Studio",
+    hidden: true,
   },
   run: async () => {
     relinka(

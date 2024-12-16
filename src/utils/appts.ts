@@ -10,7 +10,7 @@ import process from "node:process";
 import { join } from "pathe";
 import pc from "picocolors";
 
-import type { ApptsConfig } from "~/utils/types.js";
+import type { ApptsConfig } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 import metadata from "~/utils/metadata.js";

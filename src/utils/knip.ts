@@ -3,13 +3,10 @@ import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { type KnipConfig, type ConfigPaths } from "~/types.js";
 import { relinka } from "~/utils/console.js";
 
-import {
-  type KnipConfig,
-  type ConfigPaths,
-  addConfigMetadata,
-} from "./types.js";
+import { addConfigMetadata } from "./configs/miscellaneousConfigHelpers.js";
 
 const KNIP_DEFAULT_CONFIG: KnipConfig = addConfigMetadata({
   $schema: "https://unpkg.com/knip@latest/schema.json",

@@ -2,17 +2,13 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { db } from "~/app/db/client.js";
-import { encrypt, decrypt, type ConfigKey } from "~/app/db/config.js";
-import {
-  configKeysTable,
-  userDataTable,
-  type UserDataKeys,
-} from "~/app/db/schema.js";
-import { relinka } from "~/utils/console.js";
-import { MEMORY_FILE } from "~/utils/data/constants.js";
+import type { ConfigKey, ReliverseMemory, UserDataKeys } from "~/types.js";
 
-import type { Memory } from "./types.js";
+import { db } from "~/app/db/client.js";
+import { encrypt, decrypt } from "~/app/db/config.js";
+import { configKeysTable, userDataTable } from "~/app/db/schema.js";
+import { MEMORY_FILE } from "~/app/menu/data/constants.js";
+import { relinka } from "~/utils/console.js";
 
 const homeDir = os.homedir();
 const dbPath = path.join(homeDir, MEMORY_FILE);
@@ -20,7 +16,7 @@ const dbPath = path.join(homeDir, MEMORY_FILE);
 // Ensure directory exists
 await fs.ensureDir(path.dirname(dbPath));
 
-export async function readReliverseMemory(): Promise<Memory> {
+export async function readReliverseMemory(): Promise<ReliverseMemory> {
   try {
     // Read encrypted data from config_keys
     const configRows = await db.select().from(configKeysTable);
@@ -68,7 +64,7 @@ export async function readReliverseMemory(): Promise<Memory> {
 }
 
 export async function updateReliverseMemory(
-  data: Partial<Memory>,
+  data: Partial<ReliverseMemory>,
 ): Promise<void> {
   try {
     // Split updates into encrypted and non-encrypted data

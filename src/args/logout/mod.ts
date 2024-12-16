@@ -4,16 +4,28 @@ import {
   deleteLastLine,
   msg,
 } from "@reliverse/prompts";
+import fs from "fs-extra";
+import os from "os";
+import path from "pathe";
 
-import { isConfigExists } from "~/utils/config.js";
 import { relinka } from "~/utils/console.js";
 
-import { deleteConfig } from "./impl.js";
+import { deleteMemory } from "./impl.js";
+
+const isConfigExists = async () => {
+  const homeDir = os.homedir();
+  const filePath = path.join(homeDir, ".reliverse/reliverse.db");
+  if (await fs.pathExists(filePath)) {
+    return true;
+  }
+  return false;
+};
 
 export default defineCommand({
   meta: {
     name: "logout",
     description: "Ask Reliverse to forget your data",
+    hidden: true,
   },
   args: {
     dev: {
@@ -22,13 +34,10 @@ export default defineCommand({
     },
   },
   run: async ({ args }) => {
-    const config = await isConfigExists();
-    if (!config) {
+    if (!(await isConfigExists())) {
       relinka("success", "You're not logged in.");
       if (args.dev) {
         relinka("info", "Try `bun dev:login` cmd.");
-      } else {
-        relinka("info", "Try `reliverse login` cmd.");
       }
       process.exit(0);
     }
@@ -38,13 +47,13 @@ export default defineCommand({
       titleColor: "redBright",
     });
     if (danger) {
-      await deleteConfig();
+      await deleteMemory();
       deleteLastLine();
       msg({
         type: "M_MIDDLE",
       });
-      relinka("success", "`You're logged out now!` 👋");
+      relinka("success", "You're logged out now! 👋");
+      process.exit(0);
     }
-    process.exit(0);
   },
 });

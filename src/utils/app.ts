@@ -1,7 +1,6 @@
-import type { FooterItem } from "~/utils/nav.js";
-import type { MainMenuItem } from "~/utils/with.js";
+import type { FooterItem, MainMenuItem } from "~/types.js";
 
-import { getRepoUrl } from "~/utils/data/constants.js";
+import { getRepoUrl } from "~/app/menu/data/constants.js";
 import metadata from "~/utils/metadata.js";
 import { productCategories } from "~/utils/products.js";
 
@@ -13,7 +12,7 @@ export function slugify(str: string) {
     .replace(/-{2,}/g, "-");
 }
 
-// Define available icon names as a union type
+// Available icon names
 type IconName =
   | "billing"
   | "discord"

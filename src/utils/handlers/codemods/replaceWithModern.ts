@@ -2,13 +2,9 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
-import { relinka } from "~/utils/console.js";
+import type { ModernReplacement } from "~/types.js";
 
-type ModernReplacement = {
-  pattern: RegExp;
-  replacement: string;
-  description: string;
-};
+import { relinka } from "~/utils/console.js";
 
 const MODERN_REPLACEMENTS: ModernReplacement[] = [
   // File System
@@ -149,12 +145,3 @@ export async function replaceWithModern(projectPath: string) {
     relinka("info", "No replacements needed.");
   }
 }
-
-export type ModernizeConfig = {
-  replaceFs?: boolean;
-  replacePath?: boolean;
-  replaceHttp?: boolean;
-  replaceProcess?: boolean;
-  replaceConsole?: boolean;
-  replaceEvents?: boolean;
-};

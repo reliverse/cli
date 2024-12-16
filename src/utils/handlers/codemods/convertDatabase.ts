@@ -1,20 +1,9 @@
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { PrismaField, PrismaModel } from "~/types.js";
+
 import { relinka } from "~/utils/console.js";
-
-type PrismaField = {
-  name: string;
-  type: string;
-  isOptional: boolean;
-  isList: boolean;
-  attributes: Record<string, any>;
-};
-
-type PrismaModel = {
-  name: string;
-  fields: PrismaField[];
-};
 
 function parsePrismaSchema(content: string): PrismaModel[] {
   const models: PrismaModel[] = [];

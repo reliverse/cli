@@ -10,6 +10,7 @@ export default defineCommand({
   meta: {
     name: "login",
     description: "Authenticate your device",
+    hidden: true,
   },
   args: {
     dev: {

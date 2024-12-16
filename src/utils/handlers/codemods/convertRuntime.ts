@@ -1,15 +1,11 @@
+import type { TSConfig } from "pkg-types";
+
 import { destr } from "destr";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
-
-type TSConfig = {
-  compilerOptions?: {
-    types?: string[];
-  };
-};
 
 const RUNTIME_REPLACEMENTS = {
   bun: {

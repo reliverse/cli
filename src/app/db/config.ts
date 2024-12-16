@@ -6,14 +6,14 @@ import {
 } from "crypto";
 import { eq } from "drizzle-orm";
 
+import type { ConfigKey } from "~/types.js";
+
 import { relinka } from "~/utils/console.js";
 
 import { db } from "./client.js";
 import { configKeysTable } from "./schema.js";
 
-export type ConfigKey = "githubKey" | "vercelKey" | "code" | "key";
-
-// Use a consistent encryption key based on machine-specific data
+// Encryption key based on machine-specific data
 function getDerivedKey(): Buffer {
   const machineId = `${process.platform}-${process.arch}-${process.env.USERNAME || process.env.USER}`;
   return createHash("sha256").update(machineId).digest();
@@ -73,7 +73,7 @@ export async function getConfigValue(key: ConfigKey): Promise<string | null> {
       return decrypt(result[0].value);
     } catch {
       // If decryption fails, delete the corrupted value and return null
-      await deleteConfigValue(key);
+      await deleteMemoryValue(key);
       return null;
     }
   } catch (error) {
@@ -114,7 +114,7 @@ export async function setConfigValue(
   }
 }
 
-export async function deleteConfigValue(key: ConfigKey): Promise<void> {
+export async function deleteMemoryValue(key: ConfigKey): Promise<void> {
   try {
     await db.delete(configKeysTable).where(eq(configKeysTable.key, key));
   } catch (error) {

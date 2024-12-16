@@ -3,13 +3,10 @@ import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { type BiomeConfig, type ConfigPaths } from "~/types.js";
 import { relinka } from "~/utils/console.js";
 
-import {
-  type BiomeConfig,
-  type ConfigPaths,
-  addConfigMetadata,
-} from "./types.js";
+import { addConfigMetadata } from "./configs/miscellaneousConfigHelpers.js";
 
 const BIOME_DEFAULT_CONFIG: BiomeConfig = addConfigMetadata({
   $schema: "https://biomejs.dev/schemas/1.5.3/schema.json",

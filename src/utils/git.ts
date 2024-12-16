@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { GitOption } from "~/app/menu/askGitInitialization.js";
+import type { GitOption } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 

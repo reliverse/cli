@@ -21,6 +21,23 @@
     "api": "trpc"
   },
 
+  // Project features
+  "features": {
+    "i18n": true,
+    "analytics": false,
+    "themeMode": "dark-light",
+    "authentication": true,
+    "api": true,
+    "database": true,
+    "testing": false,
+    "docker": false,
+    "ci": false,
+    "commands": [],
+    "webview": [],
+    "language": [],
+    "themes": []
+  },
+
   // Code style preferences
   "codeStyle": {
     "dontRemoveComments": true,
@@ -33,26 +50,6 @@
     "indentStyle": "space",
     "indentSize": 2,
     "importSymbol": "~"
-  },
-
-  // Project features
-  "features": {
-    "i18n": true,
-    "pwa": false,
-    "seo": true,
-    "analytics": false,
-    "darkMode": true,
-    "authentication": true,
-    "api": true,
-    "database": true,
-    "testing": false,
-    "storybook": false,
-    "docker": false,
-    "ci": false,
-    "commands": [],
-    "webview": [],
-    "language": [],
-    "themes": []
   },
 
   // Generation preferences
@@ -77,6 +74,6 @@
   "projectRepository": "git+https://github.com/reliverse/cli.git",
 
   // Config revalidation (1h | 1d | 2d | 7d)
-  "configLastRevalidate": "2024-12-16T18:26:13.042Z",
+  "configLastRevalidate": "2024-12-16T21:00:59.362Z",
   "configRevalidateFrequency": "2d"
 }

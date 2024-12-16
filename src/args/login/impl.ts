@@ -13,8 +13,8 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
+import { MEMORY_FILE } from "~/app/menu/data/constants.js";
 import { relinka } from "~/utils/console.js";
-import { MEMORY_FILE } from "~/utils/data/constants.js";
 
 import { updateReliverseMemory } from "../memory/impl.js";
 
@@ -41,7 +41,7 @@ export async function auth({
 
   await task({
     initialMessage: "Waiting for user confirmation...",
-    successMessage: "Authentication successful!",
+    successMessage: "Login cancelled. See you next time 👋",
     errorMessage: "Authentication failed!",
     spinnerSolution: "ora",
     spinnerType: "arc",

@@ -7,7 +7,7 @@ const dbPath = path.join(homeDir, ".reliverse", "reliverse.db");
 
 export default defineConfig({
   out: "./drizzle",
-  schema: "./src/db/schema.ts",
+  schema: "./src/app/db/schema.ts",
   dialect: "sqlite",
   dbCredentials: {
     url: `file:${dbPath}`,

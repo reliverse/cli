@@ -8,6 +8,7 @@ export default defineCommand({
   meta: {
     name: "memory",
     description: "Displays the data stored in Reliverse's memory",
+    hidden: true,
   },
   run: async () => {
     const memory = await readReliverseMemory();

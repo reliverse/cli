@@ -2,18 +2,12 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
+import type { CloneError } from "~/types.js";
+import type { CopyError } from "~/types.js";
+
 import { relinka } from "~/utils/console.js";
 
-import { FILE_CONFLICTS } from "./data/constants.js";
-
-type CloneError = {
-  message: string;
-} & Error;
-
-type CopyError = {
-  message: string;
-  fileName?: string;
-} & Error;
+import { FILE_CONFLICTS } from "../app/menu/data/constants.js";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(

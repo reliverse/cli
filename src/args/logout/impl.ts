@@ -3,11 +3,24 @@ import os from "os";
 import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
-import { MEMORY_FILE } from "~/utils/data/constants.js";
 
-export async function deleteConfig() {
+export async function deleteMemory() {
   const homeDir = os.homedir();
-  const filePath = path.join(homeDir, MEMORY_FILE);
+  const filePath = path.join(homeDir, ".reliverse/reliverse.db");
+
   relinka("info-verbose", `Deleting config file: ${filePath}`);
-  await fs.remove(filePath);
+  try {
+    if (await fs.pathExists(filePath)) {
+      await fs.remove(filePath);
+      relinka("success-verbose", "Config file deleted successfully");
+    } else {
+      relinka("info-verbose", "Config file not found");
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to delete config file",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+  }
 }

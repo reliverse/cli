@@ -2,33 +2,9 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ShadcnConfig, Theme } from "~/types.js";
+
 import { relinka } from "./console.js";
-
-type ShadcnConfig = {
-  style: string;
-  rsc: boolean;
-  tsx: boolean;
-  tailwind: {
-    config: string;
-    css: string;
-    baseColor: string;
-    cssVariables: boolean;
-    prefix: string;
-  };
-  aliases: {
-    components: string;
-    utils: string;
-    ui: string;
-    lib: string;
-    hooks: string;
-  };
-  iconLibrary: string;
-};
-
-type Theme = {
-  name: string;
-  colors: Record<string, string>;
-};
 
 const COMPONENT_DEPENDENCIES: Record<string, string[]> = {
   "alert-dialog": ["button"],
