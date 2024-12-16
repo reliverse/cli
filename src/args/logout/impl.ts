@@ -2,8 +2,8 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE } from "~/app/data/constants.js";
 import { relinka } from "~/utils/console.js";
+import { MEMORY_FILE } from "~/utils/data/constants.js";
 
 export async function deleteConfig() {
   const homeDir = os.homedir();

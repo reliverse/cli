@@ -4,10 +4,9 @@ import fs from "fs-extra";
 import path from "pathe";
 import { readPackageJSON, readTSConfig } from "pkg-types";
 
-import type { ReliverseConfig } from "~/types/config.js";
-import type { ReliverseRules } from "~/types/rules.js";
+import type { ReliverseConfig, ReliverseRules } from "~/types.js";
 
-import { DEFAULT_CONFIG } from "~/types/config.js";
+import { DEFAULT_CONFIG } from "~/types.js";
 
 import { relinka } from "./console.js";
 
@@ -108,10 +107,8 @@ export async function writeReliverseRules(
       projectLicense: rules.projectLicense,
       projectRepository: rules.projectRepository,
 
-      // Config revalidation
-      configLastRevalidate:
-        rules.configLastRevalidate || new Date().toISOString(),
-      configRevalidateFrequency: rules.configRevalidateFrequency || "2d",
+      // Project features
+      features: rules.features,
 
       // Technical stack
       framework: rules.framework,
@@ -121,15 +118,17 @@ export async function writeReliverseRules(
       runtime: rules.runtime,
       monorepo: rules.monorepo,
 
-      // Development Preferences
+      // Development preferences
       preferredLibraries: rules.preferredLibraries,
       codeStyle: rules.codeStyle,
 
-      // Project Features
-      features: rules.features,
-
       // Dependencies Management
       ignoreDependencies: rules.ignoreDependencies,
+
+      // Config revalidation
+      configLastRevalidate:
+        rules.configLastRevalidate || new Date().toISOString(),
+      configRevalidateFrequency: rules.configRevalidateFrequency || "2d",
 
       // Custom Extensions
       customRules: rules.customRules,
@@ -137,18 +136,19 @@ export async function writeReliverseRules(
 
     // Format with 2 spaces indentation and add section comments
     const content = JSON.stringify(config, null, 2)
-      // Inject section comments
-      .replace('"projectName":', '// Project metadata\n  "projectName":')
-      .replace(
-        '"configLastRevalidate":',
-        '\n  // Config revalidation (1h | 1d | 2d | 7d)\n  "configLastRevalidate":',
-      )
+      // Inject comments above each section
+      .replace('"projectAuthor":', '// Project details\n  "projectAuthor":')
+      .replace('"features":', '\n  // Project features\n  "features":')
       .replace('"framework":', '\n  // Technical stack\n  "framework":')
       .replace(
         '"preferredLibraries":',
-        '\n  // Development Preferences\n  "preferredLibraries":',
+        '\n  // Development preferences\n  "preferredLibraries":',
       )
-      .replace('"features":', '\n  // Project Features\n  "features":');
+      .replace('"projectName":', '\n  // Project metadata\n  "projectName":')
+      .replace(
+        '"configLastRevalidate":',
+        '\n  // Config revalidation (1h | 1d | 2d | 7d)\n  "configLastRevalidate":',
+      );
 
     await fs.writeFile(configPath, content);
     relinka("info-verbose", "Project configuration saved to reliverse.json");
@@ -400,10 +400,11 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
         projectRepository:
           defaultRules.projectRepository || parsedContent.projectRepository,
 
-        // Config revalidation
-        configLastRevalidate: new Date().toISOString(), // Update last revalidation time
-        configRevalidateFrequency:
-          parsedContent.configRevalidateFrequency || "2d",
+        // Project features
+        features: {
+          ...defaultRules.features,
+          ...(parsedContent.features || {}),
+        },
 
         // Technical stack
         framework: defaultRules.framework,
@@ -414,7 +415,7 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
         runtime: defaultRules.runtime || parsedContent.runtime,
         monorepo: defaultRules.monorepo || parsedContent.monorepo,
 
-        // Development Preferences
+        // Development preferences
         preferredLibraries: {
           ...defaultRules.preferredLibraries,
           ...(parsedContent.preferredLibraries || {}),
@@ -425,15 +426,14 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
           ...(parsedContent.codeStyle || {}),
         },
 
-        // Project Features
-        features: {
-          ...defaultRules.features,
-          ...(parsedContent.features || {}),
-        },
-
         // Dependencies Management
         ignoreDependencies:
           parsedContent.ignoreDependencies || defaultRules.ignoreDependencies,
+
+        // Config revalidation
+        configLastRevalidate: new Date().toISOString(),
+        configRevalidateFrequency:
+          parsedContent.configRevalidateFrequency || "2d",
 
         // Custom Extensions
         customRules: {

@@ -5,17 +5,17 @@ import {
 } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import type { ReliverseConfig, TemplateOption } from "~/types/config.js";
+import type { ReliverseConfig, TemplateOption } from "~/types.js";
 
-import { REPO_URLS } from "~/app/data/constants.js";
 import { relinka } from "~/utils/console.js";
+import { REPO_URLS } from "~/utils/data/constants.js";
 
 import {
   randomFrameworkTitle,
   randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
-} from "../data/messages.js";
+} from "../../utils/data/messages.js";
 import { createWebProject } from "./createWebProject.js";
 
 const TEMPLATE_OPTIONS = {

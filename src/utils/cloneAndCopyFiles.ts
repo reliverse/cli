@@ -4,7 +4,7 @@ import { simpleGit } from "simple-git";
 
 import { relinka } from "~/utils/console.js";
 
-import { FILE_CONFLICTS } from "../app/data/constants.js";
+import { FILE_CONFLICTS } from "./data/constants.js";
 
 type CloneError = {
   message: string;

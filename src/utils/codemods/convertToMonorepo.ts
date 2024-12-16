@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { MonorepoType } from "~/types/rules.js";
+import type { MonorepoType } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 

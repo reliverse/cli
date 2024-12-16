@@ -13,8 +13,8 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
-import { MEMORY_FILE } from "~/app/data/constants.js";
 import { relinka } from "~/utils/console.js";
+import { MEMORY_FILE } from "~/utils/data/constants.js";
 
 import { updateReliverseMemory } from "../memory/impl.js";
 

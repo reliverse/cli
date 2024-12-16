@@ -2,15 +2,15 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE } from "~/app/data/constants.js";
-import { db } from "~/db/client.js";
-import { encrypt, decrypt, type ConfigKey } from "~/db/config.js";
+import { db } from "~/app/db/client.js";
+import { encrypt, decrypt, type ConfigKey } from "~/app/db/config.js";
 import {
   configKeysTable,
   userDataTable,
   type UserDataKeys,
-} from "~/db/schema.js";
+} from "~/app/db/schema.js";
 import { relinka } from "~/utils/console.js";
+import { MEMORY_FILE } from "~/utils/data/constants.js";
 
 import type { Memory } from "./types.js";
 

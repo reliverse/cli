@@ -3,9 +3,9 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { CONFIG_CATEGORIES } from "~/app/data/constants.js";
-import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types/config.js";
+import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types.js";
 import { relinka } from "~/utils/console.js";
+import { CONFIG_CATEGORIES } from "~/utils/data/constants.js";
 import { getDefaultReliverseConfig } from "~/utils/rules.js";
 
 async function generateReliverseConfig(
@@ -27,9 +27,8 @@ async function generateReliverseConfig(
     projectLicense: rc.projectLicense,
     projectRepository: rc.projectRepository,
 
-    // Config revalidation
-    configLastRevalidate: rc.configLastRevalidate,
-    configRevalidateFrequency: rc.configRevalidateFrequency,
+    // Project features
+    features: rc.features,
 
     // Technical stack
     framework: rc.framework,
@@ -39,12 +38,13 @@ async function generateReliverseConfig(
     packageManager: rc.packageManager,
     monorepo: rc.monorepo,
 
-    // Development Preferences
+    // Development preferences
     preferredLibraries: rc.preferredLibraries,
     codeStyle: rc.codeStyle,
 
-    // Project Features
-    features: rc.features,
+    // Config revalidation
+    configLastRevalidate: rc.configLastRevalidate,
+    configRevalidateFrequency: rc.configRevalidateFrequency,
   });
 
   if (overwrite || !(await fs.pathExists(configPath))) {

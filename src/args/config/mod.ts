@@ -2,7 +2,7 @@ import { defineCommand } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types/config.js";
+import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import { getDefaultReliverseConfig } from "~/utils/rules.js";
@@ -47,10 +47,6 @@ export default defineCommand({
         projectLicense: rules.projectLicense,
         projectRepository: rules.projectRepository,
 
-        // Config revalidation
-        configLastRevalidate: rules.configLastRevalidate,
-        configRevalidateFrequency: rules.configRevalidateFrequency,
-
         // Technical stack
         framework: rules.framework,
         frameworkVersion: rules.frameworkVersion,
@@ -59,7 +55,7 @@ export default defineCommand({
         packageManager: rules.packageManager,
         monorepo: rules.monorepo,
 
-        // Development Preferences
+        // Development preferences
         preferredLibraries: rules.preferredLibraries,
         codeStyle: {
           ...rules.codeStyle,
@@ -74,11 +70,15 @@ export default defineCommand({
           },
         },
 
-        // Project Features
+        // Project features
         features: rules.features,
 
         // Dependencies Management
         ignoreDependencies: rules.ignoreDependencies,
+
+        // Config revalidation
+        configLastRevalidate: rules.configLastRevalidate,
+        configRevalidateFrequency: rules.configRevalidateFrequency,
 
         // Custom Extensions
         customRules: rules.customRules,

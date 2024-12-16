@@ -2,8 +2,8 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { FILE_CONFLICTS } from "~/app/data/constants.js";
 import { relinka } from "~/utils/console.js";
+import { FILE_CONFLICTS } from "~/utils/data/constants.js";
 import { removeFile, renameFile } from "~/utils/fileUtils.js";
 
 export const resolveProjectConflicts = async (targetDir: string) => {

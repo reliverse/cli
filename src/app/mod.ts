@@ -12,12 +12,12 @@ import { exec } from "node:child_process";
 import path from "pathe";
 import pc from "picocolors";
 
-import type { ReliverseConfig } from "~/types/config.js";
 import type {
   IntegrationCategory,
   IntegrationOptions,
-} from "~/types/integrations.js";
-import type { ReliverseRules } from "~/types/rules.js";
+  ReliverseConfig,
+  ReliverseRules,
+} from "~/types.js";
 
 import { readReliverseMemory } from "~/args/memory/impl.js";
 import { convertCjsToEsm } from "~/utils/codemods/convertCjsToEsm.js";
@@ -65,7 +65,7 @@ import {
 import {
   randomReliverseMenuTitle,
   randomWelcomeMessages,
-} from "./data/messages.js";
+} from "../utils/data/messages.js";
 import { buildBrandNewThing } from "./menu/buildBrandNewThing.js";
 import {
   manageDrizzleSchema,

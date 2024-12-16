@@ -5,13 +5,13 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE } from "./app/data/constants.js";
 import { showAnykeyPrompt } from "./app/menu/showAnykeyPrompt.js";
 import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { readReliverseMemory } from "./args/memory/impl.js";
 import { readConfig } from "./utils/config.js";
 import { relinka } from "./utils/console.js";
+import { MEMORY_FILE } from "./utils/data/constants.js";
 import { getCurrentWorkingDirectory } from "./utils/fs.js";
 
 const main = defineCommand({

@@ -13,8 +13,7 @@ import open from "open";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseConfig } from "~/types/config.js";
-import type { ReliverseRules } from "~/types/rules.js";
+import type { ReliverseConfig, ReliverseRules } from "~/types.js";
 
 import {
   readReliverseMemory,

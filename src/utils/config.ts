@@ -5,11 +5,10 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-import type { ReliverseConfig } from "../types/config.js";
-import type { ReliverseRules } from "../types/rules.js";
+import type { ReliverseConfig, ReliverseRules } from "../types.js";
 
-import { MEMORY_FILE } from "../app/data/constants.js";
-import { DEFAULT_CONFIG } from "../types/config.js";
+import { DEFAULT_CONFIG } from "../types.js";
+import { MEMORY_FILE } from "./data/constants.js";
 
 export const isConfigExists = async () => {
   try {
@@ -64,11 +63,11 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
         projectLicense: rules.projectLicense || config.projectLicense,
         projectRepository: rules.projectRepository || config.projectRepository,
 
-        // Config revalidation
-        configLastRevalidate:
-          rules.configLastRevalidate || config.configLastRevalidate,
-        configRevalidateFrequency:
-          rules.configRevalidateFrequency || config.configRevalidateFrequency,
+        // Project features
+        features: {
+          ...config.features,
+          ...rules.features,
+        },
 
         // Technical stack
         framework: rules.framework || config.framework,
@@ -78,7 +77,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
         packageManager: rules.packageManager || config.packageManager,
         monorepo: rules.monorepo || config.monorepo,
 
-        // Development Preferences
+        // Development preferences
         preferredLibraries: {
           ...config.preferredLibraries,
           ...rules.preferredLibraries,
@@ -88,15 +87,15 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
           ...rules.codeStyle,
         },
 
-        // Project Features
-        features: {
-          ...config.features,
-          ...rules.features,
-        },
-
         // Dependencies Management
         ignoreDependencies:
           rules.ignoreDependencies || config.ignoreDependencies,
+
+        // Config revalidation
+        configLastRevalidate:
+          rules.configLastRevalidate || config.configLastRevalidate,
+        configRevalidateFrequency:
+          rules.configRevalidateFrequency || config.configRevalidateFrequency,
 
         // Custom Extensions
         customRules: {
