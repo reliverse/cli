@@ -81,7 +81,7 @@ async function updatePackageJson(cwd: string, config: IntegrationConfig) {
   try {
     const pkg = await fs.readJson(pkgPath);
 
-    // Add scripts
+    // Inject scripts
     if (config.scripts) {
       pkg.scripts = { ...pkg.scripts, ...config.scripts };
     }
@@ -110,11 +110,11 @@ async function updateEnvFile(cwd: string, envVars: Record<string, string>) {
       : "";
 
     for (const [key, value] of Object.entries(envVars)) {
-      // Add to .env if not exists
+      // Inject to .env if not exists
       if (!envContent.includes(key)) {
         envContent += `\\n${key}=${value}`;
       }
-      // Add to .env.example if not exists
+      // Inject to .env.example if not exists
       if (!envExampleContent.includes(key)) {
         envExampleContent += `\\n${key}=your_${key.toLowerCase()}_here`;
       }
@@ -518,7 +518,7 @@ module.exports = {
       "better-auth/plugins/organizations",
       "better-auth/plugins/rate-limit",
       "better-auth/plugins/next-cookies",
-      "better-auth/plugins/social-auth"
+      "better-auth/plugins/social-auth",
     ],
     devDependencies: ["@better-auth/cli"],
     files: [
@@ -747,7 +747,11 @@ export default function AuthErrorPage() {
         await execa("npx", ["@better-auth/cli", "migrate"], { cwd });
         relinka("success", "Better Auth database migrations completed");
       } catch (error) {
-        relinka("error", "Failed to run Better Auth migrations:", error instanceof Error ? error.message : String(error));
+        relinka(
+          "error",
+          "Failed to run Better Auth migrations:",
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
   },
@@ -907,10 +911,7 @@ const REMOVAL_CONFIGS: Record<string, RemovalConfig> = {
       "better-auth",
       "@better-fetch/fetch",
     ],
-    devDependencies: [
-      "@types/next-auth",
-      "@better-auth/cli",
-    ],
+    devDependencies: ["@types/next-auth", "@better-auth/cli"],
     files: [
       "src/lib/auth.ts",
       "src/lib/auth-client.ts",
@@ -918,13 +919,8 @@ const REMOVAL_CONFIGS: Record<string, RemovalConfig> = {
       "src/app/api/auth/[...all]/route.ts",
       "middleware.ts",
     ],
-    directories: [
-      "src/app/api/auth",
-    ],
-    scripts: [
-      "db:generate",
-      "db:migrate",
-    ],
+    directories: ["src/app/api/auth"],
+    scripts: ["db:generate", "db:migrate"],
     envVars: [
       "NEXTAUTH_SECRET",
       "GITHUB_ID",
@@ -1000,25 +996,15 @@ const REMOVAL_CONFIGS: Record<string, RemovalConfig> = {
       "@lingui/react",
       "@lingui/core",
     ],
-    devDependencies: [
-      "@lingui/cli",
-      "@lingui/macro",
-    ],
+    devDependencies: ["@lingui/cli", "@lingui/macro"],
     files: [
       "src/i18n.ts",
       "src/middleware.ts",
       "lingui.config.ts",
       "src/i18n/index.ts",
     ],
-    directories: [
-      "src/messages",
-      "src/locales",
-      "src/i18n",
-    ],
-    scripts: [
-      "i18n:extract",
-      "i18n:compile",
-    ],
+    directories: ["src/messages", "src/locales", "src/i18n"],
+    scripts: ["i18n:extract", "i18n:compile"],
     envVars: [],
   },
 };

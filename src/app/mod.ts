@@ -43,9 +43,13 @@ import {
   removeIntegration,
 } from "~/utils/integrations.js";
 import {
-  getDefaultRules,
   readReliverseRules,
   writeReliverseRules,
+  getDefaultRules,
+  validateAndInsertMissingKeys,
+  detectProjectType,
+  generateDefaultRulesForProject,
+  parseCodeStyleFromConfigs,
 } from "~/utils/rules.js";
 import {
   readShadcnConfig,
@@ -69,29 +73,6 @@ import {
 } from "./menu/manageDrizzleSchema.js";
 import { showEndPrompt, showStartPrompt } from "./menu/showStartEndPrompt.js";
 
-const PROJECT_TYPE_FILES = {
-  nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
-  astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
-  react: ["vite.config.js", "vite.config.ts", "react.config.js"],
-  vue: ["vue.config.js", "vite.config.ts"],
-  svelte: ["svelte.config.js", "svelte.config.ts"],
-} as const;
-
-type BiomeConfig = {
-  formatter?: {
-    enabled?: boolean;
-  };
-  javascript?: {
-    formatter?: {
-      quoteStyle?: "single" | "double";
-      jsxQuoteStyle?: "single" | "double";
-      trailingCommas?: "all" | "none";
-      semicolons?: "always" | "never";
-    };
-  };
-};
-
-// Add type definition for TSConfig
 type TSConfig = {
   compilerOptions?: {
     strict?: boolean;
@@ -106,7 +87,6 @@ type TSConfig = {
   };
 };
 
-// Add after other type definitions
 type ConfigFile = {
   name: string;
   files: string[];
@@ -259,80 +239,10 @@ const CONFIG_FILES: ConfigFile[] = [
   },
 ];
 
-async function detectProjectType(
-  cwd: string,
-): Promise<keyof typeof PROJECT_TYPE_FILES | null> {
-  for (const [type, files] of Object.entries(PROJECT_TYPE_FILES)) {
-    for (const file of files) {
-      if (await fs.pathExists(path.join(cwd, file))) {
-        return type as keyof typeof PROJECT_TYPE_FILES;
-      }
-    }
-  }
-  return null;
-}
-
-async function generateDefaultRulesForProject(
-  cwd: string,
-): Promise<ReliverseRules | null> {
-  const projectType = await detectProjectType(cwd);
-  if (!projectType) {
-    return null;
-  }
-
-  const packageJsonPath = path.join(cwd, "package.json");
-  let packageJson: any = {};
-  try {
-    if (await fs.pathExists(packageJsonPath)) {
-      packageJson = destr<PackageJson>(
-        await fs.readFile(packageJsonPath, "utf-8"),
-      );
-    }
-  } catch (error) {
-    relinka("error", "Error reading package.json:", error.toString());
-  }
-
-  const rules = await getDefaultRules(
-    packageJson.name || path.basename(cwd),
-    packageJson.author || "user",
-    projectType,
-  );
-
-  // Detect additional features
-  const hasI18n = await fs.pathExists(path.join(cwd, "src/app/[locale]"));
-  const hasPrisma = await fs.pathExists(path.join(cwd, "prisma/schema.prisma"));
-  const hasDrizzle = await fs.pathExists(path.join(cwd, "drizzle.config.ts"));
-  const hasNextAuth = await fs.pathExists(
-    path.join(cwd, "src/app/api/auth/[...nextauth]"),
-  );
-  const hasClerk = packageJson.dependencies?.["@clerk/nextjs"];
-
-  rules.features = {
-    ...rules.features,
-    i18n: hasI18n,
-    database: hasPrisma || hasDrizzle,
-    authentication: hasNextAuth || !!hasClerk,
-  };
-
-  if (hasPrisma) {
-    rules.preferredLibraries.database = "prisma";
-  } else if (hasDrizzle) {
-    rules.preferredLibraries.database = "drizzle";
-  }
-
-  if (hasNextAuth) {
-    rules.preferredLibraries.authentication = "next-auth";
-  } else if (hasClerk) {
-    rules.preferredLibraries.authentication = "clerk";
-  }
-
-  return rules;
-}
-
 async function handleCodemods(rules: ReliverseRules, cwd: string) {
   const availableCodemods = [];
 
-  // Add Tailwind v3 to v4 conversion codemod
+  // Push: Tailwind v3 to v4 conversion codemod
   if (rules.preferredLibraries.styling === "tailwind") {
     availableCodemods.push({
       label: "Convert Tailwind CSS v3 to v4",
@@ -341,7 +251,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add import symbol codemod if rule exists
+  // Push: import symbol codemod if rule exists
   if (rules.codeStyle.importSymbol?.length) {
     availableCodemods.push({
       label: "Replace Import Symbols",
@@ -350,14 +260,14 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add quote style codemod if it differs from current
+  // Push: quote style codemod if it differs from current
   availableCodemods.push({
     label: "Convert Quote Style",
     value: "quote-style",
     hint: `Convert all quotes to ${rules.codeStyle.quoteMark}`,
   });
 
-  // Add import style codemod
+  // Push: import style codemod
   if (rules.codeStyle.importOrRequire !== "mixed") {
     availableCodemods.push({
       label: "Convert Import Style",
@@ -366,7 +276,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add type definitions codemod
+  // Push: type definitions codemod
   if (rules.codeStyle.typeOrInterface !== "mixed") {
     availableCodemods.push({
       label: "Convert Type Definitions",
@@ -375,7 +285,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add CJS to ESM codemod if enabled
+  // Push: CJS to ESM codemod if enabled
   if (rules.codeStyle.cjsToEsm) {
     availableCodemods.push({
       label: "Convert CommonJS to ESM",
@@ -384,7 +294,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add runtime conversion codemods
+  // Push: runtime conversion codemods
   if (rules.runtime === "nodejs") {
     availableCodemods.push(
       {
@@ -400,7 +310,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     );
   }
 
-  // Add monorepo conversion codemod if configured
+  // Push: monorepo conversion codemod if configured
   if (rules.monorepo?.type) {
     availableCodemods.push({
       label: "Convert to Monorepo",
@@ -409,7 +319,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add modernize codemod if any modernize options are enabled
+  // Push: modernize codemod if any modernize options are enabled
   if (
     rules.codeStyle.modernize &&
     Object.values(rules.codeStyle.modernize).some(Boolean)
@@ -421,7 +331,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
     });
   }
 
-  // Add JS to TS codemod if enabled
+  // Push: JS to TS codemod if enabled
   if (rules.codeStyle.jsToTs) {
     availableCodemods.push({
       label: "Convert JavaScript to TypeScript",
@@ -706,175 +616,6 @@ async function handleIntegrations(cwd: string) {
   );
 }
 
-async function parseCodeStyleFromConfigs(
-  cwd: string,
-): Promise<Partial<ReliverseRules>> {
-  const codeStyle: any = {};
-
-  // Try to read TypeScript config
-  try {
-    const tsConfigPath = path.join(cwd, "tsconfig.json");
-    if (await fs.pathExists(tsConfigPath)) {
-      const tsConfig = destr<TSConfig>(
-        await fs.readFile(tsConfigPath, "utf-8"),
-      );
-
-      if (tsConfig.compilerOptions) {
-        const { compilerOptions } = tsConfig;
-
-        // Detect strict mode settings
-        codeStyle.strictMode = {
-          enabled: compilerOptions.strict ?? false,
-          noImplicitAny: compilerOptions.noImplicitAny ?? false,
-          strictNullChecks: compilerOptions.strictNullChecks ?? false,
-        };
-
-        // Detect module settings
-        if (compilerOptions.module?.toLowerCase().includes("node")) {
-          codeStyle.importOrRequire = "esm";
-        }
-
-        // Detect TypeScript target version
-        if (compilerOptions.target) {
-          codeStyle.targetEcmaVersion = compilerOptions.target.replace(
-            "ES",
-            "",
-          );
-        }
-
-        // Detect JSX mode
-        if (compilerOptions.jsx) {
-          codeStyle.jsxRuntime = compilerOptions.jsx;
-        }
-
-        // Detect import style preferences
-        codeStyle.verbatimImports =
-          compilerOptions.verbatimModuleSyntax ?? false;
-        codeStyle.useEsModuleInterop = compilerOptions.esModuleInterop ?? false;
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn-verbose",
-      "Error parsing TypeScript config:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-
-  // Try to read Biome config
-  try {
-    const biomeConfigPath = (await fs.pathExists(path.join(cwd, "biome.json")))
-      ? path.join(cwd, "biome.json")
-      : path.join(cwd, "biome.jsonc");
-
-    if (await fs.pathExists(biomeConfigPath)) {
-      const biomeConfig = destr<BiomeConfig>(
-        await fs.readFile(biomeConfigPath, "utf-8"),
-      );
-      if (biomeConfig.formatter) {
-        codeStyle.quoteMark =
-          biomeConfig.javascript?.formatter?.quoteStyle === "single"
-            ? "'"
-            : '"';
-        codeStyle.jsxQuoteMark =
-          biomeConfig.javascript?.formatter?.jsxQuoteStyle === "single"
-            ? "'"
-            : '"';
-        codeStyle.trailingComma =
-          biomeConfig.javascript?.formatter?.trailingCommas === "all";
-        codeStyle.semi =
-          biomeConfig.javascript?.formatter?.semicolons === "always";
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn-verbose",
-      "Error parsing Biome config:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-
-  // Try to read ESLint config
-  try {
-    const eslintConfigPath = path.join(cwd, "eslint.config.js");
-    if (await fs.pathExists(eslintConfigPath)) {
-      const eslintConfig = await import(eslintConfigPath);
-      const rules = eslintConfig.default?.rules || {};
-
-      if (rules["@typescript-eslint/consistent-type-definitions"]) {
-        codeStyle.typeOrInterface =
-          rules["@typescript-eslint/consistent-type-definitions"][1];
-      }
-
-      if (rules["@typescript-eslint/consistent-type-imports"]) {
-        codeStyle.importOrRequire = "esm";
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn-verbose",
-      "Error parsing ESLint config:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-
-  // Try to read Prettier config
-  try {
-    const prettierConfigFiles = [
-      ".prettierrc",
-      ".prettierrc.json",
-      ".prettierrc.yml",
-      ".prettierrc.yaml",
-      ".prettierrc.json5",
-      ".prettierrc.js",
-      "prettier.config.js",
-    ];
-
-    for (const configFile of prettierConfigFiles) {
-      const configPath = path.join(cwd, configFile);
-      if (await fs.pathExists(configPath)) {
-        const config = configFile.endsWith(".js")
-          ? (await import(configPath)).default
-          : destr(await fs.readFile(configPath, "utf-8"));
-
-        if (config) {
-          codeStyle.quoteMark = config.singleQuote ? "'" : '"';
-          codeStyle.trailingComma = config.trailingComma === "all";
-          codeStyle.semi = config.semi;
-        }
-        break;
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn-verbose",
-      "Error parsing Prettier config:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-
-  // Try to read Vitest config for test-related settings
-  try {
-    const vitestConfigPath = path.join(cwd, "vitest.config.ts");
-    if (await fs.pathExists(vitestConfigPath)) {
-      const vitestConfig = await import(vitestConfigPath);
-      const config = vitestConfig.default?.test || {};
-
-      if (config.include) {
-        codeStyle.testFilePattern = config.include;
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn-verbose",
-      "Error parsing Vitest config:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-
-  return { codeStyle };
-}
-
 async function detectConfigFiles(cwd: string): Promise<ConfigFile[]> {
   const detectedConfigs: ConfigFile[] = [];
 
@@ -918,7 +659,7 @@ async function installDependencies(
   });
 }
 
-// Add function to get current dependencies
+// Function to get current dependencies
 async function getCurrentDependencies(
   cwd: string,
 ): Promise<Record<string, string>> {
@@ -935,7 +676,7 @@ async function getCurrentDependencies(
   return {};
 }
 
-// Add function to uninstall dependencies
+// Function to uninstall dependencies
 async function uninstallDependencies(
   cwd: string,
   dependencies: string[],
@@ -1110,7 +851,7 @@ async function handleConfigEditing(cwd: string) {
       );
       break;
 
-    // Add cases for other config types as needed
+    // Cases for other config types as needed
     default:
       relinka(
         "info",
@@ -1119,14 +860,14 @@ async function handleConfigEditing(cwd: string) {
   }
 }
 
-// Add type for Knip config
+// Type for Knip config
 type KnipConfig = {
   ignoreDependencies?: string[];
   entry?: string[];
   project?: string[];
 };
 
-// Add cleanup functions
+// Cleanup functions
 async function removeComments(cwd: string): Promise<void> {
   // Use Biome to remove comments if available, otherwise use regex
   const files = await globby("**/*.{js,jsx,ts,tsx}", { cwd });
@@ -1141,7 +882,7 @@ async function removeComments(cwd: string): Promise<void> {
   relinka("success", "Removed comments from all TypeScript/JavaScript files");
 }
 
-// Add type definition at the top with other types
+// Type definition at the top with other types
 type PackageJson = {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -1371,7 +1112,7 @@ async function getMainMenuOptions(
       }
       rules = mergedRules;
 
-      // Add integration and config options if rules exist
+      // Integration and config options if rules exist
       options.splice(
         1,
         0,
@@ -1379,7 +1120,7 @@ async function getMainMenuOptions(
         { label: "- Configure project", value: "config" },
       );
 
-      // Add Drizzle option if configured
+      // Drizzle option if configured
       if (rules.preferredLibraries?.database === "drizzle") {
         const provider = await detectDatabaseProvider(cwd);
         const isDrizzleConfigured = provider !== null;
@@ -1418,6 +1159,9 @@ export async function app({
   config,
 }: { isDev: boolean; config: ReliverseConfig }) {
   const cwd = getCurrentWorkingDirectory();
+
+  // Validate and insert missing keys in .reliverserules if it exists
+  await validateAndInsertMissingKeys(cwd);
 
   if (isDev) {
     const testsRuntimePath = path.join(cwd, "tests-runtime");
@@ -1512,7 +1256,7 @@ export async function app({
         { label: "SQLite", value: "sqlite" },
       ];
 
-      // Add libSQL as an option when converting from PostgreSQL
+      // LibSQL as an option when converting from PostgreSQL
       if (fromProvider === "postgres") {
         toProviderOptions.push({ label: "LibSQL/Turso", value: "libsql" });
       }

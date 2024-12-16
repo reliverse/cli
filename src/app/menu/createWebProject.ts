@@ -108,7 +108,7 @@ async function handleGitHubOperations(
     await initializeGitRepository(targetDir, "initializeNewGitRepository");
     const git = simpleGit({ baseDir: targetDir });
 
-    // Add remote
+    // Create remote
     const remoteUrl = `https://github.com/${githubUsername}/${repoName}.git`;
     const remotes = await git.getRemotes();
 
@@ -330,7 +330,10 @@ export async function createWebProject({
     }
 
     // Generate or update .reliverserules
-    const rules = await getDefaultRules(appName || "my-app", username || "user");
+    const rules = await getDefaultRules(
+      appName || "my-app",
+      username || "user",
+    );
 
     // Update rules based on project setup
     rules.features = {
@@ -632,7 +635,7 @@ export async function createWebProject({
             }
 
             if (envVars.length > 0) {
-              // Add environment variables to the project
+              // Adds environment variables to the project
               await vercel.projects.createProjectEnv({
                 idOrName: appName,
                 upsert: "true",

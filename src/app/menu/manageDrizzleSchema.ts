@@ -421,7 +421,7 @@ async function manageRelations(
     ],
   });
 
-  // Add relation based on type
+  // Generate relation based on type
   if (relationType === "manyToMany") {
     const junctionTableName = `${sourceTable}_to_${targetTable}`;
     const schema: TableSchema = {
@@ -458,7 +458,7 @@ async function manageRelations(
       await appendTableToSchema(filePath, schema, provider);
     }
   } else {
-    // Add foreign key column to source table
+    // Inject foreign key column to source table
     const column: ColumnType = {
       name: `${targetTable}Id`,
       type: "integer",

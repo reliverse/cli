@@ -150,7 +150,6 @@ export async function replaceWithModern(projectPath: string) {
   }
 }
 
-// Add to .reliverserules
 export type ModernizeConfig = {
   replaceFs?: boolean;
   replacePath?: boolean;

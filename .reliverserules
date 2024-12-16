@@ -6,9 +6,15 @@
   "appVersion": "1.3.22",
   "appLicense": "MIT",
   "appRepository": "git+https://github.com/reliverse/cli.git",
+
+  // Rules revalidation
+  "rulesLastRevalidate": "2024-12-16T00:19:21.489Z",
+  "rulesRevalidateFrequency": "1d",
+
+  // Technical stack
   "framework": "nextjs",
   "packageManager": "bun",
-  
+
   // Library preferences
   "preferredLibraries": {
     "stateManagement": "zustand",
@@ -20,7 +26,7 @@
     "database": "drizzle",
     "api": "trpc"
   },
-  
+
   // Code style settings
   "codeStyle": {
     "dontRemoveComments": true,
@@ -40,7 +46,7 @@
       }
     ]
   },
-  
+
   // Feature flags
   "features": {
     "i18n": true,

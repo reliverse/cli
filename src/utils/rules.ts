@@ -45,6 +45,15 @@ type PackageJson = {
   repository?: string | { url: string };
 };
 
+type TSConfig = {
+  compilerOptions?: {
+    strict?: boolean;
+    noImplicitAny?: boolean;
+    strictNullChecks?: boolean;
+    module?: string;
+  };
+};
+
 let cachedBiomeConfig: BiomeConfigResult = null;
 
 async function getBiomeConfig(targetDir: string): Promise<BiomeConfigResult> {
@@ -94,6 +103,13 @@ export async function writeReliverseRules(
       appVersion: rules.appVersion,
       appLicense: rules.appLicense,
       appRepository: rules.appRepository,
+
+      // Rules revalidation
+      rulesLastRevalidate:
+        rules.rulesLastRevalidate || new Date().toISOString(),
+      rulesRevalidateFrequency: rules.rulesRevalidateFrequency || "1d",
+
+      // Technical stack
       framework: rules.framework,
       packageManager: rules.packageManager,
 
@@ -109,8 +125,13 @@ export async function writeReliverseRules(
 
     // Format with 2 spaces indentation
     const content = JSON.stringify(jsonContent, null, 2)
-      // Add section comments
+      // Inject section comments
       .replace('"appName":', '// Project metadata\n  "appName":')
+      .replace(
+        '"rulesLastRevalidate":',
+        '\n  // Rules revalidation\n  "rulesLastRevalidate":',
+      )
+      .replace('"framework":', '\n  // Technical stack\n  "framework":')
       .replace(
         '"preferredLibraries":',
         '\n  // Library preferences\n  "preferredLibraries":',
@@ -245,7 +266,7 @@ export async function getDefaultRules(
 
   // Read package.json and tsconfig.json
   let packageData: PackageJson = { name: appName, author: appAuthor };
-  let tsConfig = {};
+  let tsConfig: TSConfig = {};
 
   try {
     packageData = await readPackageJSON();
@@ -254,7 +275,7 @@ export async function getDefaultRules(
   }
 
   try {
-    tsConfig = await readTSConfig();
+    tsConfig = (await readTSConfig()) as TSConfig;
   } catch {
     // Ignore error if tsconfig.json doesn't exist
   }
@@ -272,6 +293,8 @@ export async function getDefaultRules(
       typeof packageData.repository === "string"
         ? packageData.repository
         : packageData.repository?.url,
+    rulesLastRevalidate: new Date().toISOString(),
+    rulesRevalidateFrequency: "1d", // Default to daily revalidation
     framework,
     packageManager: "bun",
     preferredLibraries: {
@@ -320,4 +343,247 @@ export async function getDefaultRules(
       ci: false,
     },
   };
+}
+
+// Helper function to check if revalidation is needed
+function shouldRevalidate(
+  lastRevalidate: string | undefined,
+  frequency: string | undefined,
+): boolean {
+  if (!lastRevalidate || !frequency) {
+    return true;
+  }
+
+  const now = new Date();
+  const lastCheck = new Date(lastRevalidate);
+  const diff = now.getTime() - lastCheck.getTime();
+
+  switch (frequency) {
+    case "1h":
+      return diff > 60 * 60 * 1000;
+    case "1d":
+      return diff > 24 * 60 * 60 * 1000;
+    case "2d":
+      return diff > 2 * 24 * 60 * 60 * 1000;
+    case "7d":
+      return diff > 7 * 24 * 60 * 60 * 1000;
+    default:
+      return true;
+  }
+}
+
+export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
+  try {
+    const rulesPath = path.join(cwd, ".reliverserules");
+
+    // Check if .reliverserules exists
+    if (!(await fs.pathExists(rulesPath))) {
+      return;
+    }
+
+    // Read current rules
+    const content = await fs.readFile(rulesPath, "utf-8");
+    let parsedContent;
+
+    try {
+      parsedContent = parseJSONC(content);
+    } catch {
+      try {
+        parsedContent = parseJSON5(content);
+      } catch {
+        parsedContent = safeDestr(content);
+      }
+    }
+
+    if (!parsedContent || typeof parsedContent !== "object") {
+      return;
+    }
+
+    // Check if we need to revalidate based on frequency
+    if (
+      !shouldRevalidate(
+        parsedContent.rulesLastRevalidate,
+        parsedContent.rulesRevalidateFrequency,
+      )
+    ) {
+      return;
+    }
+
+    // Get default rules based on project type
+    const projectType = await detectProjectType(cwd);
+    const defaultRules = projectType
+      ? await generateDefaultRulesForProject(cwd)
+      : await getDefaultRules(
+          path.basename(cwd),
+          "user",
+          "nextjs", // fallback default
+        );
+
+    if (defaultRules) {
+      // Parse code style from existing config files
+      const configRules = await parseCodeStyleFromConfigs(cwd);
+
+      // Always merge with defaults to ensure all fields exist
+      const mergedRules = {
+        appName: defaultRules.appName,
+        appAuthor: defaultRules.appAuthor,
+        framework: defaultRules.framework,
+        packageManager: defaultRules.packageManager,
+        ...parsedContent,
+        rulesLastRevalidate: new Date().toISOString(), // Update last revalidation time
+        features: {
+          ...defaultRules.features,
+          ...(parsedContent.features || {}),
+        },
+        preferredLibraries: {
+          ...defaultRules.preferredLibraries,
+          ...(parsedContent.preferredLibraries || {}),
+        },
+        codeStyle: {
+          ...defaultRules.codeStyle,
+          ...(configRules?.codeStyle || {}),
+          ...(parsedContent.codeStyle || {}),
+        },
+      };
+
+      // Only write if there were missing fields or different values
+      if (JSON.stringify(mergedRules) !== JSON.stringify(parsedContent)) {
+        const hasNewFields = !Object.keys(parsedContent).every(
+          (key) =>
+            JSON.stringify(mergedRules[key]) ===
+            JSON.stringify(parsedContent[key]),
+        );
+
+        if (hasNewFields) {
+          await writeReliverseRules(cwd, mergedRules);
+          relinka(
+            "info",
+            "Updated .reliverserules with missing configurations. Please review and adjust as needed.",
+          );
+        }
+      }
+    }
+  } catch (error) {
+    relinka(
+      "error-verbose",
+      "Error validating .reliverserules:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+export const PROJECT_TYPE_FILES = {
+  nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
+  astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
+  react: ["vite.config.js", "vite.config.ts", "react.config.js"],
+  vue: ["vue.config.js", "vite.config.ts"],
+  svelte: ["svelte.config.js", "svelte.config.ts"],
+} as const;
+
+export async function detectProjectType(
+  cwd: string,
+): Promise<keyof typeof PROJECT_TYPE_FILES | null> {
+  for (const [type, files] of Object.entries(PROJECT_TYPE_FILES)) {
+    for (const file of files) {
+      if (await fs.pathExists(path.join(cwd, file))) {
+        return type as keyof typeof PROJECT_TYPE_FILES;
+      }
+    }
+  }
+  return null;
+}
+
+export async function generateDefaultRulesForProject(
+  cwd: string,
+): Promise<ReliverseRules | null> {
+  const projectType = await detectProjectType(cwd);
+  if (!projectType) {
+    return null;
+  }
+
+  const packageJsonPath = path.join(cwd, "package.json");
+  let packageJson: any = {};
+  try {
+    if (await fs.pathExists(packageJsonPath)) {
+      packageJson = safeDestr(await fs.readFile(packageJsonPath, "utf-8"));
+    }
+  } catch (error) {
+    relinka("error", "Error reading package.json:", error.toString());
+  }
+
+  const rules = await getDefaultRules(
+    packageJson.name || path.basename(cwd),
+    packageJson.author || "user",
+    projectType,
+  );
+
+  // Detect additional features
+  const hasI18n = await fs.pathExists(path.join(cwd, "src/app/[locale]"));
+  const hasPrisma = await fs.pathExists(path.join(cwd, "prisma/schema.prisma"));
+  const hasDrizzle = await fs.pathExists(path.join(cwd, "drizzle.config.ts"));
+  const hasNextAuth = await fs.pathExists(
+    path.join(cwd, "src/app/api/auth/[...nextauth]"),
+  );
+  const hasClerk = packageJson.dependencies?.["@clerk/nextjs"];
+
+  rules.features = {
+    ...rules.features,
+    i18n: hasI18n,
+    database: hasPrisma || hasDrizzle,
+    authentication: hasNextAuth || !!hasClerk,
+  };
+
+  if (hasPrisma) {
+    rules.preferredLibraries.database = "prisma";
+  } else if (hasDrizzle) {
+    rules.preferredLibraries.database = "drizzle";
+  }
+
+  if (hasNextAuth) {
+    rules.preferredLibraries.authentication = "next-auth";
+  } else if (hasClerk) {
+    rules.preferredLibraries.authentication = "clerk";
+  }
+
+  return rules;
+}
+
+export async function parseCodeStyleFromConfigs(
+  cwd: string,
+): Promise<Partial<ReliverseRules>> {
+  const codeStyle: any = {};
+
+  // Try to read TypeScript config
+  try {
+    const tsConfigPath = path.join(cwd, "tsconfig.json");
+    if (await fs.pathExists(tsConfigPath)) {
+      const tsConfig = safeDestr<TSConfig>(
+        await fs.readFile(tsConfigPath, "utf-8"),
+      );
+
+      if (tsConfig?.compilerOptions) {
+        const { compilerOptions } = tsConfig;
+
+        // Detect strict mode settings
+        codeStyle.strictMode = {
+          enabled: compilerOptions.strict ?? false,
+          noImplicitAny: compilerOptions.noImplicitAny ?? false,
+          strictNullChecks: compilerOptions.strictNullChecks ?? false,
+        };
+
+        // Detect module settings
+        if (compilerOptions.module?.toLowerCase().includes("node")) {
+          codeStyle.importOrRequire = "esm";
+        }
+      }
+    }
+  } catch (error) {
+    relinka(
+      "warn-verbose",
+      "Error parsing TypeScript config:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
+  return { codeStyle };
 }

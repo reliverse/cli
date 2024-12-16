@@ -6,7 +6,7 @@ import { relinka } from "~/utils/console.js";
 async function generateTypeDefinitions(content: string): Promise<string> {
   let result = content;
 
-  // Add type annotations to function parameters
+  // Inject type annotations to function parameters
   result = result.replace(
     /function\s+(\w+)\s*\((.*?)\)/g,
     (_, name, params) => {
@@ -19,19 +19,19 @@ async function generateTypeDefinitions(content: string): Promise<string> {
     },
   );
 
-  // Add return types to functions
+  // Inject return types to functions
   result = result.replace(
     /function\s+(\w+)\s*\((.*?)\)\s*{/g,
     (match) => `${match}: any`,
   );
 
-  // Add types to variables
+  // Inject types to variables
   result = result.replace(
     /(const|let|var)\s+(\w+)\s*=/g,
     (_, dec, name) => `${dec} ${name}: any =`,
   );
 
-  // Add types to class properties
+  // Inject types to class properties
   result = result.replace(/class\s+(\w+)\s*{([^}]+)}/g, (_, name, body) => {
     const typedBody = body.replace(
       /(\w+)\s*=/g,
@@ -40,7 +40,7 @@ async function generateTypeDefinitions(content: string): Promise<string> {
     return `class ${name} {${typedBody}}`;
   });
 
-  // Add interface for object literals
+  // Inject interface for object literals
   result = result.replace(
     /const\s+(\w+)\s*=\s*{([^}]+)}/g,
     (_, name, props) => {
@@ -124,14 +124,14 @@ export async function convertJsToTs(cwd: string) {
   if (await fs.pathExists(packageJsonPath)) {
     const packageJson = await fs.readJson(packageJsonPath);
 
-    // Add TypeScript dependencies
+    // Inject TypeScript dependencies
     packageJson.devDependencies = {
       ...packageJson.devDependencies,
       typescript: "latest",
       "@types/node": "latest",
     };
 
-    // Add TypeScript scripts
+    // Inject TypeScript scripts
     packageJson.scripts = {
       ...packageJson.scripts,
       build: "tsc",

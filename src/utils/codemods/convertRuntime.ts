@@ -5,7 +5,6 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-// Add type definition
 type TSConfig = {
   compilerOptions?: {
     types?: string[];
@@ -105,7 +104,7 @@ export async function convertRuntime(
 
     // Additional Deno-specific conversions
     if (targetRuntime === "deno") {
-      // Add Deno configuration if it's a new Deno project
+      // Generate Deno configuration if it's a new Deno project
       if (file === "package.json") {
         await fs.writeFile(
           path.join(projectPath, "deno.json"),

@@ -332,11 +332,11 @@ async function updatePackageJson(cwd: string) {
     delete devDeps["postcss-import"];
     delete devDeps.autoprefixer;
 
-    // Add new dependencies
+    // Inject new dependencies
     devDeps.tailwindcss = "next";
     devDeps["@tailwindcss/postcss"] = "next";
 
-    // Add Vite plugin if using Vite
+    // Inject Vite plugin if using Vite
     if (await fs.pathExists(path.join(cwd, "vite.config.ts"))) {
       devDeps["@tailwindcss/vite"] = "next";
     }

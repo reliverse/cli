@@ -1,7 +1,7 @@
+import { destr } from "destr";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
-import { destr } from "destr";
 
 import { relinka } from "~/utils/console.js";
 

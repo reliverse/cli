@@ -36,7 +36,7 @@ export default defineCommand({
       }
 
       const rules = await getDefaultRules("my-app", "user");
-      // Add all codemod configurations
+      // Inject all codemod configurations
       rules.codeStyle = {
         ...rules.codeStyle,
         cjsToEsm: true,

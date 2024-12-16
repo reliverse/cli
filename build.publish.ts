@@ -1,11 +1,11 @@
 // 👉 usage example: `bun pub --bump=1.2.3`
 
+import { destr } from "destr";
 import { execaCommand } from "execa";
 import fs from "fs-extra";
 import { globby } from "globby";
 import mri from "mri";
 import path from "path";
-import { destr } from "destr";
 
 import { relinka } from "~/utils/console.js";
 
@@ -99,7 +99,9 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
   // Update jsr.jsonc
   const jsrPath = path.resolve("jsr.jsonc");
   if (await fs.pathExists(jsrPath)) {
-    const jsrConfig = destr<{ version: string }>(await fs.readFile(jsrPath, "utf-8"));
+    const jsrConfig = destr<{ version: string }>(
+      await fs.readFile(jsrPath, "utf-8"),
+    );
     jsrConfig.version = newVersion;
     await fs.writeFile(jsrPath, JSON.stringify(jsrConfig, null, 2));
   }
@@ -123,7 +125,9 @@ async function main() {
 
   if (newVersion) {
     // Perform version bump
-    const pkg = destr<{ version: string }>(await fs.readFile("package.json", "utf-8"));
+    const pkg = destr<{ version: string }>(
+      await fs.readFile("package.json", "utf-8"),
+    );
     const oldVersion = pkg.version;
     if (oldVersion !== newVersion) {
       await bumpVersions(oldVersion, newVersion);

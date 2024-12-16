@@ -7,4 +7,4 @@ export type Memory = {
   email?: string;
   githubUsername?: string;
   vercelUsername?: string;
-}; 
+};

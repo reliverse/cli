@@ -202,7 +202,7 @@ export default {
     delete packageJson.dependencies?.["@prisma/client"];
     delete packageJson.devDependencies?.prisma;
 
-    // Add Drizzle dependencies
+    // Inject Drizzle dependencies
     packageJson.dependencies = {
       ...packageJson.dependencies,
       "drizzle-orm": "latest",
@@ -212,7 +212,7 @@ export default {
       "drizzle-kit": "latest",
     };
 
-    // Add database-specific dependencies
+    // Inject database-specific dependencies
     if (targetDbType === "postgres") {
       packageJson.dependencies.postgres = "latest";
     } else if (targetDbType === "mysql") {
@@ -247,7 +247,7 @@ export async function convertDatabaseProvider(
     delete packageJson.dependencies?.postgres;
     delete packageJson.dependencies?.["@neondatabase/serverless"];
 
-    // Add libSQL dependencies
+    // Inject libSQL dependencies
     packageJson.dependencies = {
       ...packageJson.dependencies,
       "@libsql/client": "latest",
