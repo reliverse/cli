@@ -45,7 +45,7 @@ import {
 import {
   readReliverseRules,
   writeReliverseRules,
-  getDefaultRules,
+  getDefaultReliverseConfig,
   validateAndInsertMissingKeys,
   detectProjectType,
   generateDefaultRulesForProject,
@@ -341,7 +341,7 @@ async function handleCodemods(rules: ReliverseRules, cwd: string) {
   }
 
   if (availableCodemods.length === 0) {
-    relinka("info", "No codemods available in .reliverserules");
+    relinka("info", "No codemods available in reliverse.json");
     return;
   }
 
@@ -949,7 +949,7 @@ async function handleCleanup(cwd: string) {
     );
   }
 
-  // Read ignoreDependencies from .reliverserules if exists
+  // Read ignoreDependencies from reliverse.json if exists
   try {
     const rules = await readReliverseRules(cwd);
     if (rules?.ignoreDependencies) {
@@ -958,7 +958,7 @@ async function handleCleanup(cwd: string) {
   } catch (error) {
     relinka(
       "warn-verbose",
-      "Error reading .reliverserules:",
+      "Error reading reliverse.json:",
       error instanceof Error ? error.message : String(error),
     );
   }
@@ -1046,7 +1046,7 @@ async function getMainMenuOptions(
   try {
     let rules: ReliverseRules | null = null;
     // First check if file exists and has content
-    const rulesPath = path.join(cwd, ".reliverserules");
+    const rulesPath = path.join(cwd, "reliverse.json");
     const rulesFileExists = await fs.pathExists(rulesPath);
     if (!rulesFileExists) {
       return options;
@@ -1062,7 +1062,7 @@ async function getMainMenuOptions(
     const projectType = await detectProjectType(cwd);
     const defaultRules = projectType
       ? await generateDefaultRulesForProject(cwd)
-      : await getDefaultRules(
+      : await getDefaultReliverseConfig(
           path.basename(cwd),
           "user",
           "nextjs", // fallback default
@@ -1074,8 +1074,8 @@ async function getMainMenuOptions(
 
       // Always merge with defaults to ensure all fields exist
       const mergedRules = {
-        appName: defaultRules.appName,
-        appAuthor: defaultRules.appAuthor,
+        projectName: defaultRules.projectName,
+        projectAuthor: defaultRules.projectAuthor,
         framework: defaultRules.framework,
         packageManager: defaultRules.packageManager,
         ...parsedContent,
@@ -1106,7 +1106,7 @@ async function getMainMenuOptions(
           await writeReliverseRules(cwd, mergedRules);
           relinka(
             "info",
-            "Updated .reliverserules with missing configurations. Please review and adjust as needed.",
+            "Updated reliverse.json with missing configurations. Please review and adjust as needed.",
           );
         }
       }
@@ -1142,7 +1142,7 @@ async function getMainMenuOptions(
     if (error instanceof Error && !error.message.includes("JSON Parse error")) {
       relinka(
         "warn",
-        "Error processing .reliverserules file. Using basic menu options.",
+        "Error processing reliverse.json file. Using basic menu options.",
       );
       relinka(
         "warn-verbose",
@@ -1160,7 +1160,7 @@ export async function app({
 }: { isDev: boolean; config: ReliverseConfig }) {
   const cwd = getCurrentWorkingDirectory();
 
-  // Validate and insert missing keys in .reliverserules if it exists
+  // Validate and insert missing keys in reliverse.json if it exists
   await validateAndInsertMissingKeys(cwd);
 
   if (isDev) {
@@ -1177,7 +1177,7 @@ export async function app({
 
   await showStartPrompt();
 
-  // Check for .reliverserules and project type
+  // Check for reliverse.json and project type
   let rules = await readReliverseRules(cwd);
   const projectType = await detectProjectType(cwd);
 
@@ -1188,7 +1188,7 @@ export async function app({
       await writeReliverseRules(cwd, rules);
       relinka(
         "success",
-        "Generated .reliverserules based on detected project type. Please review it and adjust as needed.",
+        "Generated reliverse.json based on detected project type. Please review it and adjust as needed.",
       );
     }
   }

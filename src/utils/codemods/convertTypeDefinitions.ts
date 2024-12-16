@@ -26,7 +26,7 @@ export async function convertTypeDefinitions(
       // Convert interface to type
       updatedContent = content.replace(
         /interface\s+(\w+)(\s*extends\s*[^{]+)?\s*{([^}]*)}/g,
-        (match, name, extends_, body) => {
+        (_match, name, extends_, body) => {
           const extendsClause = extends_
             ? extends_.replace("extends", "&")
             : "";

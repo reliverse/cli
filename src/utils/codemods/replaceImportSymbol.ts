@@ -27,12 +27,12 @@ export async function replaceImportSymbol(
       // Handle 'from' statements preserving quote style
       .replace(
         new RegExp(`from (['"])${from}\\1`, "g"),
-        (match, quote) => `from ${quote}${to}${quote}`,
+        (_match, quote) => `from ${quote}${to}${quote}`,
       )
       // Handle direct imports preserving quote style
       .replace(
         new RegExp(`import (['"])${from}\\1`, "g"),
-        (match, quote) => `import ${quote}${to}${quote}`,
+        (_match, quote) => `import ${quote}${to}${quote}`,
       );
 
     if (content !== updatedContent) {

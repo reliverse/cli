@@ -24,28 +24,28 @@ export async function downloadGitRepo(
     // Create target directory if it doesn't exist
     await fs.ensureDir(targetDir);
 
-    // Check if directory contains only .reliverserules
+    // Check if directory contains only reliverse.json
     const files = await fs.readdir(targetDir);
     const hasOnlyReliverserules =
-      files.length === 1 && files[0] === ".reliverserules";
+      files.length === 1 && files[0] === "reliverse.json";
 
-    // If directory is not empty and doesn't contain only .reliverserules, throw error
+    // If directory is not empty and doesn't contain only reliverse.json, throw error
     if (files.length > 0 && !hasOnlyReliverserules) {
       throw new Error(
-        `Target directory ${targetDir} is not empty and contains files other than .reliverserules`,
+        `Target directory ${targetDir} is not empty and contains files other than reliverse.json`,
       );
     }
 
-    // Temporarily move .reliverserules if it exists
+    // Temporarily move reliverse.json if it exists
     const parentDir = path.dirname(targetDir);
-    const tempReliverserulesPath = path.join(parentDir, ".reliverserules");
+    const tempReliverserulesPath = path.join(parentDir, "reliverse.json");
 
     if (hasOnlyReliverserules) {
-      // Check if .reliverserules already exists in parent directory
+      // Check if reliverse.json already exists in parent directory
       if (await fs.pathExists(tempReliverserulesPath)) {
         const choice = await selectPrompt({
           title:
-            ".reliverserules already exists in parent directory. What would you like to do?",
+            "reliverse.json already exists in parent directory. What would you like to do?",
           options: [
             { value: "delete", label: "Delete existing file" },
             { value: "backup", label: "Create backup" },
@@ -56,12 +56,12 @@ export async function downloadGitRepo(
           await fs.remove(tempReliverserulesPath);
         } else {
           // Find appropriate backup name
-          let backupPath = path.join(parentDir, ".reliverserules.bak");
+          let backupPath = path.join(parentDir, "reliverse.json.bak");
           let iteration = 1;
           while (await fs.pathExists(backupPath)) {
             backupPath = path.join(
               parentDir,
-              `.reliverserules_${iteration}.bak`,
+              `reliverse.json_${iteration}.bak`,
             );
             iteration++;
           }
@@ -70,7 +70,7 @@ export async function downloadGitRepo(
       }
 
       await fs.move(
-        path.join(targetDir, ".reliverserules"),
+        path.join(targetDir, "reliverse.json"),
         tempReliverserulesPath,
       );
       await fs.remove(targetDir);
@@ -83,11 +83,11 @@ export async function downloadGitRepo(
 
       await git.clone(repoUrl, targetDir);
 
-      // Restore .reliverserules if it was moved
+      // Restore reliverse.json if it was moved
       if (hasOnlyReliverserules) {
         await fs.move(
           tempReliverserulesPath,
-          path.join(targetDir, ".reliverserules"),
+          path.join(targetDir, "reliverse.json"),
           { overwrite: true },
         );
       }
@@ -95,7 +95,7 @@ export async function downloadGitRepo(
       relinka("success-verbose", `${template} was downloaded to ${targetDir}.`);
       return targetDir;
     } catch (error) {
-      // Restore .reliverserules if operation failed
+      // Restore reliverse.json if operation failed
       if (
         hasOnlyReliverserules &&
         (await fs.pathExists(tempReliverserulesPath))
@@ -103,7 +103,7 @@ export async function downloadGitRepo(
         await fs.ensureDir(targetDir);
         await fs.move(
           tempReliverserulesPath,
-          path.join(targetDir, ".reliverserules"),
+          path.join(targetDir, "reliverse.json"),
           { overwrite: true },
         );
       }

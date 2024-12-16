@@ -10,7 +10,7 @@ import { showAnykeyPrompt } from "./app/menu/showAnykeyPrompt.js";
 import { app } from "./app/mod.js";
 import { auth } from "./args/login/impl.js";
 import { readReliverseMemory } from "./args/memory/impl.js";
-import { readConfig, parseCliArgs } from "./utils/config.js";
+import { readConfig } from "./utils/config.js";
 import { relinka } from "./utils/console.js";
 import { getCurrentWorkingDirectory } from "./utils/fs.js";
 
@@ -35,10 +35,6 @@ const main = defineCommand({
 
     const cwd = getCurrentWorkingDirectory();
     const config = await readConfig(cwd);
-    const cliConfig = parseCliArgs(process.argv.slice(2));
-
-    // Merge configurations with CLI args taking precedence
-    const mergedConfig = { ...config, ...cliConfig };
 
     // Check for existing authentication in SQLite
     const memory = await readReliverseMemory();
@@ -66,7 +62,7 @@ const main = defineCommand({
       }
     }
 
-    await app({ isDev: args.dev, config: mergedConfig });
+    await app({ isDev: args.dev, config });
     process.exit(0);
   },
   subCommands: {

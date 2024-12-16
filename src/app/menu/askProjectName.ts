@@ -3,7 +3,7 @@ import { generate } from "random-words";
 
 import { validate } from "~/utils/validate.js";
 
-export async function askAppName(): Promise<string> {
+export async function askProjectName(): Promise<string> {
   const placeholder = generate({ exactly: 3, join: "-" });
 
   const name = await inputPrompt({

@@ -204,7 +204,7 @@ export async function buildBrandNewThing(
   }
 
   // Get framework from config or prompt for web applications
-  let framework = config?.defaultFramework;
+  let framework = config?.framework;
   if (!framework) {
     const result = await selectPrompt({
       endTitle,
@@ -252,8 +252,8 @@ export async function buildBrandNewThing(
 
   // Get template from config or prompt
   let template: TemplateOption;
-  if (config?.defaultTemplate) {
-    template = config.defaultTemplate;
+  if (config?.projectTemplate) {
+    template = config.projectTemplate;
   } else {
     const result = await selectPrompt({
       endTitle,
@@ -270,7 +270,7 @@ export async function buildBrandNewThing(
         Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
       ],
     mode: "buildBrandNewThing",
-    allowI18nPrompt: config?.shouldUseI18n ?? true,
+    allowI18nPrompt: config?.autoI18n ?? true,
     isDev,
     config,
   });

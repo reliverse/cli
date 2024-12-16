@@ -5,7 +5,7 @@ import path from "pathe";
 import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types/config.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
-import { getDefaultRules } from "~/utils/rules.js";
+import { getDefaultReliverseConfig } from "~/utils/rules.js";
 
 export default defineCommand({
   meta: {
@@ -19,50 +19,84 @@ export default defineCommand({
     },
     rules: {
       type: "boolean",
-      description: "Generate .reliverserules file with all codemods",
+      description: "Generate reliverse.json file with all codemods",
     },
   },
   run: async ({ args }) => {
     const cwd = getCurrentWorkingDirectory();
 
     if (args.rules) {
-      const rulesPath = path.join(cwd, ".reliverserules");
-      if (await fs.pathExists(rulesPath)) {
+      const configPath = path.join(cwd, "reliverse.json");
+      if (await fs.pathExists(configPath)) {
         relinka(
           "error",
-          ".reliverserules already exists in the current directory",
+          "reliverse.json already exists in the current directory",
         );
         process.exit(1);
       }
 
-      const rules = await getDefaultRules("my-app", "user");
-      // Inject all codemod configurations
-      rules.codeStyle = {
-        ...rules.codeStyle,
-        cjsToEsm: true,
-        modernize: {
-          replaceFs: true,
-          replacePath: true,
-          replaceHttp: true,
-          replaceProcess: true,
-          replaceConsole: true,
-          replaceEvents: true,
-        },
-        importSymbol: [
-          {
-            from: "~/utils/console",
-            to: "@/utils/console",
-            description: "Update import path to use @/ instead of ~/",
+      const rules = await getDefaultReliverseConfig("my-app", "user");
+      // Create a config that includes both rules and legacy config fields
+      const config: ReliverseConfig = {
+        ...DEFAULT_CONFIG,
+        // Project details
+        projectName: rules.projectName,
+        projectAuthor: rules.projectAuthor,
+        projectDescription: rules.projectDescription,
+        projectVersion: rules.projectVersion,
+        projectLicense: rules.projectLicense,
+        projectRepository: rules.projectRepository,
+
+        // Config revalidation
+        configLastRevalidate: rules.configLastRevalidate,
+        configRevalidateFrequency: rules.configRevalidateFrequency,
+
+        // Technical stack
+        framework: rules.framework,
+        frameworkVersion: rules.frameworkVersion,
+        nodeVersion: rules.nodeVersion,
+        runtime: rules.runtime,
+        packageManager: rules.packageManager,
+        monorepo: rules.monorepo,
+
+        // Development Preferences
+        preferredLibraries: rules.preferredLibraries,
+        codeStyle: {
+          ...rules.codeStyle,
+          cjsToEsm: true,
+          modernize: {
+            replaceFs: true,
+            replacePath: true,
+            replaceHttp: true,
+            replaceProcess: true,
+            replaceConsole: true,
+            replaceEvents: true,
           },
-        ],
+        },
+
+        // Project Features
+        features: rules.features,
+
+        // Dependencies Management
+        ignoreDependencies: rules.ignoreDependencies,
+
+        // Custom Extensions
+        customRules: rules.customRules,
       };
 
       try {
-        await fs.writeFile(rulesPath, JSON.stringify(rules, null, 2), "utf-8");
-        relinka("success", "Generated .reliverserules successfully!");
+        await fs.writeFile(
+          configPath,
+          JSON.stringify(config, null, 2),
+          "utf-8",
+        );
+        relinka(
+          "success",
+          "Generated reliverse.json with rules configuration successfully!",
+        );
         process.exit(0);
       } catch (error) {
-        relinka("error", "Failed to generate rules file:", error.toString());
+        relinka("error", "Failed to generate config file:", error.toString());
         process.exit(1);
       }
       return;

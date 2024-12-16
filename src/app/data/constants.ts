@@ -26,7 +26,7 @@ export const MEMORY_FILE = ".reliverse/reliverse.db";
 
 // Configuration file categories for generation
 export const CONFIG_CATEGORIES = {
-  core: [".reliverserules", "reliverse.json"],
+  core: ["reliverse.json", "reliverse.json"],
   linting: ["biome.json"],
   ide: [".vscode/settings.json"],
   git: [".gitignore"],

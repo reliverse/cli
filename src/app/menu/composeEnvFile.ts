@@ -319,7 +319,6 @@ async function promptAndSetMissingValues(
 
   // Group missing keys by service
   const servicesWithMissingKeys = Object.entries(KNOWN_SERVICES).filter(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ([_, service]) => service.keys.some((k) => filteredKeys.includes(k.key)),
   );
 

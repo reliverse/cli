@@ -4,18 +4,78 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import { CONFIG_CATEGORIES } from "~/app/data/constants.js";
-import { DEFAULT_CONFIG } from "~/types/config.js";
+import { DEFAULT_CONFIG, type ReliverseConfig } from "~/types/config.js";
 import { relinka } from "~/utils/console.js";
-import { getDefaultRules } from "~/utils/rules.js";
+import { getDefaultReliverseConfig } from "~/utils/rules.js";
 
 async function generateReliverseConfig(
   targetDir: string,
   overwrite: boolean,
 ): Promise<void> {
   const configPath = path.join(targetDir, "reliverse.json");
+
+  const configContent = { ...DEFAULT_CONFIG };
+
+  // Get rules and merge them directly into config
+  const rc = await getDefaultReliverseConfig("my-app", "user");
+  Object.assign(configContent, {
+    // Project details
+    projectName: rc.projectName,
+    projectAuthor: rc.projectAuthor,
+    projectDescription: rc.projectDescription,
+    projectVersion: rc.projectVersion,
+    projectLicense: rc.projectLicense,
+    projectRepository: rc.projectRepository,
+
+    // Config revalidation
+    configLastRevalidate: rc.configLastRevalidate,
+    configRevalidateFrequency: rc.configRevalidateFrequency,
+
+    // Technical stack
+    framework: rc.framework,
+    frameworkVersion: rc.frameworkVersion,
+    nodeVersion: rc.nodeVersion,
+    runtime: rc.runtime,
+    packageManager: rc.packageManager,
+    monorepo: rc.monorepo,
+
+    // Development Preferences
+    preferredLibraries: rc.preferredLibraries,
+    codeStyle: rc.codeStyle,
+
+    // Project Features
+    features: rc.features,
+  });
+
   if (overwrite || !(await fs.pathExists(configPath))) {
-    await fs.writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
-    relinka("success-verbose", "Generated reliverse.json");
+    await fs.writeFile(configPath, JSON.stringify(configContent, null, 2));
+    relinka(
+      "success-verbose",
+      "Generated reliverse.json with flattened config",
+    );
+  } else {
+    // If reliverse.json already exists, we can attempt to merge configs
+    try {
+      const existingContent = destr(await fs.readFile(configPath, "utf-8"));
+      if (existingContent && typeof existingContent === "object") {
+        const mergedContent = {
+          ...(existingContent as ReliverseConfig),
+          ...configContent,
+        };
+        await fs.writeFile(configPath, JSON.stringify(mergedContent, null, 2));
+        relinka(
+          "success-verbose",
+          "Updated existing reliverse.json with flattened config",
+        );
+      }
+    } catch (error) {
+      relinka(
+        "warn-verbose",
+        "Error reading existing reliverse.json, creating new one",
+        error instanceof Error ? error.message : String(error),
+      );
+      await fs.writeFile(configPath, JSON.stringify(configContent, null, 2));
+    }
   }
 }
 
@@ -49,18 +109,6 @@ async function generateBiomeConfig(
   }
 }
 
-async function generateReliverseRules(
-  targetDir: string,
-  overwrite: boolean,
-): Promise<void> {
-  const rulesPath = path.join(targetDir, ".reliverserules");
-  if (overwrite || !(await fs.pathExists(rulesPath))) {
-    const rules = getDefaultRules("my-app", "user");
-    await fs.writeFile(rulesPath, JSON.stringify(rules, null, 2));
-    relinka("success-verbose", "Generated .reliverserules");
-  }
-}
-
 async function generateVSCodeSettings(
   targetDir: string,
   overwrite: boolean,
@@ -89,9 +137,7 @@ async function generateVSCodeSettings(
     "markdownlint.config": {
       MD033: false,
     },
-    "files.associations": {
-      ".reliverserules": "jsonc",
-    },
+    // Removed ".reliverserules" association since it's no longer used
     "typescript.enablePromptUseWorkspaceTsdk": true,
   };
 
@@ -105,9 +151,6 @@ async function generateVSCodeSettings(
       if (existingSettings && typeof existingSettings === "object") {
         const existingCodeActions =
           existingSettings["editor.codeActionsOnSave"] || {};
-        const existingAssociations =
-          existingSettings["files.associations"] || {};
-
         settings = {
           ...defaultSettings,
           ...existingSettings,
@@ -118,10 +161,6 @@ async function generateVSCodeSettings(
             "source.fixAll.eslint": "explicit",
             "source.organizeImports": "never",
             "source.removeUnused": "never",
-          },
-          "files.associations": {
-            ...existingAssociations,
-            ".reliverserules": "jsonc",
           },
         };
       }
@@ -164,8 +203,8 @@ async function generateConfigFiles(
           );
         };
 
+        // Removed .reliverserules since it's merged into reliverse.json
         const configGenerators = {
-          ".reliverserules": () => generateReliverseRules(targetDir, overwrite),
           "reliverse.json": () => generateReliverseConfig(targetDir, overwrite),
           "biome.json": () => generateBiomeConfig(targetDir, overwrite),
           "settings.json": () => generateVSCodeSettings(targetDir, overwrite),

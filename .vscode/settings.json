@@ -18,7 +18,7 @@
     "MD033": false
   },
   "files.associations": {
-    ".reliverserules": "jsonc"
+    "reliverse.json": "jsonc"
   },
   "typescript.enablePromptUseWorkspaceTsdk": true
 }

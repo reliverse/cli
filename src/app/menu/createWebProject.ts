@@ -29,12 +29,15 @@ import { initializeGitRepository } from "~/utils/git.js";
 import { i18nMove } from "~/utils/i18nMove.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles.js";
-import { getDefaultRules, writeReliverseRules } from "~/utils/rules.js";
+import {
+  getDefaultReliverseConfig,
+  writeReliverseRules,
+} from "~/utils/rules.js";
 
-import { askAppDomain } from "./askAppDomain.js";
-import { askAppName } from "./askAppName.js";
 import { askGithubName } from "./askGithubName.js";
 import { askGitInitialization } from "./askGitInitialization.js";
+import { askProjectDomain } from "./askProjectDomain.js";
+import { askProjectName } from "./askProjectName.js";
 import { askUserName } from "./askUserName.js";
 import { askVercelName } from "./askVercelName.js";
 import { composeEnvFile } from "./composeEnvFile.js";
@@ -148,32 +151,32 @@ export async function createWebProject({
 
   // Track deployment state from memory
   const memory = await readReliverseMemory();
-  let shouldDeploy = false;
+  let autoDeploy = false;
 
   try {
     // Only ask about deployment if not specified in config
-    if (config === undefined || !("shouldDeploy" in config)) {
-      shouldDeploy = await confirmPrompt({
+    if (config === undefined || !("autoDeploy" in config)) {
+      autoDeploy = await confirmPrompt({
         title: "Do you plan to deploy this project right after creation?",
         defaultValue: false,
       });
     } else {
-      shouldDeploy = config.shouldDeploy ?? false;
+      autoDeploy = config.autoDeploy ?? false;
     }
 
     // Get usernames based on deployment plan
-    const username = config?.defaultUsername || (await askUserName());
+    const username = config?.projectAuthor || (await askUserName());
     let githubUsername = "";
     let vercelTeamName = "";
     let deployService = "";
 
-    if (shouldDeploy) {
+    if (autoDeploy) {
       // Handle deployment service selection
       if (
-        config?.defaultDeploymentService &&
-        config.defaultDeploymentService !== "none"
+        config?.projectDeployService &&
+        config.projectDeployService !== "none"
       ) {
-        deployService = config.defaultDeploymentService;
+        deployService = config.projectDeployService;
       } else {
         deployService = await selectPrompt({
           title: "Which deployment service do you want to use?",
@@ -192,10 +195,10 @@ export async function createWebProject({
       }
 
       // Get GitHub username if not in config
-      githubUsername = config?.defaultGithubUsername || (await askGithubName());
+      githubUsername = config?.projectAuthor || (await askGithubName());
 
       // Get Vercel team name if not in config
-      vercelTeamName = config?.defaultVercelUsername || (await askVercelName());
+      vercelTeamName = config?.projectState || (await askVercelName());
 
       // Store GitHub and Vercel usernames in memory
       await updateReliverseMemory({
@@ -206,12 +209,13 @@ export async function createWebProject({
     }
 
     // Get app name if not in config
-    const appName = config?.defaultTemplate
-      ? path.basename(config.defaultTemplate)
-      : await askAppName();
+    const projectName = config?.projectTemplate
+      ? path.basename(config.projectTemplate)
+      : await askProjectName();
 
     // Get domain if not in config
-    const domain = config?.defaultDomain || (await askAppDomain(appName));
+    const domain =
+      config?.projectDomain || (await askProjectDomain(projectName));
     let targetDir: string | undefined;
 
     relinka("info", `Now I'm downloading the ${template} template...`);
@@ -222,7 +226,7 @@ export async function createWebProject({
       successMessage: "✅ Template downloaded successfully!",
       errorMessage: "❌ Failed to download template...",
       async action(updateMessage) {
-        targetDir = await downloadGitRepo(appName, template, isDev);
+        targetDir = await downloadGitRepo(projectName, template, isDev);
         updateMessage("Some magic is happening... This may take a while...");
       },
     });
@@ -241,7 +245,7 @@ export async function createWebProject({
         await replaceStringsInFiles(targetDir, {
           [`${oldProjectName}.com`]: domain,
           [author]: username,
-          [oldProjectName]: appName,
+          [oldProjectName]: projectName,
           ["relivator.com"]: domain,
         });
       },
@@ -313,15 +317,15 @@ export async function createWebProject({
     const cwd = getCurrentWorkingDirectory();
 
     // Skip git initialization if configured
-    if (!config?.shouldInitGit) {
+    if (!config?.autoGitInit) {
       const gitOption = await askGitInitialization();
       await initializeGitRepository(targetDir, gitOption);
     }
 
     // Skip dependency installation if configured
-    let shouldInstallDependencies = !config?.shouldInstallDependencies;
-    if (shouldInstallDependencies && !isDev) {
-      shouldInstallDependencies = await confirmPrompt({
+    let autoDepsInstall = !config?.autoDepsInstall;
+    if (autoDepsInstall && !isDev) {
+      autoDepsInstall = await confirmPrompt({
         title:
           "Do you want me to install dependencies? (it may take some time)",
         titleColor: "retroGradient",
@@ -329,9 +333,9 @@ export async function createWebProject({
       });
     }
 
-    // Generate or update .reliverserules
-    const rules = await getDefaultRules(
-      appName || "my-app",
+    // Generate or update reliverse.json
+    const rules = await getDefaultReliverseConfig(
+      projectName || "my-app",
       username || "user",
     );
 
@@ -339,32 +343,32 @@ export async function createWebProject({
     rules.features = {
       ...rules.features,
       i18n: allowI18nPrompt,
-      authentication: shouldDeploy,
-      database: shouldInstallDependencies,
+      authentication: autoDeploy,
+      database: autoDepsInstall,
     };
 
-    if (shouldDeploy) {
+    if (autoDeploy) {
       rules.deployPlatform = deployService as ReliverseRules["deployPlatform"];
       rules.deployUrl = domain
         ? `https://${domain}`
-        : `https://${appName}.vercel.app`;
-      rules.appRepository = `https://github.com/${githubUsername}/${appName}`;
+        : `https://${projectName}.vercel.app`;
+      rules.projectRepository = `https://github.com/${githubUsername}/${projectName}`;
       rules.productionBranch = "main";
     }
 
     await writeReliverseRules(targetDir, rules);
     relinka(
       "success-verbose",
-      "Generated .reliverserules with project-specific settings",
+      "Generated reliverse.json with project-specific settings",
     );
 
-    if (shouldInstallDependencies) {
+    if (autoDepsInstall) {
       await installDependencies({
         cwd: targetDir,
       });
 
       // Skip database scripts if configured
-      if (!config?.shouldRunDbScripts) {
+      if (!config?.autoDbScripts) {
         const hasDbPush = await checkScriptExists(targetDir, "db:push");
         const hasDbSeed = await checkScriptExists(targetDir, "db:seed");
         const hasCheck = await checkScriptExists(targetDir, "check");
@@ -436,7 +440,7 @@ export async function createWebProject({
       "https://raw.githubusercontent.com/blefnk/relivator/main/.env.example";
     await composeEnvFile(targetDir, tempGitURL);
 
-    if (shouldDeploy) {
+    if (autoDeploy) {
       relinka(
         "info",
         "To make deploy, let's create a GitHub repository first...",
@@ -473,7 +477,7 @@ export async function createWebProject({
       }
 
       // Handle repository setup
-      let repoName = appName;
+      let repoName = projectName;
       let success = false;
 
       do {
@@ -576,11 +580,11 @@ export async function createWebProject({
           try {
             await vercel.projects.createProject({
               requestBody: {
-                name: appName,
+                name: projectName,
                 framework: "nextjs",
                 gitRepository: {
                   type: "github",
-                  repo: `${githubUsername}/${appName}`,
+                  repo: `${githubUsername}/${projectName}`,
                 },
               },
               teamId: vercelTeamName || undefined,
@@ -606,7 +610,7 @@ export async function createWebProject({
               key: "NEXT_PUBLIC_APP_URL",
               value: domain
                 ? `https://${domain}`
-                : `https://${appName}.vercel.app`,
+                : `https://${projectName}.vercel.app`,
               target: ["production", "preview", "development"],
               type: "plain",
             });
@@ -637,7 +641,7 @@ export async function createWebProject({
             if (envVars.length > 0) {
               // Adds environment variables to the project
               await vercel.projects.createProjectEnv({
-                idOrName: appName,
+                idOrName: projectName,
                 upsert: "true",
                 requestBody: envVars,
               });
@@ -655,11 +659,11 @@ export async function createWebProject({
           // Finally, create the deployment
           const createResponse = await vercel.deployments.createDeployment({
             requestBody: {
-              name: appName,
+              name: projectName,
               target: "production",
               gitSource: {
                 type: "github",
-                repo: appName,
+                repo: projectName,
                 ref: "main",
                 org: githubUsername,
               },
@@ -681,7 +685,7 @@ export async function createWebProject({
 
           relinka(
             "info",
-            `You can visit 👉 https://vercel.com 👉 ${appName} 👉 Deployments, to see the deployment process.`,
+            `You can visit 👉 https://vercel.com 👉 ${projectName} 👉 Deployments, to see the deployment process.`,
           );
 
           // Check deployment status
@@ -720,7 +724,7 @@ export async function createWebProject({
               try {
                 const addDomainResponse =
                   await vercel.projects.addProjectDomain({
-                    idOrName: appName,
+                    idOrName: projectName,
                     requestBody: {
                       name: domain,
                     },

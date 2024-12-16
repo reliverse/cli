@@ -207,7 +207,6 @@ export async function removeComponent(
   try {
     // Check if any other components depend on this one
     const dependentComponents = Object.entries(COMPONENT_DEPENDENCIES)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([_, deps]) => deps.includes(component))
       .map(([comp]) => comp);
 

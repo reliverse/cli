@@ -6,6 +6,7 @@ import path from "pathe";
 import { relinka } from "~/utils/console.js";
 
 import type { ReliverseConfig } from "../types/config.js";
+import type { ReliverseRules } from "../types/rules.js";
 
 import { MEMORY_FILE } from "../app/data/constants.js";
 import { DEFAULT_CONFIG } from "../types/config.js";
@@ -23,115 +24,97 @@ export const isConfigExists = async () => {
 
 export async function readConfig(cwd: string): Promise<ReliverseConfig> {
   const configPath = path.join(cwd, "reliverse.json");
+  const rulesPath = path.join(cwd, "reliverse.json");
+  let config: ReliverseConfig = { ...DEFAULT_CONFIG };
 
   try {
+    // Try to read reliverse.json first
     if (await fs.pathExists(configPath)) {
       const configContent = await fs.readFile(configPath, "utf-8");
       const userConfig = destr<Partial<ReliverseConfig>>(configContent);
-      return { ...DEFAULT_CONFIG, ...userConfig };
+      config = { ...config, ...userConfig };
+    }
+
+    // Try to read reliverse.json and merge if exists
+    if (await fs.pathExists(rulesPath)) {
+      const rulesContent = await fs.readFile(rulesPath, "utf-8");
+      let rules: ReliverseRules;
+
+      try {
+        // Try parsing as JSONC first
+        rules = destr(rulesContent);
+      } catch {
+        // If parsing fails, warn user but continue with existing config
+        relinka(
+          "warn",
+          "Failed to parse reliverse.json file, using reliverse.json only",
+        );
+        return config;
+      }
+
+      // Merge rules into config, preserving existing values
+      config = {
+        ...config,
+        // Project details
+        projectName: rules.projectName || config.projectName,
+        projectAuthor: rules.projectAuthor || config.projectAuthor,
+        projectDescription:
+          rules.projectDescription || config.projectDescription,
+        projectVersion: rules.projectVersion || config.projectVersion,
+        projectLicense: rules.projectLicense || config.projectLicense,
+        projectRepository: rules.projectRepository || config.projectRepository,
+
+        // Config revalidation
+        configLastRevalidate:
+          rules.configLastRevalidate || config.configLastRevalidate,
+        configRevalidateFrequency:
+          rules.configRevalidateFrequency || config.configRevalidateFrequency,
+
+        // Technical stack
+        framework: rules.framework || config.framework,
+        frameworkVersion: rules.frameworkVersion || config.frameworkVersion,
+        nodeVersion: rules.nodeVersion || config.nodeVersion,
+        runtime: rules.runtime || config.runtime,
+        packageManager: rules.packageManager || config.packageManager,
+        monorepo: rules.monorepo || config.monorepo,
+
+        // Development Preferences
+        preferredLibraries: {
+          ...config.preferredLibraries,
+          ...rules.preferredLibraries,
+        },
+        codeStyle: {
+          ...config.codeStyle,
+          ...rules.codeStyle,
+        },
+
+        // Project Features
+        features: {
+          ...config.features,
+          ...rules.features,
+        },
+
+        // Dependencies Management
+        ignoreDependencies:
+          rules.ignoreDependencies || config.ignoreDependencies,
+
+        // Custom Extensions
+        customRules: {
+          ...config.customRules,
+          ...rules.customRules,
+        },
+      };
+
+      // If reliverse.json exists but reliverse.json doesn't, suggest migration
+      if (!(await fs.pathExists(configPath))) {
+        relinka(
+          "info",
+          "Found reliverse.json but no reliverse.json. Consider migrating to reliverse.json for better compatibility.",
+        );
+      }
     }
   } catch (error) {
-    console.warn("Error reading reliverse.json:", error);
-  }
-
-  return DEFAULT_CONFIG;
-}
-
-export function parseCliArgs(args: string[]): Partial<ReliverseConfig> {
-  const config: Partial<ReliverseConfig> = {};
-
-  // Process boolean flags first - these are automatic answers to prompts
-  for (const arg of args) {
-    switch (arg) {
-      // Automatic "yes" answers
-      case "--deploy":
-        config.shouldDeploy = true;
-        break;
-
-      // Automatic "no" answers
-      case "--no-deps":
-        config.shouldInstallDependencies = false;
-        break;
-      case "--no-git":
-        config.shouldInitGit = false;
-        break;
-      case "--no-i18n":
-        config.shouldUseI18n = false;
-        break;
-      case "--no-db":
-        config.shouldRunDbScripts = false;
-        break;
-    }
-  }
-
-  // Process value flags - these set default values
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    switch (arg) {
-      case "--template":
-        if (i + 1 < args.length) {
-          const templateValue = args[++i];
-          if (
-            templateValue === "blefnk/relivator" ||
-            templateValue === "blefnk/next-react-ts-src-minimal"
-          ) {
-            config.defaultTemplate = templateValue;
-          }
-        }
-        break;
-      case "--username":
-        if (i + 1 < args.length) {
-          config.defaultUsername = args[++i];
-        }
-        break;
-      case "--github-username":
-        if (i + 1 < args.length) {
-          config.defaultGithubUsername = args[++i];
-        }
-        break;
-      case "--vercel-username":
-        if (i + 1 < args.length) {
-          config.defaultVercelUsername = args[++i];
-        }
-        break;
-      case "--domain":
-        if (i + 1 < args.length) {
-          config.defaultDomain = args[++i];
-        }
-        break;
-      case "--category":
-        if (i + 1 < args.length) {
-          const value = args[++i];
-          if (value === "development") {
-            config.defaultCategory = value;
-          }
-        }
-        break;
-      case "--project-type":
-        if (i + 1 < args.length) {
-          const value = args[++i];
-          if (value === "website") {
-            config.defaultProjectType = value;
-          }
-        }
-        break;
-      case "--framework":
-        if (i + 1 < args.length) {
-          const value = args[++i];
-          if (value === "nextjs") {
-            config.defaultFramework = value;
-          }
-        }
-        break;
-      case "--website-category":
-        if (i + 1 < args.length) {
-          const value = args[++i];
-          if (value === "e-commerce") {
-            config.defaultWebsiteCategory = value;
-          }
-        }
-        break;
-    }
+    console.warn("Error reading configuration files:", error);
   }
 
   return config;

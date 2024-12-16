@@ -94,7 +94,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     },
     {
       default: "1.2.6",
-      key: "appVersion",
+      key: "projectVersion",
       message: "What's the current version of your app?",
     },
     {
@@ -127,7 +127,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     name,
     siteNameDesc,
     appPublisher,
-    appVersion,
+    projectVersion,
     authorEmail,
     authorFullName,
     authorUrl,
@@ -139,7 +139,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       name,
       siteNameDesc,
       appPublisher,
-      appVersion,
+      projectVersion,
       authorEmail,
       authorFullName,
       authorUrl,
@@ -153,7 +153,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       name: name,
       siteNameDesc: siteNameDesc,
       appPublisher: appPublisher,
-      appVersion: appVersion,
+      projectVersion: projectVersion,
       authorEmail: authorEmail,
       authorFullName: authorFullName,
       authorUrl: authorUrl,
@@ -212,7 +212,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     mod.exports.default.name = config.name;
     mod.exports.default.siteNameDesc = config.siteNameDesc;
     mod.exports.default.appPublisher = config.appPublisher;
-    mod.exports.default.appVersion = config.appVersion;
+    mod.exports.default.projectVersion = config.projectVersion;
     mod.exports.default.author.email = config.authorEmail;
     mod.exports.default.author.fullName = config.authorFullName;
     mod.exports.default.author.handle = config.handle;

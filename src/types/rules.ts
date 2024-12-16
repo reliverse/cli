@@ -1,4 +1,4 @@
-import type { DeploymentService } from "./config.js";
+import type { DeploymentService } from "./common.js";
 
 export type PreferredLibraries = {
   stateManagement?: "zustand" | "jotai" | "redux-toolkit" | "none";
@@ -51,17 +51,17 @@ export type MonorepoType =
   | "pnpm-workspaces";
 
 export type ReliverseRules = {
-  // Project Info
-  appName: string;
-  appAuthor: string;
-  appDescription?: string;
-  appVersion?: string;
-  appLicense?: string;
-  appRepository?: string;
+  // Project details
+  projectName: string;
+  projectAuthor: string;
+  projectDescription?: string;
+  projectVersion?: string;
+  projectLicense?: string;
+  projectRepository?: string;
 
-  // Rules revalidation
-  rulesLastRevalidate?: string; // ISO date string
-  rulesRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
+  // Config revalidation
+  configLastRevalidate?: string; // ISO date string
+  configRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
 
   // Technical stack
   framework: "nextjs" | "react" | "vue" | "svelte" | "astro";
