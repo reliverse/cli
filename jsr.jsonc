@@ -22,7 +22,6 @@
       "build.config.ts",
       "build.optim.ts",
       "build.publish.ts",
-      "bump.config.ts",
       "bun.lockb",
       "knip.jsonc",
       "merged.txt",

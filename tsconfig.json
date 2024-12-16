@@ -49,7 +49,6 @@
     "addons/**/*.ts",
     "reset.d.ts",
     "build.publish.ts",
-    "bump.config.ts",
     "publish.ts",
     "drizzle.config.ts"
   ],

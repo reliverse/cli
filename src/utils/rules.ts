@@ -107,7 +107,7 @@ export async function writeReliverseRules(
       // Rules revalidation
       rulesLastRevalidate:
         rules.rulesLastRevalidate || new Date().toISOString(),
-      rulesRevalidateFrequency: rules.rulesRevalidateFrequency || "1d",
+      rulesRevalidateFrequency: rules.rulesRevalidateFrequency || "2d", // 1h | 1d | 2d | 7d
 
       // Technical stack
       framework: rules.framework,
@@ -129,7 +129,7 @@ export async function writeReliverseRules(
       .replace('"appName":', '// Project metadata\n  "appName":')
       .replace(
         '"rulesLastRevalidate":',
-        '\n  // Rules revalidation\n  "rulesLastRevalidate":',
+        '\n  // Rules revalidation (1h | 1d | 2d | 7d)\n  "rulesLastRevalidate":',
       )
       .replace('"framework":', '\n  // Technical stack\n  "framework":')
       .replace(
@@ -294,7 +294,7 @@ export async function getDefaultRules(
         ? packageData.repository
         : packageData.repository?.url,
     rulesLastRevalidate: new Date().toISOString(),
-    rulesRevalidateFrequency: "1d", // Default to daily revalidation
+    rulesRevalidateFrequency: "2d",
     framework,
     packageManager: "bun",
     preferredLibraries: {

@@ -61,7 +61,7 @@ export type ReliverseRules = {
 
   // Rules revalidation
   rulesLastRevalidate?: string; // ISO date string
-  rulesRevalidateFrequency?: string; // Format: "1h" | "1d" | "2d" | "7d"
+  rulesRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
 
   // Technical stack
   framework: "nextjs" | "react" | "vue" | "svelte" | "astro";

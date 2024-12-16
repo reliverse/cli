@@ -7,16 +7,18 @@
     "source.organizeImports": "never",
     "source.removeUnused": "never"
   },
+  "eslint.ignoreUntitled": true,
   "eslint.rules.customizations": [
     {
       "rule": "perfectionist/sort-imports",
       "severity": "off"
     }
   ],
-  "openMultipleFiles.limit": 700,
   "markdownlint.config": {
     "MD033": false
   },
-  "typescript.tsdk": "node_modules\\typescript\\lib",
-  "eslint.ignoreUntitled": true
+  "files.associations": {
+    ".reliverserules": "jsonc"
+  },
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

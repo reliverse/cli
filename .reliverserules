@@ -7,9 +7,9 @@
   "appLicense": "MIT",
   "appRepository": "git+https://github.com/reliverse/cli.git",
 
-  // Rules revalidation
-  "rulesLastRevalidate": "2024-12-16T00:19:21.489Z",
-  "rulesRevalidateFrequency": "1d",
+  // Rules revalidation (1h | 1d | 2d | 7d)
+  "rulesLastRevalidate": "2024-12-16T13:19:39.597Z",
+  "rulesRevalidateFrequency": "2d",
 
   // Technical stack
   "framework": "nextjs",

@@ -42,6 +42,18 @@ export default tseslint.config(
     },
     rules: {
       "perfectionist/sort-imports": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "all",
+          argsIgnorePattern: "^_",
+          caughtErrors: "all",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
       "@typescript-eslint/no-invalid-void-type": "off",
       "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
       "@typescript-eslint/restrict-template-expressions": "off",

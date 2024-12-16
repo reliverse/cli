@@ -25,23 +25,6 @@ const main = defineCommand({
       type: "boolean",
       description: "Run the CLI in dev mode",
     },
-    nodata: {
-      type: "boolean",
-      description: "Run the CLI without collecting any data (coming soon)",
-    },
-    deploy: {
-      type: "boolean",
-      description: "Automatically answer 'yes' to deployment prompt",
-    },
-    "no-deps": {
-      type: "boolean",
-      description:
-        "Automatically answer 'no' to dependency installation prompt",
-    },
-    "no-git": {
-      type: "boolean",
-      description: "Automatically answer 'no' to git initialization prompt",
-    },
   },
   run: async ({ args }) => {
     const homeDir = os.homedir();
