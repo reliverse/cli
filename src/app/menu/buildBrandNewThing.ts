@@ -172,8 +172,8 @@ export async function buildBrandNewThing(
       },
       { separator: true },
       {
-        label: "More types of projects and projectFrameworks coming soon",
-        hint: pc.dim("❤️"),
+        label: "More types of projects and frameworks coming soon",
+        hint: "❤️ ",
         value: "coming-soon",
         disabled: true,
       },
@@ -280,7 +280,7 @@ export async function buildBrandNewThing(
         Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
       ],
     mode: "buildBrandNewThing",
-    allowI18nPrompt: config?.autoI18n ?? true,
+    allowI18nPrompt: config?.i18nBehavior === "prompt",
     isDev,
     config,
   });

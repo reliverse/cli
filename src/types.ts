@@ -1,3 +1,5 @@
+export type Behavior = "prompt" | "autoYes" | "autoNo";
+
 export type ConfigKey = "code" | "key" | "githubKey" | "vercelKey";
 
 export type UserDataKeys =
@@ -188,16 +190,11 @@ export type ReliverseConfig = {
   ignoreDependencies?: string[];
 
   // Generation preferences
-  autoDeploy?: boolean;
-  autoDepsInstall?: boolean;
-  autoGitInit?: boolean;
-  autoI18n?: boolean;
-  autoDbScripts?: boolean;
-  hideDeployPrompt?: boolean;
-  hideDepsInstallPrompt?: boolean;
-  hideGitInitPrompt?: boolean;
-  hideI18nPrompt?: boolean;
-  hideDbScriptsPrompt?: boolean;
+  deployBehavior?: Behavior;
+  depsBehavior?: Behavior;
+  gitBehavior?: Behavior;
+  i18nBehavior?: Behavior;
+  scriptsBehavior?: Behavior;
 
   // Config revalidation
   configLastRevalidate?: string; // ISO date string
@@ -328,10 +325,7 @@ export type ConfigPreset = {
   config: string | Record<string, any>;
 };
 
-export type GitOption =
-  | "initializeNewGitRepository"
-  | "keepExistingGitFolder"
-  | "doNothing";
+export type GitOption = "initializeNewGitRepository" | "keepExistingGitFolder";
 
 export type FileConflict = {
   customMessage?: string; // Optional custom message for user prompt

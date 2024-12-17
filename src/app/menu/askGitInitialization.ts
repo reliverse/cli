@@ -12,13 +12,8 @@ export async function askGitInitialization(): Promise<GitOption> {
         value: "initializeNewGitRepository",
       },
       {
-        label:
-          "Keep existing .git folder (for forking later) [🚨 option is under development, may not work]",
+        label: "Keep existing .git folder (for forking purposes)",
         value: "keepExistingGitFolder",
-      },
-      {
-        label: "Do nothing",
-        value: "doNothing",
       },
     ],
   });

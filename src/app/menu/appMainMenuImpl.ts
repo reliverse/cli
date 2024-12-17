@@ -90,7 +90,7 @@ export async function app({
   const choice = await selectPrompt({
     terminalWidth: 120,
     title: `🤖 ${
-      memory.name && memory.name !== "missing"
+      memory.name && memory.name !== ""
         ? randomWelcomeMessages(memory.name)[
             Math.floor(
               Math.random() * randomWelcomeMessages(memory.name).length,

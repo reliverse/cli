@@ -55,14 +55,9 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   },
 
   // Generation preferences
-  autoDeploy: false,
-  autoDepsInstall: false,
-  autoGitInit: false,
-  autoI18n: false,
-  autoDbScripts: false,
-  hideDeployPrompt: false,
-  hideDepsInstallPrompt: false,
-  hideGitInitPrompt: false,
-  hideI18nPrompt: false,
-  hideDbScriptsPrompt: false,
+  deployBehavior: "prompt",
+  depsBehavior: "prompt",
+  gitBehavior: "prompt",
+  i18nBehavior: "prompt",
+  scriptsBehavior: "prompt",
 };

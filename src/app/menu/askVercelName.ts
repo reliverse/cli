@@ -18,7 +18,7 @@ export async function askVercelName(): Promise<string> {
   }
 
   const vercelUsername = await inputPrompt({
-    title: "What's your Vercel username or team slug?",
+    title: "What's your Vercel team name?",
     placeholder,
     content,
     validate: (value) => {

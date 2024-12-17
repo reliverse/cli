@@ -40,10 +40,7 @@ export default defineCommand({
     // Check for existing authentication in SQLite
     const memory = await readReliverseMemory();
     const isAuthenticated =
-      memory.code &&
-      memory.code !== "missing" &&
-      memory.key &&
-      memory.key !== "missing";
+      memory.code && memory.code !== "" && memory.key && memory.key !== "";
 
     if (!isAuthenticated) {
       await showAnykeyPrompt();
@@ -53,9 +50,9 @@ export default defineCommand({
       const updatedMemory = await readReliverseMemory();
       const authSuccess =
         updatedMemory.code &&
-        updatedMemory.code !== "missing" &&
+        updatedMemory.code !== "" &&
         updatedMemory.key &&
-        updatedMemory.key !== "missing";
+        updatedMemory.key !== "";
 
       if (!authSuccess) {
         relinka("error", "Authentication failed. Please try again.");

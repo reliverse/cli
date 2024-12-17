@@ -94,12 +94,8 @@ export async function writeReliverseConfig(
       .replace('"codeStyle":', '\n  // Code style preferences\n  "codeStyle":')
       .replace('"projectName":', '\n  // Project metadata\n  "projectName":')
       .replace(
-        '"autoDeploy":',
-        '\n  // Generation preferences\n  "autoDeploy":',
-      )
-      .replace(
-        '"hideDeployPrompt":',
-        '// Helpful if you want to hide prompt when autoSomething is set\n  // to false; e.g. autoX=false+hideX=true will pass N to promptX\n  "hideDeployPrompt":',
+        '"deployBehavior":',
+        '\n  // Prompts behavior (prompt | autoYes | autoNo)\n  "deployBehavior":',
       )
       .replace(
         '"configLastRevalidate":',

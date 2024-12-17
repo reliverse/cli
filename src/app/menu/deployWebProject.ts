@@ -1,11 +1,10 @@
-import { inputPrompt, task } from "@reliverse/prompts";
-import { confirmPrompt } from "@reliverse/prompts";
+import { inputPrompt, task, confirmPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { Octokit } from "octokit";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { Behavior, ReliverseMemory } from "~/types.js";
 
 import {
   readReliverseMemory,
@@ -16,12 +15,12 @@ import { relinka } from "~/utils/console.js";
 import { handleGitHubOperations } from "./createWebProjectUtils.js";
 
 export async function deployWebProject(
+  deployBehavior: Behavior,
   memory: ReliverseMemory,
-  projectName: string,
-  githubUsername: string,
+  repoName: string,
+  repoOwner: string,
   targetDir: string,
   domain: string,
-  deployService: string,
   vercelTeamName: string,
 ) {
   relinka("info", "To make deploy, let's create a GitHub repository first...");
@@ -34,7 +33,7 @@ export async function deployWebProject(
       auth: memory.githubKey,
     });
   } else {
-    // Get token from user
+    // Get token from user if not available
     const token = await inputPrompt({
       title: "Please enter your GitHub personal access token:",
       content:
@@ -56,42 +55,27 @@ export async function deployWebProject(
     });
   }
 
-  // Handle repository setup
-  let repoName = projectName;
-  let success = false;
+  await handleGitHubOperations(octokit, repoOwner, repoName, targetDir);
 
-  do {
-    success = await handleGitHubOperations(
-      octokit,
-      githubUsername,
-      repoName,
-      targetDir,
-    );
+  let shouldDeploy: boolean;
 
-    if (!success) {
-      repoName = await inputPrompt({
-        title: "Please enter a different repository name:",
-        defaultValue: `${repoName}-1`,
-        validate: (value: string): string | void => {
-          if (!value?.trim()) {
-            return "Repository name is required";
-          }
-          if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
-            return "Invalid repository name. Use only letters, numbers, hyphens, and underscores";
-          }
-        },
-      });
-    }
-  } while (!success);
+  if (deployBehavior === "autoYes") {
+    // autoYes: no prompt, always push and deploy
+    shouldDeploy = true;
+  } else if (deployBehavior === "autoNo") {
+    // autoNo: no prompt, never push and deploy
+    shouldDeploy = false;
+  } else {
+    // prompt: ask the user
+    shouldDeploy = await confirmPrompt({
+      title:
+        "Are you ready to push the commit? After this, the deployment will start.",
+      content: "Select 'No' to continue without pushing and deploying",
+      defaultValue: true,
+    });
+  }
 
-  // Handle pushing to remote
-  const shouldPushCommit = await confirmPrompt({
-    title: "Are you ready to push the commit?",
-    content: "Select 'No' to continue without pushing and deploying",
-    defaultValue: true,
-  });
-
-  if (shouldPushCommit) {
+  if (shouldDeploy) {
     try {
       relinka("info", "Pushing to remote repository...");
       const git = simpleGit({ baseDir: targetDir });
@@ -112,11 +96,11 @@ export async function deployWebProject(
     relinka("info", "Continuing without pushing and deploying...");
   }
 
-  if (shouldPushCommit && deployService === "Vercel") {
+  if (shouldDeploy) {
     relinka("info", "Checking for Vercel authentication...");
 
     // First try to get token from memory
-    let memory = await readReliverseMemory();
+    const memory = await readReliverseMemory();
     let vercelToken = memory.vercelKey;
 
     // Check for both null and undefined cases explicitly
@@ -141,7 +125,7 @@ export async function deployWebProject(
       });
 
       // Verify token was saved
-      memory = await readReliverseMemory();
+      const memory = await readReliverseMemory();
       if (memory.vercelKey === null || memory.vercelKey === undefined) {
         relinka("error", "Failed to save Vercel token to memory.");
         return;
@@ -160,11 +144,11 @@ export async function deployWebProject(
       try {
         await vercel.projects.createProject({
           requestBody: {
-            name: projectName,
+            name: repoName,
             framework: "nextjs",
             gitRepository: {
               type: "github",
-              repo: `${githubUsername}/${projectName}`,
+              repo: `${repoOwner}/${repoName}`,
             },
           },
           teamId: vercelTeamName || undefined,
@@ -187,7 +171,7 @@ export async function deployWebProject(
           key: "NEXT_PUBLIC_APP_URL",
           value: domain
             ? `https://${domain}`
-            : `https://${projectName}.vercel.app`,
+            : `https://${repoName}.vercel.app`,
           target: ["production", "preview", "development"],
           type: "plain",
         });
@@ -218,7 +202,7 @@ export async function deployWebProject(
         if (envVars.length > 0) {
           // Adds environment variables to the project
           await vercel.projects.createProjectEnv({
-            idOrName: projectName,
+            idOrName: repoName,
             upsert: "true",
             requestBody: envVars,
           });
@@ -236,13 +220,13 @@ export async function deployWebProject(
       // Finally, create the deployment
       const createResponse = await vercel.deployments.createDeployment({
         requestBody: {
-          name: projectName,
+          name: repoName,
           target: "production",
           gitSource: {
             type: "github",
-            repo: projectName,
+            repo: repoName,
             ref: "main",
-            org: githubUsername,
+            org: repoOwner,
           },
           projectSettings: {
             framework: "nextjs",
@@ -262,7 +246,7 @@ export async function deployWebProject(
 
       relinka(
         "info",
-        `You can visit 👉 https://vercel.com 👉 ${projectName} 👉 Deployments, to see the deployment process.`,
+        `You can visit 👉 https://vercel.com 👉 ${repoName} 👉 Deployments, to see the deployment process.`,
       );
 
       // Check deployment status
@@ -300,7 +284,7 @@ export async function deployWebProject(
         if (domain && !domain.endsWith(".vercel.app")) {
           try {
             const addDomainResponse = await vercel.projects.addProjectDomain({
-              idOrName: projectName,
+              idOrName: repoName,
               requestBody: {
                 name: domain,
               },

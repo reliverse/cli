@@ -30,7 +30,7 @@ export async function checkScriptExists(
 
 export async function handleGitHubOperations(
   octokit: Octokit,
-  githubUsername: string,
+  repoOwner: string,
   repoName: string,
   targetDir: string,
 ): Promise<boolean> {
@@ -38,13 +38,10 @@ export async function handleGitHubOperations(
     // First check if repo exists
     try {
       await octokit.rest.repos.get({
-        owner: githubUsername,
+        owner: repoOwner,
         repo: repoName,
       });
-      relinka(
-        "info",
-        `Repository ${githubUsername}/${repoName} already exists.`,
-      );
+      relinka("info", `Repository ${repoOwner}/${repoName} already exists.`);
     } catch (error: any) {
       if (error?.status === 404) {
         // Create the repository if it doesn't exist
@@ -59,7 +56,7 @@ export async function handleGitHubOperations(
         });
         relinka(
           "success",
-          `Repository ${githubUsername}/${repoName} created successfully!`,
+          `Repository ${repoOwner}/${repoName} created successfully!`,
         );
       } else {
         relinka(
@@ -76,7 +73,7 @@ export async function handleGitHubOperations(
     const git = simpleGit({ baseDir: targetDir });
 
     // Create remote
-    const remoteUrl = `https://github.com/${githubUsername}/${repoName}.git`;
+    const remoteUrl = `https://github.com/${repoOwner}/${repoName}.git`;
     const remotes = await git.getRemotes();
 
     if (!remotes.find((remote) => remote.name === "origin")) {

@@ -24,7 +24,7 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
       try {
         acc[row.key] = decrypt(row.value);
       } catch {
-        acc[row.key] = "missing";
+        acc[row.key] = "";
       }
       return acc;
     }, {});
@@ -38,27 +38,27 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
 
     return {
       // Encrypted data
-      code: configData.code || "missing",
-      key: configData.key || "missing",
-      githubKey: configData.githubKey || "missing",
-      vercelKey: configData.vercelKey || "missing",
+      code: configData.code || "",
+      key: configData.key || "",
+      githubKey: configData.githubKey || "",
+      vercelKey: configData.vercelKey || "",
       // Non-encrypted data
-      name: userData.name || "missing",
-      email: userData.email || "missing",
-      githubUsername: userData.githubUsername || "missing",
-      vercelUsername: userData.vercelUsername || "missing",
+      name: userData.name || "",
+      email: userData.email || "",
+      githubUsername: userData.githubUsername || "",
+      vercelUsername: userData.vercelUsername || "",
     };
   } catch (error) {
     relinka("error", "Error reading memory:", error.toString());
     return {
-      code: "missing",
-      key: "missing",
-      githubKey: "missing",
-      vercelKey: "missing",
-      name: "missing",
-      email: "missing",
-      githubUsername: "missing",
-      vercelUsername: "missing",
+      code: "",
+      key: "",
+      githubKey: "",
+      vercelKey: "",
+      name: "",
+      email: "",
+      githubUsername: "",
+      vercelUsername: "",
     };
   }
 }
