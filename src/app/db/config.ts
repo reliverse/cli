@@ -21,16 +21,27 @@ function getDerivedKey(): Buffer {
 
 export function encrypt(text: string): string {
   try {
+    if (text === null || text === undefined) {
+      throw new Error("Cannot encrypt null or undefined value");
+    }
+
+    // Convert to string explicitly in case we get a non-string value
+    const textToEncrypt = String(text);
+
     const iv = randomBytes(16);
     const key = getDerivedKey();
     const cipher = createCipheriv("aes-256-cbc", key, iv);
-    const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+    const textBuffer = Buffer.from(textToEncrypt, "utf8");
+    const encrypted = Buffer.concat([
+      cipher.update(textBuffer),
+      cipher.final(),
+    ]);
     return `${iv.toString("hex")}:${encrypted.toString("hex")}`;
   } catch (error) {
     relinka(
       "error",
       "Error encrypting value:",
-      error instanceof Error ? error.message : String(error),
+      `${error instanceof Error ? error.message : String(error)} (type: ${typeof text}, value: ${text})`,
     );
     throw error;
   }

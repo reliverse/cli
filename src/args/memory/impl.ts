@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
@@ -72,6 +73,7 @@ export async function updateReliverseMemory(
       .filter(([key]) =>
         ["code", "key", "githubKey", "vercelKey"].includes(key),
       )
+      .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
         key: key as ConfigKey,
         value: encrypt(value),
@@ -81,10 +83,24 @@ export async function updateReliverseMemory(
       .filter(([key]) =>
         ["name", "email", "githubUsername", "vercelUsername"].includes(key),
       )
+      .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
         key: key as UserDataKeys,
         value: value,
       }));
+
+    // Delete entries that are explicitly set to null
+    const keysToDelete = Object.entries(data)
+      .filter(([key]) =>
+        ["code", "key", "githubKey", "vercelKey"].includes(key),
+      )
+      .filter(([_, value]) => value === null)
+      .map(([key]) => key as ConfigKey);
+
+    // Delete null entries from config_keys
+    for (const key of keysToDelete) {
+      await db.delete(configKeysTable).where(eq(configKeysTable.key, key));
+    }
 
     // Update encrypted data in config_keys
     for (const update of configUpdates) {

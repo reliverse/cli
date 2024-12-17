@@ -25,7 +25,9 @@ export async function askUserName(): Promise<string> {
     title:
       "Enter a name/username for the frontend (e.g. footer, contact page, etc.):",
     content,
-    placeholder: hasPreviousName ? "" : `Default: ${placeholder}`,
+    placeholder: hasPreviousName
+      ? ""
+      : `Default: ${placeholder} | No worries about @ symbol anywhere, I'll add it for you when needed.`,
   });
 
   // If the user leaves the input empty, we fall back to placeholder

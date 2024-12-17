@@ -104,7 +104,7 @@ export async function deployWebProject(
     let vercelToken = memory.vercelKey;
 
     // Check for both null and undefined cases explicitly
-    if (vercelToken === null || vercelToken === undefined) {
+    if (vercelToken === null || vercelToken === undefined || vercelToken === "") {
       relinka("info", "Opening Vercel tokens page in your browser...");
 
       vercelToken = await inputPrompt({
@@ -125,8 +125,8 @@ export async function deployWebProject(
       });
 
       // Verify token was saved
-      const memory = await readReliverseMemory();
-      if (memory.vercelKey === null || memory.vercelKey === undefined) {
+      const updatedMemory = await readReliverseMemory();
+      if (!updatedMemory.vercelKey) {
         relinka("error", "Failed to save Vercel token to memory.");
         return;
       }

@@ -408,25 +408,20 @@ export async function createWebProject({
   const nextActions = await multiselectPrompt({
     title: "What would you like to do next?",
     titleColor: "cyanBright",
-    defaultValue: ["close", "ide"],
+    defaultValue: ["ide"],
     options: [
       {
-        label: "Close @reliverse/cli",
-        value: "close",
-      },
-      {
-        label: "Open Reliverse Documentation",
-        value: "docs",
-        hint: "View documentation",
+        label: "Open Your Default Code Editor",
+        value: "ide",
+        hint: vscodeInstalled ? "Detected: VSCode-based IDE" : "",
       },
       {
         label: "Join Reliverse Discord Server",
         value: "discord",
       },
       {
-        label: "Open Your Default Code Editor",
-        value: "ide",
-        hint: vscodeInstalled ? "Detected: VSCode-based IDE" : "",
+        label: "Open Reliverse Documentation",
+        value: "docs",
       },
     ],
   });
