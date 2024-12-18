@@ -14,7 +14,7 @@ export async function downloadGitRepo(
   try {
     const cwd = getCurrentWorkingDirectory();
 
-    // Create target directory directly in cwd (or tests-runtime for dev mode)
+    // Create target directory based on provided testsRuntimePath or default location
     const targetDir = isDev
       ? path.join(cwd, "tests-runtime", name)
       : path.join(cwd, name);

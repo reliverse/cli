@@ -1,11 +1,12 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.3.22",
+  "version": "1.3.25",
   "author": "blefnk",
   "type": "module",
   "description": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "scripts": {
-    "dev": "bun src/main.ts --dev",
+    "start": "bun src/main.ts",
+    "dev": "bun src/main.ts cli --dev",
     "db:studio": "drizzle-kit studio",
     "check": "bun typecheck && bun lint && bun format",
     "build:npm": "unbuild && bun build.optim.ts",
@@ -43,12 +44,21 @@
     "url": "https://github.com/reliverse/cli/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE.md",
+    "dist-npm"
+  ],
   "homepage": "https://github.com/reliverse/cli",
-  "keywords": ["cli", "reliverse"],
+  "keywords": [
+    "cli",
+    "reliverse"
+  ],
   "license": "MIT",
   "dependencies": {
     "@libsql/client": "^0.14.0",
+    "@octokit/rest": "^21.0.2",
     "@reliverse/core": "^0.1.0",
     "@reliverse/fs": "^0.6.0",
     "@reliverse/prompts": "^1.3.16",

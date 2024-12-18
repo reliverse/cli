@@ -534,3 +534,20 @@ export type ModernizeConfig = {
   replaceConsole?: boolean;
   replaceEvents?: boolean;
 };
+
+export type GitStatus = {
+  uncommittedChanges: number;
+  unpushedCommits: number;
+};
+
+export type DetectedProject = {
+  name: string;
+  path: string;
+  config: ReliverseConfig;
+  gitStatus?: GitStatus;
+};
+
+export type GitCommitOptions = {
+  message: string;
+  projectPath: string;
+};

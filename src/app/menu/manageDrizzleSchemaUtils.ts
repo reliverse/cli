@@ -76,6 +76,8 @@ export async function setupDrizzle(
 export async function getAvailableTables(
   cwd: string,
   useMultipleFiles: boolean,
+  // singleSchemaDir: string,
+  // multiSchemaDir: string,
 ): Promise<string[]> {
   if (useMultipleFiles) {
     const schemaDir = path.join(cwd, "src/db/schema");
@@ -100,6 +102,8 @@ export async function addNewTable(
   cwd: string,
   useMultipleFiles: boolean,
   provider: DatabaseProvider,
+  // singleSchemaDir: string,
+  // multiSchemaDir: string,
 ) {
   // Get table name
   const tableName = await inputPrompt({
@@ -189,7 +193,12 @@ export async function addNewTable(
 
     let references;
     if (isReference) {
-      const tables = await getAvailableTables(cwd, useMultipleFiles);
+      const tables = await getAvailableTables(
+        cwd,
+        useMultipleFiles,
+        // singleSchemaDir,
+        // multiSchemaDir,
+      );
       if (tables.length > 0) {
         const refTable = await selectPrompt({
           title: "Select referenced table:",

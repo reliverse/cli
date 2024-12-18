@@ -91,7 +91,7 @@ export async function auth({
           } else if (req.method === "GET") {
             const parsedUrl = url.parse(req.url || "", true);
             const queryParams = parsedUrl.query;
-            relinka("info-verbose", `Parsed query parameters: ${queryParams}`);
+            relinka("info-verbose", `Parsed query parameters: ${JSON.stringify(queryParams)}`);
 
             if (queryParams.cancelled) {
               relinka("info-verbose", "User cancelled the login process...");
@@ -108,7 +108,7 @@ export async function auth({
             } else {
               relinka(
                 "info-verbose",
-                `Received authentication data: ${queryParams}`,
+                `Received authentication data: ${JSON.stringify(queryParams)}`,
               );
               res.writeHead(200);
               res.end();
@@ -197,7 +197,7 @@ export async function auth({
       try {
         const authData = await authPromise;
         clearTimeout(authTimeout);
-        relinka("info-verbose", `Authentication data received: ${authData}`);
+        relinka("info-verbose", `Authentication data received: ${JSON.stringify(authData)}`);
 
         await updateReliverseMemory(authData);
         server.close(() => {

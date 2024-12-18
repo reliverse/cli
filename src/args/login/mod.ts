@@ -39,7 +39,10 @@ export default defineCommand({
     if (args.dev) {
       relinka("success", "You can run `bun dev` now! Happy Reliversing! 🎉");
     } else {
-      relinka("success", "You can run `reliverse` now! Happy Reliversing! 🎉");
+      relinka(
+        "success",
+        "You can run `reliverse cli` now! Happy Reliversing! 🎉",
+      );
     }
     process.exit(0);
   },

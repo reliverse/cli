@@ -17,6 +17,7 @@ import {
 } from "~/utils/configs/reliverseReadWrite.js";
 import { validateAndInsertMissingKeys } from "~/utils/configs/validateAndInsertMissingKeys.js";
 import { relinka } from "~/utils/console.js";
+import { detectProjectsWithReliverse } from "~/utils/detectReliverseProjects.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 import {
   convertPrismaToDrizzle,
@@ -37,12 +38,13 @@ import {
   THEMES,
 } from "~/utils/shadcn.js";
 
-import { getMainMenuOptions } from "./appMainMenuOptions.js";
 import { buildBrandNewThing } from "./buildBrandNewThing.js";
 import {
   randomReliverseMenuTitle,
   randomWelcomeMessages,
 } from "./data/messages.js";
+import { showDetectedProjectsMenu } from "./detectedProjectsMenu.js";
+import { getMainMenuOptions } from "./getMainMenuOptions.js";
 import { manageDrizzleSchema } from "./manageDrizzleSchema.js";
 import { showEndPrompt, showStartPrompt } from "./showStartEndPrompt.js";
 
@@ -59,7 +61,7 @@ export async function app({
     const testsRuntimePath = path.join(cwd, "tests-runtime");
     if (await fs.pathExists(testsRuntimePath)) {
       const shouldRemoveTestsRuntime = await confirmPrompt({
-        title: "[--dev] Do you want to remove the entire tests-runtime folder?",
+        title: "[--dev] Do you want to clear the tests-runtime folder?",
       });
       if (shouldRemoveTestsRuntime) {
         await fs.remove(testsRuntimePath);
@@ -88,7 +90,6 @@ export async function app({
   const options = await getMainMenuOptions(cwd);
   const memory = await readReliverseMemory();
   const choice = await selectPrompt({
-    terminalWidth: 120,
     title: `🤖 ${
       memory.name && memory.name !== ""
         ? randomWelcomeMessages(memory.name)[
@@ -108,6 +109,9 @@ export async function app({
 
   if (choice === "create") {
     await buildBrandNewThing(isDev, config);
+  } else if (choice === "detected-projects") {
+    const detectedProjects = await detectProjectsWithReliverse(cwd);
+    await showDetectedProjectsMenu(detectedProjects);
   } else if (choice === "codemods" && rules) {
     await handleCodemods(rules, cwd);
   } else if (choice === "integration" && rules) {
@@ -246,7 +250,7 @@ export async function app({
       }
     }
   } else if (choice === "drizzle-schema") {
-    await manageDrizzleSchema(cwd);
+    await manageDrizzleSchema(cwd, isDev);
   } else if (choice === "cleanup") {
     await handleCleanup(cwd);
   } else if (choice === "edit-config") {

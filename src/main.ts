@@ -5,7 +5,7 @@ import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.22",
+    version: "1.3.25",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

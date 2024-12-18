@@ -23,7 +23,17 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
     const configRows = await db.select().from(configKeysTable);
     const configData = configRows.reduce<Record<string, string>>((acc, row) => {
       try {
-        acc[row.key] = decrypt(row.value);
+        const decrypted = decrypt(row.value);
+        // Try to parse JSON if the value looks like JSON
+        try {
+          if (decrypted.startsWith("{") || decrypted.startsWith("[")) {
+            acc[row.key] = JSON.parse(decrypted) as string;
+          } else {
+            acc[row.key] = decrypted;
+          }
+        } catch {
+          acc[row.key] = decrypted;
+        }
       } catch {
         acc[row.key] = "";
       }
@@ -33,7 +43,16 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
     // Read non-encrypted data from user_data
     const userRows = await db.select().from(userDataTable);
     const userData = userRows.reduce<Record<string, string>>((acc, row) => {
-      acc[row.key] = row.value;
+      try {
+        // Try to parse JSON if the value looks like JSON
+        if (row.value.startsWith("{") || row.value.startsWith("[")) {
+          acc[row.key] = JSON.parse(row.value) as string;
+        } else {
+          acc[row.key] = row.value;
+        }
+      } catch {
+        acc[row.key] = row.value;
+      }
       return acc;
     }, {});
 
@@ -76,7 +95,13 @@ export async function updateReliverseMemory(
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
         key: key as ConfigKey,
-        value: encrypt(value),
+        value: encrypt(
+          typeof value === "object"
+            ? JSON.stringify(value)
+            : typeof value === "undefined"
+              ? ""
+              : String(value),
+        ),
       }));
 
     const userDataUpdates = Object.entries(data)
@@ -86,7 +111,12 @@ export async function updateReliverseMemory(
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
         key: key as UserDataKeys,
-        value: value,
+        value:
+          typeof value === "object"
+            ? JSON.stringify(value)
+            : typeof value === "undefined"
+              ? ""
+              : String(value),
       }));
 
     // Delete entries that are explicitly set to null

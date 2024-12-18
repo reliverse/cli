@@ -274,7 +274,7 @@ export async function buildBrandNewThing(
   }
 
   await createWebProject({
-    template: REPO_URLS[template],
+    template: REPO_URLS[template] || template,
     message:
       randomWebsiteDetailsTitle[
         Math.floor(Math.random() * randomWebsiteDetailsTitle.length)

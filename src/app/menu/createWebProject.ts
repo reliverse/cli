@@ -241,7 +241,6 @@ export async function createWebProject({
     successMessage: "✅ Git repository handled",
     errorMessage: "❌ Failed to handle Git repository...",
     async action() {
-      // Now we pass a proper GitOption
       await initializeGitRepository(targetDir, gitOption);
     },
   });
@@ -401,7 +400,7 @@ export async function createWebProject({
       "- Apply linting and formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
       "",
-      "- P.S. Run `reliverse` in the project directory to add/remove features.",
+      "- P.S. Run `reliverse cli` in the project directory to add/remove features.",
     ],
   });
 

@@ -55,7 +55,7 @@ Reliverse is more than just the easiest way to install Relivator. It’s also th
 
 The mission of this project is not only to help you install templates in seconds. It is also a desire to make web development more accessible to everyone. It’s a commitment to fixing many things that don’t work in the ecosystem. It’s a wish to share templates, libraries, and tools with the world that deserve attention. It’s also a drive to motivate developers to become contributors to various projects that need and deserve it.
 
-> **Note:** If you run it using `bun`, but see `pnpm` at the top, it's just a strange detector bug, everything will be handled by bun, so no worries (we'll fix it in the future).
+> **Note:** If you run it using `bun`, but see `pnpm` or even `npm` at the top, it's just a strange detector bug, everything will be handled by `bun`, so no worries (we'll fix it in the future).
 
 ## TL;DR
 

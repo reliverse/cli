@@ -13,7 +13,12 @@ import {
   detectDatabaseProvider,
 } from "./manageDrizzleSchemaUtils.js";
 
-export async function manageDrizzleSchema(cwd: string) {
+export async function manageDrizzleSchema(cwd: string, isDev: boolean) {
+  const singleSchemaDir = isDev
+    ? path.join(cwd, "src/app/db")
+    : path.join(cwd, "src/db");
+  const multiSchemaDir = path.join(singleSchemaDir, "schema");
+
   // Check if Drizzle is configured
   let provider = await detectDatabaseProvider(cwd);
   if (!provider) {
@@ -35,9 +40,9 @@ export async function manageDrizzleSchema(cwd: string) {
 
   // Create necessary directories
   if (useMultipleFiles) {
-    await fs.ensureDir(path.join(cwd, "src/db/schema"));
+    await fs.ensureDir(multiSchemaDir);
   } else {
-    await fs.ensureDir(path.join(cwd, "src/db"));
+    await fs.ensureDir(singleSchemaDir);
   }
 
   // Show schema management options
@@ -53,16 +58,40 @@ export async function manageDrizzleSchema(cwd: string) {
 
   switch (action) {
     case "add":
-      await addNewTable(cwd, useMultipleFiles, provider);
+      await addNewTable(
+        cwd,
+        useMultipleFiles,
+        provider,
+        // singleSchemaDir,
+        // multiSchemaDir,
+      );
       break;
     case "remove":
-      await removeTable(cwd, useMultipleFiles, provider);
+      await removeTable(
+        cwd,
+        useMultipleFiles,
+        provider,
+        // singleSchemaDir,
+        // multiSchemaDir,
+      );
       break;
     case "rename":
-      await renameTable(cwd, useMultipleFiles, provider);
+      await renameTable(
+        cwd,
+        useMultipleFiles,
+        provider,
+        // singleSchemaDir,
+        // multiSchemaDir,
+      );
       break;
     case "relations":
-      await manageRelations(cwd, useMultipleFiles, provider);
+      await manageRelations(
+        cwd,
+        useMultipleFiles,
+        provider,
+        // singleSchemaDir,
+        // multiSchemaDir,
+      );
       break;
   }
 }

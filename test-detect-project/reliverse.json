@@ -6,7 +6,7 @@
   "projectType": "",
   "projectCategory": "",
   "projectSubcategory": "",
-  
+
   // Development preferences
   "projectFramework": "nextjs",
   "projectPackageManager": "bun",
@@ -20,7 +20,7 @@
     "database": "drizzle",
     "api": "trpc"
   },
-  
+
   // Project features
   "features": {
     "i18n": true,
@@ -37,7 +37,7 @@
     "language": [],
     "themes": []
   },
-  
+
   // Code style preferences
   "codeStyle": {
     "dontRemoveComments": true,
@@ -51,22 +51,22 @@
     "indentSize": 2,
     "importSymbol": "~"
   },
-  
+
   // Prompts behavior (prompt | autoYes | autoNo)
   "deployBehavior": "prompt",
   "depsBehavior": "prompt",
   "gitBehavior": "prompt",
   "i18nBehavior": "prompt",
   "scriptsBehavior": "prompt",
-  
+
   // Project metadata
   "projectName": "@reliverse/cli",
   "projectDescription": "A CLI tool that offers a convenient way to bootstrap a new web project and prepare it for work.",
   "projectVersion": "1.3.25",
   "projectLicense": "MIT",
   "projectRepository": "git+https://github.com/reliverse/cli.git",
-  
+
   // Config revalidation (1h | 1d | 2d | 7d)
-  "configLastRevalidate": "2024-12-18T13:03:20.962Z",
+  "configLastRevalidate": "2024-12-17T23:02:23.849Z",
   "configRevalidateFrequency": "2d"
 }

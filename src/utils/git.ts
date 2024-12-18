@@ -1,5 +1,6 @@
 import type { SimpleGit } from "simple-git";
 
+import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
@@ -7,6 +8,47 @@ import { simpleGit } from "simple-git";
 import type { GitOption } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
+
+export async function createGitCommit({
+  message,
+  projectPath,
+}: {
+  message: string;
+  projectPath: string;
+}): Promise<boolean> {
+  try {
+    // Stage all changes
+    await execa("git add .", { cwd: projectPath });
+
+    // Create the commit
+    await execa(`git commit -m "${message}"`, { cwd: projectPath });
+
+    return true;
+  } catch (error) {
+    relinka("error", `Failed to create commit: ${(error as Error).message}`);
+    return false;
+  }
+}
+
+export async function pushGitCommits(projectPath: string): Promise<boolean> {
+  try {
+    // Get current branch name
+    const { stdout: branchName } = await execa(
+      "git rev-parse --abbrev-ref HEAD",
+      { cwd: projectPath },
+    );
+
+    // Push to remote
+    await execa(`git push origin ${branchName.trim()}`, {
+      cwd: projectPath,
+    });
+
+    return true;
+  } catch (error) {
+    relinka("error", `Failed to push commits: ${(error as Error).message}`);
+    return false;
+  }
+}
 
 // Initialize Git repository or keep existing .git folder
 export async function initializeGitRepository(
