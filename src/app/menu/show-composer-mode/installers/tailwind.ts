@@ -1,10 +1,12 @@
+import type { PackageJson } from "type-fest";
+
 import fs from "fs-extra";
 import path from "pathe";
-import { type PackageJson } from "type-fest";
 
 import { PKG_ROOT } from "~/app/db/constants.js";
-import { type Installer } from "~/app/menu/show-composer-mode/helpers/installers/index.js";
-import { addPackageDependency } from "~/app/menu/show-composer-mode/utils/addPackageDependency.js";
+
+import { type Installer } from "../opts.js";
+import { addPackageDependency } from "../utils/addPackageDependency.js";
 
 export const tailwindInstaller: Installer = ({ projectDir }) => {
   addPackageDependency({

@@ -1,9 +1,8 @@
-import { DEFAULT_APP_NAME } from "~/consts.js";
-import { type InstallerOptions } from "~/installers/index.js";
+import { DEFAULT_APP_NAME } from "~/app/db/constants.js";
 import { relinka } from "~/utils/console.js";
-import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
-import { logger } from "~/utils/logger.js";
 
+import { type InstallerOptions } from "../opts.js";
+import { getUserPkgManager } from "../utils/getUserPkgManager.js";
 import { isInsideGitRepo, isRootGitRepo } from "./git.js";
 
 // This logs the next steps that the user should take in order to advance the project
@@ -66,7 +65,7 @@ export const logNextSteps = async ({
   }
 
   if (!(await isInsideGitRepo(projectDir)) && !isRootGitRepo(projectDir)) {
-    relinka("info", `  git init`);
+    relinka("info", "  git init");
   }
-  relinka("info", `  git commit -m "initial commit"`);
+  relinka("info", "  git commit -m 'initial commit'");
 };

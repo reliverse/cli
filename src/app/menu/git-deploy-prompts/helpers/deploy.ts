@@ -23,10 +23,16 @@ export async function selectDeploymentService(
   return await selectPrompt<DeploymentService>({
     title: "Select deployment service",
     options: [
-      { label: "Vercel (Recommended)", value: "Vercel" },
-      { label: "...", value: "none", hint: pc.dim("coming soon") },
+      { label: "Vercel", value: "vercel", hint: "recommended" },
+      { label: "None", value: "none", hint: "skip deployment" },
+      {
+        label: "...",
+        value: "deno",
+        hint: pc.dim("coming soon"),
+        disabled: true,
+      },
     ],
-    defaultValue: "Vercel",
+    defaultValue: "vercel",
   });
 }
 
@@ -35,35 +41,35 @@ export async function deployProject(
   config: ReliverseConfig,
   targetDir: string,
   domain = "",
-): Promise<boolean> {
+): Promise<DeploymentService | "none"> {
   try {
-    const shouldUseDataFromConfig =
-      config?.experimental?.skipPromptsUseAutoBehavior ?? false;
-
     const deployService = await selectDeploymentService(config);
     if (deployService === "none") {
       relinka("info", "No deployment service selected. Skipping deployment.");
-      return false;
+      return "none";
     }
 
     const memory = await readReliverseMemory();
     if (!memory) {
       relinka("error", "Failed to read reliverse memory");
-      return false;
+      return "none";
     }
 
-    if (deployService === "Vercel") {
+    if (deployService === "vercel") {
       const { askGithubName } = await import("~/app/menu/askGithubName.js");
-      const { askVercelName } = await import("~/app/menu/askVercelName.js");
+      const githubUsername = memory.githubUsername
+        ? memory.githubUsername
+        : await askGithubName();
 
-      const githubUsername =
-        shouldUseDataFromConfig && memory.githubUsername
-          ? memory.githubUsername
-          : await askGithubName();
-      const vercelUsername =
-        shouldUseDataFromConfig && memory.vercelUsername
-          ? memory.vercelUsername
-          : await askVercelName();
+      const { askVercelName } = await import("~/app/menu/askVercelName.js");
+      const vercelUsername = memory.vercelUsername
+        ? memory.vercelUsername
+        : await askVercelName();
+
+      if (!githubUsername || !vercelUsername) {
+        relinka("error", "Could not determine GitHub or Vercel username");
+        return "none";
+      }
 
       await createVercelDeployment(
         targetDir,
@@ -72,17 +78,17 @@ export async function deployProject(
         vercelUsername,
         domain,
       );
-      return true;
+      return "vercel";
     }
 
     relinka("info", `Deployment to ${deployService} is not yet implemented.`);
-    return false;
+    return "none";
   } catch (error) {
     relinka(
       "error",
       "Error deploying project:",
       error instanceof Error ? error.message : String(error),
     );
-    return false;
+    return "none";
   }
 }

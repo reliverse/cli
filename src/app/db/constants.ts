@@ -1,7 +1,10 @@
 import path from "pathe";
+import { fileURLToPath } from "url";
 
 export const isVerboseEnabled = false;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 export const PKG_ROOT = path.resolve(__dirname, "../../../..");
 
 // File conflict settings, useful for prompting user to resolve conflicts during project setup

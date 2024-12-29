@@ -1,11 +1,11 @@
 import "server-only";
-
 import { createHydrationHelpers } from "@trpc/react-query/rsc";
+// @ts-expect-error TODO: fix Next.js 15
 import { headers } from "next/headers";
 import { cache } from "react";
 
-import { createCaller, type framework } from "~/server/api/root";
-import { createTRPCContext } from "~/server/api/trpc";
+import { type AppRouter } from "./../server/api/root.js";
+import { createTRPCContext } from "./../server/api/trpc.js";
 import { createQueryClient } from "./query-client.js";
 
 /**
@@ -17,14 +17,17 @@ const createContext = cache(async () => {
   heads.set("x-trpc-source", "rsc");
 
   return createTRPCContext({
+    // @ts-expect-error TODO: fix ts
     headers: heads,
   });
 });
 
 const getQueryClient = cache(createQueryClient);
+// @ts-expect-error TODO: fix ts
 const caller = createCaller(createContext);
 
-export const { trpc: api, HydrateClient } = createHydrationHelpers<framework>(
+export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
   caller,
+  // @ts-expect-error TODO: fix query import path
   getQueryClient,
 );

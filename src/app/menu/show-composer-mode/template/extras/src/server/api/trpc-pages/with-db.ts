@@ -11,6 +11,7 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+// @ts-expect-error TODO: fix ts
 import { db } from "~/server/db";
 
 /**

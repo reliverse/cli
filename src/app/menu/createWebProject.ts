@@ -1,4 +1,4 @@
-import { confirmPrompt, task } from "@reliverse/prompts";
+import { confirmPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
 import { multiselectPrompt, nextStepsPrompt } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
@@ -6,7 +6,7 @@ import { installDependencies } from "nypm";
 import open from "open";
 import path from "pathe";
 
-import type { Behavior, ReliverseConfig } from "~/types.js";
+import type { Behavior, DeploymentService, ReliverseConfig } from "~/types.js";
 
 import { decideBehavior } from "~/utils/behavior.js";
 import { relinka } from "~/utils/console.js";
@@ -67,12 +67,12 @@ export async function createWebProject({
 
   relinka("info", `Now I'm downloading the ${template} template...`);
 
-  await task({
+  await spinnerTaskPrompt({
     spinnerSolution: "ora",
     initialMessage: "Downloading template...",
     successMessage: "✅ Template downloaded successfully!",
     errorMessage: "❌ Failed to download template...",
-    async action(updateMessage) {
+    async action(updateMessage: (message: string) => void) {
       const dir = await downloadGitRepo(projectName, template, isDev);
       if (!dir) {
         throw new Error("Failed to create target directory");
@@ -82,13 +82,13 @@ export async function createWebProject({
     },
   });
 
-  await task({
+  await spinnerTaskPrompt({
     spinnerSolution: "ora",
     initialMessage: "Editing some texts in the initialized files...",
     successMessage: "✅ I edited some texts in the initialized files for you.",
     errorMessage:
       "❌ I've failed to edit some texts in the initialized files...",
-    async action(updateMessage) {
+    async action(updateMessage: (message: string) => void) {
       const { author, projectName: oldProjectName } = extractRepoInfo(template);
       updateMessage("Some magic is happening... This may take a while...");
       await replaceStringsInFiles(targetDir, {
@@ -121,12 +121,12 @@ export async function createWebProject({
     }
 
     if (i18nShouldBeEnabled && !i18nFolderExists) {
-      await task({
+      await spinnerTaskPrompt({
         spinnerSolution: "ora",
         initialMessage: "Moving app to locale...",
         successMessage: "✅ I moved app to locale successfully!",
         errorMessage: "❌ I've failed to move app to locale...",
-        async action(updateMessage) {
+        async action(updateMessage: (message: string) => void) {
           try {
             await i18nMove(targetDir, "moveLocaleToApp");
             updateMessage(
@@ -147,12 +147,12 @@ export async function createWebProject({
 
     if (!i18nShouldBeEnabled && i18nFolderExists) {
       relinka("info", "Converting from i18n version to non-i18n...");
-      await task({
+      await spinnerTaskPrompt({
         spinnerSolution: "ora",
         initialMessage: "Moving app to locale...",
         successMessage: "✅ I moved app to locale successfully!",
         errorMessage: "❌ I've failed to move app to locale...",
-        async action(updateMessage) {
+        async action(updateMessage: (message: string) => void) {
           await i18nMove(targetDir, "moveLocaleToApp");
           updateMessage("Some magic is happening... This may take a while...");
           await setupI18nFiles(targetDir);
@@ -271,15 +271,17 @@ export async function createWebProject({
 
   const vscodeInstalled = isVSCodeInstalled();
 
+  let deployService: DeploymentService = "none";
+
   // We skip git deploy if no config is provided
   if (config) {
-    await promptGitDeploy(projectName, config, targetDir);
+    deployService = await promptGitDeploy(projectName, config, targetDir);
   }
 
   await generateReliverseFile({
     projectName,
     frontendUsername,
-    deployService: "Vercel",
+    deployService,
     domain,
     targetDir,
     i18nShouldBeEnabled: defaultI18nShouldBeEnabled,
@@ -302,6 +304,7 @@ export async function createWebProject({
 
   const nextActions = await multiselectPrompt({
     title: "What would you like to do next?",
+    allowAllUnselected: true,
     titleColor: "cyanBright",
     defaultValue: ["ide"],
     options: [
@@ -323,7 +326,10 @@ export async function createWebProject({
 
   for (const action of nextActions) {
     if (action === "docs") {
-      relinka("info", "Opening Reliverse Documentation...");
+      relinka(
+        "info",
+        "Opening Reliverse Documentation ( https://docs.reliverse.org )...",
+      );
       try {
         await open("https://docs.reliverse.org");
       } catch (error) {
@@ -334,7 +340,10 @@ export async function createWebProject({
         );
       }
     } else if (action === "discord") {
-      relinka("info", "Joining Reliverse Discord server...");
+      relinka(
+        "info",
+        "Opening Reliverse Discord server ( https://discord.gg/Pb8uKbwpsJ )...",
+      );
       try {
         await open("https://discord.gg/Pb8uKbwpsJ");
       } catch (error) {

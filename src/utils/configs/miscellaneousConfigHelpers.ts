@@ -139,15 +139,13 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
             rules.experimental?.projectRepository ??
             config.experimental?.projectRepository ??
             "",
-
-          deployPlatform: rules.experimental?.deployPlatform ?? "Vercel",
           productionBranch: rules.experimental?.productionBranch ?? "main",
           deployUrl: rules.experimental?.deployUrl ?? "",
           projectActivation: rules.experimental?.projectActivation ?? "auto",
           projectCategory: rules.experimental?.projectCategory ?? "website",
           projectType: rules.experimental?.projectType ?? "development",
           projectDeployService:
-            rules.experimental?.projectDeployService ?? "Vercel",
+            rules.experimental?.projectDeployService ?? "vercel",
           projectDisplayName: rules.experimental?.projectDisplayName ?? "",
           projectDomain: rules.experimental?.projectDomain ?? "",
           projectState: rules.experimental?.projectState ?? "creating",

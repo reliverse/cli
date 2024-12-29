@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import fs from "fs-extra";
+import { globby } from "globby";
 import ora from "ora";
 import path from "pathe";
 import pc from "picocolors";
@@ -8,6 +9,30 @@ import { PKG_ROOT } from "~/app/db/constants.js";
 import { relinka } from "~/utils/console.js";
 
 import type { InstallerOptions } from "../opts.js";
+
+/**
+ * Renames all -tsx.txt files back to .tsx in the specified directory and its subdirectories.
+ * @param dir - The directory to process.
+ */
+async function renameTsxFiles(dir: string): Promise<void> {
+  try {
+    const files = await globby("**/*-tsx.txt", {
+      cwd: dir,
+      absolute: true,
+    });
+
+    for (const filePath of files) {
+      const newPath = filePath.replace(/-tsx\.txt$/, ".tsx");
+      await fs.rename(filePath, newPath);
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Error renaming -tsx.txt files:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
 
 // This bootstraps the base Next.js application
 export const scaffoldProject = async ({
@@ -90,6 +115,9 @@ export const scaffoldProject = async ({
     path.join(projectDir, "_gitignore"),
     path.join(projectDir, ".gitignore"),
   );
+
+  // Convert any -tsx.txt files back to .tsx
+  await renameTsxFiles(projectDir);
 
   const scaffoldedName =
     projectName === "." ? "App" : pc.bold(pc.cyan(projectName));

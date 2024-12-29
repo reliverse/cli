@@ -8,7 +8,7 @@ import { useState } from "react";
 import React from "react";
 import SuperJSON from "superjson";
 
-import { type framework } from "../server/api/root.js";
+import { type AppRouter } from "../server/api/root.js";
 import { createQueryClient } from "./query-client.js";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
@@ -21,27 +21,27 @@ const getQueryClient = () => {
   return (clientQueryClientSingleton ??= createQueryClient());
 };
 
-export const api = createTRPCReact<framework>();
+export const api = createTRPCReact<AppRouter>();
 
 /**
  * Inference helper for inputs.
  *
  * @example type HelloInput = RouterInputs['example']['hello']
  */
-export type RouterInputs = inferRouterInputs<framework>;
+export type RouterInputs = inferRouterInputs<AppRouter>;
 
 /**
  * Inference helper for outputs.
  *
  * @example type HelloOutput = RouterOutputs['example']['hello']
  */
-export type RouterOutputs = inferRouterOutputs<framework>;
+export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
-  const [trpcClient] = useState(() =>
-    api.createClient({
+  const [trpcClient] = useState(() => {
+    return api.createClient({
       links: [
         loggerLink({
           enabled: (op) =>
@@ -58,11 +58,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           },
         }),
       ],
-    }),
-  );
+    });
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* @ts-expect-error cli codebase hasn't have access to node_modules */}
       <api.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}
       </api.Provider>

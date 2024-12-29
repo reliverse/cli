@@ -1,9 +1,8 @@
 import type { Vercel as VercelClient } from "@vercel/sdk";
 
-import { inputPrompt, task } from "@reliverse/prompts";
+import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
-import { simpleGit } from "simple-git";
 
 import {
   readReliverseMemory,
@@ -17,7 +16,6 @@ async function ensureVercelToken(): Promise<string> {
     return memory.vercelKey;
   }
 
-  relinka("info", "Opening Vercel tokens page in your browser...");
   const vercelToken = await inputPrompt({
     title: "Please create and paste your Vercel token:",
     content: "Visit 👉 https://vercel.com/account/tokens",
@@ -41,23 +39,6 @@ async function ensureVercelToken(): Promise<string> {
 
   relinka("success", "Vercel token saved successfully!");
   return vercelToken;
-}
-
-async function pushToRemoteIfNeeded(targetDir: string) {
-  relinka("info", "Pushing to remote repository...");
-  const git = simpleGit({ baseDir: targetDir });
-
-  try {
-    await git.push("origin", "main", ["--set-upstream"]);
-    relinka("success", "Successfully pushed to remote repository!");
-  } catch (pushError) {
-    relinka(
-      "error",
-      "Failed to push to repository:",
-      pushError instanceof Error ? pushError.message : String(pushError),
-    );
-    throw pushError;
-  }
 }
 
 async function createVercelProject(
@@ -181,7 +162,7 @@ async function createAndCheckVercelDeployment(
   let deploymentStatus: string | undefined;
   let deploymentURL: string | undefined;
 
-  await task({
+  await spinnerTaskPrompt({
     spinnerSolution: "ora",
     initialMessage: "Checking deployment status...",
     successMessage: "✅ Deployment status check complete",
@@ -236,8 +217,6 @@ export async function createVercelDeployment(
   domain: string,
 ) {
   try {
-    await pushToRemoteIfNeeded(targetDir);
-
     relinka("info", "Checking for Vercel authentication...");
     const vercelToken = await ensureVercelToken();
     const { Vercel } = await import("@vercel/sdk");

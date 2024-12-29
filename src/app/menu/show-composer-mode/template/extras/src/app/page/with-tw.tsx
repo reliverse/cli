@@ -1,5 +1,6 @@
-import React from "react";
+// @ts-expect-error TODO: fix ts
 import Link from "next/link";
+import React from "react";
 
 export default function HomePage() {
   return (

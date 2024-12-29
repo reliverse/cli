@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
+// @ts-expect-error TODO: fix ts
 import { env } from "~/env";
 
 const createPrismaClient = () =>
@@ -9,6 +10,7 @@ const createPrismaClient = () =>
   });
 
 const globalForPrisma = globalThis as unknown as {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   prisma: ReturnType<typeof createPrismaClient> | undefined;
 };
 

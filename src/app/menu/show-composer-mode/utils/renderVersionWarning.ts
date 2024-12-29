@@ -47,6 +47,7 @@ function checkForLatestVersion(): Promise<string> {
         (res) => {
           if (res.statusCode === 200) {
             let body = "";
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             res.on("data", (data) => (body += data));
             res.on("end", () => {
               resolve((JSON.parse(body) as DistTagsBody).latest);

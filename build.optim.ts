@@ -27,10 +27,9 @@ const npmFilesToDelete: string[] = [
   "types/internal.d.ts",
   "**/*.temp.js",
   "**/*.temp.d.ts",
-  "**/*.txt",
 ];
 
-const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts", "**/*.txt"];
+const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts"];
 
 /**
  * Deletes files matching the provided patterns within the base directory.
@@ -242,6 +241,31 @@ async function copySrcToOutput(): Promise<void> {
 }
 
 /**
+ * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
+ * @param dir - The directory to process.
+ */
+async function renameTsxFiles(dir: string): Promise<void> {
+  try {
+    const files = await globby("**/*.tsx", {
+      cwd: dir,
+      absolute: true,
+    });
+
+    for (const filePath of files) {
+      const newPath = filePath.replace(/\.tsx$/, "-tsx.txt");
+      await fs.rename(filePath, newPath);
+      relinka("info-verbose", `Renamed: ${filePath} -> ${newPath}`);
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Error renaming .tsx files:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+/**
  * Optimizes the build for production by processing files and deleting unnecessary ones.
  * @param dir - The directory to optimize.
  */
@@ -256,6 +280,8 @@ async function optimizeBuildForProduction(dir: string): Promise<void> {
     await copySrcToOutput();
     relinka("info", "Processing copied files to replace import paths...");
     await processFiles(outputDir); // Process files after copying
+    relinka("info", "Renaming .tsx files to -tsx.txt for JSR compatibility...");
+    await renameTsxFiles(outputDir);
   } else {
     relinka("info", "Creating an optimized production build...");
     await processFiles(dir);

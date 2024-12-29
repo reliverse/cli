@@ -2,12 +2,12 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
-import { logger } from "./app/menu/show-composer-mode/utils/logger.js";
+import { relinka } from "~/utils/console.js";
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.3",
+    version: "1.4.8",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

@@ -1,7 +1,10 @@
-import React from "react";
+// @ts-expect-error TODO: fix ts
 import Head from "next/head";
+// @ts-expect-error TODO: fix ts
 import Link from "next/link";
+import React from "react";
 
+// @ts-expect-error TODO: fix ts
 import { api } from "~/utils/api";
 
 export default function Home() {

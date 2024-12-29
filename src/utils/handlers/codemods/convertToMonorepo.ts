@@ -74,7 +74,7 @@ export async function convertToMonorepo(
     // Move other common files
     const commonFiles = [
       "tsconfig.json",
-      ".eslintrc.js",
+      "eslint.config.js",
       ".prettierrc",
       "next.config.js",
       "postcss.config.js",

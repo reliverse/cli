@@ -1,9 +1,10 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/consts.js";
-import { type Installer } from "~/installers/index.js";
-import { parseNameAndPath } from "~/utils/parseNameAndPath.js";
+import { PKG_ROOT } from "~/app/db/constants.js";
+
+import { type Installer } from "../opts.js";
+import { parseNameAndPath } from "../utils/parseNameAndPath.js";
 
 // Sanitizes a project name to ensure it adheres to Docker container naming conventions.
 const sanitizeName = (name: string): string => {

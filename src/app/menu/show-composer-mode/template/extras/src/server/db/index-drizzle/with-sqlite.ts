@@ -1,7 +1,10 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
+// @ts-expect-error TODO: fix ts
 import { env } from "~/env";
+
+// @ts-expect-error TODO: fix ts
 import * as schema from "./schema.js";
 
 /**

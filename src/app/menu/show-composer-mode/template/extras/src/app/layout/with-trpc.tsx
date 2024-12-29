@@ -1,9 +1,12 @@
-import React from "react";
+// @ts-expect-error TODO: fix ts
+import { GeistSans } from "geist/font/sans";
+
 import "~/styles/globals.css";
 
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import React from "react";
 
+// @ts-expect-error TODO: fix ts
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {

@@ -1,109 +1,158 @@
 import { confirmPrompt } from "@reliverse/prompts";
 
-import type { Behavior, ReliverseConfig } from "~/types.js";
+import type { DeploymentService, ReliverseConfig } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 
 import { deployProject } from "./helpers/deploy.js";
-import { createRepo, initGit } from "./helpers/git.js";
+import { createGithubRepository, initGit } from "./helpers/git.js";
 
+type DecisionKey = "gitBehavior" | "deployBehavior";
+
+/**
+ * Makes a decision based on config or user prompt
+ * @param config - Reliverse configuration
+ * @param behaviorKey - Which behavior to check
+ * @param title - Prompt title for user
+ * @param defaultValue - Default value if prompting
+ */
 async function decide(
   config: ReliverseConfig,
-  behaviorKey: keyof NonNullable<ReliverseConfig["experimental"]>,
+  behaviorKey: DecisionKey,
   title: string,
   defaultValue = true,
 ): Promise<boolean> {
-  const behavior = (config?.experimental?.[behaviorKey] ??
-    "prompt") as Behavior;
-  switch (behavior) {
-    case "autoYes":
-      relinka("info-verbose", `Auto-answering YES to: ${title}`);
-      return true;
-    case "autoNo":
-      relinka("info-verbose", `Auto-answering NO to: ${title}`);
-      return false;
-    default:
-      return await confirmPrompt({ title, defaultValue });
+  try {
+    const behavior = config?.experimental?.[behaviorKey] ?? "prompt";
+
+    switch (behavior) {
+      case "autoYes":
+        relinka("info-verbose", `Auto-answering YES to: ${title}`);
+        return true;
+      case "autoNo":
+        relinka("info-verbose", `Auto-answering NO to: ${title}`);
+        return false;
+      case "prompt":
+        return await confirmPrompt({
+          title,
+          defaultValue,
+          content: "Press Enter to confirm or Esc to cancel",
+        });
+      default:
+        relinka("warn", `Unknown behavior '${behavior}', defaulting to prompt`);
+        return await confirmPrompt({ title, defaultValue });
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to get decision:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return defaultValue;
   }
 }
 
+/**
+ * Handles the git initialization step
+ */
+async function handleGitInit(targetDir: string): Promise<boolean> {
+  const gitInitialized = await initGit(targetDir);
+  if (!gitInitialized) {
+    relinka(
+      "error",
+      "Failed to initialize git. Stopping git and deploy process.",
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Handles the GitHub repository creation step
+ */
+async function handleGithubRepo(
+  projectName: string,
+  targetDir: string,
+): Promise<boolean> {
+  const repoCreated = await createGithubRepository(projectName, targetDir);
+  if (!repoCreated) {
+    relinka(
+      "error",
+      "Failed to create GitHub repository. Stopping deploy process.",
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Main function to handle git initialization, GitHub repo creation, and deployment
+ */
 export async function promptGitDeploy(
   projectName: string,
   config: ReliverseConfig,
   targetDir: string,
-): Promise<void> {
+): Promise<DeploymentService | "none"> {
   try {
-    // 1. First ask about git initialization
+    // 1. Git initialization
     const shouldInitGit = await decide(
       config,
       "gitBehavior",
-      "Do you want to initialize git?",
+      "Do you want to initialize git in your project? (This will allow you to push your project to e.g. GitHub and deploy it to e.g. Vercel)",
     );
 
     if (!shouldInitGit) {
       relinka("info", "Skipping git initialization.");
-      return;
+      return "none";
     }
 
-    // Initialize git locally without remote
-    const gitInitialized = await initGit(targetDir);
-    if (!gitInitialized) {
-      relinka(
-        "error",
-        "Failed to initialize git. Stopping git and deploy process.",
-      );
-      return;
-    }
+    if (!(await handleGitInit(targetDir))) return "none";
 
-    // 2. Then ask about GitHub repository
+    // 2. GitHub repository
     const shouldCreateRepo = await decide(
       config,
       "gitBehavior",
-      "Do you want to create a GitHub repository and push the initial commit?",
+      "Do you want to create a GitHub repository and push your code?",
     );
 
     if (!shouldCreateRepo) {
       relinka("info", "Skipping GitHub repository creation.");
-      return;
+      return "none";
     }
 
-    const repoCreated = await createRepo(projectName, targetDir, config);
-    if (!repoCreated) {
-      relinka(
-        "error",
-        "Failed to create GitHub repository. Stopping deploy process.",
-      );
-      return;
-    }
+    if (!(await handleGithubRepo(projectName, targetDir))) return "none";
 
-    // 3. Finally ask about deployment
+    // 3. Deployment
     const shouldDeployProject = await decide(
       config,
       "deployBehavior",
-      "Do you want to deploy this project to Vercel?",
+      "Do you want to deploy this project?",
     );
 
     if (!shouldDeployProject) {
       relinka("info", "Skipping project deployment.");
-      return;
+      return "none";
     }
 
-    const deployed = await deployProject(projectName, config, targetDir);
-
-    if (!deployed) {
-      relinka("error", "Failed to deploy project.");
-      return;
-    }
+    if ((await deployProject(projectName, config, targetDir)) === "none")
+      return "none";
 
     relinka(
       "success",
-      "Git initialization, GitHub setup, and deployment completed successfully!",
+      "Git initialization, GitHub setup, and deployment completed successfully! 🎉",
     );
+
+    return "vercel";
   } catch (error) {
-    relinka(
-      "error",
-      "An unexpected error occurred:",
-      error instanceof Error ? error.message : String(error),
-    );
+    if (error instanceof Error) {
+      relinka("error", `Deployment process failed: ${error.message}`);
+      if (error.stack) {
+        relinka("error-verbose", "Stack trace:", error.stack);
+      }
+    } else {
+      relinka("error", "An unexpected error occurred:", String(error));
+    }
   }
+
+  return "vercel";
 }

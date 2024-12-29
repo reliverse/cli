@@ -20,7 +20,7 @@ import {
 export async function showComposerMode(cliResults: CliResults) {
   const npmVersion = await getNpmVersion();
   const pkgManager = getUserPkgManager();
-  renderTitle();
+  await renderTitle();
   if (npmVersion) {
     renderVersionWarning(npmVersion);
   }

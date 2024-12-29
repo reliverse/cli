@@ -1,15 +1,12 @@
 import React from "react";
-import { GeistSans } from "geist/font/sans";
-import { type AppType } from "next/dist/shared/lib/utils";
+import { Outlet } from "react-router-dom";
 
 import "~/styles/globals.css";
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+export default function BaseLayout() {
   return (
-    <div className={GeistSans.className}>
-      <Component {...pageProps} />
+    <div>
+      <Outlet />
     </div>
   );
-};
-
-export default MyApp;
+}

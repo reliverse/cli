@@ -61,7 +61,7 @@
     "ignoreDependencies": [],
 
     // Config revalidation (1h | 1d | 2d | 7d)
-    "configLastRevalidate": "2024-12-25T13:06:12.128Z",
+    "configLastRevalidate": "2024-12-29T20:57:03.697Z",
     "configRevalidateFrequency": "2d",
 
     // Custom rules for Reliverse AI

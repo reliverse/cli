@@ -1,7 +1,10 @@
-import React from "react";
+// @ts-expect-error TODO: fix ts
 import Link from "next/link";
+import React from "react";
 
+// @ts-expect-error TODO: fix ts
 import { LatestPost } from "~/app/_components/post";
+// @ts-expect-error TODO: fix ts
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {

@@ -1,9 +1,6 @@
 {
   "version": "0.2",
   "language": "en",
-  "import": [
-    "@cspell/dict-npm/cspell-ext.json"
-  ],
   "ignorePaths": [
     "**/*.lock",
     "**/*.txt",
@@ -46,6 +43,7 @@
     "continuar",
     "cristal",
     "cronvel",
+    "crossplatform",
     "datepart",
     "dateparts",
     "deafult",
@@ -99,6 +97,7 @@
     "mkdist",
     "Mkey",
     "montag",
+    "moonrepo",
     "Nazar",
     "Nazarii",
     "nenc",
@@ -149,6 +148,7 @@
     "termkit",
     "tseslint",
     "Tully",
+    "turborepo",
     "turso",
     "typebox",
     "typecheck",
@@ -164,6 +164,7 @@
     "valign",
     "venv",
     "versator",
+    "VITE",
     "Vous",
     "vsprintf",
     "Whoo",

@@ -1,7 +1,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+// @ts-expect-error TODO: fix ts
 import { env } from "~/env";
+
+// @ts-expect-error TODO: fix ts
 import * as schema from "./schema.js";
 
 /**

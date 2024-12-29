@@ -1,6 +1,6 @@
 import type { ParsedUrlQuery } from "querystring";
 
-import { task } from "@reliverse/prompts";
+import { spinnerTaskPrompt } from "@reliverse/prompts";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
@@ -39,13 +39,13 @@ export async function auth({
 }) {
   relinka("info", "Let's authenticate you...");
 
-  await task({
+  await spinnerTaskPrompt({
     initialMessage: "Waiting for user confirmation...",
     successMessage: "Login cancelled. See you next time 👋",
     errorMessage: "Authentication failed!",
     spinnerSolution: "ora",
     spinnerType: "arc",
-    action: async (updateMessage) => {
+    action: async (updateMessage: (message: string) => void) => {
       // Create a local HTTP server to handle the authentication callback
       const server = http.createServer();
       let port: number | string | undefined;

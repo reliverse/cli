@@ -4,18 +4,44 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseConfig } from "~/types.js";
-
+import { askGithubName } from "~/app/menu/askGithubName.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 import { relinka } from "~/utils/console.js";
 
 import { createGithubRepo } from "./github.js";
 
+/**
+ * Checks if the given directory is a git repository
+ * @param dir - Directory to check
+ * @returns Promise<boolean> - Whether the directory is a git repository
+ */
 async function isGitRepo(dir: string): Promise<boolean> {
   try {
+    if (!(await fs.pathExists(dir))) {
+      relinka("error", `Directory does not exist: ${dir}`);
+      return false;
+    }
+
+    const gitDir = path.join(dir, ".git");
+    if (!(await fs.pathExists(gitDir))) {
+      return false;
+    }
+
     const git = simpleGit({ baseDir: dir });
     return await git.checkIsRepo();
-  } catch {
+  } catch (error) {
+    // Only log if it's not a "not a git repo" error
+    if (
+      !(
+        error instanceof Error && error.message.includes("not a git repository")
+      )
+    ) {
+      relinka(
+        "error",
+        "Error checking git repository:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
     return false;
   }
 }
@@ -26,12 +52,6 @@ export async function initGit(dir: string): Promise<boolean> {
     if (!(await fs.pathExists(dir))) {
       relinka("error", `Directory does not exist: ${dir}`);
       return false;
-    }
-
-    // Check if git is already initialized
-    if (await isGitRepo(dir)) {
-      relinka("info", "Git repository already initialized.");
-      return true;
     }
 
     // Clean any partial .git directory
@@ -70,39 +90,53 @@ export async function initGit(dir: string): Promise<boolean> {
   }
 }
 
-export async function createRepo(
+/**
+ * Creates a GitHub repository and sets it up locally
+ * @param projectName - Name of the project/repository
+ * @param targetDir - Local directory path
+ * @param config - Reliverse configuration
+ * @returns Promise<boolean> - Whether the operation was successful
+ */
+export async function createGithubRepository(
   projectName: string,
   targetDir: string,
-  config: ReliverseConfig,
 ): Promise<boolean> {
   try {
-    const shouldUseDataFromConfig =
-      config?.experimental?.skipPromptsUseAutoBehavior ?? false;
     const memory = await readReliverseMemory();
     if (!memory) {
       relinka("error", "Failed to read reliverse memory");
       return false;
     }
 
-    // Import askGithubName dynamically to avoid circular dependencies
-    const { askGithubName } = await import("~/app/menu/askGithubName.js");
-    const githubUsername =
-      shouldUseDataFromConfig && memory.githubUsername
-        ? memory.githubUsername
-        : await askGithubName();
+    const githubUsername = await askGithubName();
+    if (!githubUsername) {
+      relinka("error", "Could not determine GitHub username");
+      return false;
+    }
 
-    return await createGithubRepo(
+    const success = await createGithubRepo(
       memory,
       projectName,
       githubUsername,
       targetDir,
     );
+
+    if (!success) {
+      relinka("error", "Failed to create GitHub repository");
+      return false;
+    }
+
+    return true;
   } catch (error) {
-    relinka(
-      "error",
-      "Error creating GitHub repository:",
-      error instanceof Error ? error.message : String(error),
-    );
+    if (error instanceof Error && error.message.includes("already exists")) {
+      relinka("error", `Repository '${projectName}' already exists on GitHub`);
+    } else {
+      relinka(
+        "error",
+        "Failed to create GitHub repository:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
     return false;
   }
 }
@@ -120,7 +154,10 @@ export async function setupGitRemote(
     }
 
     if (!(await isGitRepo(dir))) {
-      relinka("error", "Not a git repository. Please initialize git first.");
+      relinka(
+        "error",
+        "Not a git repository, git should be initialized before setupGitRemote. Something went wrong. Please notify developers.",
+      );
       return false;
     }
 

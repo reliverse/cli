@@ -1,9 +1,10 @@
-import path from "pathe";
 import fs from "fs-extra";
+import path from "pathe";
 
-import { PKG_ROOT } from "~/consts.js";
-import { type Installer } from "~/installers/index.js";
-import { addPackageDependency } from "~/utils/addPackageDependency.js";
+import { PKG_ROOT } from "~/app/db/constants.js";
+
+import { type Installer } from "../opts.js";
+import { addPackageDependency } from "../utils/addPackageDependency.js";
 
 export const trpcInstaller: Installer = ({
   projectDir,
@@ -25,7 +26,7 @@ export const trpcInstaller: Installer = ({
   const usingAuth = packages?.nextAuth.inUse;
   const usingPrisma = packages?.prisma.inUse;
   const usingDrizzle = packages?.drizzle.inUse;
-  const usingDb = usingPrisma || usingDrizzle;
+  const usingDb = usingPrisma ?? usingDrizzle;
 
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 

@@ -1,5 +1,6 @@
 import { type Config } from "drizzle-kit";
 
+// @ts-expect-error TODO: fix ts
 import { env } from "~/env";
 
 export default {

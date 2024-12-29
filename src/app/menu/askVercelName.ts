@@ -1,5 +1,4 @@
 import { inputPrompt } from "@reliverse/prompts";
-import pc from "picocolors";
 
 import {
   readReliverseMemory,
@@ -10,33 +9,31 @@ export async function askVercelName(): Promise<string> {
   const memory = await readReliverseMemory();
 
   let placeholder = "";
-  let content = "";
 
   if (memory.vercelUsername) {
     placeholder = memory.vercelUsername;
-    content = `Last used Vercel username: ${pc.cyanBright(placeholder)}`;
   }
 
-  const vercelUsername = await inputPrompt({
-    title: "What's your Vercel team name?",
-    placeholder,
-    content,
-    validate: (value: string): string | boolean => {
-      if (!value?.trim()) {
-        return "Vercel username is required for deployment";
-      }
-      if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
-        return "Invalid Vercel username format";
-      }
-      return true;
-    },
-  });
-
-  if (vercelUsername && vercelUsername !== placeholder) {
-    await updateReliverseMemory({
-      vercelUsername,
+  if (placeholder === "") {
+    placeholder = await inputPrompt({
+      title: "What's your Vercel team name?",
+      validate: (value: string): string | boolean => {
+        if (!value?.trim()) {
+          return "Vercel username is required for deployment";
+        }
+        if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
+          return "Invalid Vercel username format";
+        }
+        return true;
+      },
     });
   }
 
-  return vercelUsername;
+  if (placeholder !== "" && placeholder !== memory.vercelUsername) {
+    await updateReliverseMemory({
+      vercelUsername: placeholder,
+    });
+  }
+
+  return placeholder;
 }

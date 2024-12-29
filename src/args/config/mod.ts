@@ -49,7 +49,7 @@ export default defineCommand({
           projectCategory: rules.experimental?.projectCategory ?? "website",
           projectType: rules.experimental?.projectType ?? "development",
           projectDeployService:
-            rules.experimental?.projectDeployService ?? "Vercel",
+            rules.experimental?.projectDeployService ?? "vercel",
           projectDisplayName: rules.experimental?.projectDisplayName ?? "",
           projectDomain: rules.experimental?.projectDomain ?? "",
           projectState: rules.experimental?.projectState ?? "creating",
@@ -64,9 +64,6 @@ export default defineCommand({
             rules.experimental?.projectPackageManager ?? "npm",
           nodeVersion: rules.experimental?.nodeVersion ?? "latest",
           runtime: rules.experimental?.runtime ?? "nodejs",
-
-          // Deployment
-          deployPlatform: rules.experimental?.deployPlatform ?? "Vercel",
           productionBranch: rules.experimental?.productionBranch ?? "main",
           deployUrl: rules.experimental?.deployUrl ?? "",
 

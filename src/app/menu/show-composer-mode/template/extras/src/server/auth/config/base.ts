@@ -1,3 +1,4 @@
+// @ts-expect-error TODO: fix ts
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
@@ -8,6 +9,7 @@ import DiscordProvider from "next-auth/providers/discord";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Session extends DefaultSession {
     user: {
       id: string;
@@ -41,6 +43,7 @@ export const authConfig = {
      */
   ],
   callbacks: {
+    // @ts-expect-error TODO: fix ts
     session: ({ session, token }) => ({
       ...session,
       user: {

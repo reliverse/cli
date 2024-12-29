@@ -1,4 +1,4 @@
-import { task } from "@reliverse/prompts";
+import { spinnerTaskPrompt } from "@reliverse/prompts";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
@@ -146,7 +146,6 @@ async function generateVSCodeSettings(
     "markdownlint.config": {
       MD033: false,
     },
-    // Removed ".reliverserules" association since it's no longer used
     "typescript.enablePromptUseWorkspaceTsdk": true,
   };
 
@@ -197,7 +196,7 @@ async function generateConfigFiles(
   overwrite = false,
   filesToGenerate: string[] = [],
 ): Promise<void> {
-  await task({
+  await spinnerTaskPrompt({
     spinnerSolution: "ora",
     initialMessage:
       filesToGenerate.length === 0
@@ -213,7 +212,6 @@ async function generateConfigFiles(
           );
         };
 
-        // Removed .reliverserules since it's merged into .reliverse
         const configGenerators = {
           ".reliverse": () => generateReliverseConfig(targetDir, overwrite),
           "biome.json": () => generateBiomeConfig(targetDir, overwrite),

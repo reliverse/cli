@@ -38,6 +38,7 @@
     "build.optim.ts",
     "build.config.ts",
     "vitest.config.ts",
+    "src/**/*.js",
     "src/**/*.ts",
     "src/**/*.tsx",
     "addons/**/*.ts",

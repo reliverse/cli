@@ -4,7 +4,6 @@ dist-npm/
 .DS_Store
 merged.txt
 .eslintcache
-.cursorrules
 node_modules/
 addons/premium/
 addons/**/premium/

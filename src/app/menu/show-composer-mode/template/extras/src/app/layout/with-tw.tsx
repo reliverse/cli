@@ -1,7 +1,10 @@
-import React from "react";
-import "~/styles/globals.css";
+// @ts-expect-error TODO: fix ts
 import { GeistSans } from "geist/font/sans";
+
+import "~/styles/globals.css";
+
 import { type Metadata } from "next";
+import React from "react";
 
 export const metadata: Metadata = {
   title: "@reliverse/cli",

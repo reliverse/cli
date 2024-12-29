@@ -2,6 +2,7 @@ import { Client } from "@planetscale/database";
 import { PrismaPlanetScale } from "@prisma/adapter-planetscale";
 import { PrismaClient } from "@prisma/client";
 
+// @ts-expect-error TODO: fix ts
 import { env } from "~/env";
 
 const psClient = new Client({ url: env.DATABASE_URL });
@@ -14,6 +15,7 @@ const createPrismaClient = () =>
   });
 
 const globalForPrisma = globalThis as unknown as {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   prisma: ReturnType<typeof createPrismaClient> | undefined;
 };
 

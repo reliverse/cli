@@ -1,7 +1,8 @@
 import fs from "fs-extra";
+import { globby } from "globby";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/consts.js";
+import { PKG_ROOT } from "~/app/db/constants.js";
 import {
   selectAppFile,
   selectIndexFile,
@@ -10,13 +11,10 @@ import {
 } from "~/app/menu/show-composer-mode/helpers/selectBoilerplate.js";
 import { getUserPkgManager } from "~/app/menu/show-composer-mode/utils/getUserPkgManager.js";
 
-import type {
-  DatabaseProvider,
-  PkgInstallerMap,
-} from "../../installers/index.js";
+import type { DatabaseProvider, PkgInstallerMap } from "../opts.js";
 
 import { installPackages } from "./installPackages.js";
-import { scaffoldProject } from "./handlers/scaffoldProject.js";
+import { scaffoldProject } from "./scaffoldProject.js";
 
 type CreateProjectOptions = {
   projectName: string;
@@ -27,6 +25,26 @@ type CreateProjectOptions = {
   framework: boolean;
   databaseProvider: DatabaseProvider;
 };
+
+/**
+ * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
+ * @param dir - The directory to process.
+ */
+async function renameTsxFiles(dir: string): Promise<void> {
+  try {
+    const files = await globby("**/*.tsx", {
+      cwd: dir,
+      absolute: true,
+    });
+
+    for (const filePath of files) {
+      const newPath = filePath.replace(/\.tsx$/, "-tsx.txt");
+      await fs.rename(filePath, newPath);
+    }
+  } catch (error) {
+    console.error("Error renaming .tsx files:", error);
+  }
+}
 
 export const createProject = async ({
   projectName,
@@ -51,7 +69,7 @@ export const createProject = async ({
   });
 
   // Install the selected packages
-  installPackages({
+  await installPackages({
     projectName,
     scopedAppName,
     projectDir,
@@ -91,6 +109,9 @@ export const createProject = async ({
     );
     fs.copyFileSync(indexModuleCss, indexModuleCssDest);
   }
+
+  // Rename all .tsx files to -tsx.txt
+  await renameTsxFiles(projectDir);
 
   return projectDir;
 };

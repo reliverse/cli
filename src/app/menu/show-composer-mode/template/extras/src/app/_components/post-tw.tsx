@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { api } from "~/trpc/react";
+import { api } from "../../utils/api.js";
 
 export function LatestPost() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();
@@ -34,7 +34,9 @@ export function LatestPost() {
           type="text"
           placeholder="Title"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
           className="w-full rounded-full px-4 py-2 text-black"
         />
         <button

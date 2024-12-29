@@ -1,15 +1,12 @@
 import React from "react";
-import { GeistSans } from "geist/font/sans";
-import { type AppType } from "next/app";
+import { Outlet } from "react-router-dom";
 
 import "~/styles/globals.css";
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+export default function TailwindLayout() {
   return (
-    <div className={GeistSans.className}>
-      <Component {...pageProps} />
+    <div className="min-h-screen bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <Outlet />
     </div>
   );
-};
-
-export default MyApp;
+}

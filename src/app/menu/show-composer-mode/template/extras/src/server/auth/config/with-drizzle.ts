@@ -1,13 +1,15 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type DefaultSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
+// @ts-expect-error TODO: fix ts
 import { db } from "~/server/db";
 import {
   accounts,
   sessions,
   users,
   verificationTokens,
+  // @ts-expect-error TODO: fix ts
 } from "~/server/db/schema";
 
 /**
@@ -17,6 +19,7 @@ import {
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Session extends DefaultSession {
     user: {
       id: string;
@@ -56,6 +59,7 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
+    // @ts-expect-error TODO: fix ts
     session: ({ session, user }) => ({
       ...session,
       user: {
@@ -64,4 +68,5 @@ export const authConfig = {
       },
     }),
   },
+  // @ts-expect-error TODO: fix ts
 } satisfies NextAuthConfig;

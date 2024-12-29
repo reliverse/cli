@@ -1,9 +1,11 @@
+import path from "pathe";
+
 import { DEFAULT_APP_NAME } from "~/app/db/constants.js";
+import { configureEslint } from "~/utils/eslint.js";
 
 import { dbContainerInstaller } from "./installers/dbContainer.js";
 import { drizzleInstaller } from "./installers/drizzle.js";
 import { envVariablesInstaller } from "./installers/envVars.js";
-import { dynamicEslintInstaller } from "./installers/eslint.js";
 import { nextAuthInstaller } from "./installers/nextAuth.js";
 import { prismaInstaller } from "./installers/prisma.js";
 import { tailwindInstaller } from "./installers/tailwind.js";
@@ -43,7 +45,7 @@ export type InstallerOptions = {
   databaseProvider: DatabaseProvider;
 };
 
-export type Installer = (opts: InstallerOptions) => void;
+export type Installer = (opts: InstallerOptions) => Promise<void> | void;
 
 export type PkgInstallerMap = Record<
   AvailablePackages,
@@ -87,7 +89,19 @@ export const buildPkgInstallerMap = (
   },
   eslint: {
     inUse: true,
-    installer: dynamicEslintInstaller,
+    installer: async (opts) => {
+      await configureEslint({
+        eslintConfig: path.join(opts.projectDir, "eslint.config.js"),
+        eslintRulesDisabledConfig: path.join(
+          opts.projectDir,
+          "eslint.config.disabled.js",
+        ),
+        eslintUltimateConfig: path.join(
+          opts.projectDir,
+          "eslint.config.ultimate.js",
+        ),
+      });
+    },
   },
 });
 

@@ -2,8 +2,9 @@ import fs from "fs-extra";
 import crypto from "node:crypto";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/consts.js";
-import { type DatabaseProvider, type Installer } from "~/installers/index.js";
+import { PKG_ROOT } from "~/app/db/constants.js";
+
+import { type DatabaseProvider, type Installer } from "../opts.js";
 
 export const envVariablesInstaller: Installer = ({
   projectDir,
@@ -15,7 +16,7 @@ export const envVariablesInstaller: Installer = ({
   const usingPrisma = packages?.prisma.inUse;
   const usingDrizzle = packages?.drizzle.inUse;
 
-  const usingDb = usingPrisma || usingDrizzle;
+  const usingDb = usingPrisma ?? usingDrizzle;
   const usingPlanetScale = databaseProvider === "planetscale";
 
   const envContent = getEnvContent(

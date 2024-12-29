@@ -1,24 +1,15 @@
-import React from "react";
-import { GeistSans } from "geist/font/sans";
-import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-import { type AppType } from "next/app";
-
-import { api } from "~/utils/api";
+import React from "react";
+import { Outlet } from "react-router-dom";
 
 import "~/styles/globals.css";
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+export default function AuthLayout() {
   return (
-    <SessionProvider session={session}>
-      <div className={GeistSans.className}>
-        <Component {...pageProps} />
+    <SessionProvider>
+      <div>
+        <Outlet />
       </div>
     </SessionProvider>
   );
-};
-
-export default api.withTRPC(MyApp);
+}

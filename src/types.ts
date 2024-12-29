@@ -64,7 +64,12 @@ export type IntegrationCategory =
 
 export type IntegrationOptions = Record<string, IntegrationOption[]>;
 
-export type DeploymentService = "Vercel" | "Netlify" | "Railway" | "none";
+export type DeploymentService =
+  | "vercel"
+  | "deno"
+  | "netlify"
+  | "railway"
+  | "none";
 
 export type PreferredLibraries = {
   stateManagement?: "zustand" | "jotai" | "redux-toolkit" | "none";
@@ -83,7 +88,7 @@ export type PreferredLibraries = {
   api?: "trpc" | "graphql" | "rest" | "none";
   linting?: "eslint" | "none";
   formatting?: "biome" | "none";
-  deployment?: "vercel" | "none";
+  deployment?: DeploymentService;
   payment?: "stripe" | "none";
   analytics?: "vercel" | "none";
   monitoring?: "sentry" | "none";
@@ -150,7 +155,7 @@ export type TemplateOption =
   | "blefnk/next-react-ts-src-minimal";
 
 // design = graphic|video|audio|3d design
-export type ProjectTypeOtions = "" | "development" | "design" | "marketing";
+export type ProjectTypeOptions = "" | "development" | "design" | "marketing";
 
 export type ProjectCategory =
   | ""
@@ -189,7 +194,7 @@ export type ReliverseConfig = {
         projectRepository?: string | undefined;
         projectState?: ProjectState | undefined;
         projectDomain?: string | undefined;
-        projectType?: ProjectTypeOtions | undefined;
+        projectType?: ProjectTypeOptions | undefined;
         projectCategory?: ProjectCategory | undefined;
         projectSubcategory?: ProjectSubcategory | undefined;
         projectTemplate?: TemplateOption | undefined;
@@ -201,12 +206,8 @@ export type ReliverseConfig = {
         projectDisplayName?: string | undefined;
         nodeVersion?: string | undefined;
         runtime?: string | undefined;
-
-        // Deployment
-        deployPlatform?: DeploymentService | undefined;
         productionBranch?: string | undefined;
         deployUrl?: string | undefined;
-
         monorepo?:
           | {
               type: string;

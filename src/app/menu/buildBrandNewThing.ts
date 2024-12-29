@@ -273,14 +273,14 @@ export async function buildBrandNewThing(
     title: "Should I continue with advanced or simple mode?",
     options: [
       {
-        label: "Advanced",
+        label: pc.bold(pc.greenBright("Advanced")),
         value: "recommended",
-        hint: pc.greenBright("✨ recommended"),
+        hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
       },
       {
-        label: "Simple",
+        label: pc.dim(pc.red("Simple")),
         value: "offline",
-        hint: pc.redBright("🚨 experimental, offline"),
+        hint: pc.red("🚨 experimental, offline"),
       },
     ],
   });

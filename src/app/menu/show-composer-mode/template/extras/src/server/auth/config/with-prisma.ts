@@ -1,7 +1,9 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
+// @ts-expect-error TODO: fix ts
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
+// @ts-expect-error TODO: fix ts
 import { db } from "~/server/db";
 
 /**
@@ -11,6 +13,7 @@ import { db } from "~/server/db";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Session extends DefaultSession {
     user: {
       id: string;
@@ -44,7 +47,9 @@ export const authConfig = {
      */
   ],
   adapter: PrismaAdapter(db),
+
   callbacks: {
+    // @ts-expect-error TODO: fix ts
     session: ({ session, user }) => ({
       ...session,
       user: {

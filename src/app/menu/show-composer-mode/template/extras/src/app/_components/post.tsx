@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { api } from "~/trpc/react";
+import { api } from "../../utils/api.js";
 import styles from "../index.module.css";
 
 export function LatestPost() {
@@ -18,13 +18,13 @@ export function LatestPost() {
   });
 
   return (
-    <div className={styles.showcaseContainer}>
+    <div className={styles["showcaseContainer"]}>
       {latestPost ? (
-        <p className={styles.showcaseText}>
+        <p className={styles["showcaseText"]}>
           Your most recent post: {latestPost.name}
         </p>
       ) : (
-        <p className={styles.showcaseText}>You have no posts yet.</p>
+        <p className={styles["showcaseText"]}>You have no posts yet.</p>
       )}
 
       <form
@@ -32,18 +32,20 @@ export function LatestPost() {
           e.preventDefault();
           createPost.mutate({ name });
         }}
-        className={styles.form}
+        className={styles["form"]}
       >
         <input
           type="text"
           placeholder="Title"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className={styles.input}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
+          className={styles["input"]}
         />
         <button
           type="submit"
-          className={styles.submitButton}
+          className={styles["submitButton"]}
           disabled={createPost.isPending}
         >
           {createPost.isPending ? "Submitting..." : "Submit"}

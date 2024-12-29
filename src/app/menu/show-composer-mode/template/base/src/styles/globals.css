@@ -2,7 +2,9 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+  font-family:
+    -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    /* biome-ignore lint/suspicious/noDuplicateFontNames: <explanation> */
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 

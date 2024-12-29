@@ -1,8 +1,9 @@
-import path from "pathe";
 import fs from "fs-extra";
+import path from "pathe";
 
-import { PKG_ROOT } from "~/consts.js";
-import { type InstallerOptions } from "~/installers/index.js";
+import { PKG_ROOT } from "~/app/db/constants.js";
+
+import { type InstallerOptions } from "../opts.js";
 
 type SelectBoilerplateProps = Required<
   Pick<InstallerOptions, "packages" | "projectDir">

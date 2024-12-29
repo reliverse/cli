@@ -1,10 +1,10 @@
-import React from "react";
-import "~/styles/globals.css";
-
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "~/trpc/react";
+import "~/styles/globals.css";
+
+import React from "react";
+
+import { TRPCReactProvider } from "../../trpc/react.jsx";
 
 export const metadata: Metadata = {
   title: "@reliverse/cli",
@@ -16,7 +16,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
+    <html lang="en">
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>

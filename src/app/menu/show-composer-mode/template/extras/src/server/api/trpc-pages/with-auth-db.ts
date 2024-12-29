@@ -13,7 +13,9 @@ import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+// @ts-expect-error TODO: fix ts
 import { auth } from "~/server/auth";
+// @ts-expect-error TODO: fix ts
 import { db } from "~/server/db";
 
 /**
