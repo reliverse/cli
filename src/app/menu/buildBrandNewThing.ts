@@ -5,9 +5,11 @@ import {
 } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import { REPO_URLS } from "~/app/db/constants.js";
+import { DEFAULT_APP_NAME, REPO_URLS } from "~/app/db/constants.js";
 import { type ReliverseConfig, type TemplateOption } from "~/types.js";
 import { relinka } from "~/utils/console.js";
+
+import type { CliResults } from "./show-composer-mode/opts.js";
 
 import {
   randomProjectFrameworkTitle,
@@ -16,6 +18,7 @@ import {
   randomWebsiteDetailsTitle,
 } from "../db/messages.js";
 import { createWebProject } from "./createWebProject.js";
+import { showComposerMode } from "./show-composer-mode/mod.js";
 
 const TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
@@ -264,37 +267,64 @@ export async function buildBrandNewThing(
     projectFramework = result;
   }
 
-  await selectPrompt({
-    endTitle,
-    title:
-      randomWebsiteCategoryTitle[
-        Math.floor(Math.random() * randomWebsiteCategoryTitle.length)
-      ]!,
-    options: [
-      { label: "E-commerce", value: "e-commerce" },
-      {
-        label: "...",
-        hint: pc.dim("coming soon"),
-        value: "coming-soon",
-        disabled: true,
-      },
-    ],
-  });
-
   // Should cli continue with recommended or offline mode?
   const shouldContinueWithRecommended = await selectPrompt({
     endTitle,
     title: "Should I continue with advanced or simple mode?",
     options: [
-      { label: "Advanced", value: "recommended", hint: "recommended" },
-      { label: "Simple", value: "offline", hint: "offline" },
+      {
+        label: "Advanced",
+        value: "recommended",
+        hint: pc.greenBright("✨ recommended"),
+      },
+      {
+        label: "Simple",
+        value: "offline",
+        hint: pc.redBright("🚨 experimental, offline"),
+      },
     ],
   });
 
   if (shouldContinueWithRecommended === "offline") {
-    relinka("error", "Offline mode not implemented yet");
+    const cliResults: CliResults = {
+      appName: DEFAULT_APP_NAME,
+      packages: [],
+      flags: {
+        noGit: false,
+        noInstall: false,
+        default: false,
+        importAlias: "",
+        framework: true,
+        CI: false,
+        tailwind: false,
+        trpc: false,
+        prisma: false,
+        drizzle: false,
+        nextAuth: false,
+        dbProvider: "postgres",
+      },
+      databaseProvider: "postgres",
+    };
+    await showComposerMode(cliResults);
     return;
   } else {
+    await selectPrompt({
+      endTitle,
+      title:
+        randomWebsiteCategoryTitle[
+          Math.floor(Math.random() * randomWebsiteCategoryTitle.length)
+        ]!,
+      options: [
+        { label: "E-commerce", value: "e-commerce" },
+        {
+          label: "...",
+          hint: pc.dim("coming soon"),
+          value: "coming-soon",
+          disabled: true,
+        },
+      ],
+    });
+
     // Get template from config or prompt
     let template: TemplateOption;
     if (config?.experimental?.projectTemplate) {

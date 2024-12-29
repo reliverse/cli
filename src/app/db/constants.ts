@@ -1,4 +1,8 @@
+import path from "pathe";
+
 export const isVerboseEnabled = false;
+
+export const PKG_ROOT = path.resolve(__dirname, "../../../..");
 
 // File conflict settings, useful for prompting user to resolve conflicts during project setup
 export const FILE_CONFLICTS = [

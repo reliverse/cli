@@ -1,81 +1,39 @@
 import * as p from "@clack/prompts";
-import chalk from "chalk";
+import pc from "picocolors";
 
-import { CREATE_RELIVERSE_APP, DEFAULT_APP_NAME } from "~/app/db/constants.js";
+import { CREATE_RELIVERSE_APP } from "~/app/db/constants.js";
+import { relinka } from "~/utils/console.js";
 
 import {
+  defaultOptions,
   type AvailablePackages,
+  type CliResults,
   type DatabaseProvider,
-} from "./helpers/installers/index.js";
-import { getUserPkgManager } from "./helpers/utils/getUserPkgManager.js";
-import { IsTTYError } from "./helpers/utils/isTTYError.js";
-import { logger } from "./helpers/utils/logger.js";
-import { validateAppName } from "./helpers/utils/validateAppName.js";
-import { validateImportAlias } from "./helpers/utils/validateImportAlias.js";
+} from "./opts.js";
+import { getUserPkgManager } from "./utils/getUserPkgManager.js";
+import { IsTTYError } from "./utils/isTTYError.js";
+import { validateAppName } from "./utils/validateAppName.js";
+import { validateImportAlias } from "./utils/validateImportAlias.js";
 
-type CliFlags = {
-  noGit: boolean;
-  noInstall: boolean;
-  default: boolean;
-  importAlias: string;
-
-  /** @internal Used in CI. */
-  CI: boolean;
-  /** @internal Used in CI. */
-  tailwind: boolean;
-  /** @internal Used in CI. */
-  trpc: boolean;
-  /** @internal Used in CI. */
-  prisma: boolean;
-  /** @internal Used in CI. */
-  drizzle: boolean;
-  /** @internal Used in CI. */
-  nextAuth: boolean;
-  /** @internal Used in CI. */
-  framework: boolean;
-  /** @internal Used in CI. */
-  dbProvider: DatabaseProvider;
-};
-
-type CliResults = {
-  appName: string;
-  packages: AvailablePackages[];
-  flags: CliFlags;
-  databaseProvider: DatabaseProvider;
-};
-
-const defaultOptions: CliResults = {
-  appName: DEFAULT_APP_NAME,
-  packages: ["nextAuth", "prisma", "tailwind", "trpc"],
-  flags: {
-    noGit: false,
-    noInstall: false,
-    default: false,
-    CI: false,
-    tailwind: false,
-    trpc: false,
-    prisma: false,
-    drizzle: false,
-    nextAuth: false,
-    importAlias: "~/",
-    framework: false,
-    dbProvider: "sqlite",
-  },
-  databaseProvider: "sqlite",
-};
-
-export async function runComposerMode(): Promise<CliResults> {
+export async function runComposerMode(
+  cliResults: CliResults,
+): Promise<CliResults> {
   // Explained below why this is in a try/catch block
   try {
     if (process.env["TERM_PROGRAM"]?.toLowerCase().includes("mintty")) {
-      logger.warn(`  WARNING: It looks like you are using MinTTY, which is non-interactive. This is most likely because you are
+      relinka(
+        "warn",
+        `  WARNING: It looks like you are using MinTTY, which is non-interactive. This is most likely because you are
   using Git Bash. If that's that case, please use Git Bash from another terminal, such as Windows Terminal. Alternatively, you
-  can provide the arguments from the CLI directly: https://docs.reliverse.org/en/installation#experimental-usage to skip the prompts.`);
+  can provide the arguments from the CLI directly: https://docs.reliverse.org/en/installation#experimental-usage to skip the prompts.`,
+      );
 
       throw new IsTTYError("Non-interactive environment");
     }
 
     // if --CI flag is set, we are running in CI mode and should not prompt the user
+    // const isCI = process.argv.includes("--CI");
+    const cliProvidedName = cliResults.appName;
 
     const pkgManager = getUserPkgManager();
 
@@ -100,9 +58,10 @@ export async function runComposerMode(): Promise<CliResults> {
           });
         },
         _: ({ results }) => {
-          results.language === "javascript"
-            ? p.note(chalk.redBright("Wrong answer, using TypeScript instead"))
-            : undefined;
+          if (results.language === "javascript") {
+            p.note(pc.redBright("Wrong answer, using TypeScript instead"));
+          }
+          return undefined;
         },
         styling: () => {
           return p.confirm({
@@ -213,8 +172,11 @@ export async function runComposerMode(): Promise<CliResults> {
     // If the user is not calling @reliverse/cli from an interactive terminal, inquirer will throw an IsTTYError
     // If this happens, we catch the error, tell the user what has happened, and then continue to run the program with a default Reliverse app
     if (err instanceof IsTTYError) {
-      logger.warn(`
-  ${CREATE_RELIVERSE_APP} needs an interactive terminal to provide options`);
+      relinka(
+        "warn",
+        `
+  ${CREATE_RELIVERSE_APP} needs an interactive terminal to provide options`,
+      );
 
       const shouldContinue = await p.confirm({
         message: "Continue scaffolding a default Reliverse app?",
@@ -222,11 +184,12 @@ export async function runComposerMode(): Promise<CliResults> {
       });
 
       if (!shouldContinue) {
-        logger.info("Exiting...");
+        relinka("info", "Exiting...");
         process.exit(0);
       }
 
-      logger.info(
+      relinka(
+        "info",
         `Bootstrapping a default Reliverse app in ./${cliResults.appName}`,
       );
     } else {

@@ -2,7 +2,7 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
-import { logger } from "./app/menu/show-composer-mode/helpers/utils/logger.js";
+import { logger } from "./app/menu/show-composer-mode/utils/logger.js";
 
 const main = defineCommand({
   meta: {
@@ -22,7 +22,7 @@ const main = defineCommand({
 });
 
 await runMain(main).catch((error: unknown) => {
-  logger.error("Aborting...");
+  relinka("error", "Aborting...");
   errorHandler(
     error instanceof Error ? error : new Error(String(error)),
     "Errors can be reported at https://github.com/reliverse/cli",

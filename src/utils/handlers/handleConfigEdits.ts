@@ -136,12 +136,13 @@ export async function handleConfigEditing(cwd: string) {
       const target = await selectPrompt({
         title: "Select TypeScript target:",
         options: [
+          { label: "ES2023", value: "ES2023" },
           { label: "ES2022", value: "ES2022" },
           { label: "ES2021", value: "ES2021" },
           { label: "ES2020", value: "ES2020" },
           { label: "ES2019", value: "ES2019" },
         ],
-        defaultValue: tsConfig.compilerOptions?.target ?? "ES2022",
+        defaultValue: tsConfig.compilerOptions?.target ?? "ES2023",
       });
 
       tsConfig.compilerOptions = {

@@ -2,22 +2,22 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { createProject } from "./helpers/handlers/createProject.js";
-import { initializeGit } from "./helpers/handlers/git.js";
-import { installDependencies } from "./helpers/handlers/installDependencies.js";
-import { logNextSteps } from "./helpers/handlers/logNextSteps.js";
-import { setImportAlias } from "./helpers/handlers/setImportAlias.js";
-import { buildPkgInstallerMap } from "./helpers/installers/index.js";
-import { getUserPkgManager } from "./helpers/utils/getUserPkgManager.js";
-import { parseNameAndPath } from "./helpers/utils/parseNameAndPath.js";
-import { renderTitle } from "./helpers/utils/renderTitle.js";
+import { createProject } from "./helpers/createProject.js";
+import { initializeGit } from "./helpers/git.js";
+import { installDependencies } from "./helpers/installDependencies.js";
+import { logNextSteps } from "./helpers/logNextSteps.js";
+import { setImportAlias } from "./helpers/setImportAlias.js";
+import { runComposerMode } from "./impl.js";
+import { buildPkgInstallerMap, type CliResults } from "./opts.js";
+import { getUserPkgManager } from "./utils/getUserPkgManager.js";
+import { parseNameAndPath } from "./utils/parseNameAndPath.js";
+import { renderTitle } from "./utils/renderTitle.js";
 import {
   getNpmVersion,
   renderVersionWarning,
-} from "./helpers/utils/renderVersionWarning.js";
-import { runComposerMode } from "./impl.js";
+} from "./utils/renderVersionWarning.js";
 
-export async function showComposerMode() {
+export async function showComposerMode(cliResults: CliResults) {
   const npmVersion = await getNpmVersion();
   const pkgManager = getUserPkgManager();
   renderTitle();
@@ -30,7 +30,7 @@ export async function showComposerMode() {
     packages,
     flags: { noGit, noInstall, importAlias, framework },
     databaseProvider,
-  } = await runComposerMode();
+  } = await runComposerMode(cliResults);
 
   const usePackages = buildPkgInstallerMap(packages, databaseProvider);
 

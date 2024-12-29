@@ -15,7 +15,7 @@ export default defineBuildConfig({
     emitCJS: false,
     esbuild: {
       exclude: ["**/*.test.ts"],
-      target: "es2022",
+      target: "es2023",
       minify: true,
     },
   },
