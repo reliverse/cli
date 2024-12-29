@@ -23,12 +23,16 @@ export async function generateDefaultRulesForProject(
       packageJson = safeDestr(await fs.readFile(packageJsonPath, "utf-8"));
     }
   } catch (error) {
-    relinka("error", "Error reading package.json:", error.toString());
+    relinka(
+      "error",
+      "Error reading package.json:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 
   const rules = await getDefaultReliverseConfig(
-    packageJson.name || path.basename(cwd),
-    packageJson.author || "user",
+    (packageJson.name as string) ?? path.basename(cwd),
+    (packageJson.author as string) ?? "user",
     projectType,
   );
 
@@ -41,23 +45,41 @@ export async function generateDefaultRulesForProject(
   );
   const hasClerk = packageJson.dependencies?.["@clerk/nextjs"];
 
-  rules.features = {
-    ...rules.features,
+  if (!rules.experimental) {
+    rules.experimental = {};
+  }
+
+  rules.experimental.features = {
+    ...rules.experimental.features,
     i18n: hasI18n,
-    database: hasPrisma || hasDrizzle,
-    authentication: hasNextAuth || !!hasClerk,
+    database: hasPrisma ?? hasDrizzle,
+    authentication: hasNextAuth ?? !!hasClerk,
+    analytics: false,
+    themeMode: "dark-light",
+    api: false,
+    testing: false,
+    docker: false,
+    ci: false,
+    commands: [],
+    webview: [],
+    language: [],
+    themes: [],
   };
 
+  if (!rules.experimental.preferredLibraries) {
+    rules.experimental.preferredLibraries = {};
+  }
+
   if (hasPrisma) {
-    rules.preferredLibraries.database = "prisma";
+    rules.experimental.preferredLibraries.database = "prisma";
   } else if (hasDrizzle) {
-    rules.preferredLibraries.database = "drizzle";
+    rules.experimental.preferredLibraries.database = "drizzle";
   }
 
   if (hasNextAuth) {
-    rules.preferredLibraries.authentication = "next-auth";
+    rules.experimental.preferredLibraries.authentication = "next-auth";
   } else if (hasClerk) {
-    rules.preferredLibraries.authentication = "clerk";
+    rules.experimental.preferredLibraries.authentication = "clerk";
   }
 
   return rules;

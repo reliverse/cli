@@ -17,22 +17,22 @@ export async function showRelivatorFeatEditor() {
   });
 
   if (option === "addNewFeature") {
-    await addNewRelivatorFeature();
+    addNewRelivatorFeature();
   } else if (option === "removeFeature") {
-    await removeRelivatorFeature();
+    removeRelivatorFeature();
   } else if (option === "replaceFeature") {
-    await replaceRelivatorFeature();
+    replaceRelivatorFeature();
   }
 }
 
-async function addNewRelivatorFeature() {
+function addNewRelivatorFeature() {
   relinka("info", "Add a new feature");
 }
 
-async function removeRelivatorFeature() {
+function removeRelivatorFeature() {
   relinka("info", "Remove a feature");
 }
 
-async function replaceRelivatorFeature() {
+function replaceRelivatorFeature() {
   relinka("info", "Replace a feature");
 }

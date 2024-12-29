@@ -27,9 +27,10 @@ const npmFilesToDelete: string[] = [
   "types/internal.d.ts",
   "**/*.temp.js",
   "**/*.temp.d.ts",
+  "**/*.txt",
 ];
 
-const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts"];
+const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts", "**/*.txt"];
 
 /**
  * Deletes files matching the provided patterns within the base directory.
@@ -53,11 +54,19 @@ async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
         await fs.remove(filePath);
         relinka("info-verbose", `Deleted: ${filePath}`);
       } catch (error) {
-        relinka("error", `Error deleting file ${filePath}:`, error.toString());
+        relinka(
+          "error",
+          `Error deleting file ${filePath}:`,
+          error instanceof Error ? error.message : String(error),
+        );
       }
     }
   } catch (error) {
-    relinka("error", "Error processing deletion patterns:", error.toString());
+    relinka(
+      "error",
+      "Error processing deletion patterns:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
@@ -85,7 +94,7 @@ function replaceImportPaths(
       importPath: string,
       suffix: string,
     ): string => {
-      const relativePathToRoot: string = path.relative(fileDir, rootDir) || ".";
+      const relativePathToRoot: string = path.relative(fileDir, rootDir) ?? ".";
       // Remove leading '~/' or '~' from importPath
       importPath = importPath.replace(/^~\/?/, "");
       let newPath: string = path.join(relativePathToRoot, importPath);
@@ -117,8 +126,8 @@ function replaceImportPaths(
  * @param filePath - The path of the file being processed.
  * @returns The content without unwanted comments.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function removeComments(content: string, filePath: string): string {
+// function removeComments(content: string, filePath: string): string {
+function removeComments(content: string): string {
   // When not in JSR mode, strip all comments using strip-comments
   // const stripped = strip(content, {
   //   line: true,
@@ -173,7 +182,8 @@ async function processFiles(dir: string): Promise<void> {
         );
 
         if (!isJSR) {
-          updatedContent = removeComments(updatedContent, filePath);
+          // updatedContent = removeComments(updatedContent, filePath);
+          updatedContent = removeComments(updatedContent);
         }
 
         if (content !== updatedContent) {
@@ -184,7 +194,7 @@ async function processFiles(dir: string): Promise<void> {
         relinka(
           "error",
           `Error processing file ${filePath}:`,
-          error.toString(),
+          error instanceof Error ? error.message : String(error),
         );
       }
     }
@@ -205,7 +215,7 @@ async function removeOutputDirectory(): Promise<void> {
     relinka(
       "error",
       `Error removing '${outputDir}' directory:`,
-      error.toString(),
+      error instanceof Error ? error.message : String(error),
     );
     throw error;
   }
@@ -225,7 +235,7 @@ async function copySrcToOutput(): Promise<void> {
     relinka(
       "error",
       `Error copying 'src' to '${outputDir}':`,
-      error.toString(),
+      error instanceof Error ? error.message : String(error),
     );
     throw error;
   }
@@ -286,4 +296,6 @@ await optimizeBuildForProduction(outputDir)
         );
       });
   })
-  .catch((error: Error) => relinka("error", error.message));
+  .catch((error: unknown) => {
+    relinka("error", error instanceof Error ? error.message : String(error));
+  });

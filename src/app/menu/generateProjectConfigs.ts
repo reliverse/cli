@@ -3,8 +3,8 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { CONFIG_CATEGORIES } from "~/app/menu/data/constants.js";
-import { type ReliverseConfig } from "~/types.js";
+import { CONFIG_CATEGORIES } from "~/app/db/constants.js";
+import { type ReliverseConfig, type VSCodeSettings } from "~/types.js";
 import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
 import { getDefaultReliverseConfig } from "~/utils/configs/reliverseReadWrite.js";
 import { relinka } from "~/utils/console.js";
@@ -13,7 +13,7 @@ async function generateReliverseConfig(
   targetDir: string,
   overwrite: boolean,
 ): Promise<void> {
-  const configPath = path.join(targetDir, "reliverse.json");
+  const configPath = path.join(targetDir, ".reliverse");
 
   const configContent = { ...DEFAULT_CONFIG };
 
@@ -21,39 +21,49 @@ async function generateReliverseConfig(
   const rc = await getDefaultReliverseConfig("my-app", "user");
   Object.assign(configContent, {
     // Project details
-    projectName: rc.projectName,
-    projectAuthor: rc.projectAuthor,
-    projectDescription: rc.projectDescription,
-    projectVersion: rc.projectVersion,
-    projectLicense: rc.projectLicense,
-    projectRepository: rc.projectRepository,
+    projectName: rc.experimental?.projectName,
+    projectAuthor: rc.experimental?.projectAuthor,
+    projectDescription: rc.experimental?.projectDescription,
+    projectVersion: rc.experimental?.projectVersion,
+    projectLicense: rc.experimental?.projectLicense,
+    projectRepository: rc.experimental?.projectRepository,
 
     // Project features
-    features: rc.features,
+    features: rc.experimental?.features,
 
     // Development preferences
-    projectFramework: rc.projectFramework,
-    projectFrameworkVersion: rc.projectFrameworkVersion,
-    nodeVersion: rc.nodeVersion,
-    runtime: rc.runtime,
-    projectPackageManager: rc.projectPackageManager,
-    monorepo: rc.monorepo,
-    preferredLibraries: rc.preferredLibraries,
-    codeStyle: rc.codeStyle,
+    projectFramework: rc.experimental?.projectFramework,
+    projectFrameworkVersion: rc.experimental?.projectFrameworkVersion,
+    nodeVersion: rc.experimental?.nodeVersion,
+    runtime: rc.experimental?.runtime,
+    projectPackageManager: rc.experimental?.projectPackageManager,
+    monorepo: rc.experimental?.monorepo,
+    preferredLibraries: rc.experimental?.preferredLibraries,
+    codeStyle: rc.experimental?.codeStyle,
 
     // Config revalidation
-    configLastRevalidate: rc.configLastRevalidate,
-    configRevalidateFrequency: rc.configRevalidateFrequency,
+    configLastRevalidate: rc.experimental?.configLastRevalidate,
+    configRevalidateFrequency: rc.experimental?.configRevalidateFrequency,
+
+    // Unstable features
+    experimental: {
+      skipPromptsUseAutoBehavior:
+        rc.experimental?.skipPromptsUseAutoBehavior ?? false,
+
+      // Generation preferences
+      deployBehavior: rc.experimental?.deployBehavior ?? "prompt",
+      depsBehavior: rc.experimental?.depsBehavior ?? "prompt",
+      gitBehavior: rc.experimental?.gitBehavior ?? "prompt",
+      i18nBehavior: rc.experimental?.i18nBehavior ?? "prompt",
+      scriptsBehavior: rc.experimental?.scriptsBehavior ?? "prompt",
+    },
   });
 
-  if (overwrite || !(await fs.pathExists(configPath))) {
+  if (overwrite ?? !(await fs.pathExists(configPath))) {
     await fs.writeFile(configPath, JSON.stringify(configContent, null, 2));
-    relinka(
-      "success-verbose",
-      "Generated reliverse.json with flattened config",
-    );
+    relinka("success-verbose", "Generated .reliverse with flattened config");
   } else {
-    // If reliverse.json already exists, we can attempt to merge configs
+    // If .reliverse already exists, we can attempt to merge configs
     try {
       const existingContent = destr(await fs.readFile(configPath, "utf-8"));
       if (existingContent && typeof existingContent === "object") {
@@ -64,13 +74,13 @@ async function generateReliverseConfig(
         await fs.writeFile(configPath, JSON.stringify(mergedContent, null, 2));
         relinka(
           "success-verbose",
-          "Updated existing reliverse.json with flattened config",
+          "Updated existing .reliverse with flattened config",
         );
       }
     } catch (error) {
       relinka(
         "warn-verbose",
-        "Error reading existing reliverse.json, creating new one",
+        "Error reading existing .reliverse, creating new one",
         error instanceof Error ? error.message : String(error),
       );
       await fs.writeFile(configPath, JSON.stringify(configContent, null, 2));
@@ -83,7 +93,7 @@ async function generateBiomeConfig(
   overwrite: boolean,
 ): Promise<void> {
   const biomePath = path.join(targetDir, "biome.json");
-  if (overwrite || !(await fs.pathExists(biomePath))) {
+  if (overwrite ?? !(await fs.pathExists(biomePath))) {
     const biomeConfig = {
       $schema: "https://biomejs.dev/schemas/1.5.3/schema.json",
       organizeImports: {
@@ -116,7 +126,7 @@ async function generateVSCodeSettings(
   await fs.ensureDir(vscodePath);
 
   const settingsPath = path.join(vscodePath, "settings.json");
-  const defaultSettings = {
+  const defaultSettings: VSCodeSettings = {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "biomejs.biome",
     "editor.codeActionsOnSave": {
@@ -149,7 +159,8 @@ async function generateVSCodeSettings(
 
       if (existingSettings && typeof existingSettings === "object") {
         const existingCodeActions =
-          existingSettings["editor.codeActionsOnSave"] || {};
+          // @ts-expect-error TODO: fix ts
+          existingSettings["editor.codeActionsOnSave"] ?? {};
         settings = {
           ...defaultSettings,
           ...existingSettings,
@@ -202,9 +213,9 @@ async function generateConfigFiles(
           );
         };
 
-        // Removed .reliverserules since it's merged into reliverse.json
+        // Removed .reliverserules since it's merged into .reliverse
         const configGenerators = {
-          "reliverse.json": () => generateReliverseConfig(targetDir, overwrite),
+          ".reliverse": () => generateReliverseConfig(targetDir, overwrite),
           "biome.json": () => generateBiomeConfig(targetDir, overwrite),
           "settings.json": () => generateVSCodeSettings(targetDir, overwrite),
         };
@@ -243,7 +254,7 @@ export async function generateProjectConfigs(targetDir: string): Promise<void> {
 
     if (existingFiles.length > 0) {
       relinka(
-        "info",
+        "info-verbose",
         `Found ${existingFiles.length} existing configuration files`,
       );
       // Generate missing files without overwriting existing ones

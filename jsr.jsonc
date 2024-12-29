@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.3.25",
+  "version": "1.4.3",
   "author": "blefnk",
   "license": "MIT",
   "exports": "./dist-jsr/main.ts",
@@ -30,7 +30,8 @@
       "eslint.config.js",
       "tsconfig.json",
       "cspell.json",
-      "reset.d.ts"
+      "reset.d.ts",
+      "tests-runtime/**"
     ]
   }
 }

@@ -8,7 +8,7 @@ export default defineCommand({
     description: "Provides information on how to open Reliverse Studio",
     hidden: true,
   },
-  run: async () => {
+  run: () => {
     relinka(
       "info",
       "Reliverse Studio",

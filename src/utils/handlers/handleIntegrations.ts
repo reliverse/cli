@@ -75,7 +75,7 @@ export async function handleIntegrations(cwd: string) {
     ],
   });
 
-  const options = integrationOptions[category];
+  const options = integrationOptions[category]!;
   const selectedIntegration = await selectPrompt({
     title: `Select ${category} integration:`,
     options: options.map((opt) => ({
@@ -100,6 +100,9 @@ export async function handleIntegrations(cwd: string) {
   // Handle database-specific sub-options
   if (category === "database" && selectedIntegration === "drizzle") {
     const option = options.find((opt) => opt.value === "drizzle");
+    if (!option?.subOptions) {
+      throw new Error("Database configuration not found");
+    }
     const dbType = await selectPrompt({
       title: "Select database type:",
       options: option.subOptions.map((sub) => ({
@@ -110,26 +113,38 @@ export async function handleIntegrations(cwd: string) {
 
     // Handle provider selection for PostgreSQL
     if (dbType === "postgres") {
+      const postgresOption = option.subOptions.find(
+        (sub) => sub.value === "postgres",
+      );
+      if (!postgresOption?.providers) {
+        throw new Error("PostgreSQL providers not found");
+      }
       const provider = await selectPrompt({
         title: "Select database provider:",
-        options: option.subOptions
-          .find((sub) => sub.value === "postgres")
-          .providers.map((p) => ({ label: p, value: p.toLowerCase() })),
+        options: postgresOption.providers.map((p) => ({
+          label: p,
+          value: p.toLowerCase(),
+        })),
       });
 
       const config = {
-        ...INTEGRATION_CONFIGS.drizzle,
+        ...INTEGRATION_CONFIGS["drizzle"],
+        name: "drizzle",
         dependencies: [
-          ...INTEGRATION_CONFIGS.drizzle.dependencies,
+          ...INTEGRATION_CONFIGS["drizzle"]!.dependencies,
           provider === "neon" ? "@neondatabase/serverless" : "postgres",
         ],
+        files: [],
+        devDependencies: [],
+        scripts: {},
+        envVars: {},
       };
 
       await installIntegration(cwd, config);
       return;
     }
 
-    await installIntegration(cwd, INTEGRATION_CONFIGS.drizzle);
+    await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"]!);
     return;
   }
 

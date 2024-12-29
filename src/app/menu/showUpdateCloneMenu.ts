@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import { getRepoUrl } from "~/app/menu/data/constants.js";
+import { getRepoUrl } from "~/app/db/constants.js";
 import { relinka } from "~/utils/console.js";
 import { downloadGitRepo } from "~/utils/downloadGitRepo.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
@@ -11,6 +11,16 @@ import { replaceImportSymbol } from "~/utils/handlers/codemods/replaceImportSymb
 import { validate } from "~/utils/validate.js";
 
 const cwd = getCurrentWorkingDirectory();
+
+type UpdateConfig = {
+  actions: {
+    type: string;
+    params: {
+      repo: string;
+      to: string;
+    };
+  }[];
+};
 
 export async function showUpdateCloneMenu(isDev: boolean) {
   relinka(
@@ -65,7 +75,9 @@ async function downloadAndRunConfig(repoShortUrl: string) {
 }
 
 async function downloadFileFromUrl(url: string, destinationPath: string) {
-  const response = await ofetch(url);
+  const response = await ofetch<{ arrayBuffer: () => Promise<ArrayBuffer> }>(
+    url,
+  );
   const fileBuffer = await response.arrayBuffer();
   await fs.writeFile(destinationPath, Buffer.from(fileBuffer));
   relinka("info", `Downloaded the update configuration to ${destinationPath}`);
@@ -77,11 +89,11 @@ async function loadAndRunConfig(configPath: string) {
     return;
   }
 
-  const config = await fs.readJson(configPath);
+  const config = (await fs.readJson(configPath)) as UpdateConfig;
   await executeActions(config.actions);
 }
 
-async function executeActions(actions: any[]) {
+async function executeActions(actions: UpdateConfig["actions"]) {
   for (const action of actions) {
     switch (action.type) {
       case "replaceImportSymbol":

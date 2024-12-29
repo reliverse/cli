@@ -16,18 +16,24 @@ function parsePrismaSchema(content: string): PrismaModel[] {
     const fields: PrismaField[] = [];
     let fieldMatch;
 
-    while ((fieldMatch = fieldRegex.exec(fieldsStr)) !== null) {
-      const [_, name, type, isList, isOptional, attributes] = fieldMatch;
-      fields.push({
-        name,
-        type,
-        isOptional: !!isOptional,
-        isList: !!isList,
-        attributes: parseAttributes(attributes || ""),
-      });
+    if (fieldsStr) {
+      while ((fieldMatch = fieldRegex.exec(fieldsStr)) !== null) {
+        const [_, name, type, isList, isOptional, attributes] = fieldMatch;
+        if (name && type) {
+          fields.push({
+            name,
+            type,
+            isOptional: !!isOptional,
+            isList: !!isList,
+            attributes: parseAttributes(attributes ?? ""),
+          });
+        }
+      }
     }
 
-    models.push({ name: modelName, fields });
+    if (modelName) {
+      models.push({ name: modelName, fields });
+    }
   }
 
   return models;
@@ -40,7 +46,9 @@ function parseAttributes(attributesStr: string): Record<string, any> {
 
   while ((match = attrRegex.exec(attributesStr)) !== null) {
     const [_, name, args] = match;
-    attributes[name] = args ? parseAttributeArgs(args) : true;
+    if (name) {
+      attributes[name] = args ? parseAttributeArgs(args) : true;
+    }
   }
 
   return attributes;
@@ -106,7 +114,7 @@ function convertPrismaToDrizzleType(
     },
   };
 
-  return typeMap[dbType][field.type] || "text";
+  return typeMap[dbType]?.[field.type] ?? "text";
 }
 
 function generateDrizzleSchema(models: PrismaModel[], dbType: string): string {
@@ -121,21 +129,24 @@ function generateDrizzleSchema(models: PrismaModel[], dbType: string): string {
 
       let fieldDef = `${field.name}: ${drizzleType}("${field.name}")`;
 
-      if (field.attributes.id) {
+      if (field.attributes["id"]) {
         fieldDef += ".primaryKey()";
       }
-      if (field.attributes.unique) {
+      if (field.attributes["unique"]) {
         fieldDef += ".unique()";
       }
       if (!field.isOptional) {
         fieldDef += ".notNull()";
       }
-      if (field.attributes.default) {
-        if (field.type === "DateTime" && field.attributes.default === "now()") {
+      if (field.attributes["default"]) {
+        if (
+          field.type === "DateTime" &&
+          field.attributes["default"] === "now()"
+        ) {
           fieldDef += ".default(sql`CURRENT_TIMESTAMP`)";
           imports.add("sql");
         } else {
-          fieldDef += `.default(${field.attributes.default})`;
+          fieldDef += `.default(${field.attributes["default"]})`;
         }
       }
 

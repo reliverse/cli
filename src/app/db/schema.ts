@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const configKeysTable = sqliteTable("config_keys", {

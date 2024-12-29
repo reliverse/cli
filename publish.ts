@@ -52,9 +52,9 @@ const main = defineCommand({
   },
 });
 
-await runMain(main).catch((error: Error) =>
+await runMain(main).catch((error: unknown) =>
   errorHandler(
-    error,
+    error instanceof Error ? error : new Error(String(error)),
     "If this issue is related to @reliverse/cli itself, please\n│  report the details at https://github.com/reliverse/cli",
   ),
 );

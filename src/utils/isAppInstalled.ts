@@ -18,7 +18,7 @@ export function isVSCodeInstalled(): boolean {
   };
 
   const pathsToCheck =
-    commonVSCodeInstallPaths[platform as "darwin" | "linux" | "win32"] || [];
+    commonVSCodeInstallPaths[platform as "darwin" | "linux" | "win32"] ?? [];
 
   return pathsToCheck.some((vsCodePath: string) =>
     fs.pathExistsSync(vsCodePath),

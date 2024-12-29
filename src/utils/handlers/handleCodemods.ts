@@ -1,6 +1,6 @@
 import { confirmPrompt, multiselectPrompt } from "@reliverse/prompts";
 
-import type { ReliverseConfig } from "~/types.js";
+import type { MonorepoType, ReliverseConfig } from "~/types.js";
 
 import { relinka } from "../console.js";
 import { convertCjsToEsm } from "./codemods/convertCjsToEsm.js";
@@ -15,10 +15,18 @@ import { replaceImportSymbol } from "./codemods/replaceImportSymbol.js";
 import { replaceWithModern } from "./codemods/replaceWithModern.js";
 
 export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
+  if (
+    !rules.experimental?.codeStyle ||
+    !rules.experimental?.preferredLibraries
+  ) {
+    relinka("error", "Missing required configuration in .reliverse");
+    return;
+  }
+
   const availableCodemods = [];
 
   // Push: Tailwind v3 to v4 conversion codemod
-  if (rules.preferredLibraries.styling === "tailwind") {
+  if (rules.experimental.preferredLibraries.styling === "tailwind") {
     availableCodemods.push({
       label: "Convert Tailwind CSS v3 to v4",
       value: "tailwind-v4",
@@ -27,11 +35,11 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: import symbol codemod if rule exists
-  if (rules.codeStyle.importSymbol?.length) {
+  if (rules.experimental.codeStyle.importSymbol?.length) {
     availableCodemods.push({
       label: "Replace Import Symbols",
       value: "import-symbols",
-      hint: `${rules.codeStyle.importSymbol.length} symbol(s) to replace`,
+      hint: `${rules.experimental.codeStyle.importSymbol.length} symbol(s) to replace`,
     });
   }
 
@@ -39,29 +47,31 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   availableCodemods.push({
     label: "Convert Quote Style",
     value: "quote-style",
-    hint: `Convert all quotes to ${rules.codeStyle.quoteMark}`,
+    hint: `Convert all quotes to ${rules.experimental.codeStyle.quoteMark}`,
   });
 
   // Push: import style codemod
-  if (rules.codeStyle.importOrRequire !== "mixed") {
+  const importStyle = rules.experimental.codeStyle.importOrRequire;
+  if (importStyle && (importStyle === "import" || importStyle === "require")) {
     availableCodemods.push({
       label: "Convert Import Style",
       value: "import-style",
-      hint: `Convert to ${rules.codeStyle.importOrRequire} style`,
+      hint: `Convert to ${importStyle} style`,
     });
   }
 
   // Push: Definitions converter codemod
-  if (rules.codeStyle.typeOrInterface !== "mixed") {
+  const typeStyle = rules.experimental.codeStyle.typeOrInterface;
+  if (typeStyle && (typeStyle === "type" || typeStyle === "interface")) {
     availableCodemods.push({
       label: "Convert Type Definitions",
       value: "type-definitions",
-      hint: `Convert to ${rules.codeStyle.typeOrInterface} style`,
+      hint: `Convert to ${typeStyle} style`,
     });
   }
 
   // Push: CJS to ESM codemod if enabled
-  if (rules.codeStyle.cjsToEsm) {
+  if (rules.experimental.codeStyle.cjsToEsm) {
     availableCodemods.push({
       label: "Convert CommonJS to ESM",
       value: "cjs-to-esm",
@@ -70,7 +80,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: runtime conversion codemods
-  if (rules.runtime === "nodejs") {
+  if (rules.experimental.runtime === "nodejs") {
     availableCodemods.push(
       {
         label: "Convert to Bun",
@@ -86,18 +96,18 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: monorepo conversion codemod if configured
-  if (rules.monorepo?.type) {
+  if (rules.experimental.monorepo?.type) {
     availableCodemods.push({
       label: "Convert to Monorepo",
       value: "single-to-monorepo",
-      hint: `Convert to ${rules.monorepo.type} monorepo`,
+      hint: `Convert to ${rules.experimental.monorepo.type} monorepo`,
     });
   }
 
   // Push: modernize codemod if any modernize options are enabled
   if (
-    rules.codeStyle.modernize &&
-    Object.values(rules.codeStyle.modernize).some(Boolean)
+    rules.experimental.codeStyle.modernize &&
+    Object.values(rules.experimental.codeStyle.modernize).some(Boolean)
   ) {
     availableCodemods.push({
       label: "Modernize Code",
@@ -107,7 +117,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: JS to TS codemod if enabled
-  if (rules.codeStyle.jsToTs) {
+  if (rules.experimental.codeStyle.jsToTs) {
     availableCodemods.push({
       label: "Convert JavaScript to TypeScript",
       value: "js-to-ts",
@@ -116,7 +126,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   if (availableCodemods.length === 0) {
-    relinka("info", "No codemods available in reliverse.json");
+    relinka("info", "No codemods available in .reliverse");
     return;
   }
 
@@ -138,7 +148,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
         await convertTailwindV3ToV4(cwd);
       }
     } else if (codemod === "import-symbols") {
-      const targetSymbol = rules.codeStyle.importSymbol;
+      const targetSymbol = rules.experimental.codeStyle.importSymbol;
       if (!targetSymbol) {
         continue;
       }
@@ -156,18 +166,21 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
           `Replaced detected import symbol with "${targetSymbol}"`,
         );
       }
-    } else if (codemod === "quote-style") {
+    } else if (
+      codemod === "quote-style" &&
+      rules.experimental.codeStyle.quoteMark
+    ) {
       const shouldConvert = await confirmPrompt({
-        title: `Convert all quotes to ${rules.codeStyle.quoteMark}?`,
+        title: `Convert all quotes to ${rules.experimental.codeStyle.quoteMark}?`,
         defaultValue: true,
       });
 
       if (shouldConvert) {
-        await convertQuoteStyle(cwd, rules.codeStyle.quoteMark);
+        await convertQuoteStyle(cwd, rules.experimental.codeStyle.quoteMark);
       }
     } else if (codemod === "import-style") {
-      const style = rules.codeStyle.importOrRequire;
-      if (style !== "mixed") {
+      const style = rules.experimental.codeStyle.importOrRequire;
+      if (style && (style === "import" || style === "require")) {
         const shouldConvert = await confirmPrompt({
           title: `Convert to ${style} style?`,
           defaultValue: true,
@@ -178,8 +191,8 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
         }
       }
     } else if (codemod === "type-definitions") {
-      const style = rules.codeStyle.typeOrInterface;
-      if (style !== "mixed") {
+      const style = rules.experimental.codeStyle.typeOrInterface;
+      if (style && (style === "type" || style === "interface")) {
         const shouldConvert = await confirmPrompt({
           title: `Convert TS definitions to ${style} style?`,
           defaultValue: true,
@@ -216,19 +229,25 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
       if (shouldConvert) {
         await convertRuntime(cwd, "deno");
       }
-    } else if (codemod === "single-to-monorepo" && rules.monorepo) {
-      const shouldConvert = await confirmPrompt({
-        title: `Convert to ${rules.monorepo.type} monorepo?`,
-        defaultValue: true,
-      });
+    } else if (
+      codemod === "single-to-monorepo" &&
+      rules.experimental.monorepo?.type
+    ) {
+      const monorepoType = rules.experimental.monorepo.type;
+      if (isValidMonorepoType(monorepoType)) {
+        const shouldConvert = await confirmPrompt({
+          title: `Convert to ${monorepoType} monorepo?`,
+          defaultValue: true,
+        });
 
-      if (shouldConvert) {
-        await convertToMonorepo(
-          cwd,
-          rules.monorepo.type,
-          rules.monorepo.packages,
-          rules.monorepo.sharedPackages,
-        );
+        if (shouldConvert) {
+          await convertToMonorepo(
+            cwd,
+            monorepoType,
+            rules.experimental.monorepo.packages,
+            rules.experimental.monorepo.sharedPackages,
+          );
+        }
       }
     } else if (codemod === "modernize") {
       const shouldModernize = await confirmPrompt({
@@ -250,4 +269,13 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
       }
     }
   }
+}
+
+function isValidMonorepoType(type: string): type is MonorepoType {
+  return [
+    "turborepo",
+    "moonrepo",
+    "bun-workspaces",
+    "pnpm-workspaces",
+  ].includes(type);
 }

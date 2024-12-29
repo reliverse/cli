@@ -21,13 +21,14 @@ export async function askVercelName(): Promise<string> {
     title: "What's your Vercel team name?",
     placeholder,
     content,
-    validate: (value) => {
+    validate: (value: string): string | boolean => {
       if (!value?.trim()) {
         return "Vercel username is required for deployment";
       }
       if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
         return "Invalid Vercel username format";
       }
+      return true;
     },
   });
 

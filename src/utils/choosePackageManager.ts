@@ -6,7 +6,7 @@ import { detectPackageManager } from "nypm";
 export async function choosePackageManager(
   cwd: string,
 ): Promise<PackageManagerName> {
-  const detectedPkgManager = (await detectPackageManager(cwd))?.name || "pnpm";
+  const detectedPkgManager = (await detectPackageManager(cwd))?.name ?? "pnpm";
 
   let pkgManager: PackageManagerName = detectedPkgManager;
 

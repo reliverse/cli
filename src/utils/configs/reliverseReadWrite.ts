@@ -11,7 +11,6 @@ import type { ReliverseConfig } from "~/types.js";
 
 import { relinka } from "../console.js";
 import { getBiomeConfig } from "./miscellaneousConfigHelpers.js";
-import { DEFAULT_CONFIG } from "./reliverseDefaultConfig.js";
 
 // Helper function to check if revalidation is needed
 export function shouldRevalidate(
@@ -45,65 +44,139 @@ export async function writeReliverseConfig(
   rules: ReliverseConfig,
 ): Promise<void> {
   try {
-    const configPath = path.join(targetDir, "reliverse.json");
-    // Convert rules to config format
+    const configPath = path.join(targetDir, ".reliverse");
     const config: ReliverseConfig = {
-      ...DEFAULT_CONFIG,
-      // Project details
-      projectName: rules.projectName,
-      projectAuthor: rules.projectAuthor,
-      projectDescription: rules.projectDescription,
-      projectVersion: rules.projectVersion,
-      projectLicense: rules.projectLicense,
-      projectRepository: rules.projectRepository,
+      experimental: {
+        // Project details
+        projectName: rules.experimental?.projectName ?? "unnamed-project",
+        projectAuthor: rules.experimental?.projectAuthor ?? "anonymous",
+        projectDescription: rules.experimental?.projectDescription ?? "",
+        projectVersion: rules.experimental?.projectVersion ?? "1.0.0",
+        projectLicense: rules.experimental?.projectLicense ?? "MIT",
+        projectRepository: rules.experimental?.projectRepository ?? "",
 
-      // Project features
-      features: rules.features,
+        // Project features
+        features: rules.experimental?.features ?? {
+          i18n: false,
+          analytics: false,
+          themeMode: "light",
+          authentication: false,
+          api: false,
+          database: false,
+          testing: false,
+          docker: false,
+          ci: false,
+          commands: [],
+          webview: [],
+          language: [],
+          themes: [],
+        },
 
-      // Development preferences
-      projectFramework: rules.projectFramework,
-      projectPackageManager: rules.projectPackageManager,
-      projectFrameworkVersion: rules.projectFrameworkVersion,
-      nodeVersion: rules.nodeVersion,
-      runtime: rules.runtime,
-      monorepo: rules.monorepo,
-      preferredLibraries: rules.preferredLibraries,
-      codeStyle: rules.codeStyle,
+        // Development preferences
+        projectFramework: rules.experimental?.projectFramework ?? "nextjs",
+        projectPackageManager:
+          rules.experimental?.projectPackageManager ?? "npm",
+        projectFrameworkVersion: rules.experimental?.projectFrameworkVersion,
+        nodeVersion: rules.experimental?.nodeVersion,
+        runtime: rules.experimental?.runtime,
+        monorepo: rules.experimental?.monorepo,
+        preferredLibraries: rules.experimental?.preferredLibraries,
+        codeStyle: rules.experimental?.codeStyle,
 
-      // Dependencies management
-      ignoreDependencies: rules.ignoreDependencies,
+        // Dependencies management
+        ignoreDependencies: rules.experimental?.ignoreDependencies ?? [],
 
-      // Config revalidation
-      configLastRevalidate:
-        rules.configLastRevalidate || new Date().toISOString(),
-      configRevalidateFrequency: rules.configRevalidateFrequency || "2d",
+        // Config revalidation
+        configLastRevalidate:
+          rules.experimental?.configLastRevalidate ?? new Date().toISOString(),
+        configRevalidateFrequency:
+          rules.experimental?.configRevalidateFrequency ?? "2d",
 
-      // Custom rules
-      customRules: rules.customRules,
+        // Custom rules
+        customRules: rules.experimental?.customRules ?? {},
+
+        // Generation preferences
+        skipPromptsUseAutoBehavior:
+          rules.experimental?.skipPromptsUseAutoBehavior ?? false,
+        deployBehavior: rules.experimental?.deployBehavior ?? "prompt",
+        depsBehavior: rules.experimental?.depsBehavior ?? "prompt",
+        gitBehavior: rules.experimental?.gitBehavior ?? "prompt",
+        i18nBehavior: rules.experimental?.i18nBehavior ?? "prompt",
+        scriptsBehavior: rules.experimental?.scriptsBehavior ?? "prompt",
+      },
     };
 
-    // Format with 2 spaces indentation and add section comments
-    const content = JSON.stringify(config, null, 2)
-      // Inject comments above each section
-      .replace('"projectAuthor":', '// Project details\n  "projectAuthor":')
-      .replace('"features":', '\n  // Project features\n  "features":')
-      .replace(
-        '"projectFramework":',
-        '\n  // Development preferences\n  "projectFramework":',
-      )
-      .replace('"codeStyle":', '\n  // Code style preferences\n  "codeStyle":')
-      .replace('"projectName":', '\n  // Project metadata\n  "projectName":')
-      .replace(
-        '"deployBehavior":',
-        '\n  // Prompts behavior (prompt | autoYes | autoNo)\n  "deployBehavior":',
-      )
-      .replace(
-        '"configLastRevalidate":',
-        '\n  // Config revalidation (1h | 1d | 2d | 7d)\n  "configLastRevalidate":',
-      );
+    // Types for comment sections
+    type CommentSection = {
+      title: string;
+      fields: Partial<
+        Record<keyof NonNullable<ReliverseConfig["experimental"]>, string[]>
+      >;
+    };
+
+    type CommentSections = {
+      experimental: CommentSection;
+    };
+
+    // Helper function to create comment
+    const c = (text: string) => `// ${text}`;
+
+    // Define comment sections with only essential comments
+    const commentSections: CommentSections = {
+      experimental: {
+        title: c("Unstable features"),
+        fields: {
+          skipPromptsUseAutoBehavior: [
+            c("Do you want autoYes/autoNo below?"),
+            c("Set to true to activate auto-answering."),
+            c("This is to ensure there is no unexpected behavior."),
+          ],
+          features: [c("Project capabilities")],
+          projectFramework: [c("Tech stack of your project")],
+          codeStyle: [c("Code style preferences")],
+          ignoreDependencies: [c("Cleaner codemod will ignore these deps")],
+          configLastRevalidate: [c("Config revalidation (1h | 1d | 2d | 7d)")],
+          customRules: [c("Custom rules for Reliverse AI")],
+          deployBehavior: [c("Prompts behavior (prompt | autoYes | autoNo)")],
+        },
+      },
+    };
+
+    // Format with 2 spaces indentation
+    let content = JSON.stringify(config, null, 2);
+
+    // Add section comments
+    Object.entries(commentSections).forEach(([section, { title, fields }]) => {
+      // Add section title with proper spacing
+      content = content.replace(`"${section}":`, `${title}\n  "${section}":`);
+
+      // Add field comments
+      Object.entries(fields).forEach(([field, comments]) => {
+        const fieldPattern = new RegExp(`(\\s+)"${field}":`, "g");
+        // Add proper indentation for each comment line
+        const formattedComments = comments
+          .map(
+            (comment, index, array) =>
+              index === array.length - 1
+                ? `    ${comment}` // Last comment
+                : `    ${comment}\n`, // Other comments
+          )
+          .join("");
+        content = content.replace(
+          fieldPattern,
+          `\n\n${formattedComments}\n    "${field}":`,
+        );
+      });
+    });
+
+    // Clean up multiple empty lines
+    content = content
+      .replace(/\n{3,}/g, "\n\n") // Replace 3 or more newlines with 2
+      .replace(/{\n\n/g, "{\n") // Remove double newline after opening brace
+      .replace(/\n\n}/g, "\n}"); // Remove double newline before closing brace
 
     await fs.writeFile(configPath, content);
-    relinka("info-verbose", "Project configuration saved to reliverse.json");
+    relinka("info-verbose", "Project configuration saved to .reliverse");
   } catch (error) {
     relinka(
       "error",
@@ -117,7 +190,7 @@ export async function readReliverseConfig(
   targetDir: string,
 ): Promise<ReliverseConfig | null> {
   try {
-    const configPath = path.join(targetDir, "reliverse.json");
+    const configPath = path.join(targetDir, ".reliverse");
     if (await fs.pathExists(configPath)) {
       const content = await fs.readFile(configPath, "utf-8");
       // Handle empty file or just {}
@@ -159,7 +232,11 @@ export async function readReliverseConfig(
         }
         return config as ReliverseConfig;
       } catch (error) {
-        relinka("error", "Failed to parse reliverse.json", error.toString());
+        relinka(
+          "error",
+          "Failed to parse .reliverse",
+          error instanceof Error ? error.message : String(error),
+        );
         return null;
       }
     }
@@ -176,7 +253,7 @@ export async function readReliverseConfig(
 export async function getDefaultReliverseConfig(
   projectName: string,
   projectAuthor: string,
-  projectFramework: ReliverseConfig["projectFramework"] = "nextjs",
+  projectFramework = "nextjs",
 ): Promise<ReliverseConfig> {
   const biomeConfig = await getBiomeConfig(process.cwd());
 
@@ -197,69 +274,83 @@ export async function getDefaultReliverseConfig(
   }
 
   return {
-    // Project details
-    projectName: packageData.name || projectName,
-    projectAuthor:
-      typeof packageData.author === "object"
-        ? packageData.author.name
-        : packageData.author || projectAuthor,
-    projectDescription: packageData.description,
-    projectVersion: packageData.version,
-    projectLicense: packageData.license,
-    projectRepository:
-      typeof packageData.repository === "string"
-        ? packageData.repository
-        : packageData.repository?.url,
+    experimental: {
+      // Project details
+      projectName: packageData.name ?? projectName,
+      projectAuthor:
+        typeof packageData.author === "object"
+          ? (packageData.author.name ?? projectAuthor)
+          : (packageData.author ?? projectAuthor),
+      projectDescription: packageData.description ?? "",
+      projectVersion: packageData.version ?? "1.0.0",
+      projectLicense: packageData.license ?? "MIT",
+      projectRepository:
+        (typeof packageData.repository === "string"
+          ? packageData.repository
+          : packageData.repository?.url) ?? "",
 
-    // Project features
-    features: {
-      i18n: true,
-      analytics: false,
-      themeMode: "dark-light",
-      authentication: true,
-      api: true,
-      database: true,
-      testing: false,
-      docker: false,
-      ci: false,
-      commands: [],
-      webview: [],
-      language: [],
-      themes: [],
+      // Project features
+      features: {
+        i18n: true,
+        analytics: false,
+        themeMode: "dark-light",
+        authentication: true,
+        api: true,
+        database: true,
+        testing: false,
+        docker: false,
+        ci: false,
+        commands: [],
+        webview: [],
+        language: [],
+        themes: [],
+      },
+
+      // Development preferences
+      projectFramework,
+      projectPackageManager: "bun",
+      preferredLibraries: {
+        stateManagement: "zustand",
+        formManagement: "react-hook-form",
+        styling: "tailwind",
+        uiComponents: "shadcn-ui",
+        testing: "bun",
+        authentication: "clerk",
+        database: "drizzle",
+        api: "trpc",
+      },
+
+      // Code style preferences
+      codeStyle: {
+        dontRemoveComments: true,
+        shouldAddComments: true,
+        typeOrInterface: (tsConfig as any).compilerOptions?.strict
+          ? "type"
+          : "interface",
+        importOrRequire: "import",
+        quoteMark: biomeConfig?.quoteMark ?? "double",
+        semicolons: biomeConfig?.semicolons ?? true,
+        lineWidth: biomeConfig?.lineWidth ?? 80,
+        indentStyle: biomeConfig?.indentStyle ?? "space",
+        indentSize: biomeConfig?.indentWidth ?? 2,
+        importSymbol: "~",
+        trailingComma: "all",
+        bracketSpacing: true,
+        arrowParens: "always",
+        tabWidth: 2,
+      },
+
+      // Config revalidation
+      configLastRevalidate: new Date().toISOString(),
+      configRevalidateFrequency: "2d",
+
+      // Generation preferences
+      skipPromptsUseAutoBehavior: false,
+      deployBehavior: "prompt",
+      depsBehavior: "prompt",
+      gitBehavior: "prompt",
+      i18nBehavior: "prompt",
+      scriptsBehavior: "prompt",
     },
-
-    // Development preferences
-    projectFramework,
-    projectPackageManager: "bun",
-    preferredLibraries: {
-      stateManagement: "zustand",
-      formManagement: "react-hook-form",
-      styling: "tailwind",
-      uiComponents: "shadcn-ui",
-      testing: "bun",
-      authentication: "clerk",
-      database: "drizzle",
-      api: "trpc",
-    },
-
-    // Code style preferences
-    codeStyle: {
-      dontRemoveComments: true,
-      shouldAddComments: true,
-      typeOrInterface: (tsConfig as any).compilerOptions?.strict
-        ? "type"
-        : "interface",
-      importOrRequire: "import",
-      quoteMark: biomeConfig?.quoteMark || "double",
-      semicolons: biomeConfig?.semicolons ?? true,
-      lineWidth: biomeConfig?.lineWidth || 80,
-      indentStyle: biomeConfig?.indentStyle || "space",
-      indentSize: biomeConfig?.indentWidth || 2,
-      importSymbol: "~",
-    },
-
-    // Config revalidation
-    configLastRevalidate: new Date().toISOString(),
-    configRevalidateFrequency: "2d",
   };
 }

@@ -93,7 +93,7 @@ export async function handleConfigEditing(cwd: string) {
           // Find dependencies to remove (ESLint-related packages that aren't in the new preset)
           const depsToRemove = Object.keys(currentDeps).filter(
             (dep) =>
-              (dep.includes("eslint") || dep.includes("typescript-eslint")) &&
+              (dep.includes("eslint") ?? dep.includes("typescript-eslint")) &&
               !selectedPreset.dependencies.includes(dep),
           );
 

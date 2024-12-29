@@ -5,7 +5,7 @@ import { execaCommand } from "execa";
 import fs from "fs-extra";
 import { globby } from "globby";
 import mri from "mri";
-import path from "path";
+import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
@@ -38,7 +38,7 @@ const argv = mri(process.argv.slice(2), {
 });
 
 // If help flag is present, display help and exit
-if (argv.help) {
+if (argv["help"]) {
   showHelp();
   process.exit(0);
 }
@@ -65,7 +65,11 @@ async function publishNpm(dryRun: boolean) {
     }
     relinka("success", "Published to npm successfully.");
   } catch (error) {
-    relinka("error", "❌ Failed to publish to npm:", error.toString());
+    relinka(
+      "error",
+      "❌ Failed to publish to npm:",
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 }
@@ -84,7 +88,11 @@ async function publishJsr(dryRun: boolean) {
     }
     relinka("success", "Published to JSR successfully.");
   } catch (error) {
-    relinka("error", "❌ Failed to publish to JSR:", error.toString());
+    relinka(
+      "error",
+      "❌ Failed to publish to JSR:",
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 }
@@ -120,7 +128,10 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
 }
 
 async function main() {
-  const { jsr, "dry-run": dryRun } = argv;
+  const { jsr, "dry-run": dryRun } = argv as unknown as {
+    jsr: boolean;
+    "dry-run": boolean;
+  };
   const newVersion = argv._[0]; // The new version provided by the user (if any)
 
   if (newVersion) {
@@ -145,6 +156,10 @@ async function main() {
 }
 
 main().catch((error) => {
-  relinka("error", "❌ An unexpected error occurred:", error.toString());
+  relinka(
+    "error",
+    "❌ An unexpected error occurred:",
+    error instanceof Error ? error.message : String(error),
+  );
   process.exit(1);
 });

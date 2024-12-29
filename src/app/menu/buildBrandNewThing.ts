@@ -5,18 +5,17 @@ import {
 } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import { REPO_URLS } from "~/app/menu/data/constants.js";
+import { REPO_URLS } from "~/app/db/constants.js";
 import { type ReliverseConfig, type TemplateOption } from "~/types.js";
-import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
 import { relinka } from "~/utils/console.js";
 
-import { createWebProject } from "./createWebProject.js";
 import {
-  randomprojectFrameworkTitle,
+  randomProjectFrameworkTitle,
   randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
-} from "./data/messages.js";
+} from "../db/messages.js";
+import { createWebProject } from "./createWebProject.js";
 
 const TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
@@ -49,19 +48,21 @@ async function configureVSCodeExtension() {
     displayName: await inputPrompt({
       title: "What's the display name of your extension?",
       defaultValue: "My Extension",
-      validate: (value) => {
+      validate: (value: string): string | boolean => {
         if (!value?.trim()) {
           return "Display name is required";
         }
+        return true;
       },
     }),
     description: await inputPrompt({
       title: "Provide a short description of your extension",
       defaultValue: "A VS Code extension",
-      validate: (value) => {
+      validate: (value: string): string | boolean => {
         if (!value?.trim()) {
           return "Description is required";
         }
+        return true;
       },
     }),
     features: await multiselectPrompt({
@@ -112,13 +113,14 @@ async function configureVSCodeExtension() {
     publisher: await inputPrompt({
       title: "What's your VS Code marketplace publisher ID?",
       content: "Create one at https://marketplace.visualstudio.com/manage",
-      validate: (value) => {
+      validate: (value: string): string | boolean => {
         if (!value?.trim()) {
           return "Publisher ID is required";
         }
         if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/i.test(value)) {
           return "Invalid publisher ID format";
         }
+        return true;
       },
     }),
   };
@@ -135,7 +137,7 @@ export async function buildBrandNewThing(
   const initialMessage =
     randomInitialMessage[
       Math.floor(Math.random() * randomInitialMessage.length)
-    ];
+    ]!;
 
   await selectPrompt({
     endTitle,
@@ -190,38 +192,57 @@ export async function buildBrandNewThing(
     const extensionConfig = await configureVSCodeExtension();
 
     await createWebProject({
-      template: REPO_URLS[template as TemplateOption] || template,
+      template: REPO_URLS[template as TemplateOption] ?? template,
       message: initialMessage,
       mode: "buildBrandNewThing",
-      allowI18nPrompt: false,
+      i18nShouldBeEnabled: false,
       isDev,
-      config: {
-        ...config,
-        projectDisplayName: extensionConfig.displayName,
-        projectDescription: extensionConfig.description,
-        features: {
-          ...DEFAULT_CONFIG.features,
-          commands: extensionConfig.features.includes("commands") ? ["*"] : [],
-          webview: extensionConfig.features.includes("webview") ? ["*"] : [],
-          language: extensionConfig.features.includes("language") ? ["*"] : [],
-          themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+      ...(config && {
+        config: {
+          ...config,
+          experimental: {
+            ...config.experimental,
+            projectDisplayName: extensionConfig.displayName,
+            projectDescription: extensionConfig.description,
+            features: {
+              commands: extensionConfig.features.includes("commands")
+                ? ["*"]
+                : [],
+              webview: extensionConfig.features.includes("webview")
+                ? ["*"]
+                : [],
+              language: extensionConfig.features.includes("language")
+                ? ["*"]
+                : [],
+              themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+              i18n: false,
+              analytics: false,
+              themeMode: "dark-light",
+              authentication: false,
+              api: false,
+              database: false,
+              testing: false,
+              docker: false,
+              ci: false,
+            },
+            projectActivation: extensionConfig.activation,
+            projectAuthor: extensionConfig.publisher,
+          },
         },
-        projectActivation: extensionConfig.activation,
-        projectAuthor: extensionConfig.publisher,
-      },
+      }),
     });
     return;
   }
 
   // Get projectFramework from config or prompt for web applications
-  let projectFramework = config?.projectFramework;
+  let projectFramework = config?.experimental?.projectFramework;
   if (!projectFramework) {
     const result = await selectPrompt({
       endTitle,
       title:
-        randomprojectFrameworkTitle[
-          Math.floor(Math.random() * randomprojectFrameworkTitle.length)
-        ],
+        randomProjectFrameworkTitle[
+          Math.floor(Math.random() * randomProjectFrameworkTitle.length)
+        ]!,
       options: [
         {
           label: "Next.js",
@@ -248,7 +269,7 @@ export async function buildBrandNewThing(
     title:
       randomWebsiteCategoryTitle[
         Math.floor(Math.random() * randomWebsiteCategoryTitle.length)
-      ],
+      ]!,
     options: [
       { label: "E-commerce", value: "e-commerce" },
       {
@@ -260,28 +281,43 @@ export async function buildBrandNewThing(
     ],
   });
 
-  // Get template from config or prompt
-  let template: TemplateOption;
-  if (config?.projectTemplate) {
-    template = config.projectTemplate;
-  } else {
-    const result = await selectPrompt({
-      endTitle,
-      title: "Which template would you like to use?",
-      options: Object.values(TEMPLATE_OPTIONS),
-    });
-    template = result as TemplateOption;
-  }
-
-  await createWebProject({
-    template: REPO_URLS[template] || template,
-    message:
-      randomWebsiteDetailsTitle[
-        Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
-      ],
-    mode: "buildBrandNewThing",
-    allowI18nPrompt: config?.i18nBehavior === "prompt",
-    isDev,
-    config,
+  // Should cli continue with recommended or offline mode?
+  const shouldContinueWithRecommended = await selectPrompt({
+    endTitle,
+    title: "Should I continue with advanced or simple mode?",
+    options: [
+      { label: "Advanced", value: "recommended", hint: "recommended" },
+      { label: "Simple", value: "offline", hint: "offline" },
+    ],
   });
+
+  if (shouldContinueWithRecommended === "offline") {
+    relinka("error", "Offline mode not implemented yet");
+    return;
+  } else {
+    // Get template from config or prompt
+    let template: TemplateOption;
+    if (config?.experimental?.projectTemplate) {
+      template = config.experimental.projectTemplate;
+    } else {
+      const result = await selectPrompt({
+        endTitle,
+        title: "Which template would you like to use?",
+        options: Object.values(TEMPLATE_OPTIONS),
+      });
+      template = result as TemplateOption;
+    }
+
+    await createWebProject({
+      template: REPO_URLS[template] ?? template,
+      message:
+        randomWebsiteDetailsTitle[
+          Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
+        ]!,
+      mode: "buildBrandNewThing",
+      i18nShouldBeEnabled: config?.experimental?.i18nBehavior === "prompt",
+      isDev,
+      ...(config && { config }),
+    });
+  }
 }

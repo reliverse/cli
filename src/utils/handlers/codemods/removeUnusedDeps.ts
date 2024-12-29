@@ -14,8 +14,8 @@ export async function getUnusedDependencies(
     await fs.readFile(packageJsonPath, "utf-8"),
   );
   const allDeps = {
-    ...(packageJson.dependencies || {}),
-    ...(packageJson.devDependencies || {}),
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {}),
   };
 
   // Get all JS/TS files
@@ -27,8 +27,9 @@ export async function getUnusedDependencies(
     const content = await fs.readFile(path.join(cwd, file), "utf-8");
     const importMatches = content.matchAll(/from ['"]([^'"]+)['"]/g);
     for (const match of importMatches) {
-      const [, pkg] = match;
-      if (!pkg.startsWith(".") && !pkg.startsWith("~/")) {
+      const [, pkg] = match as RegExpMatchArray;
+      if (pkg && !pkg.startsWith(".") && !pkg.startsWith("~/")) {
+        // @ts-expect-error TODO: fix ts
         imports.add(pkg.split("/")[0]); // Get root package name
       }
     }

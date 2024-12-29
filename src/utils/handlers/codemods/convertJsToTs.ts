@@ -3,18 +3,18 @@ import path from "pathe";
 
 import { relinka } from "~/utils/console.js";
 
-async function generateTypeDefinitions(content: string): Promise<string> {
+function generateTypeDefinitions(content: string): string {
   let result = content;
 
   // Inject type annotations to function parameters
   result = result.replace(
     /function\s+(\w+)\s*\((.*?)\)/g,
-    (_, name, params) => {
+    (_: string, name: string, params: string) => {
       const typedParams = params
         .split(",")
-        .map((p) => p.trim())
+        .map((p: string) => p.trim())
         .filter(Boolean)
-        .map((p) => `${p}: any`);
+        .map((p: string) => `${p}: any`);
       return `function ${name}(${typedParams.join(", ")})`;
     },
   );
@@ -22,33 +22,36 @@ async function generateTypeDefinitions(content: string): Promise<string> {
   // Inject return types to functions
   result = result.replace(
     /function\s+(\w+)\s*\((.*?)\)\s*{/g,
-    (match) => `${match}: any`,
+    (match: string) => `${match}: any`,
   );
 
   // Inject types to variables
   result = result.replace(
     /(const|let|var)\s+(\w+)\s*=/g,
-    (_, dec, name) => `${dec} ${name}: any =`,
+    (_: string, dec: string, name: string) => `${dec} ${name}: any =`,
   );
 
   // Inject types to class properties
-  result = result.replace(/class\s+(\w+)\s*{([^}]+)}/g, (_, name, body) => {
-    const typedBody = body.replace(
-      /(\w+)\s*=/g,
-      (__, propName) => `${propName}: any =`,
-    );
-    return `class ${name} {${typedBody}}`;
-  });
+  result = result.replace(
+    /class\s+(\w+)\s*{([^}]+)}/g,
+    (_: string, name: string, body: string) => {
+      const typedBody = body.replace(
+        /(\w+)\s*=/g,
+        (_: string, propName: string) => `${propName}: any =`,
+      );
+      return `class ${name} {${typedBody}}`;
+    },
+  );
 
   // Inject interface for object literals
   result = result.replace(
     /const\s+(\w+)\s*=\s*{([^}]+)}/g,
-    (_, name, props) => {
+    (_: string, name: string, props: string) => {
       const interfaceProps = props
         .split(",")
-        .map((p) => p.trim())
+        .map((p: string) => p.trim())
         .filter(Boolean)
-        .map((p) => {
+        .map((p: string) => {
           const [propName] = p.split(":");
           return `  ${propName}: any;`;
         });
@@ -82,7 +85,7 @@ export async function convertJsToTs(cwd: string) {
     try {
       // Read and convert content
       const content = await fs.readFile(fullPath, "utf-8");
-      const tsContent = await generateTypeDefinitions(content);
+      const tsContent = generateTypeDefinitions(content);
 
       // Write TypeScript file
       await fs.writeFile(tsPath, tsContent);

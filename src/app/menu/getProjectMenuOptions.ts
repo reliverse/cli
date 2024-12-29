@@ -18,8 +18,8 @@ export async function getProjectMenuOptions(
   ];
 
   try {
-    // Check if reliverse.json exists and has content
-    const rulesPath = path.join(cwd, "reliverse.json");
+    // Check if .reliverse exists and has content
+    const rulesPath = path.join(cwd, ".reliverse");
     const rulesFileExists = await fs.pathExists(rulesPath);
 
     if (rulesFileExists) {
@@ -30,7 +30,7 @@ export async function getProjectMenuOptions(
     if (error instanceof Error && !error.message.includes("JSON Parse error")) {
       relinka(
         "warn",
-        "Error processing reliverse.json file. Using basic menu options.",
+        "Error processing .reliverse file. Using basic menu options.",
       );
       relinka(
         "warn-verbose",

@@ -4,7 +4,7 @@ import path from "pathe";
 
 import type { ConflictHandlerOptions } from "~/types.js";
 
-import { FILE_CONFLICTS } from "~/app/menu/data/constants.js";
+import { FILE_CONFLICTS } from "~/app/db/constants.js";
 import { relinka } from "~/utils/console.js";
 import { removeFile, renameFile } from "~/utils/fileUtils.js";
 
@@ -39,7 +39,7 @@ const handleFileConflicts = async ({
     const filePath = path.join(targetDir, fileName);
 
     if (fs.pathExistsSync(filePath)) {
-      const fileDescription = description || fileName;
+      const fileDescription = description ?? fileName;
 
       relinka(
         "info-verbose",
@@ -54,7 +54,7 @@ const handleFileConflicts = async ({
       }
 
       const message =
-        customMessage ||
+        customMessage ??
         `Do you want to remove or rename the ${fileDescription} file by adding .txt?`;
 
       const action = await selectPrompt({

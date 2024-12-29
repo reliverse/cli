@@ -72,13 +72,14 @@ export async function installAnyGitRepo(isDev: boolean) {
       "onwidget/astrowind",
     ];
     const randomDefaultLink =
-      defaultLinks[Math.floor(Math.random() * defaultLinks.length)];
+      defaultLinks[Math.floor(Math.random() * defaultLinks.length)] ??
+      defaultLinks[0];
     const customLink = await selectPrompt({
       title: "Enter the GitHub repository link:",
       options: [
         {
-          label: randomDefaultLink,
-          value: randomDefaultLink,
+          label: randomDefaultLink ?? "",
+          value: randomDefaultLink ?? "",
         },
       ],
     });
@@ -95,11 +96,12 @@ export async function installAnyGitRepo(isDev: boolean) {
       "47ng/nuqs",
     ];
     const randomDefaultLink =
-      defaultLinks[Math.floor(Math.random() * defaultLinks.length)];
+      defaultLinks[Math.floor(Math.random() * defaultLinks.length)] ??
+      defaultLinks[0];
     const customLink = await inputPrompt({
       title: "Enter the GitHub repository link:",
-      defaultValue: randomDefaultLink,
-      placeholder: randomDefaultLink,
+      defaultValue: randomDefaultLink ?? "",
+      placeholder: randomDefaultLink ?? "",
     });
     validate(customLink, "string", "Custom template providing canceled.");
     repoToInstall =
@@ -120,7 +122,7 @@ export async function installAnyGitRepo(isDev: boolean) {
     template: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
     mode: "installAnyGitRepo",
-    allowI18nPrompt: false,
+    i18nShouldBeEnabled: false,
     isDev,
   });
 }

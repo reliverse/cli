@@ -18,10 +18,10 @@ export default defineCommand({
       key: memory.key === "" ? "" : "exists",
       githubKey: memory.githubKey === "" ? "" : "exists",
       vercelKey: memory.vercelKey === "" ? "" : "exists",
-      name: memory.name || "",
-      email: memory.email || "",
-      githubUsername: memory.githubUsername || "",
-      vercelUsername: memory.vercelUsername || "",
+      name: memory.name ?? "",
+      email: memory.email ?? "",
+      githubUsername: memory.githubUsername ?? "",
+      vercelUsername: memory.vercelUsername ?? "",
     });
     process.exit(0);
   },

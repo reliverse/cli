@@ -315,7 +315,7 @@ export const INTEGRATION_CONFIGS: Record<string, IntegrationConfig> = {
     },
     plugins: [
       twoFactor({
-        issuer: process.env.NEXT_PUBLIC_APP_NAME || "Your App",
+        issuer: process.env.NEXT_PUBLIC_APP_NAME ?? "Your App",
         trustDeviceEnabled: true,
         recoveryCodesEnabled: true,
       }),
@@ -469,7 +469,7 @@ export const INTEGRATION_CONFIGS: Record<string, IntegrationConfig> = {
     return (
       <div className="max-w-md mx-auto mt-10 p-6">
         <h1 className="text-2xl font-bold mb-4 text-red-500">Authentication Error</h1>
-        <p className="mb-4">{error || "An error occurred during authentication"}</p>
+        <p className="mb-4">{error ?? "An error occurred during authentication"}</p>
         <a
           href="/auth/sign-in"
           className="text-blue-500 hover:underline"

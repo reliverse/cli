@@ -1,5 +1,5 @@
 import { getRootDirname } from "@reliverse/fs";
-import { confirmPrompt, input, password } from "@reliverse/prompts";
+import { confirmPrompt, inputPrompt, passwordPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { join } from "pathe";
 
@@ -16,7 +16,7 @@ function createPrompt(
   type: PromptType,
   message: string,
   defaultValue?: boolean | string,
-) {
+): Promise<string | boolean> {
   const options: { defaultValue?: boolean | string; title: string } = {
     title: message,
   };
@@ -26,9 +26,11 @@ function createPrompt(
   }
 
   if (type === "input") {
-    return input(options as { defaultValue?: string; title: string });
+    return inputPrompt(options as { defaultValue?: string; title: string });
   } else if (type === "password") {
-    return password(options as { defaultValue?: string; title: string });
+    return passwordPrompt(
+      options as { defaultValue?: string; title: string },
+    ) as Promise<string>;
   } else {
     return confirmPrompt({
       defaultValue: options.defaultValue as boolean,
@@ -202,7 +204,11 @@ async function main() {
       relinka("info", "Aborted! The .env file was not generated.");
     }
   } catch (error) {
-    relinka("error", "An error occurred:", error.toString());
+    relinka(
+      "error",
+      "An error occurred:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
@@ -210,6 +216,6 @@ main().catch((error) => {
   relinka(
     "error",
     "An error occurred while generating the .env file:",
-    error.toString(),
+    error instanceof Error ? error.message : String(error),
   );
 });

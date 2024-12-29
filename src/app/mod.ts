@@ -3,14 +3,14 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE } from "~/app/menu/data/constants.js";
+import { MEMORY_FILE } from "~/app/db/constants.js";
 import { auth } from "~/args/login/impl.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 import { readConfig } from "~/utils/configs/miscellaneousConfigHelpers.js";
 import { relinka } from "~/utils/console.js";
 import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
-import { app } from "./menu/appMainMenuImpl.js";
+import { app } from "./impl.js";
 import { showAnykeyPrompt } from "./menu/showAnykeyPrompt.js";
 import { showStartPrompt } from "./menu/showStartEndPrompt.js";
 

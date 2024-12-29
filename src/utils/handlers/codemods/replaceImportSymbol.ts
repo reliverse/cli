@@ -30,7 +30,7 @@ async function detectCurrentImportSymbol(
       if (matches) {
         symbolCounts.set(
           symbol,
-          (symbolCounts.get(symbol) || 0) + matches.length,
+          (symbolCounts.get(symbol) ?? 0) + matches.length,
         );
       }
     }

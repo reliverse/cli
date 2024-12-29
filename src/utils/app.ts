@@ -1,6 +1,6 @@
 import type { FooterItem, MainMenuItem } from "~/types.js";
 
-import { getRepoUrl } from "~/app/menu/data/constants.js";
+import { getRepoUrl } from "~/app/db/constants.js";
 import metadata from "~/utils/metadata.js";
 import { productCategories } from "~/utils/products.js";
 

@@ -42,12 +42,12 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   try {
     const mod = await loadFileUsingMagicast(metadataConfigPath);
 
-    currentConfig = mod.exports.default || {};
+    currentConfig = mod.exports["default"] ?? {};
   } catch (error) {
     relinka(
       "error",
       "Whoops! Something went wrong while loading the configuration file:",
-      error.toString(),
+      error instanceof Error ? error.message : String(error),
     );
 
     return process.exit(0);
@@ -64,11 +64,11 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     return process.exit(0);
   }
 
-  let handle = await askForHandle(metadata.author.handle || "blefnk");
+  let handle = await askForHandle(metadata.author.handle ?? "blefnk");
 
   // If the user skips the handle question, use the current handle from metadataConfig
   if (!handle) {
-    handle = metadata.author.handle || "blefnk";
+    handle = metadata.author.handle ?? "blefnk";
   }
 
   // If !handle for any other reason, use the fallback
@@ -119,7 +119,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   for (const prompt of prompts) {
     results[prompt.key] = await askForText(
       prompt.message,
-      currentConfig[prompt.key] || prompt.default,
+      (currentConfig[prompt.key] as string | undefined) ?? prompt.default,
     );
   }
 
@@ -150,13 +150,13 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
   try {
     await updateFile(metadataConfigPath, {
-      name: name,
-      siteNameDesc: siteNameDesc,
-      appPublisher: appPublisher,
-      projectVersion: projectVersion,
-      authorEmail: authorEmail,
-      authorFullName: authorFullName,
-      authorUrl: authorUrl,
+      name: name!,
+      siteNameDesc: siteNameDesc!,
+      appPublisher: appPublisher!,
+      projectVersion: projectVersion!,
+      authorEmail: authorEmail!,
+      authorFullName: authorFullName!,
+      authorUrl: authorUrl!,
       handle: handle,
     });
 
@@ -168,7 +168,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     relinka(
       "error",
       "Error updating configuration file content:",
-      error.toString(),
+      error instanceof Error ? error.message : String(error),
     );
   }
 }
@@ -177,10 +177,11 @@ async function askForHandle(currentHandle: string): Promise<string> {
   return await inputPrompt({
     title: `${pc.bold(`Let's customize the ${config.framework.name} template to your needs. The 'src/app.ts' file holds the main configuration.`)} \n🚀 First of all, what's your username handle? (💡 Type something or just press ${pc.cyan("<enter>")} to use the suggested value)`,
     placeholder: currentHandle,
-    validate: (value) => {
+    validate: (value: string): string | boolean => {
       if (value && !/^[\da-z]+$/i.test(value)) {
         return "Please use only letters and numbers.";
       }
+      return true;
     },
   });
 }
@@ -193,12 +194,13 @@ async function askForText(
     (await inputPrompt({
       title: message,
       placeholder,
-      validate: (value) => {
+      validate: (value: string): string | boolean => {
         if (value === undefined || value === null) {
           return `Please enter ${message.toLowerCase()}.`;
         }
+        return true;
       },
-    })) || placeholder
+    })) ?? placeholder
   );
 }
 
@@ -206,18 +208,18 @@ async function updateFile(filePath: string, config: Record<string, string>) {
   try {
     const mod = await loadFileUsingMagicast(filePath);
 
-    mod.exports.default = mod.exports.default || {};
-    mod.exports.default.author = mod.exports.default.author || {};
+    mod.exports["default"] = mod.exports["default"] ?? {};
+    mod.exports["default"].author = mod.exports["default"].author ?? {};
 
-    mod.exports.default.name = config.name;
-    mod.exports.default.siteNameDesc = config.siteNameDesc;
-    mod.exports.default.appPublisher = config.appPublisher;
-    mod.exports.default.projectVersion = config.projectVersion;
-    mod.exports.default.author.email = config.authorEmail;
-    mod.exports.default.author.fullName = config.authorFullName;
-    mod.exports.default.author.handle = config.handle;
-    mod.exports.default.author.handleAt = `@${config.handle}`;
-    mod.exports.default.author.url = config.authorUrl;
+    mod.exports["default"].name = config["name"];
+    mod.exports["default"].siteNameDesc = config["siteNameDesc"];
+    mod.exports["default"].appPublisher = config["appPublisher"];
+    mod.exports["default"].projectVersion = config["projectVersion"];
+    mod.exports["default"].author.email = config["authorEmail"];
+    mod.exports["default"].author.fullName = config["authorFullName"];
+    mod.exports["default"].author.handle = config["handle"];
+    mod.exports["default"].author.handleAt = `@${config["handle"]}`;
+    mod.exports["default"].author.url = config["authorUrl"];
 
     await writeFileUsingMagicast(mod, filePath);
 
@@ -227,7 +229,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     relinka(
       "error",
       "Error updating configuration file content:",
-      error.toString(),
+      error instanceof Error ? error.message : String(error),
     );
   }
 }

@@ -53,10 +53,10 @@ export const relinka = (
   msg({
     ...config,
     title: isVerbose ? `[debug] ${title}` : title,
-    content,
+    content: content ?? "",
     contentColor: "dim",
     contentTypography: "italic",
-    hint,
+    hint: hint ?? "",
   });
 };
 

@@ -15,10 +15,24 @@
     }
   ],
   "markdownlint.config": {
-    "MD033": false
+    "MD033": {
+      "allowed_elements": [
+        "Card",
+        "CardGrid",
+        "div",
+        "p",
+        "span",
+        "picture",
+        "a",
+        "img",
+        "source",
+        "details",
+        "summary"
+      ]
+    }
   },
   "files.associations": {
-    "reliverse.json": "jsonc"
+    ".reliverse": "jsonc"
   },
   "typescript.enablePromptUseWorkspaceTsdk": true
 }

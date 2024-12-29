@@ -50,7 +50,8 @@ export default defineCommand({
       await deleteMemory();
       deleteLastLine();
       msg({
-        type: "M_MIDDLE",
+        type: "M_BAR",
+        borderColor: "dim",
       });
       relinka("success", "You're logged out now! 👋");
       process.exit(0);

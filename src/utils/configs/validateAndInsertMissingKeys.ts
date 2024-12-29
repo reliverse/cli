@@ -7,8 +7,6 @@ import type { ReliverseConfig } from "~/types.js";
 import { relinka } from "../console.js";
 import { generateDefaultRulesForProject } from "./generateDefaultRulesForProject.js";
 import { detectProjectType } from "./miscellaneousConfigHelpers.js";
-import { parseCodeStyleFromConfigs } from "./parseCodeStyleFromConfigs.js";
-import { DEFAULT_CONFIG } from "./reliverseDefaultConfig.js";
 import {
   getDefaultReliverseConfig,
   shouldRevalidate,
@@ -16,9 +14,9 @@ import {
 
 export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
   try {
-    const configPath = path.join(cwd, "reliverse.json");
+    const configPath = path.join(cwd, ".reliverse");
 
-    // Check if reliverse.json exists
+    // Check if .reliverse exists
     if (!(await fs.pathExists(configPath))) {
       return;
     }
@@ -28,9 +26,10 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
     let parsedContent;
 
     try {
-      parsedContent = destr(content);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      parsedContent = destr(content) as Partial<ReliverseConfig>;
     } catch {
-      relinka("error", "Failed to parse reliverse.json");
+      relinka("error", "Failed to parse .reliverse");
       return;
     }
 
@@ -41,8 +40,8 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
     // Check if we need to revalidate based on frequency
     if (
       !shouldRevalidate(
-        parsedContent.configLastRevalidate,
-        parsedContent.configRevalidateFrequency,
+        parsedContent.experimental?.configLastRevalidate,
+        parsedContent.experimental?.configRevalidateFrequency,
       )
     ) {
       return;
@@ -59,63 +58,93 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
         );
 
     if (defaultRules) {
-      // Parse code style from existing config files
-      const configRules = await parseCodeStyleFromConfigs(cwd);
-
       // Always merge with defaults to ensure all fields exist
       const mergedConfig: ReliverseConfig = {
-        ...DEFAULT_CONFIG,
-        ...parsedContent,
-        // Project details
-        projectName: defaultRules.projectName,
-        projectAuthor: defaultRules.projectAuthor,
-        projectDescription:
-          defaultRules.projectDescription || parsedContent.projectDescription,
-        projectVersion:
-          defaultRules.projectVersion || parsedContent.projectVersion,
-        projectLicense:
-          defaultRules.projectLicense || parsedContent.projectLicense,
-        projectRepository:
-          defaultRules.projectRepository || parsedContent.projectRepository,
+        experimental: {
+          // Project details
+          projectName: defaultRules.experimental?.projectName ?? "",
+          projectAuthor: defaultRules.experimental?.projectAuthor ?? "",
+          projectDescription:
+            defaultRules.experimental?.projectDescription ??
+            parsedContent.experimental?.projectDescription ??
+            "",
+          projectVersion:
+            defaultRules.experimental?.projectVersion ??
+            parsedContent.experimental?.projectVersion ??
+            "1.0.0",
+          projectLicense:
+            defaultRules.experimental?.projectLicense ??
+            parsedContent.experimental?.projectLicense ??
+            "MIT",
+          projectRepository:
+            defaultRules.experimental?.projectRepository ??
+            parsedContent.experimental?.projectRepository ??
+            "",
 
-        // Project features
-        features: {
-          ...defaultRules.features,
-          ...(parsedContent.features || {}),
-        },
+          // Project features
+          features: defaultRules.experimental?.features ?? {
+            i18n: false,
+            analytics: false,
+            themeMode: "light",
+            authentication: false,
+            api: false,
+            database: false,
+            testing: false,
+            docker: false,
+            ci: false,
+            commands: [],
+            webview: [],
+            language: [],
+            themes: [],
+          },
 
-        // Development preferences
-        projectFramework: defaultRules.projectFramework,
-        projectPackageManager: defaultRules.projectPackageManager,
-        projectFrameworkVersion:
-          defaultRules.projectFrameworkVersion ||
-          parsedContent.projectFrameworkVersion,
-        nodeVersion: defaultRules.nodeVersion || parsedContent.nodeVersion,
-        runtime: defaultRules.runtime || parsedContent.runtime,
-        monorepo: defaultRules.monorepo || parsedContent.monorepo,
-        preferredLibraries: {
-          ...defaultRules.preferredLibraries,
-          ...(parsedContent.preferredLibraries || {}),
-        },
-        codeStyle: {
-          ...defaultRules.codeStyle,
-          ...(configRules?.codeStyle || {}),
-          ...(parsedContent.codeStyle || {}),
-        },
+          // Development preferences
+          projectFramework: defaultRules.experimental?.projectFramework,
+          projectPackageManager:
+            defaultRules.experimental?.projectPackageManager,
+          projectFrameworkVersion:
+            defaultRules.experimental?.projectFrameworkVersion ??
+            parsedContent.experimental?.projectFrameworkVersion,
+          nodeVersion:
+            defaultRules.experimental?.nodeVersion ??
+            parsedContent.experimental?.nodeVersion,
+          runtime:
+            defaultRules.experimental?.runtime ??
+            parsedContent.experimental?.runtime,
+          monorepo:
+            defaultRules.experimental?.monorepo ??
+            parsedContent.experimental?.monorepo,
+          preferredLibraries: {
+            ...defaultRules.experimental?.preferredLibraries,
+            ...parsedContent.experimental?.preferredLibraries,
+          },
+          codeStyle: defaultRules.experimental?.codeStyle,
 
-        // Dependencies management
-        ignoreDependencies:
-          parsedContent.ignoreDependencies || defaultRules.ignoreDependencies,
+          // Dependencies management
+          ignoreDependencies:
+            parsedContent.experimental?.ignoreDependencies ??
+            defaultRules.experimental?.ignoreDependencies,
 
-        // Config revalidation
-        configLastRevalidate: new Date().toISOString(),
-        configRevalidateFrequency:
-          parsedContent.configRevalidateFrequency || "2d",
+          // Config revalidation
+          configLastRevalidate: new Date().toISOString(),
+          configRevalidateFrequency:
+            parsedContent.experimental?.configRevalidateFrequency ?? "2d",
 
-        // Custom rules
-        customRules: {
-          ...(defaultRules.customRules || {}),
-          ...(parsedContent.customRules || {}),
+          // Custom rules
+          customRules: {
+            ...defaultRules.experimental?.customRules,
+            ...parsedContent.experimental?.customRules,
+          },
+
+          // Generation preferences
+          skipPromptsUseAutoBehavior:
+            defaultRules.experimental?.skipPromptsUseAutoBehavior ?? false,
+          deployBehavior: defaultRules.experimental?.deployBehavior ?? "prompt",
+          depsBehavior: defaultRules.experimental?.depsBehavior ?? "prompt",
+          gitBehavior: defaultRules.experimental?.gitBehavior ?? "prompt",
+          i18nBehavior: defaultRules.experimental?.i18nBehavior ?? "prompt",
+          scriptsBehavior:
+            defaultRules.experimental?.scriptsBehavior ?? "prompt",
         },
       };
 
@@ -123,15 +152,15 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
       if (JSON.stringify(mergedConfig) !== JSON.stringify(parsedContent)) {
         const hasNewFields = !Object.keys(parsedContent).every(
           (key) =>
-            JSON.stringify(mergedConfig[key]) ===
-            JSON.stringify(parsedContent[key]),
+            JSON.stringify(mergedConfig[key as keyof ReliverseConfig]) ===
+            JSON.stringify(parsedContent[key as keyof ReliverseConfig]),
         );
 
         if (hasNewFields) {
           await fs.writeFile(configPath, JSON.stringify(mergedConfig, null, 2));
           relinka(
             "info",
-            "Updated reliverse.json with missing configurations. Please review and adjust as needed.",
+            "Updated .reliverse with missing configurations. Please review and adjust as needed.",
           );
         }
       }
@@ -139,7 +168,7 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
   } catch (error) {
     relinka(
       "error-verbose",
-      "Error validating reliverse.json:",
+      "Error validating .reliverse:",
       error instanceof Error ? error.message : String(error),
     );
   }

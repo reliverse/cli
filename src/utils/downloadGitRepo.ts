@@ -24,28 +24,28 @@ export async function downloadGitRepo(
     // Create target directory if it doesn't exist
     await fs.ensureDir(targetDir);
 
-    // Check if directory contains only reliverse.json
+    // Check if directory contains only .reliverse
     const files = await fs.readdir(targetDir);
     const hasOnlyReliverserules =
-      files.length === 1 && files[0] === "reliverse.json";
+      files.length === 1 && files[0] === ".reliverse";
 
-    // If directory is not empty and doesn't contain only reliverse.json, throw error
+    // If directory is not empty and doesn't contain only .reliverse, throw error
     if (files.length > 0 && !hasOnlyReliverserules) {
       throw new Error(
-        `Target directory ${targetDir} is not empty and contains files other than reliverse.json`,
+        `Target directory ${targetDir} is not empty and contains files other than .reliverse`,
       );
     }
 
-    // Temporarily move reliverse.json if it exists
+    // Temporarily move .reliverse if it exists
     const parentDir = path.dirname(targetDir);
-    const tempReliverserulesPath = path.join(parentDir, "reliverse.json");
+    const tempReliverserulesPath = path.join(parentDir, ".reliverse");
 
     if (hasOnlyReliverserules) {
-      // Check if reliverse.json already exists in parent directory
+      // Check if .reliverse already exists in parent directory
       if (await fs.pathExists(tempReliverserulesPath)) {
         const choice = await selectPrompt({
           title:
-            "reliverse.json already exists in parent directory. What would you like to do?",
+            ".reliverse already exists in parent directory. What would you like to do?",
           options: [
             { value: "delete", label: "Delete existing file" },
             { value: "backup", label: "Create backup" },
@@ -56,23 +56,17 @@ export async function downloadGitRepo(
           await fs.remove(tempReliverserulesPath);
         } else {
           // Find appropriate backup name
-          let backupPath = path.join(parentDir, "reliverse.json.bak");
+          let backupPath = path.join(parentDir, ".reliverse.bak");
           let iteration = 1;
           while (await fs.pathExists(backupPath)) {
-            backupPath = path.join(
-              parentDir,
-              `reliverse.json_${iteration}.bak`,
-            );
+            backupPath = path.join(parentDir, `.reliverse_${iteration}.bak`);
             iteration++;
           }
           await fs.move(tempReliverserulesPath, backupPath);
         }
       }
 
-      await fs.move(
-        path.join(targetDir, "reliverse.json"),
-        tempReliverserulesPath,
-      );
+      await fs.move(path.join(targetDir, ".reliverse"), tempReliverserulesPath);
       await fs.remove(targetDir);
       await fs.ensureDir(targetDir);
     }
@@ -83,11 +77,11 @@ export async function downloadGitRepo(
 
       await git.clone(repoUrl, targetDir);
 
-      // Restore reliverse.json if it was moved
+      // Restore .reliverse if it was moved
       if (hasOnlyReliverserules) {
         await fs.move(
           tempReliverserulesPath,
-          path.join(targetDir, "reliverse.json"),
+          path.join(targetDir, ".reliverse"),
           { overwrite: true },
         );
       }
@@ -95,7 +89,7 @@ export async function downloadGitRepo(
       relinka("success-verbose", `${template} was downloaded to ${targetDir}.`);
       return targetDir;
     } catch (error) {
-      // Restore reliverse.json if operation failed
+      // Restore .reliverse if operation failed
       if (
         hasOnlyReliverserules &&
         (await fs.pathExists(tempReliverserulesPath))
@@ -103,7 +97,7 @@ export async function downloadGitRepo(
         await fs.ensureDir(targetDir);
         await fs.move(
           tempReliverserulesPath,
-          path.join(targetDir, "reliverse.json"),
+          path.join(targetDir, ".reliverse"),
           { overwrite: true },
         );
       }
@@ -111,5 +105,6 @@ export async function downloadGitRepo(
     }
   } catch (error) {
     throwError(error);
+    return undefined;
   }
 }

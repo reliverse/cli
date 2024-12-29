@@ -11,8 +11,8 @@ export type UserDataKeys =
 export type ReliverseMemory = {
   code: string;
   key: string;
-  githubKey: string;
-  vercelKey: string;
+  githubKey?: string;
+  vercelKey?: string;
   name?: string;
   email?: string;
   githubUsername?: string;
@@ -81,6 +81,35 @@ export type PreferredLibraries = {
     | "none";
   database?: "drizzle" | "prisma" | "mongoose" | "none";
   api?: "trpc" | "graphql" | "rest" | "none";
+  linting?: "eslint" | "none";
+  formatting?: "biome" | "none";
+  deployment?: "vercel" | "none";
+  payment?: "stripe" | "none";
+  analytics?: "vercel" | "none";
+  monitoring?: "sentry" | "none";
+  logging?: "axiom" | "none";
+  forms?: "react-hook-form" | "none";
+  validation?: "zod" | "typebox" | "valibot" | "none";
+  documentation?: "starlight" | "nextra" | "none";
+  components?: "shadcn" | "none";
+  icons?: "lucide" | "none";
+  mail?: "resend" | "none";
+  search?: "algolia" | "none";
+  cache?: "redis" | "none";
+  storage?: "cloudflare" | "none";
+  cdn?: "cloudflare" | "none";
+  cms?: "contentlayer" | "none";
+  i18n?: "next-intl" | "none";
+  seo?: "next-seo" | "none";
+  ui?: "radix" | "none";
+  motion?: "framer" | "none";
+  charts?: "recharts" | "none";
+  dates?: "dayjs" | "none";
+  markdown?: "mdx" | "none";
+  security?: "auth" | "none";
+  notifications?: "sonner" | "none";
+  uploads?: "uploadthing" | "none";
+  routing?: "next" | "react-router" | "none";
 };
 
 export type CodeStylePreferences = {
@@ -94,6 +123,10 @@ export type CodeStylePreferences = {
   indentStyle: "space" | "tab";
   indentSize: 2 | 4 | 8;
   cjsToEsm?: boolean;
+  trailingComma: "all" | "es5" | "none";
+  bracketSpacing: boolean;
+  arrowParens: "always" | "as-needed" | "never";
+  tabWidth: 2 | 4 | 8;
   modernize?: {
     replaceFs?: boolean;
     replacePath?: boolean;
@@ -133,75 +166,160 @@ export type ProjectSubcategory = "" | "e-commerce" | "tool";
 export type ProjectState = "" | "creating" | "created";
 
 export type ReliverseConfig = {
-  // Project details
-  projectName?: string;
-  projectDisplayName?: string;
-  projectAuthor?: string;
-  projectDescription?: string;
-  projectVersion?: string;
-  projectLicense?: string;
-  projectRepository?: string;
-  projectState?: ProjectState;
-  projectDomain?: string;
-  projectType?: ProjectTypeOtions;
-  projectCategory?: ProjectCategory;
-  projectSubcategory?: ProjectSubcategory;
-  projectTemplate?: TemplateOption;
-  projectDeployService?: DeploymentService;
-  projectActivation?: string;
+  experimental?:
+    | {
+        // Do you want autoYes/autoNo below?
+        // Set to true to activate auto-answering.
+        // This is to ensure there is no unexpected behavior.
+        skipPromptsUseAutoBehavior?: boolean | undefined;
 
-  // Project features
-  features?: {
-    i18n: boolean;
-    analytics: boolean;
-    themeMode: "dark-light" | "dark" | "light";
-    authentication: boolean;
-    api: boolean;
-    database: boolean;
-    testing: boolean;
-    docker: boolean;
-    ci: boolean;
-    commands: string[];
-    webview: string[];
-    language: string[];
-    themes: string[];
-  };
+        // Generation preferences
+        deployBehavior?: Behavior | undefined;
+        depsBehavior?: Behavior | undefined;
+        gitBehavior?: Behavior | undefined;
+        i18nBehavior?: Behavior | undefined;
+        scriptsBehavior?: Behavior | undefined;
 
-  // Deployment
-  deployPlatform?: DeploymentService;
-  deployUrl?: string;
-  productionBranch?: string;
+        // Project details
+        projectName?: string | undefined;
+        projectAuthor?: string | undefined;
+        projectDescription?: string | undefined;
+        projectVersion?: string | undefined;
+        projectLicense?: string | undefined;
+        projectRepository?: string | undefined;
+        projectState?: ProjectState | undefined;
+        projectDomain?: string | undefined;
+        projectType?: ProjectTypeOtions | undefined;
+        projectCategory?: ProjectCategory | undefined;
+        projectSubcategory?: ProjectSubcategory | undefined;
+        projectTemplate?: TemplateOption | undefined;
+        projectDeployService?: DeploymentService | undefined;
+        projectActivation?: string | undefined;
+        projectFramework?: string | undefined;
+        projectPackageManager?: string | undefined;
+        projectFrameworkVersion?: string | undefined;
+        projectDisplayName?: string | undefined;
+        nodeVersion?: string | undefined;
+        runtime?: string | undefined;
 
-  // Development preferences
-  projectFramework?: "nextjs" | "react" | "vue" | "svelte" | "astro";
-  projectFrameworkVersion?: string;
-  nodeVersion?: string;
-  runtime?: "nodejs" | "bun" | "deno";
-  projectPackageManager?: "npm" | "yarn" | "pnpm" | "bun";
-  monorepo?: {
-    type: MonorepoType;
-    packages?: string[];
-    sharedPackages?: string[];
-  };
-  preferredLibraries?: PreferredLibraries;
-  codeStyle?: CodeStylePreferences;
+        // Deployment
+        deployPlatform?: DeploymentService | undefined;
+        productionBranch?: string | undefined;
+        deployUrl?: string | undefined;
 
-  // Dependencies management
-  ignoreDependencies?: string[];
+        monorepo?:
+          | {
+              type: string;
+              packages: string[];
+              sharedPackages: string[];
+            }
+          | undefined;
 
-  // Generation preferences
-  deployBehavior?: Behavior;
-  depsBehavior?: Behavior;
-  gitBehavior?: Behavior;
-  i18nBehavior?: Behavior;
-  scriptsBehavior?: Behavior;
+        // Project features
+        features?:
+          | {
+              i18n?: boolean | undefined;
+              analytics?: boolean | undefined;
+              themeMode?: "dark-light" | "dark" | "light" | undefined;
+              authentication?: boolean | undefined;
+              api?: boolean | undefined;
+              database?: boolean | undefined;
+              testing?: boolean | undefined;
+              docker?: boolean | undefined;
+              ci?: boolean | undefined;
+              commands?: string[] | undefined;
+              webview?: string[] | undefined;
+              language?: string[] | undefined;
+              themes?: string[] | undefined;
+            }
+          | undefined;
 
-  // Config revalidation
-  configLastRevalidate?: string; // ISO date string
-  configRevalidateFrequency?: string; // 1h | 1d | 2d | 7d
+        // Development preferences
+        preferredLibraries?:
+          | {
+              stateManagement?: string | undefined;
+              formManagement?: string | undefined;
+              styling?: string | undefined;
+              uiComponents?: string | undefined;
+              testing?: string | undefined;
+              authentication?: string | undefined;
+              database?: string | undefined;
+              api?: string | undefined;
+              linting?: string | undefined;
+              formatting?: string | undefined;
+              deployment?: string | undefined;
+              payment?: string | undefined;
+              analytics?: string | undefined;
+              monitoring?: string | undefined;
+              logging?: string | undefined;
+              forms?: string | undefined;
+              validation?: string | undefined;
+              documentation?: string | undefined;
+              components?: string | undefined;
+              icons?: string | undefined;
+              mail?: string | undefined;
+              search?: string | undefined;
+              cache?: string | undefined;
+              storage?: string | undefined;
+              cdn?: string | undefined;
+              cms?: string | undefined;
+              i18n?: string | undefined;
+              seo?: string | undefined;
+              ui?: string | undefined;
+              motion?: string | undefined;
+              charts?: string | undefined;
+              dates?: string | undefined;
+              markdown?: string | undefined;
+              security?: string | undefined;
+              notifications?: string | undefined;
+              uploads?: string | undefined;
+              routing?: string | undefined;
+            }
+          | undefined;
 
-  // Custom rules
-  customRules?: Record<string, unknown>;
+        // Code style preferences
+        codeStyle?:
+          | {
+              lineWidth?: number | undefined;
+              cjsToEsm?: boolean | undefined;
+              importSymbol?: string | undefined;
+              indentSize?: number | undefined;
+              indentStyle?: "space" | "tab" | undefined;
+              dontRemoveComments?: boolean | undefined;
+              shouldAddComments?: boolean | undefined;
+              typeOrInterface?: "type" | "interface" | undefined;
+              importOrRequire?: "import" | "require" | undefined;
+              quoteMark?: "single" | "double" | undefined;
+              semicolons?: boolean | undefined;
+              trailingComma?: "all" | "es5" | "none" | undefined;
+              bracketSpacing?: boolean | undefined;
+              arrowParens?: "always" | "avoid" | undefined;
+              tabWidth?: number | undefined;
+              jsToTs?: boolean | undefined;
+              modernize?:
+                | {
+                    replaceFs?: boolean | undefined;
+                    replacePath?: boolean | undefined;
+                    replaceHttp?: boolean | undefined;
+                    replaceProcess?: boolean | undefined;
+                    replaceConsole?: boolean | undefined;
+                    replaceEvents?: boolean | undefined;
+                  }
+                | undefined;
+            }
+          | undefined;
+
+        // Config revalidation
+        configLastRevalidate?: string | undefined;
+        configRevalidateFrequency?: string | undefined;
+
+        // Dependencies management
+        ignoreDependencies?: string[] | undefined;
+
+        // Custom rules
+        customRules?: Record<string, unknown> | undefined;
+      }
+    | undefined;
 };
 
 // Return type explicitly first
@@ -324,8 +442,6 @@ export type ConfigPreset = {
   dependencies: string[];
   config: string | Record<string, any>;
 };
-
-export type GitOption = "initializeNewGitRepository" | "keepExistingGitFolder";
 
 export type FileConflict = {
   customMessage?: string; // Optional custom message for user prompt
@@ -535,19 +651,29 @@ export type ModernizeConfig = {
   replaceEvents?: boolean;
 };
 
-export type GitStatus = {
-  uncommittedChanges: number;
-  unpushedCommits: number;
-};
-
 export type DetectedProject = {
   name: string;
   path: string;
   config: ReliverseConfig;
-  gitStatus?: GitStatus;
+  gitStatus?: {
+    uncommittedChanges: number;
+    unpushedCommits: number;
+  };
+  needsDepsInstall?: boolean;
+  hasGit?: boolean;
 };
 
 export type GitCommitOptions = {
   message: string;
   projectPath: string;
+};
+
+export type VSCodeSettings = {
+  "editor.formatOnSave"?: boolean;
+  "editor.defaultFormatter"?: string;
+  "editor.codeActionsOnSave"?: Record<string, string>;
+  "eslint.ignoreUntitled"?: boolean;
+  "eslint.rules.customizations"?: { rule: string; severity: string }[];
+  "markdownlint.config"?: Record<string, boolean>;
+  "typescript.enablePromptUseWorkspaceTsdk"?: boolean;
 };

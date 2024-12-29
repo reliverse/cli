@@ -5,6 +5,7 @@ import path from "pathe";
 import type { ShadcnConfig, Theme } from "~/types.js";
 
 import { relinka } from "./console.js";
+import { pmx } from "./detectPackageManager.js";
 
 const COMPONENT_DEPENDENCIES: Record<string, string[]> = {
   "alert-dialog": ["button"],
@@ -16,7 +17,14 @@ const COMPONENT_DEPENDENCIES: Record<string, string[]> = {
   "navigation-menu": ["button"],
   popover: ["button"],
   sheet: ["button"],
-  toast: ["button"],
+  toast: ["toast", "button"],
+  combobox: ["popover", "command"],
+  command: ["dialog"],
+  "date-picker": ["button", "calendar", "popover"],
+  "input-otp": ["input"],
+  resizable: ["separator"],
+  sonner: [],
+  "toggle-group": ["toggle"],
 };
 
 const THEMES: Theme[] = [
@@ -25,24 +33,39 @@ const THEMES: Theme[] = [
     colors: {
       "--background": "0 0% 100%",
       "--foreground": "240 10% 3.9%",
-      "--muted": "240 4.8% 95.9%",
-      "--muted-foreground": "240 3.8% 46.1%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "240 3% 6%",
+      "--card-two": "240 10% 3.9%",
+      "--card-two-foreground": "0 0% 98%",
       "--popover": "0 0% 100%",
       "--popover-foreground": "240 10% 3.9%",
-      "--card": "0 0% 100%",
-      "--card-foreground": "240 10% 3.9%",
-      "--border": "240 5.9% 90%",
-      "--input": "240 5.9% 90%",
       "--primary": "240 5.9% 10%",
       "--primary-foreground": "0 0% 98%",
       "--secondary": "240 4.8% 95.9%",
       "--secondary-foreground": "240 5.9% 10%",
+      "--muted": "240 4.8% 95.9%",
+      "--muted-foreground": "240 3.8% 46.1%",
       "--accent": "240 4.8% 95.9%",
       "--accent-foreground": "240 5.9% 10%",
       "--destructive": "0 84.2% 60.2%",
       "--destructive-foreground": "0 0% 98%",
-      "--ring": "240 5.9% 10%",
+      "--border": "240 5.9% 90%",
+      "--input": "240 5.9% 90%",
+      "--ring": "240 10% 3.9%",
+      "--chart-1": "12 76% 61%",
+      "--chart-2": "173 58% 39%",
+      "--chart-3": "197 37% 24%",
+      "--chart-4": "43 74% 66%",
+      "--chart-5": "27 87% 67%",
       "--radius": "0.5rem",
+      "--sidebar-background": "0 0% 98%",
+      "--sidebar-foreground": "240 5.3% 26.1%",
+      "--sidebar-primary": "240 5.9% 10%",
+      "--sidebar-primary-foreground": "0 0% 98%",
+      "--sidebar-accent": "240 4.8% 95.9%",
+      "--sidebar-accent-foreground": "240 5.9% 10%",
+      "--sidebar-border": "220 13% 91%",
+      "--sidebar-ring": "217.2 91.2% 59.8%",
     },
   },
   {
@@ -50,25 +73,39 @@ const THEMES: Theme[] = [
     colors: {
       "--background": "240 10% 3.9%",
       "--foreground": "0 0% 98%",
-      // ... (dark theme colors)
-    },
-  },
-  {
-    name: "Slate",
-    colors: {
-      "--background": "0 0% 98%",
-      "--foreground": "224 71.4% 4.1%",
-      "--primary": "220.9 39.3% 11%",
-      "--primary-foreground": "210 20% 98%",
-    },
-  },
-  {
-    name: "Rose",
-    colors: {
-      "--background": "0 0% 98%",
-      "--foreground": "240 10% 3.9%",
-      "--primary": "346.8 77.2% 49.8%",
-      "--primary-foreground": "355.7 100% 97.3%",
+      "--card": "240 10% 3.9%",
+      "--card-foreground": "0 0% 98%",
+      "--card-two": "240 3% 6%",
+      "--card-two-foreground": "0 0% 98%",
+      "--popover": "240 10% 3.9%",
+      "--popover-foreground": "0 0% 98%",
+      "--primary": "0 0% 98%",
+      "--primary-foreground": "240 5.9% 10%",
+      "--secondary": "240 3.7% 15.9%",
+      "--secondary-foreground": "0 0% 98%",
+      "--muted": "240 3.7% 15.9%",
+      "--muted-foreground": "240 5% 64.9%",
+      "--accent": "240 3.7% 15.9%",
+      "--accent-foreground": "0 0% 98%",
+      "--destructive": "0 62.8% 30.6%",
+      "--destructive-foreground": "0 0% 98%",
+      "--border": "240 3.7% 15.9%",
+      "--input": "240 3.7% 15.9%",
+      "--ring": "240 4.9% 83.9%",
+      "--chart-1": "220 70% 50%",
+      "--chart-2": "160 60% 45%",
+      "--chart-3": "30 80% 55%",
+      "--chart-4": "280 65% 60%",
+      "--chart-5": "340 75% 55%",
+      "--radius": "0.5rem",
+      "--sidebar-background": "240 5.9% 10%",
+      "--sidebar-foreground": "240 4.8% 95.9%",
+      "--sidebar-primary": "224.3 76.3% 48%",
+      "--sidebar-primary-foreground": "0 0% 100%",
+      "--sidebar-accent": "240 3.7% 15.9%",
+      "--sidebar-accent-foreground": "240 4.8% 95.9%",
+      "--sidebar-border": "240 3.7% 15.9%",
+      "--sidebar-ring": "217.2 91.2% 59.8%",
     },
   },
 ];
@@ -79,10 +116,14 @@ export async function readShadcnConfig(
   const configPath = path.join(cwd, "components.json");
   try {
     if (await fs.pathExists(configPath)) {
-      return await fs.readJson(configPath);
+      return (await fs.readJson(configPath)) as ShadcnConfig;
     }
   } catch (error) {
-    relinka("error", "Error reading shadcn config:", error.toString());
+    relinka(
+      "error",
+      "Error reading shadcn config:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
   return null;
 }
@@ -100,39 +141,13 @@ export async function getInstalledComponents(
         .map((f) => f.replace(".tsx", ""));
     }
   } catch (error) {
-    relinka("error", "Error reading UI components:", error.toString());
+    relinka(
+      "error",
+      "Error reading UI components:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
   return [];
-}
-
-async function checkShadcnDependencies(cwd: string): Promise<boolean> {
-  try {
-    const pkgJson = await fs.readJson(path.join(cwd, "package.json"));
-    const requiredDeps = [
-      "tailwindcss",
-      "class-variance-authority",
-      "clsx",
-      "tailwind-merge",
-    ];
-
-    const missingDeps = requiredDeps.filter(
-      (dep) => !pkgJson.dependencies?.[dep] && !pkgJson.devDependencies?.[dep],
-    );
-
-    if (missingDeps.length > 0) {
-      relinka(
-        "error",
-        "Missing required dependencies:",
-        missingDeps.join(", "),
-      );
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    relinka("error", "Error checking dependencies:", error.toString());
-    return false;
-  }
 }
 
 async function ensureComponentDependencies(
@@ -140,7 +155,7 @@ async function ensureComponentDependencies(
   component: string,
   config: ShadcnConfig,
 ): Promise<void> {
-  const dependencies = COMPONENT_DEPENDENCIES[component] || [];
+  const dependencies = COMPONENT_DEPENDENCIES[component] ?? [];
   const installedComponents = await getInstalledComponents(cwd, config);
 
   for (const dep of dependencies) {
@@ -151,16 +166,65 @@ async function ensureComponentDependencies(
   }
 }
 
-export async function installComponent(
+type InitOptions = {
+  defaults?: boolean;
+  force?: boolean;
+  yes?: boolean;
+  cwd: string;
+};
+
+type ComponentOptions = {
+  yes?: boolean;
+  overwrite?: boolean;
+  cwd: string;
+  all?: boolean;
+  path?: string;
+};
+
+export async function initializeShadcn(
   cwd: string,
-  component: string,
+  options: Partial<InitOptions> = {},
 ): Promise<void> {
   try {
-    if (!(await checkShadcnDependencies(cwd))) {
-      relinka("error", "Please install required dependencies first");
+    const configExists = await fs.pathExists(path.join(cwd, "components.json"));
+    if (configExists && !options.force) {
+      relinka("info", "shadcn/ui is already initialized");
       return;
     }
 
+    const args = ["shadcn-ui@latest", "init"];
+
+    if (options.defaults) {
+      args.push("--defaults");
+    }
+    if (options.force) {
+      args.push("--force");
+    }
+    if (options.yes) {
+      args.push("--yes");
+    }
+
+    await execa(pmx, args, {
+      cwd,
+      stdio: "inherit",
+    });
+
+    relinka("success", "Initialized shadcn/ui");
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to initialize shadcn/ui:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+export async function installComponent(
+  cwd: string,
+  component: string,
+  options: Partial<ComponentOptions> = {},
+): Promise<void> {
+  try {
     const config = await readShadcnConfig(cwd);
     if (!config) {
       relinka("error", "shadcn/ui configuration not found");
@@ -168,10 +232,61 @@ export async function installComponent(
     }
 
     await ensureComponentDependencies(cwd, component, config);
-    await execa("npx", ["shadcn-ui@latest", "add", component], { cwd });
+
+    const args = ["shadcn-ui@latest", "add", component];
+
+    if (options.yes) {
+      args.push("--yes");
+    }
+    if (options.overwrite) {
+      args.push("--overwrite");
+    }
+    if (options.all) {
+      args.push("--all");
+    }
+    if (options.path) {
+      args.push("--path");
+      args.push(options.path);
+    }
+
+    await execa(pmx, args, { cwd });
+
     relinka("success", `Installed component: ${component}`);
   } catch (error) {
-    relinka("error", `Failed to install ${component}:`, error.toString());
+    relinka(
+      "error",
+      `Failed to install ${component}:`,
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+export async function updateComponent(
+  cwd: string,
+  component: string,
+): Promise<void> {
+  return installComponent(cwd, component, { overwrite: true });
+}
+
+export async function installAllComponents(
+  cwd: string,
+  options: Partial<ComponentOptions> = {},
+): Promise<void> {
+  try {
+    const config = await readShadcnConfig(cwd);
+    if (!config) {
+      relinka("error", "shadcn/ui configuration not found");
+      return;
+    }
+
+    await installComponent(cwd, "", { ...options, all: true });
+    relinka("success", "Installed all components");
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to install all components:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
@@ -181,7 +296,6 @@ export async function removeComponent(
   component: string,
 ): Promise<void> {
   try {
-    // Check if any other components depend on this one
     const dependentComponents = Object.entries(COMPONENT_DEPENDENCIES)
       .filter(([_, deps]) => deps.includes(component))
       .map(([comp]) => comp);
@@ -207,26 +321,11 @@ export async function removeComponent(
     await fs.remove(componentPath);
     relinka("success", `Removed component: ${component}`);
   } catch (error) {
-    relinka("error", `Failed to remove ${component}:`, error.toString());
-  }
-}
-
-export async function updateComponent(
-  cwd: string,
-  component: string,
-): Promise<void> {
-  try {
-    if (!(await checkShadcnDependencies(cwd))) {
-      relinka("error", "Please install required dependencies first");
-      return;
-    }
-
-    await execa("npx", ["shadcn-ui@latest", "add", component, "--overwrite"], {
-      cwd,
-    });
-    relinka("success", `Updated component: ${component}`);
-  } catch (error) {
-    relinka("error", `Failed to update ${component}:`, error.toString());
+    relinka(
+      "error",
+      `Failed to remove ${component}:`,
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
@@ -239,10 +338,8 @@ export async function applyTheme(
   try {
     let cssContent = await fs.readFile(cssPath, "utf-8");
 
-    // Backup existing file
     await fs.writeFile(`${cssPath}.backup`, cssContent);
 
-    // Find and replace the :root section
     const rootRegex = /:root\s*{[^}]*}/;
     const newRootSection = `:root {
 ${Object.entries(theme.colors)
@@ -258,8 +355,11 @@ ${Object.entries(theme.colors)
       `Applied theme: ${theme.name} (backup created at ${cssPath}.backup)`,
     );
   } catch (error) {
-    relinka("error", `Failed to apply theme ${theme.name}:`, error.toString());
-    // Try to restore backup if it exists
+    relinka(
+      "error",
+      `Failed to apply theme ${theme.name}:`,
+      error instanceof Error ? error.message : String(error),
+    );
     try {
       if (await fs.pathExists(`${cssPath}.backup`)) {
         await fs.copy(`${cssPath}.backup`, cssPath);
@@ -269,7 +369,9 @@ ${Object.entries(theme.colors)
       relinka(
         "error",
         "Failed to restore theme backup:",
-        backupError.toString(),
+        backupError instanceof Error
+          ? backupError.message
+          : String(backupError),
       );
     }
   }
@@ -285,34 +387,64 @@ export const AVAILABLE_COMPONENTS = [
   "button",
   "calendar",
   "card",
+  "carousel",
+  "charts",
   "checkbox",
   "collapsible",
+  "combobox",
   "command",
   "context-menu",
+  "data-table",
+  "date-picker",
   "dialog",
+  "drawer",
   "dropdown-menu",
   "form",
   "hover-card",
   "input",
+  "input-otp",
   "label",
   "menubar",
   "navigation-menu",
+  "pagination",
   "popover",
   "progress",
   "radio-group",
+  "resizable",
   "scroll-area",
   "select",
   "separator",
   "sheet",
+  "sidebar",
   "skeleton",
   "slider",
+  "sonner",
   "switch",
   "table",
   "tabs",
   "textarea",
   "toast",
   "toggle",
+  "toggle-group",
   "tooltip",
 ];
 
 export { THEMES };
+
+export function selectSidebarPrompt(projectPath: string): void {
+  relinka(
+    "info-verbose",
+    "The following project requested sidebar installation",
+    projectPath,
+  );
+  relinka("info-verbose", "Coming soon...");
+}
+
+export function selectChartsPrompt(projectPath: string): void {
+  relinka(
+    "info-verbose",
+    "The following project requested charts installation",
+    projectPath,
+  );
+  relinka("info-verbose", "Coming soon...");
+}

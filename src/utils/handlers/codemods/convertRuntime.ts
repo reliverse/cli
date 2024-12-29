@@ -122,7 +122,7 @@ export async function convertRuntime(
           content,
         );
         const importMap = {
-          imports: {},
+          imports: {} as Record<string, string>,
         };
         if (packageJson?.dependencies) {
           for (const dep of Object.keys(packageJson.dependencies)) {
@@ -152,7 +152,7 @@ export async function convertRuntime(
       );
       tsconfig.compilerOptions = {
         ...tsconfig.compilerOptions,
-        types: [...(tsconfig.compilerOptions?.types || []), "bun-types"],
+        types: [...(tsconfig.compilerOptions?.types ?? []), "bun-types"],
       };
       await fs.writeJSON(tsconfigPath, tsconfig, { spaces: 2 });
     }

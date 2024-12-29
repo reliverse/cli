@@ -21,7 +21,7 @@ export async function handleCleanup(cwd: string) {
       const knipConfig = destr<KnipConfig>(
         await fs.readFile(knipConfigPath, "utf-8"),
       );
-      ignoredDeps = knipConfig.ignoreDependencies || [];
+      ignoredDeps = knipConfig.ignoreDependencies ?? [];
     }
   } catch (error) {
     relinka(
@@ -31,16 +31,18 @@ export async function handleCleanup(cwd: string) {
     );
   }
 
-  // Read ignoreDependencies from reliverse.json if exists
+  // Read ignoreDependencies from .reliverse if exists
   try {
     const rules = await readReliverseConfig(cwd);
-    if (rules?.ignoreDependencies) {
-      ignoredDeps = [...new Set([...ignoredDeps, ...rules.ignoreDependencies])];
+    if (rules?.experimental?.ignoreDependencies) {
+      ignoredDeps = [
+        ...new Set([...ignoredDeps, ...rules.experimental.ignoreDependencies]),
+      ];
     }
   } catch (error) {
     relinka(
       "warn-verbose",
-      "Error reading reliverse.json:",
+      "Error reading .reliverse:",
       error instanceof Error ? error.message : String(error),
     );
   }

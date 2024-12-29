@@ -71,35 +71,43 @@ async function updateTailwindConfig(cwd: string) {
 }
 
 function convertThemeToCssVariables(
-  themeContent: string,
+  themeContent: string | undefined = "",
 ): TailwindThemeVariable[] {
   const variables: TailwindThemeVariable[] = [...DEFAULT_THEME_VARIABLES];
 
   // Extract color definitions
-  const colorMatch = /colors:\s*{([^}]*)}/s.exec(themeContent);
-  if (colorMatch) {
+  const colorMatch = themeContent
+    ? /colors:\s*{([^}]*)}/s.exec(themeContent)
+    : null;
+  if (colorMatch?.[1]) {
     const colorContent = colorMatch[1];
     const colorEntries = colorContent.matchAll(/(\w+):\s*['"]([^'"]+)['"]/g);
-    for (const [, name, value] of colorEntries) {
+    for (const [, name, value] of Array.from(colorEntries)) {
       variables.push({
         name: `--color-${name}`,
+        // @ts-expect-error fix ts error
         value: value.startsWith("#") ? convertHexToOklch(value) : value,
       });
     }
   }
 
   // Extract spacing definitions
-  const spacingMatch = /spacing:\s*{([^}]*)}/s.exec(themeContent);
+  const spacingMatch = themeContent
+    ? /spacing:\s*{([^}]*)}/s.exec(themeContent)
+    : null;
   if (spacingMatch) {
     variables.push({ name: "--spacing", value: "0.25rem" });
   }
 
   // Extract breakpoint definitions
-  const screenMatch = /screens:\s*{([^}]*)}/s.exec(themeContent);
-  if (screenMatch) {
+  const screenMatch = themeContent
+    ? /screens:\s*{([^}]*)}/s.exec(themeContent)
+    : null;
+  if (screenMatch?.[1]) {
     const screenContent = screenMatch[1];
     const screenEntries = screenContent.matchAll(/(\w+):\s*['"]([^'"]+)['"]/g);
-    for (const [, name, value] of screenEntries) {
+    for (const [, name, value] of Array.from(screenEntries)) {
+      // @ts-expect-error fix ts error
       variables.push({ name: `--breakpoint-${name}`, value });
     }
   }
@@ -184,8 +192,8 @@ async function updatePackageJson(cwd: string) {
   const pkgPath = path.join(cwd, "package.json");
   if (await fs.pathExists(pkgPath)) {
     const pkg = await fs.readJson(pkgPath);
-    const deps = pkg.dependencies || {};
-    const devDeps = pkg.devDependencies || {};
+    const deps = pkg.dependencies ?? {};
+    const devDeps = pkg.devDependencies ?? {};
 
     // Remove old dependencies
     delete deps.tailwindcss;
@@ -245,6 +253,8 @@ export async function convertTailwindV3ToV4(cwd: string) {
       let hasChanges = false;
       let fileChanges = 0;
 
+      type ReplaceCallback = (match: string, ...args: any[]) => string;
+
       for (const {
         pattern,
         replacement,
@@ -252,7 +262,12 @@ export async function convertTailwindV3ToV4(cwd: string) {
       } of TAILWIND_REPLACEMENTS) {
         const originalContent = content;
         content = content.replace(pattern, (...args) =>
-          typeof replacement === "string" ? replacement : replacement(...args),
+          typeof replacement === "string"
+            ? replacement
+            : (replacement as ReplaceCallback)(
+                args[0],
+                ...(args.slice(1) as [string, ...any[]]),
+              ),
         );
         if (content !== originalContent) {
           hasChanges = true;

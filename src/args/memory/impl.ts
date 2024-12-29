@@ -7,8 +7,8 @@ import type { ConfigKey, ReliverseMemory, UserDataKeys } from "~/types.js";
 
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
+import { MEMORY_FILE } from "~/app/db/constants.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
-import { MEMORY_FILE } from "~/app/menu/data/constants.js";
 import { relinka } from "~/utils/console.js";
 
 const homeDir = os.homedir();
@@ -26,7 +26,7 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
         const decrypted = decrypt(row.value);
         // Try to parse JSON if the value looks like JSON
         try {
-          if (decrypted.startsWith("{") || decrypted.startsWith("[")) {
+          if (decrypted.startsWith("{") ?? decrypted.startsWith("[")) {
             acc[row.key] = JSON.parse(decrypted) as string;
           } else {
             acc[row.key] = decrypted;
@@ -45,7 +45,7 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
     const userData = userRows.reduce<Record<string, string>>((acc, row) => {
       try {
         // Try to parse JSON if the value looks like JSON
-        if (row.value.startsWith("{") || row.value.startsWith("[")) {
+        if (row.value.startsWith("{") ?? row.value.startsWith("[")) {
           acc[row.key] = JSON.parse(row.value) as string;
         } else {
           acc[row.key] = row.value;
@@ -58,18 +58,22 @@ export async function readReliverseMemory(): Promise<ReliverseMemory> {
 
     return {
       // Encrypted data
-      code: configData.code || "",
-      key: configData.key || "",
-      githubKey: configData.githubKey || "",
-      vercelKey: configData.vercelKey || "",
+      code: configData["code"] ?? "",
+      key: configData["key"] ?? "",
+      githubKey: configData["githubKey"] ?? "",
+      vercelKey: configData["vercelKey"] ?? "",
       // Non-encrypted data
-      name: userData.name || "",
-      email: userData.email || "",
-      githubUsername: userData.githubUsername || "",
-      vercelUsername: userData.vercelUsername || "",
+      name: userData["name"] ?? "",
+      email: userData["email"] ?? "",
+      githubUsername: userData["githubUsername"] ?? "",
+      vercelUsername: userData["vercelUsername"] ?? "",
     };
   } catch (error) {
-    relinka("error", "Error reading memory:", error.toString());
+    relinka(
+      "error",
+      "Error reading memory:",
+      error instanceof Error ? error.message : String(error),
+    );
     return {
       code: "",
       key: "",
@@ -156,7 +160,11 @@ export async function updateReliverseMemory(
 
     relinka("success-verbose", "Memory updated successfully");
   } catch (error) {
-    relinka("error", "Error updating memory:", error.toString());
+    relinka(
+      "error",
+      "Error updating memory:",
+      error instanceof Error ? error.message : String(error),
+    );
     throw error;
   }
 }

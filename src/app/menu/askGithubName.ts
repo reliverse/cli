@@ -21,13 +21,14 @@ export async function askGithubName(): Promise<string> {
     title: "What's your GitHub username?",
     placeholder,
     content,
-    validate: (value) => {
+    validate: (value: string | undefined) => {
       if (!value?.trim()) {
         return "GitHub username is required for deployment";
       }
       if (!/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(value)) {
         return "Invalid GitHub username format";
       }
+      return true;
     },
   });
 

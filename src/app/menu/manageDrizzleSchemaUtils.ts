@@ -57,17 +57,26 @@ export async function setupDrizzle(
       ],
     });
 
+    const drizzleConfig = INTEGRATION_CONFIGS["drizzle"];
+    if (!drizzleConfig) {
+      throw new Error("Drizzle integration configuration not found");
+    }
+
     const config = {
-      ...INTEGRATION_CONFIGS.drizzle,
+      ...drizzleConfig,
       dependencies: [
-        ...INTEGRATION_CONFIGS.drizzle.dependencies,
+        ...drizzleConfig.dependencies,
         pgProvider === "neon" ? "@neondatabase/serverless" : "postgres",
       ],
     };
 
     await installIntegration(cwd, config);
   } else {
-    await installIntegration(cwd, INTEGRATION_CONFIGS.drizzle);
+    const drizzleConfig = INTEGRATION_CONFIGS["drizzle"];
+    if (!drizzleConfig) {
+      throw new Error("Drizzle integration configuration not found");
+    }
+    await installIntegration(cwd, drizzleConfig);
   }
 
   return provider as DatabaseProvider;
@@ -91,7 +100,9 @@ export async function getAvailableTables(
       const content = await fs.readFile(schemaFile, "utf-8");
       const tableMatches = content.match(/export const (\w+)\s*=/g);
       return tableMatches
-        ? tableMatches.map((match) => match.split(" ")[2])
+        ? tableMatches
+            .map((match) => match.split(" ")[2])
+            .filter((name): name is string => name !== undefined)
         : [];
     }
   }
@@ -108,13 +119,14 @@ export async function addNewTable(
   // Get table name
   const tableName = await inputPrompt({
     title: "Enter the table name:",
-    validate: (value) => {
+    validate: (value: string): string | boolean => {
       if (!value?.trim()) {
         return "Table name is required";
       }
       if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(value)) {
         return "Table name must start with a letter and contain only letters, numbers, and underscores";
       }
+      return true;
     },
   });
 
@@ -125,13 +137,14 @@ export async function addNewTable(
   while (addingColumns) {
     const columnName = await inputPrompt({
       title: "Enter column name:",
-      validate: (value) => {
+      validate: (value: string): string | boolean => {
         if (!value?.trim()) {
           return "Column name is required";
         }
         if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(value)) {
           return "Column name must start with a letter and contain only letters, numbers, and underscores";
         }
+        return true;
       },
     });
 
@@ -217,9 +230,9 @@ export async function addNewTable(
       nullable,
       primaryKey,
       unique,
-      defaultValue,
-      references,
-    });
+      ...(defaultValue && { defaultValue }),
+      ...(references && { references }),
+    } as ColumnType);
 
     addingColumns = await confirmPrompt({
       title: "Add another column?",
@@ -311,7 +324,7 @@ export async function renameTable(
 
   const newName = await inputPrompt({
     title: "Enter new table name:",
-    validate: (value) => {
+    validate: (value: string): string | boolean => {
       if (!value?.trim()) {
         return "Table name is required";
       }
@@ -321,6 +334,7 @@ export async function renameTable(
       if (tables.includes(value)) {
         return "A table with this name already exists";
       }
+      return true;
     },
   });
 

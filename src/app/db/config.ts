@@ -15,7 +15,7 @@ import { configKeysTable } from "./schema.js";
 
 // Encryption key based on machine-specific data
 function getDerivedKey(): Buffer {
-  const machineId = `${process.platform}-${process.arch}-${process.env.USERNAME || process.env.USER}`;
+  const machineId = `${process.platform}-${process.arch}-${process.env["USERNAME"] ?? process.env["USER"]}`;
   return createHash("sha256").update(machineId).digest();
 }
 
@@ -50,6 +50,9 @@ export function encrypt(text: string): string {
 export function decrypt(text: string): string {
   try {
     const [ivHex, encryptedHex] = text.split(":");
+    if (!ivHex || !encryptedHex) {
+      throw new Error("Invalid encrypted text format");
+    }
     const iv = Buffer.from(ivHex, "hex");
     const encrypted = Buffer.from(encryptedHex, "hex");
     const key = getDerivedKey();

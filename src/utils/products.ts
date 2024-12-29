@@ -216,6 +216,6 @@ export function getSubcategories(category?: string): {
     categoryObject?.subcategories.map((s) => ({
       label: s.title,
       value: s.slug,
-    })) || []
+    })) ?? []
   );
 }

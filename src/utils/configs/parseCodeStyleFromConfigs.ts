@@ -32,7 +32,9 @@ export async function parseCodeStyleFromConfigs(
         };
 
         // Detect module settings
-        if (compilerOptions.module?.toLowerCase().includes("node")) {
+        if (
+          (compilerOptions.module as string)?.toLowerCase().includes("node")
+        ) {
           codeStyle.importOrRequire = "esm";
         }
       }
@@ -45,5 +47,5 @@ export async function parseCodeStyleFromConfigs(
     );
   }
 
-  return { codeStyle };
+  return { experimental: { codeStyle } };
 }

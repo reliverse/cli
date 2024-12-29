@@ -14,7 +14,7 @@ export default defineCommand({
       description: "Displays the help message for the dev command",
     },
   },
-  run: async ({ args }) => {
+  run: ({ args }) => {
     if (args.dev) {
       relinka("info", "Use `bun dev --help` instead.");
     } else {

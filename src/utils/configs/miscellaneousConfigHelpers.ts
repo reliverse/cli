@@ -80,19 +80,19 @@ export function addConfigMetadata<T extends object>(config: T): T & BaseConfig {
 }
 
 export async function readConfig(cwd: string): Promise<ReliverseConfig> {
-  const configPath = path.join(cwd, "reliverse.json");
-  const rulesPath = path.join(cwd, "reliverse.json");
+  const configPath = path.join(cwd, ".reliverse");
+  const rulesPath = path.join(cwd, ".reliverse");
   let config: ReliverseConfig = { ...DEFAULT_CONFIG };
 
   try {
-    // Try to read reliverse.json first
+    // Try to read .reliverse first
     if (await fs.pathExists(configPath)) {
       const configContent = await fs.readFile(configPath, "utf-8");
       const userConfig = destr<Partial<ReliverseConfig>>(configContent);
       config = { ...config, ...userConfig };
     }
 
-    // Try to read reliverse.json and merge if exists
+    // Try to read .reliverse and merge if exists
     if (await fs.pathExists(rulesPath)) {
       const rulesContent = await fs.readFile(rulesPath, "utf-8");
       let rules: ReliverseConfig;
@@ -104,7 +104,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
         // If parsing fails, warn user but continue with existing config
         relinka(
           "warn",
-          "Failed to parse reliverse.json file, using reliverse.json only",
+          "Failed to parse .reliverse file, using .reliverse only",
         );
         return config;
       }
@@ -112,63 +112,208 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
       // Merge rules into config, preserving existing values
       config = {
         ...config,
-        // Project details
-        projectName: rules.projectName || config.projectName,
-        projectAuthor: rules.projectAuthor || config.projectAuthor,
-        projectDescription:
-          rules.projectDescription || config.projectDescription,
-        projectVersion: rules.projectVersion || config.projectVersion,
-        projectLicense: rules.projectLicense || config.projectLicense,
-        projectRepository: rules.projectRepository || config.projectRepository,
+        experimental: {
+          ...config.experimental,
+          // Project details
+          projectName:
+            rules.experimental?.projectName ??
+            config.experimental?.projectName ??
+            "",
+          projectAuthor:
+            rules.experimental?.projectAuthor ??
+            config.experimental?.projectAuthor ??
+            "",
+          projectDescription:
+            rules.experimental?.projectDescription ??
+            config.experimental?.projectDescription ??
+            "",
+          projectVersion:
+            rules.experimental?.projectVersion ??
+            config.experimental?.projectVersion ??
+            "",
+          projectLicense:
+            rules.experimental?.projectLicense ??
+            config.experimental?.projectLicense ??
+            "",
+          projectRepository:
+            rules.experimental?.projectRepository ??
+            config.experimental?.projectRepository ??
+            "",
 
-        // Project features
-        features: {
-          ...config.features,
-          ...rules.features,
-        },
+          deployPlatform: rules.experimental?.deployPlatform ?? "Vercel",
+          productionBranch: rules.experimental?.productionBranch ?? "main",
+          deployUrl: rules.experimental?.deployUrl ?? "",
+          projectActivation: rules.experimental?.projectActivation ?? "auto",
+          projectCategory: rules.experimental?.projectCategory ?? "website",
+          projectType: rules.experimental?.projectType ?? "development",
+          projectDeployService:
+            rules.experimental?.projectDeployService ?? "Vercel",
+          projectDisplayName: rules.experimental?.projectDisplayName ?? "",
+          projectDomain: rules.experimental?.projectDomain ?? "",
+          projectState: rules.experimental?.projectState ?? "creating",
+          projectSubcategory:
+            rules.experimental?.projectSubcategory ?? "e-commerce",
+          projectTemplate:
+            rules.experimental?.projectTemplate ?? "blefnk/relivator",
 
-        // Development preferences
-        projectFramework: rules.projectFramework || config.projectFramework,
-        projectFrameworkVersion:
-          rules.projectFrameworkVersion || config.projectFrameworkVersion,
-        nodeVersion: rules.nodeVersion || config.nodeVersion,
-        runtime: rules.runtime || config.runtime,
-        projectPackageManager:
-          rules.projectPackageManager || config.projectPackageManager,
-        monorepo: rules.monorepo || config.monorepo,
-        preferredLibraries: {
-          ...config.preferredLibraries,
-          ...rules.preferredLibraries,
-        },
+          // Project features
+          features: {
+            i18n: false,
+            analytics: false,
+            themeMode: "light",
+            authentication: false,
+            api: false,
+            database: false,
+            testing: false,
+            docker: false,
+            ci: false,
+            commands: [],
+            webview: [],
+            language: [],
+            themes: [],
+            ...config.experimental?.features,
+            ...rules.experimental?.features,
+          },
 
-        // Code style preferences
-        codeStyle: {
-          ...config.codeStyle,
-          ...rules.codeStyle,
-        },
+          // Development preferences
+          projectFramework:
+            rules.experimental?.projectFramework ??
+            config.experimental?.projectFramework ??
+            "nextjs",
+          projectFrameworkVersion:
+            rules.experimental?.projectFrameworkVersion ??
+            config.experimental?.projectFrameworkVersion ??
+            "",
+          nodeVersion:
+            rules.experimental?.nodeVersion ??
+            config.experimental?.nodeVersion ??
+            "latest",
+          runtime:
+            rules.experimental?.runtime ??
+            config.experimental?.runtime ??
+            "nodejs",
+          projectPackageManager:
+            rules.experimental?.projectPackageManager ??
+            config.experimental?.projectPackageManager ??
+            "npm",
+          monorepo: rules.experimental?.monorepo ??
+            config.experimental?.monorepo ?? {
+              type: "turborepo",
+              packages: [],
+              sharedPackages: [],
+            },
+          preferredLibraries: {
+            stateManagement: "zustand",
+            styling: "tailwind",
+            database: "drizzle",
+            testing: "vitest",
+            linting: "eslint",
+            formatting: "biome",
+            deployment: "vercel",
+            authentication: "clerk",
+            payment: "stripe",
+            analytics: "vercel",
+            formManagement: "react-hook-form",
+            uiComponents: "shadcn-ui",
+            monitoring: "sentry",
+            logging: "axiom",
+            forms: "react-hook-form",
+            validation: "zod",
+            documentation: "starlight",
+            components: "shadcn",
+            icons: "lucide",
+            mail: "resend",
+            search: "algolia",
+            cache: "redis",
+            storage: "cloudflare",
+            cdn: "cloudflare",
+            api: "trpc",
+            cms: "contentlayer",
+            i18n: "next-intl",
+            seo: "next-seo",
+            ui: "radix",
+            motion: "framer",
+            charts: "recharts",
+            dates: "dayjs",
+            markdown: "mdx",
+            security: "auth",
+            notifications: "sonner",
+            uploads: "uploadthing",
+            routing: "next",
+            ...config.experimental?.preferredLibraries,
+            ...rules.experimental?.preferredLibraries,
+          },
 
-        // Dependencies management
-        ignoreDependencies:
-          rules.ignoreDependencies || config.ignoreDependencies,
+          // Code style preferences
+          codeStyle: {
+            lineWidth: 80,
+            cjsToEsm: true,
+            importSymbol: "import",
+            indentSize: 2,
+            indentStyle: "space",
+            dontRemoveComments: false,
+            shouldAddComments: true,
+            typeOrInterface: "type",
+            importOrRequire: "import",
+            quoteMark: "double",
+            semicolons: true,
+            trailingComma: "all",
+            bracketSpacing: true,
+            arrowParens: "always",
+            tabWidth: 2,
+            jsToTs: false,
+            modernize: {
+              replaceFs: true,
+              replacePath: true,
+              replaceHttp: true,
+              replaceProcess: true,
+              replaceConsole: true,
+              replaceEvents: true,
+              ...config.experimental?.codeStyle?.modernize,
+              ...rules.experimental?.codeStyle?.modernize,
+            },
+            ...config.experimental?.codeStyle,
+            ...rules.experimental?.codeStyle,
+          },
 
-        // Config revalidation
-        configLastRevalidate:
-          rules.configLastRevalidate || config.configLastRevalidate,
-        configRevalidateFrequency:
-          rules.configRevalidateFrequency || config.configRevalidateFrequency,
+          // Dependencies management
+          ignoreDependencies:
+            rules.experimental?.ignoreDependencies ??
+            config.experimental?.ignoreDependencies ??
+            [],
 
-        // Custom rules
-        customRules: {
-          ...config.customRules,
-          ...rules.customRules,
+          // Config revalidation
+          configLastRevalidate:
+            rules.experimental?.configLastRevalidate ??
+            config.experimental?.configLastRevalidate ??
+            "",
+          configRevalidateFrequency:
+            rules.experimental?.configRevalidateFrequency ??
+            config.experimental?.configRevalidateFrequency ??
+            "2d",
+
+          // Custom rules
+          customRules: {
+            ...config.experimental?.customRules,
+            ...rules.experimental?.customRules,
+          },
+
+          // Generation preferences
+          skipPromptsUseAutoBehavior:
+            rules.experimental?.skipPromptsUseAutoBehavior ?? false,
+          deployBehavior: rules.experimental?.deployBehavior ?? "prompt",
+          depsBehavior: rules.experimental?.depsBehavior ?? "prompt",
+          gitBehavior: rules.experimental?.gitBehavior ?? "prompt",
+          i18nBehavior: rules.experimental?.i18nBehavior ?? "prompt",
+          scriptsBehavior: rules.experimental?.scriptsBehavior ?? "prompt",
         },
       };
 
-      // If reliverse.json exists but reliverse.json doesn't, suggest migration
+      // If .reliverse exists but .reliverse doesn't, suggest migration
       if (!(await fs.pathExists(configPath))) {
         relinka(
           "info",
-          "Found reliverse.json but no reliverse.json. Consider migrating to reliverse.json for better compatibility.",
+          "Found .reliverse but no .reliverse. Consider migrating to .reliverse for better compatibility.",
         );
       }
     }
@@ -195,10 +340,10 @@ export async function getBiomeConfig(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const config = parseJSONC(content) as BiomeConfig;
       cachedBiomeConfig = {
-        lineWidth: config.formatter?.lineWidth || 80,
-        indentStyle: config.formatter?.indentStyle || "space",
-        indentWidth: config.formatter?.indentWidth || 2,
-        quoteMark: config.javascript?.formatter?.quoteStyle || "double",
+        lineWidth: config.formatter?.lineWidth ?? 80,
+        indentStyle: config.formatter?.indentStyle ?? "space",
+        indentWidth: config.formatter?.indentWidth ?? 2,
+        quoteMark: config.javascript?.formatter?.quoteStyle ?? "double",
         semicolons: config.javascript?.formatter?.semicolons === "always",
         trailingComma: config.javascript?.formatter?.trailingComma === "all",
       };

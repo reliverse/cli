@@ -26,7 +26,12 @@ export async function convertTypeDefinitions(
       // Convert interface to type
       updatedContent = content.replace(
         /interface\s+(\w+)(\s*extends\s*[^{]+)?\s*{([^}]*)}/g,
-        (_match, name, extends_, body) => {
+        (
+          _match: string,
+          name: string,
+          extends_: string | undefined,
+          body: string,
+        ) => {
           const extendsClause = extends_
             ? extends_.replace("extends", "&")
             : "";
@@ -37,7 +42,12 @@ export async function convertTypeDefinitions(
       // Convert type to interface
       updatedContent = content.replace(
         /type\s+(\w+)\s*=\s*(?:{([^}]*)}|(\w+))/g,
-        (match, name, objectBody, simpleType) => {
+        (
+          match: string,
+          name: string,
+          objectBody: string | undefined,
+          simpleType: string | undefined,
+        ) => {
           if (simpleType) {
             // For simple type aliases, keep as type
             return match;

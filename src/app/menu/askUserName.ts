@@ -1,4 +1,4 @@
-import { deleteLastLine, inputPrompt, msg } from "@reliverse/prompts";
+import { inputPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
 import {
@@ -18,7 +18,7 @@ export async function askUserName(): Promise<string> {
   const placeholder = hasPreviousName ? previousName : DEFAULT_NAME;
   const content = hasPreviousName
     ? `Last used name: ${pc.cyanBright(placeholder)} (press <Enter> to use it again)`
-    : `You can press Enter to use the default name: ${pc.green(DEFAULT_NAME)}`;
+    : `You can press Enter to use the default name: ${pc.cyanBright(DEFAULT_NAME)}`;
 
   // Prompt the user for a name
   const userInput = await inputPrompt({
@@ -27,26 +27,15 @@ export async function askUserName(): Promise<string> {
     content,
     placeholder: hasPreviousName
       ? ""
-      : `Default: ${placeholder} | No worries about @ symbol anywhere, I'll add it for you when needed.`,
+      : `[Default: ${placeholder}] No worries about @ symbol anywhere, I'll add it for you.`,
   });
 
   // If the user leaves the input empty, we fall back to placeholder
-  const finalName = userInput.trim() || placeholder;
+  const finalName = userInput.trim() ?? placeholder;
 
   // Update memory only if the provided name differs from what was stored
   if (!hasPreviousName || finalName !== previousName) {
     await updateReliverseMemory({ name: finalName });
-  }
-
-  // If the user leaves the input empty
-  if (finalName === placeholder) {
-    deleteLastLine();
-    deleteLastLine();
-    msg({
-      type: "M_MIDDLE",
-      title: `  ${placeholder}`,
-      addNewLineAfter: true,
-    });
   }
 
   relinka(

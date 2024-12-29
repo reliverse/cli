@@ -24,7 +24,7 @@ export async function convertQuoteStyle(
     // Convert string literals while preserving escaped quotes
     const updatedContent = content.replace(
       /(['"])((?:\\\1|(?!\1).)*?)\1/g,
-      (_match, _quote, content) => {
+      (_match: string, _quote: string, content: string) => {
         const targetQuote = targetQuoteStyle === "single" ? "'" : '"';
         // Escape any instances of the target quote in the content
         const escapedContent = content.replace(

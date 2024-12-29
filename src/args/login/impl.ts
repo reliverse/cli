@@ -13,7 +13,7 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
-import { MEMORY_FILE } from "~/app/menu/data/constants.js";
+import { MEMORY_FILE } from "~/app/db/constants.js";
 import { relinka } from "~/utils/console.js";
 
 import { updateReliverseMemory } from "../memory/impl.js";
@@ -64,14 +64,16 @@ export async function auth({
         relinka(
           "error",
           "Failed to start local server:",
-          listenError.toString(),
+          listenError instanceof Error
+            ? listenError.message
+            : String(listenError),
         );
         throw listenError;
       }
 
       // Handle incoming requests (auth or cancellation)
       const authPromise = new Promise<ParsedUrlQuery>((resolve, reject) => {
-        server.on("request", async (req, res) => {
+        server.on("request", (req, res) => {
           relinka(
             "success-verbose",
             `Received ${req.method} request on ${req.url}`,
@@ -89,22 +91,26 @@ export async function auth({
             res.writeHead(200);
             res.end();
           } else if (req.method === "GET") {
-            const parsedUrl = url.parse(req.url || "", true);
+            const parsedUrl = url.parse(req.url ?? "", true);
             const queryParams = parsedUrl.query;
-            relinka("info-verbose", `Parsed query parameters: ${JSON.stringify(queryParams)}`);
+            relinka(
+              "info-verbose",
+              `Parsed query parameters: ${JSON.stringify(queryParams)}`,
+            );
 
-            if (queryParams.cancelled) {
+            if (queryParams["cancelled"]) {
               relinka("info-verbose", "User cancelled the login process...");
               relinka(
                 "info-verbose",
                 "Sleep 2s to finish the fetch process...",
               );
-              await new Promise((r) => setTimeout(r, 2000));
-              res.writeHead(200);
-              res.end();
-              reject(
-                new UserCancellationError("Login process cancelled by user."),
-              );
+              void new Promise((r) => setTimeout(r, 2000)).then(() => {
+                res.writeHead(200);
+                res.end();
+                reject(
+                  new UserCancellationError("Login process cancelled by user."),
+                );
+              });
             } else {
               relinka(
                 "info-verbose",
@@ -125,7 +131,7 @@ export async function auth({
           relinka(
             "error",
             "Local server encountered an error:",
-            error.toString(),
+            error instanceof Error ? error.message : String(error),
           );
           reject(error);
         });
@@ -159,7 +165,7 @@ export async function auth({
         relinka(
           "error",
           "Failed to open the browser automatically:",
-          error.toString(),
+          error instanceof Error ? error.message : String(error),
         );
         relinka(
           "error",
@@ -197,7 +203,10 @@ export async function auth({
       try {
         const authData = await authPromise;
         clearTimeout(authTimeout);
-        relinka("info-verbose", `Authentication data received: ${JSON.stringify(authData)}`);
+        relinka(
+          "info-verbose",
+          `Authentication data received: ${JSON.stringify(authData)}`,
+        );
 
         await updateReliverseMemory(authData);
         server.close(() => {

@@ -2,10 +2,12 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
+import { logger } from "./app/menu/show-composer-mode/helpers/utils/logger.js";
+
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.3.25",
+    version: "1.4.3",
     description: "https://docs.reliverse.org",
   },
   subCommands: {
@@ -19,9 +21,10 @@ const main = defineCommand({
   },
 });
 
-await runMain(main).catch((error: Error) =>
+await runMain(main).catch((error: unknown) => {
+  logger.error("Aborting...");
   errorHandler(
-    error,
+    error instanceof Error ? error : new Error(String(error)),
     "Errors can be reported at https://github.com/reliverse/cli",
-  ),
-);
+  );
+});

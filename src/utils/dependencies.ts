@@ -43,8 +43,8 @@ export async function getCurrentDependencies(
       await fs.readFile(packageJsonPath, "utf-8"),
     );
     return {
-      ...(packageJson.dependencies || {}),
-      ...(packageJson.devDependencies || {}),
+      ...(packageJson.dependencies ?? {}),
+      ...(packageJson.devDependencies ?? {}),
     };
   }
   return {};
