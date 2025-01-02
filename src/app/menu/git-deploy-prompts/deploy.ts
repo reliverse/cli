@@ -1,54 +1,15 @@
-import { selectPrompt, inputPrompt } from "@reliverse/prompts";
+import { selectPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
 import type { DeploymentService, ReliverseConfig } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 
-import { createVercelDeployment, isProjectDeployed } from "./vercel.js";
-
-/**
- * Validates and formats a domain name
- */
-function validateDomain(domain: string): string | boolean {
-  if (!domain) return "Domain is required";
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9-_.]+\.[a-zA-Z]{2,}$/.test(domain)) {
-    return "Invalid domain format";
-  }
-  return true;
-}
-
-/**
- * Prompts for and validates a custom domain
- */
-async function promptForDomain(projectName: string): Promise<string> {
-  const defaultDomain = `${projectName}.vercel.app`;
-
-  const useDomain = await selectPrompt({
-    title: "Would you like to use a custom domain?",
-    options: [
-      { label: "Yes, configure custom domain", value: "custom" },
-      {
-        label: "No, use default Vercel domain",
-        value: "default",
-        hint: defaultDomain,
-      },
-    ],
-    defaultValue: "default",
-  });
-
-  if (useDomain === "default") {
-    return defaultDomain;
-  }
-
-  const domain = await inputPrompt({
-    title: "Enter your custom domain:",
-    validate: validateDomain,
-    placeholder: "example.com",
-  });
-
-  return domain || defaultDomain;
-}
+import { promptForDomain } from "./helpers/promptForDomain.js";
+import {
+  createVercelDeployment,
+  isProjectDeployed,
+} from "./vercel/vercel-mod.js";
 
 export async function selectDeploymentService(
   config: ReliverseConfig,

@@ -195,7 +195,7 @@ export async function buildBrandNewThing(
     const extensionConfig = await configureVSCodeExtension();
 
     await createWebProject({
-      template: REPO_URLS[template as TemplateOption] ?? template,
+      webProjectTemplate: REPO_URLS[template as TemplateOption] ?? template,
       message: initialMessage,
       mode: "buildBrandNewThing",
       i18nShouldBeEnabled: false,
@@ -339,7 +339,7 @@ export async function buildBrandNewThing(
     }
 
     await createWebProject({
-      template: REPO_URLS[template] ?? template,
+      webProjectTemplate: REPO_URLS[template] ?? template,
       message:
         randomWebsiteDetailsTitle[
           Math.floor(Math.random() * randomWebsiteDetailsTitle.length)

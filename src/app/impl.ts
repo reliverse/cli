@@ -4,6 +4,7 @@ import path from "pathe";
 
 import type { ReliverseConfig } from "~/types.js";
 
+import { auth } from "~/args/login/impl.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 import { generateDefaultRulesForProject } from "~/utils/configs/generateDefaultRulesForProject.js";
 import { detectProjectType } from "~/utils/configs/miscellaneousConfigHelpers.js";
@@ -26,6 +27,7 @@ import {
 import { buildBrandNewThing } from "./menu/buildBrandNewThing.js";
 import { showDetectedProjectsMenu } from "./menu/detectedProjectsMenu.js";
 import { getMainMenuOptions } from "./menu/getMainMenuOptions.js";
+import { showAnykeyPrompt } from "./menu/showAnykeyPrompt.js";
 import { showEndPrompt, showStartPrompt } from "./menu/showStartEndPrompt.js";
 
 export async function app({
@@ -52,7 +54,7 @@ export async function app({
     }
   }
 
-  await showStartPrompt();
+  await showStartPrompt({ dev: isDev });
 
   // In non-dev mode, check if there's a project in the root directory
   if (!isDev) {
@@ -116,4 +118,29 @@ export async function app({
 
   await showEndPrompt();
   process.exit(0);
+}
+
+export async function checkIfUserIsAuthenticated(args: { dev: boolean }) {
+  // Check for existing authentication in SQLite
+  const memory = await readReliverseMemory();
+  const isAuthenticated =
+    memory.code && memory.code !== "" && memory.key && memory.key !== "";
+
+  if (!isAuthenticated) {
+    await showAnykeyPrompt();
+    await auth({ dev: args.dev, useLocalhost: false });
+
+    // Re-check authentication after auth flow
+    const updatedMemory = await readReliverseMemory();
+    const authSuccess =
+      updatedMemory.code &&
+      updatedMemory.code !== "" &&
+      updatedMemory.key &&
+      updatedMemory.key !== "";
+
+    if (!authSuccess) {
+      relinka("error", "Authentication failed. Please try again.");
+      process.exit(1);
+    }
+  }
 }

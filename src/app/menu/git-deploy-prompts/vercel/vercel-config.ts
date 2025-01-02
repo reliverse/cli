@@ -1,5 +1,7 @@
 import type { Vercel } from "@vercel/sdk";
 
+import pc from "picocolors";
+
 import { relinka } from "~/utils/console.js";
 
 /**
@@ -75,22 +77,47 @@ export async function configureResources(
   }
 }
 
+export type ConfigurationOptions = {
+  options: string[];
+  useSharedEnvVars: boolean;
+};
+
 /**
  * Gets configuration options from user
  */
-export async function getConfigurationOptions(): Promise<string[]> {
+export async function getConfigurationOptions(): Promise<ConfigurationOptions> {
   const { multiselectPrompt } = await import("@reliverse/prompts");
   const result = await multiselectPrompt({
-    title: "Select additional configuration options:",
+    title: "Select Vercel deployment options:",
     options: [
       { value: "env", label: "Upload environment variables" },
-      { value: "analytics", label: "Enable analytics" },
-      { value: "protection", label: "Configure branch protection" },
-      { value: "resources", label: "Configure serverless resources" },
-      { value: "monitoring", label: "Show detailed deployment logs" },
+      {
+        value: "shared_env",
+        label: `${pc.redBright("[🚨 Experimental]")} Get Vercel shared env vars`,
+      },
+      {
+        value: "analytics",
+        label: `${pc.redBright("[🚨 Experimental]")} Enable analytics`,
+      },
+      {
+        value: "protection",
+        label: `${pc.redBright("[🚨 Experimental]")} Configure branch protection`,
+      },
+      {
+        value: "resources",
+        label: `${pc.redBright("[🚨 Experimental]")} Configure serverless resources`,
+      },
+      {
+        value: "monitoring",
+        label: `${pc.redBright("[🚨 Experimental]")} Show detailed deployment logs`,
+      },
     ],
     defaultValue: ["env"],
   });
 
-  return Array.isArray(result) ? result : ["env"];
+  const selectedOptions = Array.isArray(result) ? result : ["env"];
+  return {
+    options: selectedOptions,
+    useSharedEnvVars: selectedOptions.includes("shared_env"),
+  };
 }

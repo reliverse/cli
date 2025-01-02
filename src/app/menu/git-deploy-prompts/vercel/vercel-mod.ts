@@ -14,54 +14,26 @@ import {
 } from "~/args/memory/impl.js";
 import { relinka } from "~/utils/console.js";
 
+import { withRateLimit } from "./vercel-api.js";
 import {
   enableAnalytics,
   configureBranchProtection,
   configureResources,
   getConfigurationOptions,
 } from "./vercel-config.js";
+import {
+  getFiles,
+  monitorDeployment,
+  splitFilesIntoChunks,
+} from "./vercel-deploy.js";
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000;
-
-type InlinedFile = {
+export type InlinedFile = {
   file: string;
   data: string;
   encoding: "utf-8" | "base64";
 };
 
-type DeploymentLogType = "error" | "warning" | "info" | "debug";
-
-type DeploymentLog = {
-  type: DeploymentLogType;
-  created: number;
-  text: string;
-};
-
 type VercelFramework = GetProjectsFramework;
-
-/**
- * Handles rate limit errors with retries
- */
-async function withRateLimit<T>(
-  fn: () => Promise<T>,
-  retries = MAX_RETRIES,
-): Promise<T> {
-  try {
-    return await fn();
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes("rate limit") &&
-      retries > 0
-    ) {
-      relinka("info", `Rate limit hit, retrying in ${RETRY_DELAY / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-      return withRateLimit(fn, retries - 1);
-    }
-    throw error;
-  }
-}
 
 /**
  * Saves token to memory and persists it
@@ -149,7 +121,7 @@ export async function isProjectDeployed(projectName: string): Promise<boolean> {
   try {
     const memory = await readReliverseMemory();
     if (!memory?.vercelKey) {
-      relinka("error-verbose", "Vercel token not found in memory");
+      relinka("error-verbose", "Vercel token not found in Reliverse's memory");
       return false;
     }
 
@@ -179,155 +151,6 @@ export async function isProjectDeployed(projectName: string): Promise<boolean> {
       error instanceof Error ? error.message : String(error),
     );
     return false;
-  }
-}
-
-/**
- * Checks if a file should be included in deployment
- */
-function shouldIncludeFile(filePath: string): boolean {
-  const excludePatterns = [
-    /^\.git\//,
-    /^\.env/,
-    /^node_modules\//,
-    /^\.next\//,
-    /^dist\//,
-    /^\.vercel\//,
-    /^\.vscode\//,
-    /^\.idea\//,
-    /\.(log|lock)$/,
-    /^npm-debug\.log/,
-    /^yarn-debug\.log/,
-    /^yarn-error\.log/,
-  ];
-
-  return !excludePatterns.some((pattern) => pattern.test(filePath));
-}
-
-/**
- * Checks if a file is binary
- */
-function isBinaryPath(filePath: string): boolean {
-  const binaryExtensions = [
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".ico",
-    ".webp",
-    ".mp4",
-    ".webm",
-    ".mov",
-    ".mp3",
-    ".wav",
-    ".pdf",
-    ".zip",
-    ".tar",
-    ".gz",
-    ".7z",
-    ".ttf",
-    ".woff",
-    ".woff2",
-    ".eot",
-    ".exe",
-    ".dll",
-    ".so",
-    ".dylib",
-  ];
-  return binaryExtensions.some((ext) => filePath.toLowerCase().endsWith(ext));
-}
-
-/**
- * Prepares files for deployment
- */
-async function getFiles(directory: string): Promise<InlinedFile[]> {
-  const files: InlinedFile[] = [];
-  const entries = await fs.readdir(directory, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-    const relativePath = path.relative(directory, fullPath);
-
-    if (!shouldIncludeFile(relativePath)) {
-      continue;
-    }
-
-    if (entry.isDirectory()) {
-      files.push(...(await getFiles(fullPath)));
-    } else {
-      if (isBinaryPath(relativePath)) {
-        const data = await fs.readFile(fullPath, "base64");
-        files.push({
-          file: relativePath,
-          data,
-          encoding: "base64",
-        });
-      } else {
-        const data = await fs.readFile(fullPath, "utf-8");
-        files.push({
-          file: relativePath,
-          data,
-          encoding: "utf-8",
-        });
-      }
-    }
-  }
-
-  return files;
-}
-
-/**
- * Monitors deployment logs and status
- */
-async function monitorDeployment(
-  vercel: Vercel,
-  deploymentId: string,
-  updateMessage: (message: string) => void,
-  showDetailedLogs = false,
-): Promise<void> {
-  try {
-    // Get deployment logs
-    const logs = await vercel.deployments.getDeploymentEvents({
-      idOrUrl: deploymentId,
-    });
-
-    if (Array.isArray(logs)) {
-      let errors = 0;
-      let warnings = 0;
-
-      for (const log of logs as DeploymentLog[]) {
-        const timestamp = new Date(log.created).toLocaleTimeString();
-        const message = `[${log.type}] ${log.text}`;
-
-        switch (log.type) {
-          case "error":
-            errors++;
-            relinka("error", `${timestamp}: ${message}`);
-            break;
-          case "warning":
-            warnings++;
-            relinka("warn", `${timestamp}: ${message}`);
-            break;
-          default:
-            if (showDetailedLogs) {
-              updateMessage(message);
-            }
-        }
-      }
-
-      if (errors > 0 || warnings > 0) {
-        relinka(
-          "info",
-          `Deployment summary: ${errors} errors, ${warnings} warnings`,
-        );
-      }
-    }
-  } catch (error) {
-    relinka(
-      "error",
-      "Error monitoring deployment:",
-      error instanceof Error ? error.message : String(error),
-    );
   }
 }
 
@@ -417,40 +240,6 @@ async function verifyDomain(
 }
 
 /**
- * Splits files into chunks to avoid request size limits
- */
-function splitFilesIntoChunks(
-  files: InlinedFile[],
-  maxChunkSize = 8 * 1024 * 1024,
-): InlinedFile[][] {
-  const chunks: InlinedFile[][] = [];
-  let currentChunk: InlinedFile[] = [];
-  let currentSize = 0;
-
-  for (const file of files) {
-    const fileSize = Buffer.byteLength(
-      file.data,
-      file.encoding === "base64" ? "base64" : "utf8",
-    );
-
-    if (currentSize + fileSize > maxChunkSize && currentChunk.length > 0) {
-      chunks.push(currentChunk);
-      currentChunk = [];
-      currentSize = 0;
-    }
-
-    currentChunk.push(file);
-    currentSize += fileSize;
-  }
-
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk);
-  }
-
-  return chunks.length > 0 ? chunks : [[]];
-}
-
-/**
  * Creates or updates a Vercel deployment
  */
 export async function createVercelDeployment(
@@ -491,7 +280,7 @@ export async function createVercelDeployment(
     // Get configuration options before starting the spinner
     const selectedOptions = !isDeployed
       ? await getConfigurationOptions()
-      : ["env"];
+      : { options: ["env"] };
 
     await spinnerTaskPrompt({
       spinnerSolution: "ora",
@@ -517,15 +306,15 @@ export async function createVercelDeployment(
 
           relinka("success", `Project created with ID: ${projectResponse.id}`);
 
-          if (selectedOptions.includes("analytics")) {
+          if (selectedOptions.options.includes("analytics")) {
             await enableAnalytics(vercel, projectResponse.id);
           }
 
-          if (selectedOptions.includes("protection")) {
+          if (selectedOptions.options.includes("protection")) {
             await configureBranchProtection(vercel, projectResponse.id);
           }
 
-          if (selectedOptions.includes("resources")) {
+          if (selectedOptions.options.includes("resources")) {
             await configureResources(vercel, projectResponse.id);
           }
 
@@ -554,7 +343,7 @@ export async function createVercelDeployment(
         }
 
         // Set environment variables only if selected or project already exists
-        if (isDeployed || selectedOptions.includes("env")) {
+        if (isDeployed || selectedOptions.options.includes("env")) {
           updateMessage("Setting up environment variables...");
           const envVars = await getEnvVars(targetDir);
           if (envVars.length > 0) {
@@ -616,7 +405,7 @@ export async function createVercelDeployment(
             vercel,
             lastDeployment.id,
             updateMessage,
-            selectedOptions.includes("monitoring"),
+            selectedOptions.options.includes("monitoring"),
           );
 
           // Wait before checking status again
@@ -638,7 +427,7 @@ export async function createVercelDeployment(
             vercel,
             lastDeployment.id,
             updateMessage,
-            selectedOptions.includes("monitoring"),
+            selectedOptions.options.includes("monitoring"),
           );
           throw new Error(`Deployment failed with status: ${status}`);
         }
@@ -648,7 +437,7 @@ export async function createVercelDeployment(
           vercel,
           lastDeployment.id,
           updateMessage,
-          selectedOptions.includes("monitoring"),
+          selectedOptions.options.includes("monitoring"),
         );
         relinka("success", `Deployment URL: ${lastDeployment.url}`);
       },

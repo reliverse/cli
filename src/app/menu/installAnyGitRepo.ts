@@ -119,7 +119,7 @@ export async function installAnyGitRepo(isDev: boolean) {
   }
 
   await createWebProject({
-    template: repoToInstall,
+    webProjectTemplate: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
     mode: "installAnyGitRepo",
     i18nShouldBeEnabled: false,

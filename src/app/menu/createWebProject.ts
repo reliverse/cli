@@ -5,6 +5,7 @@ import fs from "fs-extra";
 import { installDependencies } from "nypm";
 import open from "open";
 import path from "pathe";
+import pc from "picocolors";
 
 import type { Behavior, DeploymentService, ReliverseConfig } from "~/types.js";
 
@@ -17,23 +18,23 @@ import { i18nMove } from "~/utils/i18nMove.js";
 import { isVSCodeInstalled } from "~/utils/isAppInstalled.js";
 import { replaceStringsInFiles } from "~/utils/replaceStringsInFiles.js";
 
-import { askProjectDomain } from "./askProjectDomain.js";
 import { askProjectName } from "./askProjectName.js";
 import { askUserName } from "./askUserName.js";
 import { composeEnvFile } from "./compose-env-file/mod.js";
 import { checkScriptExists } from "./createWebProjectUtils.js";
 import { generateProjectConfigs } from "./generateProjectConfigs.js";
+import { promptForDomain } from "./git-deploy-prompts/helpers/promptForDomain.js";
 import { promptGitDeploy } from "./git-deploy-prompts/mod.js";
 import { generateReliverseFile } from "./reliverseConfig.js";
 
 export async function createWebProject({
-  template,
+  webProjectTemplate,
   message,
   i18nShouldBeEnabled: defaultI18nShouldBeEnabled,
   isDev,
   config,
 }: {
-  template: string;
+  webProjectTemplate: string;
   message: string;
   mode: "buildBrandNewThing" | "installAnyGitRepo";
   i18nShouldBeEnabled: boolean;
@@ -58,14 +59,14 @@ export async function createWebProject({
       ? path.basename(config.experimental.projectTemplate)
       : await askProjectName();
 
-  // Get domain - fall back to askProjectDomain if config data is missing
+  // Get domain - fall back to promptForDomain if config data is missing
   const domain =
     shouldUseDataFromConfig && config?.experimental?.projectDomain
       ? config.experimental.projectDomain
-      : await askProjectDomain(projectName);
+      : await promptForDomain(projectName);
   let targetDir = "";
 
-  relinka("info", `Now I'm downloading the ${template} template...`);
+  relinka("info", `Now I'm downloading the ${webProjectTemplate} template...`);
 
   await spinnerTaskPrompt({
     spinnerSolution: "ora",
@@ -73,7 +74,7 @@ export async function createWebProject({
     successMessage: "✅ Template downloaded successfully!",
     errorMessage: "❌ Failed to download template...",
     async action(updateMessage: (message: string) => void) {
-      const dir = await downloadGitRepo(projectName, template, isDev);
+      const dir = await downloadGitRepo(projectName, webProjectTemplate, isDev);
       if (!dir) {
         throw new Error("Failed to create target directory");
       }
@@ -89,7 +90,8 @@ export async function createWebProject({
     errorMessage:
       "❌ I've failed to edit some texts in the initialized files...",
     async action(updateMessage: (message: string) => void) {
-      const { author, projectName: oldProjectName } = extractRepoInfo(template);
+      const { author, projectName: oldProjectName } =
+        extractRepoInfo(webProjectTemplate);
       updateMessage("Some magic is happening... This may take a while...");
       await replaceStringsInFiles(targetDir, {
         [`${oldProjectName}.com`]: domain,
@@ -179,7 +181,8 @@ export async function createWebProject({
     default:
       shouldInstallDeps = await confirmPrompt({
         title:
-          "Would you like me to install dependencies?\nThis may take some time. But will allow me to run commands like `bun db:push` and `bun db:seed` if you would need it,\n and execute `bun check`, if available, for tasks like linting and formatting.",
+          "Would you like me to install dependencies? It may take some time.",
+        content: `This allows me to run scripts provided by the \`${webProjectTemplate}\` template. It may include \`bun db:push\` to init database, \`bun check\` for tasks like linting and formatting, and other scripts.`,
         titleColor: "cyan",
         defaultValue: !isDev,
       });
@@ -190,9 +193,24 @@ export async function createWebProject({
       cwd: targetDir,
     });
 
+    const hasLatest = await checkScriptExists(targetDir, "latest");
     const hasDbPush = await checkScriptExists(targetDir, "db:push");
     const hasDbSeed = await checkScriptExists(targetDir, "db:seed");
     const hasCheck = await checkScriptExists(targetDir, "check");
+
+    if (hasLatest) {
+      const shouldRunLatest = await confirmPrompt({
+        title: "Do you want to run 'bun latest'?",
+        content: `This will update all dependencies to the latest version. However, ${pc.redBright("it may break something in the project if some dependency has a critical change")}. You can contact the template developer or try to fix it yourself. Link to the used by you template: https://github.com/${webProjectTemplate}`,
+        defaultValue: false,
+      });
+      if (shouldRunLatest) {
+        await execa("bun", ["latest"], {
+          cwd: targetDir,
+          stdio: "inherit",
+        });
+      }
+    }
 
     if (hasDbPush) {
       const dbPushBehavior: Behavior =
@@ -216,31 +234,31 @@ export async function createWebProject({
             cwd: targetDir,
             stdio: "inherit",
           });
+
+          if (hasDbSeed) {
+            const shouldRunDbSeed = await confirmPrompt({
+              title: "Do you want to run `bun db:seed`?",
+              defaultValue: true,
+            });
+            if (shouldRunDbSeed) {
+              try {
+                await execa("bun", ["db:seed"], {
+                  cwd: targetDir,
+                  stdio: "inherit",
+                });
+              } catch (error) {
+                relinka(
+                  "error",
+                  "Error running `bun db:seed`:",
+                  error instanceof Error ? error.message : String(error),
+                );
+              }
+            }
+          }
         } catch (error) {
           relinka(
             "error",
             "Error running `bun db:push`:",
-            error instanceof Error ? error.message : String(error),
-          );
-        }
-      }
-    }
-
-    if (hasDbSeed) {
-      const shouldRunDbSeed = await confirmPrompt({
-        title: "Do you want to run `bun db:seed`?",
-        defaultValue: true,
-      });
-      if (shouldRunDbSeed) {
-        try {
-          await execa("bun", ["db:seed"], {
-            cwd: targetDir,
-            stdio: "inherit",
-          });
-        } catch (error) {
-          relinka(
-            "error",
-            "Error running `bun db:seed`:",
             error instanceof Error ? error.message : String(error),
           );
         }
@@ -288,7 +306,10 @@ export async function createWebProject({
     shouldInstallDeps,
   });
 
-  relinka("info", `🎉 ${template} was successfully installed to ${targetDir}.`);
+  relinka(
+    "info",
+    `🎉 ${webProjectTemplate} was successfully installed to ${targetDir}.`,
+  );
 
   await nextStepsPrompt({
     title: "🤘 Project created successfully! Next steps to get started:",

@@ -4,8 +4,8 @@ import type { DeploymentService, ReliverseConfig } from "~/types.js";
 
 import { relinka } from "~/utils/console.js";
 
-import { deployProject } from "./helpers/deploy.js";
-import { createGithubRepository, initGit } from "./helpers/git.js";
+import { deployProject } from "./deploy.js";
+import { createGithubRepository, initGit } from "./git.js";
 
 type DecisionKey = "gitBehavior" | "deployBehavior";
 
@@ -16,10 +16,11 @@ type DecisionKey = "gitBehavior" | "deployBehavior";
  * @param title - Prompt title for user
  * @param defaultValue - Default value if prompting
  */
-async function decide(
+export async function decide(
   config: ReliverseConfig,
   behaviorKey: DecisionKey,
   title: string,
+  content?: string,
   defaultValue = true,
 ): Promise<boolean> {
   try {
@@ -35,12 +36,16 @@ async function decide(
       case "prompt":
         return await confirmPrompt({
           title,
+          content: content ?? "",
           defaultValue,
-          content: "Press Enter to confirm or Esc to cancel",
         });
       default:
         relinka("warn", `Unknown behavior '${behavior}', defaulting to prompt`);
-        return await confirmPrompt({ title, defaultValue });
+        return await confirmPrompt({
+          title,
+          content: content ?? "",
+          defaultValue,
+        });
     }
   } catch (error) {
     relinka(
@@ -55,7 +60,7 @@ async function decide(
 /**
  * Handles the git initialization step
  */
-async function handleGitInit(targetDir: string): Promise<boolean> {
+export async function handleGitInit(targetDir: string): Promise<boolean> {
   const gitInitialized = await initGit(targetDir);
   if (!gitInitialized) {
     relinka(
@@ -70,7 +75,7 @@ async function handleGitInit(targetDir: string): Promise<boolean> {
 /**
  * Handles the GitHub repository creation step
  */
-async function handleGithubRepo(
+export async function handleGithubRepo(
   projectName: string,
   targetDir: string,
 ): Promise<boolean> {
@@ -98,7 +103,8 @@ export async function promptGitDeploy(
     const shouldInitGit = await decide(
       config,
       "gitBehavior",
-      "Do you want to initialize git in your project?\n(This will allow you to push your project to e.g. GitHub and deploy it to e.g. Vercel)",
+      "Do you want to initialize git in your project?",
+      "This will allow you to push your project to e.g. GitHub and deploy it to e.g. Vercel",
     );
 
     if (!shouldInitGit) {

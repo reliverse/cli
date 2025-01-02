@@ -4,7 +4,7 @@
     "projectName": "@reliverse/cli",
     "projectAuthor": "blefnk",
     "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-    "projectVersion": "1.4.8",
+    "projectVersion": "1.4.11",
     "projectLicense": "MIT",
     "projectRepository": "git+https://github.com/reliverse/cli.git",
 
@@ -61,7 +61,7 @@
     "ignoreDependencies": [],
 
     // Config revalidation (1h | 1d | 2d | 7d)
-    "configLastRevalidate": "2024-12-30T10:02:39.861Z",
+    "configLastRevalidate": "2025-01-02T21:16:52.241Z",
     "configRevalidateFrequency": "2d",
 
     // Custom rules for Reliverse AI

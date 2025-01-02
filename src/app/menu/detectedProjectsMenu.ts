@@ -12,7 +12,7 @@ import type { DetectedProject } from "~/types.js";
 import {
   createGitCommit,
   pushGitCommits,
-} from "~/app/menu/git-deploy-prompts/helpers/git.js";
+} from "~/app/menu/git-deploy-prompts/git.js";
 import { relinka } from "~/utils/console.js";
 import {
   convertPrismaToDrizzle,
