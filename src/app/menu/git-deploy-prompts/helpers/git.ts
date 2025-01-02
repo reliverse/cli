@@ -1,5 +1,6 @@
 import type { SimpleGit } from "simple-git";
 
+import { Octokit } from "@octokit/rest";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
@@ -91,10 +92,51 @@ export async function initGit(dir: string): Promise<boolean> {
 }
 
 /**
+ * Checks if the user owns the repository with the given name
+ * @param githubUsername - GitHub username
+ * @param repoName - Repository name to check
+ * @returns Promise<boolean> - Whether the user owns the repository
+ */
+async function isRepoOwner(
+  githubUsername: string,
+  repoName: string,
+): Promise<boolean> {
+  try {
+    const memory = await readReliverseMemory();
+    if (!memory?.githubKey) {
+      relinka("error-verbose", "GitHub token not found in memory");
+      return false;
+    }
+
+    const octokit = new Octokit({ auth: memory.githubKey });
+
+    try {
+      const { data: repo } = await octokit.repos.get({
+        owner: githubUsername,
+        repo: repoName,
+      });
+
+      return repo.permissions?.admin ?? false;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Not Found")) {
+        return false;
+      }
+      throw error;
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Error checking repository ownership:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return false;
+  }
+}
+
+/**
  * Creates a GitHub repository and sets it up locally
  * @param projectName - Name of the project/repository
  * @param targetDir - Local directory path
- * @param config - Reliverse configuration
  * @returns Promise<boolean> - Whether the operation was successful
  */
 export async function createGithubRepository(
@@ -114,19 +156,82 @@ export async function createGithubRepository(
       return false;
     }
 
-    const success = await createGithubRepo(
+    // Check if repo exists and user owns it
+    const repoExists = await isRepoOwner(githubUsername, projectName);
+
+    if (repoExists) {
+      const { select } = await import("@clack/prompts");
+      const choice = await select({
+        message: "This repository already exists. What would you like to do?",
+        options: [
+          {
+            value: "new",
+            label: "Initialize a new Git repository with a different name",
+          },
+          {
+            value: "skip",
+            label: "Skip git initialization and use the existing repository",
+          },
+        ],
+      });
+
+      if (choice === "new") {
+        const { text } = await import("@clack/prompts");
+        const newName = await text({
+          message: "Enter a new repository name:",
+          validate: (value) => {
+            if (!value) return "Repository name is required";
+            if (!/^[a-zA-Z0-9-_]+$/.test(value))
+              return "Invalid repository name format";
+            return;
+          },
+        });
+
+        if (!newName || typeof newName !== "string") {
+          relinka("error", "Invalid repository name provided");
+          return false;
+        }
+
+        return await createGithubRepo(
+          memory,
+          newName,
+          githubUsername,
+          targetDir,
+        );
+      } else if (choice === "skip") {
+        // Verify token and setup remote
+        if (!memory.githubKey) {
+          const { password } = await import("@clack/prompts");
+          const token = await password({
+            message: "Please provide your GitHub token for pushing commits:",
+            validate: (value) => (!value ? "Token is required" : undefined),
+          });
+
+          if (!token || typeof token !== "string") {
+            relinka("error", "Invalid GitHub token provided");
+            return false;
+          }
+
+          // Save token to memory
+          memory.githubKey = token;
+          // TODO: Save updated memory
+        }
+
+        // Setup remote for existing repo
+        const remoteUrl = `https://github.com/${githubUsername}/${projectName}.git`;
+        return await setupGitRemote(targetDir, remoteUrl);
+      }
+
+      return false;
+    }
+
+    // Create new repository if it doesn't exist
+    return await createGithubRepo(
       memory,
       projectName,
       githubUsername,
       targetDir,
     );
-
-    if (!success) {
-      relinka("error", "Failed to create GitHub repository");
-      return false;
-    }
-
-    return true;
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {
       relinka("error", `Repository '${projectName}' already exists on GitHub`);

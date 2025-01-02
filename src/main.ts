@@ -7,7 +7,7 @@ import { relinka } from "~/utils/console.js";
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.8",
+    version: "1.4.11",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

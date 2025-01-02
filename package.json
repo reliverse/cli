@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.4.8",
+  "version": "1.4.11",
   "author": "blefnk",
   "type": "module",
   "description": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
@@ -44,17 +44,9 @@
     "url": "https://github.com/reliverse/cli/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": [
-    "package.json",
-    "README.md",
-    "LICENSE.md",
-    "dist-npm"
-  ],
+  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
   "homepage": "https://github.com/reliverse/cli",
-  "keywords": [
-    "cli",
-    "reliverse"
-  ],
+  "keywords": ["cli", "reliverse"],
   "license": "MIT",
   "dependencies": {
     "@clack/core": "^0.4.0",
@@ -105,7 +97,7 @@
     "@auth/drizzle-adapter": "^1.7.4",
     "@auth/prisma-adapter": "^2.7.4",
     "@biomejs/biome": "^1.9.4",
-    "@cspell/dict-npm": "^5.1.20",
+    "@cspell/dict-npm": "^5.1.21",
     "@eslint/js": "^9.17.0",
     "@eslint/json": "^0.9.0",
     "@eslint/markdown": "^6.2.1",
@@ -114,14 +106,14 @@
     "@prisma/client": "^6.1.0",
     "@react-router/dev": "^7.1.1",
     "@stylistic/eslint-plugin": "^2.12.1",
-    "@swc/core": "^1.10.3",
+    "@swc/core": "^1.10.4",
     "@t3-oss/env-nextjs": "^0.11.1",
     "@tanstack/react-query": "^5.62.11",
     "@total-typescript/ts-reset": "^0.6.1",
-    "@trpc/client": "^11.0.0-rc.678",
-    "@trpc/next": "^11.0.0-rc.678",
-    "@trpc/react-query": "^11.0.0-rc.678",
-    "@trpc/server": "^11.0.0-rc.678",
+    "@trpc/client": "^11.0.0-rc.682",
+    "@trpc/next": "^11.0.0-rc.682",
+    "@trpc/react-query": "^11.0.0-rc.682",
+    "@trpc/server": "^11.0.0-rc.682",
     "@types/better-sqlite3": "^7.6.12",
     "@types/bun": "^1.1.14",
     "@types/cross-spawn": "^6.0.6",

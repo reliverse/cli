@@ -98,7 +98,7 @@ export async function promptGitDeploy(
     const shouldInitGit = await decide(
       config,
       "gitBehavior",
-      "Do you want to initialize git in your project? (This will allow you to push your project to e.g. GitHub and deploy it to e.g. Vercel)",
+      "Do you want to initialize git in your project?\n(This will allow you to push your project to e.g. GitHub and deploy it to e.g. Vercel)",
     );
 
     if (!shouldInitGit) {

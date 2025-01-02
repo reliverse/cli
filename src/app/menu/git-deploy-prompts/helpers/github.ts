@@ -14,7 +14,8 @@ async function ensureGithubToken(memory: ReliverseMemory): Promise<string> {
   }
 
   const token = await inputPrompt({
-    title: "Please enter your GitHub personal access token:",
+    title:
+      "Please enter your GitHub personal access token.\n(It will be securely stored on your machine):",
     content:
       "Create one at https://github.com/settings/tokens/new \n" +
       "Set the `repo` scope and click `Generate token`",
@@ -34,13 +35,15 @@ async function checkRepoExists(
   octokit: Octokit,
   owner: string,
   repo: string,
-): Promise<boolean> {
+): Promise<{ exists: boolean; isOwner: boolean }> {
   try {
-    await octokit.rest.repos.get({ owner, repo });
-    return true;
+    const response = await octokit.rest.repos.get({ owner, repo });
+    // Check if the authenticated user is the owner
+    const isOwner = response.data.permissions?.admin === true;
+    return { exists: true, isOwner };
   } catch (error: any) {
     if (error?.status === 404) {
-      return false;
+      return { exists: false, isOwner: false };
     }
     throw error;
   }
@@ -52,11 +55,25 @@ async function getAvailableRepoName(
   initialName: string,
 ): Promise<string> {
   let repoName = initialName;
-  let exists = await checkRepoExists(octokit, owner, repoName);
+  let repoStatus = await checkRepoExists(octokit, owner, repoName);
 
-  while (exists) {
+  while (repoStatus.exists) {
+    if (repoStatus.isOwner) {
+      const { confirmPrompt } = await import("@reliverse/prompts");
+      const shouldUseExisting = await confirmPrompt({
+        title: `Repository "${repoName}" already exists and you are the owner. Would you like to use this repository?`,
+        content:
+          "This will allow you to continue working with your existing repository",
+        defaultValue: true,
+      });
+
+      if (shouldUseExisting) {
+        return repoName;
+      }
+    }
+
     repoName = await inputPrompt({
-      title: `Repository "${repoName}" already exists. Please enter a different name:`,
+      title: `Repository "${repoName}" ${repoStatus.isOwner ? "exists (owned by you)" : "already exists"}. Please enter a different name:`,
       defaultValue: repoName,
       validate: async (value: string): Promise<string | boolean> => {
         if (!value?.trim()) {
@@ -65,14 +82,14 @@ async function getAvailableRepoName(
         if (!/^[a-zA-Z0-9._-]+$/.test(value)) {
           return "Repository name can only contain letters, numbers, dots, hyphens, and underscores";
         }
-        const exists = await checkRepoExists(octokit, owner, value);
-        if (exists) {
+        const status = await checkRepoExists(octokit, owner, value);
+        if (status.exists && !status.isOwner) {
           return `Repository "${value}" already exists. Please choose a different name`;
         }
         return true;
       },
     });
-    exists = await checkRepoExists(octokit, owner, repoName);
+    repoStatus = await checkRepoExists(octokit, owner, repoName);
   }
 
   return repoName;

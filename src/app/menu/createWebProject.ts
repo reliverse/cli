@@ -179,7 +179,7 @@ export async function createWebProject({
     default:
       shouldInstallDeps = await confirmPrompt({
         title:
-          "Do you want me to install dependencies? (it may take some time)",
+          "Would you like me to install dependencies?\nThis may take some time. But will allow me to run commands like `bun db:push` and `bun db:seed` if you would need it,\n and execute `bun check`, if available, for tasks like linting and formatting.",
         titleColor: "cyan",
         defaultValue: !isDev,
       });
@@ -314,6 +314,10 @@ export async function createWebProject({
         hint: vscodeInstalled ? "Detected: VSCode-based IDE" : "",
       },
       {
+        label: "Support Reliverse on Patreon",
+        value: "patreon",
+      },
+      {
         label: "Join Reliverse Discord Server",
         value: "discord",
       },
@@ -325,11 +329,21 @@ export async function createWebProject({
   });
 
   for (const action of nextActions) {
-    if (action === "docs") {
+    if (action === "patreon") {
       relinka(
         "info",
-        "Opening Reliverse Documentation ( https://docs.reliverse.org )...",
+        "Opening Reliverse Patreon page ( https://www.patreon.com/c/blefnk/membership )...",
       );
+      try {
+        await open("https://patreon.com/c/blefnk/membership");
+      } catch (error) {
+        relinka(
+          "error",
+          "Error opening Patreon:",
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    } else if (action === "docs") {
       try {
         await open("https://docs.reliverse.org");
       } catch (error) {

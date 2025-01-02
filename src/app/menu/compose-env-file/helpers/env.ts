@@ -47,22 +47,27 @@ export async function promptAndSetMissingValues(
   const envContent = await fs.readFile(envPath, "utf8");
   const envLines = envContent.split("\n");
 
-  // Auto-fill defaults
+  // Auto-fill defaults first
   for (const key of missingKeys) {
     const service = Object.values(KNOWN_SERVICES).find((svc) =>
       svc.keys.some((k) => k.key === (key as KeyVars)),
     );
     const keyConfig = service?.keys.find((k) => k.key === (key as KeyVars));
-    if (keyConfig?.defaultValue) {
+
+    // If key has a default value (including generated ones), use it
+    if (keyConfig?.defaultValue !== undefined) {
+      const defaultValue = keyConfig.defaultValue;
       const lineIndex = envLines.findIndex((line) =>
         line.startsWith(`${keyConfig.key}=`),
       );
-      const newLine = `${keyConfig.key}="${keyConfig.defaultValue}"`;
+      const newLine = `${keyConfig.key}="${defaultValue}"`;
+
       if (lineIndex !== -1) {
         envLines[lineIndex] = newLine;
       } else {
         envLines.push(newLine);
       }
+
       relinka(
         "info-verbose",
         `Automatically saved default value for ${keyConfig.key}`,
@@ -72,12 +77,13 @@ export async function promptAndSetMissingValues(
 
   await fs.writeFile(envPath, envLines.join("\n"));
 
+  // Only prompt for keys without defaults
   const filteredKeys = missingKeys.filter((key) => {
     const service = Object.values(KNOWN_SERVICES).find((svc) =>
       svc.keys.some((k) => k.key === (key as KeyVars)),
     );
     const keyConfig = service?.keys.find((k) => k.key === (key as KeyVars));
-    return !keyConfig?.defaultValue; // prompt only if no default
+    return keyConfig?.defaultValue === undefined;
   });
 
   if (filteredKeys.length === 0) {
@@ -117,7 +123,13 @@ export async function promptAndSetMissingValues(
       if (filteredKeys.includes(keyConfig.key)) {
         const value = await inputPrompt({
           title: `Enter value for ${keyConfig.key}:`,
-          placeholder: "Paste your value here or leave empty to skip...",
+          placeholder: "Paste your value here...",
+          validate: (value: string): string | boolean => {
+            if (!value?.trim()) {
+              return "This value is required";
+            }
+            return true;
+          },
           ...(keyConfig.instruction && {
             content: keyConfig.instruction,
             contentColor: "yellowBright",
@@ -127,24 +139,22 @@ export async function promptAndSetMissingValues(
           }),
         });
 
-        if (value.trim()) {
-          const rawValue = value.startsWith(`${keyConfig.key}=`)
-            ? value.substring(value.indexOf("=") + 1)
-            : value;
-          const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
-          const lineIndex = envLines.findIndex((line) =>
-            line.startsWith(`${keyConfig.key}=`),
-          );
-          const newLine = `${keyConfig.key}="${cleanValue}"`;
+        const rawValue = value.startsWith(`${keyConfig.key}=`)
+          ? value.substring(value.indexOf("=") + 1)
+          : value;
+        const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
+        const lineIndex = envLines.findIndex((line) =>
+          line.startsWith(`${keyConfig.key}=`),
+        );
+        const newLine = `${keyConfig.key}="${cleanValue}"`;
 
-          if (lineIndex !== -1) {
-            envLines[lineIndex] = newLine;
-          } else {
-            envLines.push(newLine);
-          }
-
-          await fs.writeFile(envPath, envLines.join("\n"));
+        if (lineIndex !== -1) {
+          envLines[lineIndex] = newLine;
+        } else {
+          envLines.push(newLine);
         }
+
+        await fs.writeFile(envPath, envLines.join("\n"));
       }
     }
   }

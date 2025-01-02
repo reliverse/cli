@@ -1,12 +1,54 @@
-import { selectPrompt } from "@reliverse/prompts";
+import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
 import type { DeploymentService, ReliverseConfig } from "~/types.js";
 
-import { readReliverseMemory } from "~/args/memory/impl.js";
 import { relinka } from "~/utils/console.js";
 
-import { createVercelDeployment } from "./vercel.js";
+import { createVercelDeployment, isProjectDeployed } from "./vercel.js";
+
+/**
+ * Validates and formats a domain name
+ */
+function validateDomain(domain: string): string | boolean {
+  if (!domain) return "Domain is required";
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9-_.]+\.[a-zA-Z]{2,}$/.test(domain)) {
+    return "Invalid domain format";
+  }
+  return true;
+}
+
+/**
+ * Prompts for and validates a custom domain
+ */
+async function promptForDomain(projectName: string): Promise<string> {
+  const defaultDomain = `${projectName}.vercel.app`;
+
+  const useDomain = await selectPrompt({
+    title: "Would you like to use a custom domain?",
+    options: [
+      { label: "Yes, configure custom domain", value: "custom" },
+      {
+        label: "No, use default Vercel domain",
+        value: "default",
+        hint: defaultDomain,
+      },
+    ],
+    defaultValue: "default",
+  });
+
+  if (useDomain === "default") {
+    return defaultDomain;
+  }
+
+  const domain = await inputPrompt({
+    title: "Enter your custom domain:",
+    validate: validateDomain,
+    placeholder: "example.com",
+  });
+
+  return domain || defaultDomain;
+}
 
 export async function selectDeploymentService(
   config: ReliverseConfig,
@@ -40,53 +82,61 @@ export async function deployProject(
   projectName: string,
   config: ReliverseConfig,
   targetDir: string,
-  domain = "",
 ): Promise<DeploymentService | "none"> {
+  relinka("info", `Trying to prepare deployment for ${projectName} project...`);
+
   try {
     const deployService = await selectDeploymentService(config);
     if (deployService === "none") {
-      relinka("info", "No deployment service selected. Skipping deployment.");
+      relinka("info", "Skipping deployment...");
       return "none";
     }
 
-    const memory = await readReliverseMemory();
-    if (!memory) {
-      relinka("error", "Failed to read reliverse memory");
+    if (deployService !== "vercel") {
+      relinka("info", `Deployment to ${deployService} is not yet implemented`);
       return "none";
     }
 
-    if (deployService === "vercel") {
-      const { askGithubName } = await import("~/app/menu/askGithubName.js");
-      const githubUsername = memory.githubUsername
-        ? memory.githubUsername
-        : await askGithubName();
+    // Check if project is already deployed
+    const isDeployed = await isProjectDeployed(projectName);
 
-      const { askVercelName } = await import("~/app/menu/askVercelName.js");
-      const vercelUsername = memory.vercelUsername
-        ? memory.vercelUsername
-        : await askVercelName();
-
-      if (!githubUsername || !vercelUsername) {
-        relinka("error", "Could not determine GitHub or Vercel username");
-        return "none";
-      }
-
-      await createVercelDeployment(
-        targetDir,
-        projectName,
-        githubUsername,
-        vercelUsername,
-        domain,
+    if (isDeployed) {
+      relinka(
+        "info",
+        "Existing deployment found. Proceeding with deployment update...",
       );
-      return "vercel";
+    } else {
+      relinka(
+        "info",
+        "No existing deployment found. Initializing new deployment...",
+      );
     }
 
-    relinka("info", `Deployment to ${deployService} is not yet implemented.`);
-    return "none";
+    // Get domain configuration
+    const domain = await promptForDomain(projectName);
+
+    const success = await createVercelDeployment(
+      projectName,
+      targetDir,
+      domain,
+    );
+
+    if (success) {
+      relinka(
+        "success",
+        isDeployed
+          ? "Deployment updated successfully!"
+          : "New deployment created successfully!",
+      );
+      return deployService;
+    } else {
+      relinka("error", "Failed to deploy project");
+      return "none";
+    }
   } catch (error) {
     relinka(
       "error",
-      "Error deploying project:",
+      "Error during deployment:",
       error instanceof Error ? error.message : String(error),
     );
     return "none";
