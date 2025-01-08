@@ -1,10 +1,20 @@
-import { confirmPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
-import { multiselectPrompt, nextStepsPrompt } from "@reliverse/prompts";
+import {
+  confirmPrompt,
+  selectPrompt,
+  spinnerTaskPrompt,
+} from "@reliverse/prompts";
+import {
+  multiselectPrompt,
+  nextStepsPrompt,
+  inputPrompt,
+} from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
 import open from "open";
+import os from "os";
 import path from "pathe";
+import pc from "picocolors";
 
 import type {
   Behavior,
@@ -21,7 +31,6 @@ import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/c
 import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/replaceStringsInFiles.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
-import { promptForDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/promptForDomain.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
 
 export type PackageJson = {
@@ -43,7 +52,7 @@ export type CreateWebProjectOptions = {
 export type ProjectConfig = {
   frontendUsername: string;
   projectName: string;
-  domain: string;
+  primaryDomain: string;
 };
 
 export async function initializeProjectConfig(
@@ -60,12 +69,12 @@ export async function initializeProjectConfig(
       ? path.basename(config.experimental.projectTemplate)
       : await askProjectName();
 
-  const domain =
+  const primaryDomain =
     shouldUseDataFromConfig && config?.experimental?.projectDomain
       ? config.experimental.projectDomain
-      : await promptForDomain(projectName);
+      : `${projectName}.vercel.app`;
 
-  return { frontendUsername, projectName, domain };
+  return { frontendUsername, projectName, primaryDomain };
 }
 
 export async function replaceTemplateStrings(
@@ -85,10 +94,10 @@ export async function replaceTemplateStrings(
       updateMessage("Some magic is happening... This may take a while...");
 
       const replacements: Record<string, string> = {
-        [`${oldProjectName}.com`]: config.domain,
+        [`${oldProjectName}.com`]: config.primaryDomain,
         [author]: config.frontendUsername,
         [oldProjectName]: config.projectName,
-        ["relivator.com"]: config.domain,
+        ["relivator.com"]: config.primaryDomain,
       };
 
       const validReplacements = Object.fromEntries(
@@ -179,15 +188,94 @@ export async function determineShouldInstallDeps(
   }
 }
 
+function getDefaultProjectPath(): string {
+  const platform = os.platform();
+  if (platform === "win32") {
+    return "C:\\B\\S";
+  } else {
+    return path.join(os.homedir(), "Projects");
+  }
+}
+
+async function moveProjectFromTestRuntime(
+  projectName: string,
+  sourceDir: string,
+): Promise<string | null> {
+  try {
+    const shouldUseProject = await confirmPrompt({
+      title: `The project was bootstrapped using dev mode. Do you plan to use this project? ${pc.redBright("[🚨 Experimental]")}`,
+      content:
+        "If yes, I'll try to move it from the test-runtime directory to a permanent location.",
+      defaultValue: false,
+    });
+
+    if (!shouldUseProject) {
+      return null;
+    }
+
+    const defaultPath = getDefaultProjectPath();
+    const targetDir = await inputPrompt({
+      title: "Where would you like to move the project?",
+      content: "Enter the path where you want to move the project:",
+      placeholder: `Press <Enter> to use the default path: ${defaultPath}`,
+      defaultValue: defaultPath,
+    });
+
+    // Ensure target directory exists
+    await fs.ensureDir(targetDir);
+
+    // Check if a directory with the same name exists
+    let finalProjectName = projectName;
+    const originalTargetPath = path.join(targetDir, projectName);
+    let targetPath = originalTargetPath;
+    let counter = 1;
+
+    while (await fs.pathExists(targetPath)) {
+      const newName = await inputPrompt({
+        title: `Directory ${finalProjectName} already exists at ${targetDir}`,
+        content: "Please enter a new name for the project directory",
+        defaultValue: `${projectName}-${counter}`,
+        validate: (value: string) => {
+          if (!/^[a-zA-Z0-9-_]+$/.test(value))
+            return "Invalid directory name format";
+          return true;
+        },
+      });
+
+      finalProjectName = newName;
+      targetPath = path.join(targetDir, finalProjectName);
+      counter++;
+    }
+
+    // Move the project
+    await fs.move(sourceDir, targetPath);
+    relinka("success", `Project moved to ${targetPath}`);
+    return targetPath;
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to move project:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return null;
+  }
+}
+
 export async function handleDeployment(params: {
   projectName: string;
   config: ReliverseConfig;
   targetDir: string;
-  domain: string;
+  primaryDomain: string;
   hasDbPush: boolean;
   shouldRunDbPush: boolean;
   shouldInstallDeps: boolean;
-}): Promise<DeploymentService> {
+  isDev: boolean;
+}): Promise<{
+  deployService: DeploymentService | "none";
+  primaryDomain: string;
+  isDeployed: boolean;
+  allDomains: string[];
+}> {
   return await promptGitDeploy(params);
 }
 
@@ -195,10 +283,26 @@ export async function showSuccessAndNextSteps(
   targetDir: string,
   webProjectTemplate: TemplateOption,
   frontendUsername: string,
+  isDeployed: boolean,
+  primaryDomain: string,
+  allDomains: string[],
+  isDev: boolean,
 ) {
+  let finalTargetDir = targetDir;
+
+  if (isDev) {
+    const newPath = await moveProjectFromTestRuntime(
+      path.basename(targetDir),
+      targetDir,
+    );
+    if (newPath) {
+      finalTargetDir = newPath;
+    }
+  }
+
   relinka(
     "info",
-    `🎉 ${webProjectTemplate} was successfully installed to ${targetDir}.`,
+    `🎉 ${webProjectTemplate} was successfully installed to ${finalTargetDir}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
@@ -207,21 +311,31 @@ export async function showSuccessAndNextSteps(
     title: "🤘 Project created successfully! Next steps to get started:",
     titleColor: "cyanBright",
     content: [
-      `- If you have VSCode installed, run: code ${targetDir}`,
-      `- You can open the project in your terminal: cd ${targetDir}`,
+      `- If you have VSCode installed, run: code ${finalTargetDir}`,
+      `- You can open the project in your terminal: cd ${finalTargetDir}`,
       "- Install dependencies manually if needed: bun i OR pnpm i",
       "- Apply linting and formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
     ],
   });
 
-  await handleNextActions(targetDir, vscodeInstalled, frontendUsername);
+  await handleNextActions(
+    finalTargetDir,
+    vscodeInstalled,
+    frontendUsername,
+    isDeployed,
+    primaryDomain,
+    allDomains,
+  );
 }
 
 export async function handleNextActions(
   targetDir: string,
   vscodeInstalled: boolean,
   frontendUsername: string,
+  isDeployed: boolean,
+  primaryDomain: string,
+  allDomains: string[],
 ) {
   const nextActions = await multiselectPrompt({
     title: "What would you like to do next?",
@@ -234,6 +348,15 @@ export async function handleNextActions(
         value: "ide",
         hint: vscodeInstalled ? "Detected: VSCode-based IDE" : "",
       },
+      ...(isDeployed
+        ? [
+            {
+              label: "Open Deployed Project",
+              value: "deployed",
+              hint: `Visit ${primaryDomain}`,
+            },
+          ]
+        : []),
       {
         label: "Support Reliverse on Patreon",
         value: "patreon",
@@ -250,7 +373,7 @@ export async function handleNextActions(
   });
 
   for (const action of nextActions) {
-    await handleNextAction(action, targetDir);
+    await handleNextAction(action, targetDir, primaryDomain, allDomains);
   }
 
   relinka(
@@ -265,42 +388,67 @@ export async function handleNextActions(
   );
 }
 
-export async function handleNextAction(action: string, targetDir: string) {
-  const actions: Record<string, () => Promise<void>> = {
-    patreon: async () => {
-      relinka("info", "Opening Reliverse Patreon page...");
-      await open("https://patreon.com/c/blefnk/membership");
-    },
-    docs: async () => {
-      await open("https://docs.reliverse.org");
-    },
-    discord: async () => {
-      relinka("info", "Opening Reliverse Discord server...");
-      await open("https://discord.gg/Pb8uKbwpsJ");
-    },
-    ide: async () => {
-      const vscodeInstalled = isVSCodeInstalled();
-      relinka(
-        "info",
-        vscodeInstalled
-          ? "Opening the project in VSCode-based IDE..."
-          : "Trying to open the project in your default IDE...",
-      );
-      try {
-        await execa("code", [targetDir]);
-      } catch (error) {
-        relinka(
-          "error",
-          "Error opening project in your IDE:",
-          error instanceof Error ? error.message : String(error),
-          `Try to open the project manually with command like: code ${targetDir}`,
-        );
-      }
-    },
-  };
-
+export async function handleNextAction(
+  action: string,
+  targetDir: string,
+  primaryDomain: string,
+  allDomains?: string[],
+): Promise<void> {
   try {
-    await actions[action]?.();
+    switch (action) {
+      case "ide": {
+        const vscodeInstalled = isVSCodeInstalled();
+        relinka(
+          "info",
+          vscodeInstalled
+            ? "Opening the project in VSCode-based IDE..."
+            : "Trying to open the project in your default IDE...",
+        );
+        try {
+          await execa("code", [targetDir]);
+        } catch (error) {
+          relinka(
+            "error",
+            "Error opening project in your IDE:",
+            error instanceof Error ? error.message : String(error),
+            `Try to open the project manually with command like: code ${targetDir}`,
+          );
+        }
+        break;
+      }
+      case "deployed": {
+        if (allDomains && allDomains.length > 1) {
+          const selectedDomain = await selectPrompt({
+            title: "Select domain to open:",
+            options: allDomains.map((d) => ({
+              label: d,
+              value: d,
+              ...(d === primaryDomain ? { hint: "(primary)" } : {}),
+            })),
+          });
+          relinka("info", `Opening deployed project at ${selectedDomain}...`);
+          await open(`https://${selectedDomain}`);
+        } else {
+          relinka("info", `Opening deployed project at ${primaryDomain}...`);
+          await open(`https://${primaryDomain}`);
+        }
+        break;
+      }
+      case "patreon": {
+        relinka("info", "Opening Reliverse Patreon page...");
+        await open("https://patreon.com/c/blefnk/membership");
+        break;
+      }
+      case "discord": {
+        relinka("info", "Opening Reliverse Discord server...");
+        await open("https://discord.gg/Pb8uKbwpsJ");
+        break;
+      }
+      case "docs": {
+        await open("https://docs.reliverse.org");
+        break;
+      }
+    }
   } catch (error) {
     relinka("error", `Error handling action ${action}:`, String(error));
   }

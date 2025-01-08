@@ -10,7 +10,7 @@ import { INTEGRATION_CONFIGS } from "../integrations/integrationsIntegrConfig.js
 import { REMOVAL_CONFIGS } from "../integrations/integrationsRemovalConfig.js";
 import { relinka } from "./logger.js";
 
-export async function handleIntegrations(cwd: string) {
+export async function handleIntegrations(cwd: string, isDev: boolean) {
   const integrationOptions: IntegrationOptions = {
     database: [
       {
@@ -142,18 +142,18 @@ export async function handleIntegrations(cwd: string) {
         envVars: {},
       };
 
-      await installIntegration(cwd, config);
+      await installIntegration(cwd, config, isDev);
       return;
     }
 
-    await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"]!);
+    await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"]!, isDev);
     return;
   }
 
   // Handle other integrations
   const integrationKey = selectedIntegration;
   if (INTEGRATION_CONFIGS[integrationKey]) {
-    await installIntegration(cwd, INTEGRATION_CONFIGS[integrationKey]);
+    await installIntegration(cwd, INTEGRATION_CONFIGS[integrationKey], isDev);
     return;
   }
 

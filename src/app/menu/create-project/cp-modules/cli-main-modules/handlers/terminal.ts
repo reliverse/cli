@@ -17,7 +17,7 @@ export async function cd(dir: string): Promise<void> {
   try {
     await fs.access(dir);
     process.chdir(dir);
-    relinka("info", `Changed directory to: ${process.cwd()}`);
+    relinka("info-verbose", `Changed directory to: ${process.cwd()}`);
   } catch (error) {
     relinka("warn", `Directory does not exist: ${dir}`, handleError(error));
   }
@@ -28,7 +28,7 @@ export async function cd(dir: string): Promise<void> {
  */
 export function pwd() {
   const cwd = getCurrentWorkingDirectory();
-  relinka("info", `Current working directory: ${cwd}`);
+  relinka("info-verbose", `Current working directory: ${cwd}`);
 }
 
 /**
@@ -62,7 +62,7 @@ export async function ls(dir?: string): Promise<string[]> {
 export async function mkdir(dir: string): Promise<void> {
   try {
     await fs.mkdirp(dir);
-    relinka("info", `Directory created: ${dir}`);
+    relinka("info-verbose", `Directory created: ${dir}`);
   } catch (error) {
     relinka("error", `Failed to create directory: ${dir}`, handleError(error));
   }
@@ -93,7 +93,7 @@ export async function rm(target: string): Promise<void> {
 export async function echo(filePath: string, content: string): Promise<void> {
   try {
     await fs.writeFile(filePath, content, "utf8");
-    relinka("info", `Wrote to file: ${filePath}`);
+    relinka("info-verbose", `Wrote to file: ${filePath}`);
   } catch (error) {
     relinka("error", `Failed to write file: ${filePath}`, handleError(error));
   }

@@ -35,7 +35,11 @@ export async function createWebProject({
     config,
     shouldUseDataFromConfig,
   );
-  const { frontendUsername, projectName, domain } = projectConfig;
+  const {
+    frontendUsername,
+    projectName,
+    primaryDomain: initialDomain,
+  } = projectConfig;
 
   let targetDir = "";
 
@@ -53,7 +57,7 @@ export async function createWebProject({
 
   // Replace template strings
   await replaceTemplateStrings(targetDir, webProjectTemplate, {
-    domain,
+    primaryDomain: initialDomain,
     frontendUsername,
     projectName,
   });
@@ -74,25 +78,28 @@ export async function createWebProject({
   );
 
   // Handle deployment
-  const deployService = await handleDeployment({
-    projectName,
-    config,
-    targetDir,
-    domain,
-    hasDbPush: shouldRunDbPush,
-    shouldRunDbPush,
-    shouldInstallDeps,
-  });
+  const { deployService, primaryDomain, isDeployed, allDomains } =
+    await handleDeployment({
+      projectName,
+      config,
+      targetDir,
+      primaryDomain: initialDomain,
+      hasDbPush: shouldRunDbPush,
+      shouldRunDbPush,
+      shouldInstallDeps,
+      isDev,
+    });
 
   // Generate config file
   await generateReliverseFile({
     projectName,
     frontendUsername,
     deployService,
-    domain,
+    primaryDomain,
     targetDir,
     i18nShouldBeEnabled: defaultI18nShouldBeEnabled,
     shouldInstallDeps,
+    isDeployed,
   });
 
   // Show success message and next steps
@@ -100,5 +107,9 @@ export async function createWebProject({
     targetDir,
     webProjectTemplate,
     frontendUsername,
+    isDeployed,
+    primaryDomain,
+    allDomains,
+    isDev,
   );
 }

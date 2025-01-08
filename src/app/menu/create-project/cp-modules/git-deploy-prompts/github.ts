@@ -1,6 +1,6 @@
 import { RequestError } from "@octokit/request-error";
 import { Octokit } from "@octokit/rest";
-import { inputPrompt } from "@reliverse/prompts";
+import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
@@ -13,19 +13,11 @@ import { updateReliverseMemory } from "~/args/memory/impl.js";
 
 import { setupGitRemote } from "./git.js";
 
-const userAgent = "reliverse-cli/1.4.14";
+const userAgent = "reliverse-cli/1.4.15";
 
-// Create a "no-op" log override to silence debug logs (including 404 logs)
-// TODO: do not works
-// const silentLogger = {
-//   // eslint-disable-next-line @typescript-eslint/no-empty-function
-//   debug: () => {}, // no console output on debug
-//   info: console.info, // keep info, warn, error
-//   warn: console.warn,
-//   error: console.error,
-// };
-
-async function ensureGithubToken(memory: ReliverseMemory): Promise<string> {
+export async function ensureGithubToken(
+  memory: ReliverseMemory,
+): Promise<string> {
   if (memory.githubKey) {
     // Validate existing token
     try {
@@ -33,31 +25,6 @@ async function ensureGithubToken(memory: ReliverseMemory): Promise<string> {
       const octokit = new Octokit({
         auth: memory.githubKey,
         userAgent,
-        // log: silentLogger, // suppress debug-level logs
-        // TODO: Figure out should we enable or customize retry/throttling.
-        /*
-        throttle: {
-          onRateLimit: (retryAfter, options, octo) => {
-            octo.log.warn(`Rate limit for ${options.method} ${options.url}`);
-            if (options.request.retryCount === 0) {
-              octo.log.info(`Retrying after ${retryAfter} seconds!`);
-              return true; // retry once
-            }
-            return false;
-          },
-          onSecondaryRateLimit: (retryAfter, options, octo) => {
-            octo.log.warn(`Secondary rate limit for ${options.method} ${options.url}`);
-            if (options.request.retryCount === 0) {
-              octo.log.info(`Retrying after ${retryAfter} seconds!`);
-              return true;
-            }
-            return false;
-          },
-        },
-        retry: {
-          // TODO: configure or disable retries
-        }
-        */
       });
 
       await octokit.rest.users.getAuthenticated();
@@ -84,7 +51,6 @@ async function ensureGithubToken(memory: ReliverseMemory): Promise<string> {
         const octokit = new Octokit({
           auth: value,
           userAgent,
-          // log: silentLogger, // suppress debug-level logs
         });
         await octokit.rest.users.getAuthenticated();
         return true;
@@ -157,7 +123,6 @@ export async function getAvailableRepoName(
 
   while (repoStatus.exists) {
     if (repoStatus.isOwner) {
-      const { selectPrompt } = await import("@reliverse/prompts");
       const action = await selectPrompt({
         title: `Repository "${owner}/${repoName}" already exists`,
         options: [
@@ -222,6 +187,7 @@ export async function createGithubRepo(
   repoName: string,
   repoOwner: string,
   targetDir: string,
+  isDev: boolean,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
@@ -288,7 +254,7 @@ export async function createGithubRepo(
           relinka("info", "Removed template's .git directory");
         }
 
-        // Initialize git and set up sparse checkout directly in target directory
+        // Initialize git and set up remote
         const git = simpleGit(targetDir);
         await git.init();
 
@@ -296,20 +262,15 @@ export async function createGithubRepo(
         const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${repoOwner}/${repoName}.git`;
         await git.addRemote("origin", repoUrl);
 
-        // Configure sparse checkout to not download any files
-        await git.raw(["sparse-checkout", "init"]);
-        await git.raw(["sparse-checkout", "set", "--no-cone"]);
+        // Add all files to git to prevent checkout conflicts
+        await git.add(".");
+        await git.commit("Initial commit before fetching repository");
 
-        // Fetch only the latest commit without checking out files
-        await git.fetch(["origin", "HEAD", "--depth=1"]);
-        await git.raw(["checkout", "FETCH_HEAD", "--sparse"]);
+        // Fetch the repository
+        await git.fetch(["origin", "HEAD"]);
 
-        // Remove the authenticated remote and replace with HTTPS URL
-        await git.removeRemote("origin");
-        await git.addRemote(
-          "origin",
-          `https://github.com/${repoOwner}/${repoName}.git`,
-        );
+        // Force checkout to handle any conflicts
+        await git.raw(["checkout", "FETCH_HEAD", "-f"]);
 
         relinka("success", "Retrieved repository git data");
         return true;
@@ -323,7 +284,6 @@ export async function createGithubRepo(
       }
     } else {
       // New repository
-      const { selectPrompt } = await import("@reliverse/prompts");
       const privacyAction = await selectPrompt({
         title: "Choose repository privacy setting",
         defaultValue: "public",
@@ -380,7 +340,13 @@ export async function createGithubRepo(
     // 4. Setup remote and push initial commit
     const remoteUrl = `https://github.com/${repoOwner}/${repoName}.git`;
     relinka("info", "Setting up Git remote and pushing initial commit...");
-    return await setupGitRemote(targetDir, remoteUrl);
+    return await setupGitRemote(
+      isDev,
+      repoName,
+      targetDir,
+      remoteUrl,
+      "origin",
+    );
   } catch (error: any) {
     if (error instanceof RequestError) {
       if (error.status === 401 || error.status === 403) {

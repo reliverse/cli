@@ -1,4 +1,5 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { execa } from "execa";
 import { installDependencies } from "nypm";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
@@ -53,7 +54,6 @@ export async function ensureDbInitialized(
       });
     }
 
-    const { execa } = await import("execa");
     await execa("bun", ["db:push"], {
       cwd: targetDir,
       stdio: "inherit",

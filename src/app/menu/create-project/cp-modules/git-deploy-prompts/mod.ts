@@ -1,6 +1,6 @@
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import { Octokit } from "@octokit/rest";
-import { confirmPrompt } from "@reliverse/prompts";
+import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 
 import type { DeploymentService, ReliverseConfig } from "~/types.js";
 
@@ -11,6 +11,8 @@ import { readReliverseMemory } from "~/args/memory/impl.js";
 import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGit } from "./git.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
+import { promptForDomain } from "./helpers/promptForDomain.js";
+import { getVercelProjectDomain } from "./vercel/vercel-domain.js";
 import { isProjectDeployed } from "./vercel/vercel-mod.js";
 
 type DecisionKey = "gitBehavior" | "deployBehavior";
@@ -74,8 +76,11 @@ export async function decide(
 /**
  * Handles the git initialization step
  */
-export async function handleGitInit(targetDir: string): Promise<boolean> {
-  const gitInitialized = await initGit(targetDir);
+export async function handleGitInit(
+  targetDir: string,
+  isDev: boolean,
+): Promise<boolean> {
+  const gitInitialized = await initGit(targetDir, isDev);
   if (!gitInitialized) {
     relinka(
       "error",
@@ -92,6 +97,7 @@ export async function handleGitInit(targetDir: string): Promise<boolean> {
 export async function handleGithubRepo(
   projectName: string,
   targetDir: string,
+  isDev: boolean,
 ): Promise<{
   success: boolean;
   octokit?: InstanceType<typeof Octokit>;
@@ -110,7 +116,11 @@ export async function handleGithubRepo(
   }
 
   // Even if token is not found, we proceed to createGithubRepo which will handle token prompting
-  const repoCreated = await createGithubRepository(projectName, targetDir);
+  const repoCreated = await createGithubRepository(
+    projectName,
+    targetDir,
+    isDev,
+  );
   if (!repoCreated) {
     relinka(
       "error",
@@ -128,7 +138,7 @@ export async function handleGithubRepo(
 
   const octokit = new OctokitWithRest({
     auth: updatedMemory.githubKey,
-    userAgent: "reliverse-cli/1.4.14",
+    userAgent: "reliverse-cli/1.4.15",
     throttle: {
       onRateLimit: (
         _retryAfter: number,
@@ -185,19 +195,27 @@ export async function promptGitDeploy({
   projectName,
   config,
   targetDir,
-  domain,
+  primaryDomain,
   hasDbPush,
   shouldRunDbPush,
   shouldInstallDeps,
+  isDev,
 }: {
   projectName: string;
   config: ReliverseConfig;
   targetDir: string;
-  domain: string;
+  primaryDomain: string;
   hasDbPush: boolean;
   shouldRunDbPush: boolean;
   shouldInstallDeps: boolean;
-}): Promise<DeploymentService | "none"> {
+  isDev: boolean;
+}): Promise<{
+  deployService: DeploymentService | "none";
+  primaryDomain: string;
+  isDeployed: boolean;
+  allDomains: string[];
+}> {
+  let allDomains: string[] = [];
   try {
     // 1. Ask about GitHub repository first
     const shouldCreateRepo = await decide(
@@ -225,19 +243,34 @@ export async function promptGitDeploy({
 
       if (!shouldInitGit) {
         relinka("info", "Skipping git initialization.");
-        return "none";
+        return {
+          deployService: "none",
+          primaryDomain,
+          isDeployed: false,
+          allDomains,
+        };
       }
 
       // Only initialize git if user wants git but not GitHub
-      if (!(await handleGitInit(targetDir))) {
+      if (!(await handleGitInit(targetDir, isDev))) {
         relinka(
           "error",
           "Failed to initialize git. You can try to initialize it manually later.",
         );
-        return "none";
+        return {
+          deployService: "none",
+          primaryDomain,
+          isDeployed: false,
+          allDomains,
+        };
       }
       relinka("info", "Skipping GitHub repository creation.");
-      return "none";
+      return {
+        deployService: "none",
+        primaryDomain,
+        isDeployed: false,
+        allDomains,
+      };
     }
 
     // 2. Setup GitHub (this will handle git initialization if needed)
@@ -247,13 +280,12 @@ export async function promptGitDeploy({
 
     while (retryCount < 3 && !skipGitHub) {
       try {
-        githubData = await handleGithubRepo(projectName, targetDir);
+        githubData = await handleGithubRepo(projectName, targetDir, isDev);
         if (githubData.success) {
           break;
         }
         retryCount++;
         if (retryCount < 3) {
-          const { selectPrompt } = await import("@reliverse/prompts");
           const action = await selectPrompt({
             title: "GitHub setup failed. What would you like to do?",
             options: [
@@ -281,17 +313,27 @@ export async function promptGitDeploy({
             case "skip":
               skipGitHub = true;
               // Initialize git locally if GitHub is skipped
-              if (!(await handleGitInit(targetDir))) {
+              if (!(await handleGitInit(targetDir, isDev))) {
                 relinka(
                   "error",
                   "Failed to initialize git. You can try to initialize it manually later.",
                 );
-                return "none";
+                return {
+                  deployService: "none",
+                  primaryDomain,
+                  isDeployed: false,
+                  allDomains,
+                };
               }
               break;
             case "close":
               relinka("info", "Setup cancelled by user.");
-              return "none";
+              return {
+                deployService: "none",
+                primaryDomain,
+                isDeployed: false,
+                allDomains,
+              };
           }
         }
       } catch (error) {
@@ -302,7 +344,6 @@ export async function promptGitDeploy({
         );
         retryCount++;
         if (retryCount < 3) {
-          const { selectPrompt } = await import("@reliverse/prompts");
           const action = await selectPrompt({
             title: "GitHub setup failed. What would you like to do?",
             options: [
@@ -330,24 +371,33 @@ export async function promptGitDeploy({
             case "skip":
               skipGitHub = true;
               // Initialize git locally if GitHub is skipped
-              if (!(await handleGitInit(targetDir))) {
+              if (!(await handleGitInit(targetDir, isDev))) {
                 relinka(
                   "error",
                   "Failed to initialize git. You can try to initialize it manually later.",
                 );
-                return "none";
+                return {
+                  deployService: "none",
+                  primaryDomain,
+                  isDeployed: false,
+                  allDomains,
+                };
               }
               break;
             case "close":
               relinka("info", "Setup cancelled by user.");
-              return "none";
+              return {
+                deployService: "none",
+                primaryDomain,
+                isDeployed: false,
+                allDomains,
+              };
           }
         }
       }
     }
 
     if (retryCount === 3 && !skipGitHub) {
-      const { selectPrompt } = await import("@reliverse/prompts");
       const action = await selectPrompt({
         title:
           "GitHub setup failed after 3 attempts. What would you like to do?",
@@ -368,18 +418,28 @@ export async function promptGitDeploy({
       switch (action) {
         case "skip":
           // Initialize git locally if GitHub is skipped
-          if (!(await handleGitInit(targetDir))) {
+          if (!(await handleGitInit(targetDir, isDev))) {
             relinka(
               "error",
               "Failed to initialize git. You can try to initialize it manually later.",
             );
-            return "none";
+            return {
+              deployService: "none",
+              primaryDomain,
+              isDeployed: false,
+              allDomains,
+            };
           }
           skipGitHub = true;
           break;
         case "close":
           relinka("info", "Setup cancelled by user.");
-          return "none";
+          return {
+            deployService: "none",
+            primaryDomain,
+            isDeployed: false,
+            allDomains,
+          };
       }
     }
 
@@ -399,7 +459,12 @@ export async function promptGitDeploy({
             "success",
             "Project already has Vercel deployments configured. New commits will trigger deployments automatically.",
           );
-          return "vercel";
+          return {
+            deployService: "vercel",
+            primaryDomain,
+            isDeployed: true,
+            allDomains,
+          };
         }
 
         // Only ask about deployment if there's no existing Vercel deployment
@@ -415,7 +480,12 @@ export async function promptGitDeploy({
 
         if (!shouldDeployProject) {
           relinka("info", "Skipping project deployment.");
-          return "none";
+          return {
+            deployService: "none",
+            primaryDomain,
+            isDeployed: false,
+            allDomains,
+          };
         }
 
         // 4. Database initialization
@@ -431,22 +501,37 @@ export async function promptGitDeploy({
             "info",
             "Deployment cancelled during database initialization.",
           );
-          return "none";
+          return {
+            deployService: "none",
+            primaryDomain,
+            isDeployed: false,
+            allDomains,
+          };
         }
 
         // 5. Project deployment
+        if (!hasVercelDeployment) {
+          primaryDomain = await promptForDomain(projectName);
+        } else {
+          const result = await getVercelProjectDomain(projectName);
+          primaryDomain = result.primary;
+          allDomains = result.domains;
+        }
         let deployRetryCount = 0;
         while (deployRetryCount < 3) {
           try {
-            if (
-              (await deployProject(projectName, config, targetDir, domain)) !==
-              "none"
-            ) {
+            const deployResult = await deployProject(
+              projectName,
+              config,
+              targetDir,
+              primaryDomain,
+            );
+            if (deployResult.deployService !== "none") {
               relinka(
                 "success",
                 `${skipGitHub ? "Git" : "Git, GitHub,"} and deployment completed successfully! 🎉`,
               );
-              return "vercel";
+              return deployResult;
             }
             deployRetryCount++;
             if (deployRetryCount < 3) {
@@ -479,7 +564,12 @@ export async function promptGitDeploy({
 
         if (deployRetryCount === 3) {
           relinka("error", "Deployment failed after 3 attempts.");
-          return "none";
+          return {
+            deployService: "none",
+            primaryDomain,
+            isDeployed: false,
+            allDomains,
+          };
         }
       } catch (error) {
         relinka(
@@ -487,7 +577,12 @@ export async function promptGitDeploy({
           "Failed to check repository deployments:",
           error instanceof Error ? error.message : String(error),
         );
-        return "none";
+        return {
+          deployService: "none",
+          primaryDomain,
+          isDeployed: false,
+          allDomains,
+        };
       }
     } else {
       relinka(
@@ -496,7 +591,12 @@ export async function promptGitDeploy({
       );
     }
 
-    return skipGitHub ? "none" : "vercel";
+    return {
+      deployService: skipGitHub ? "none" : "vercel",
+      primaryDomain,
+      isDeployed: !skipGitHub,
+      allDomains,
+    };
   } catch (error) {
     if (error instanceof Error) {
       relinka("error", `Process failed: ${error.message}`);
@@ -506,6 +606,11 @@ export async function promptGitDeploy({
     } else {
       relinka("error", "An unexpected error occurred:", String(error));
     }
-    return "none";
+    return {
+      deployService: "none",
+      primaryDomain,
+      isDeployed: false,
+      allDomains,
+    };
   }
 }

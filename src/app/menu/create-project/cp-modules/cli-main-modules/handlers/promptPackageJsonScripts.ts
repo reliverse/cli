@@ -62,7 +62,7 @@ const SCRIPT_DEFINITIONS = {
 } as const;
 
 const BOOTSTRAP_SCRIPTS = ["latest", "db:push", "db:seed", "check"];
-const DEFAULT_BOOTSTRAP_SCRIPTS = ["latest", "db:push", "check"];
+const DEFAULT_BOOTSTRAP_SCRIPTS = ["db:push", "check"];
 
 export async function promptPackageJsonScripts(
   targetDir: string,

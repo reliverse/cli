@@ -1,3 +1,4 @@
+import { multiselectPrompt } from "@reliverse/prompts";
 import type { Vercel } from "@vercel/sdk";
 
 import pc from "picocolors";
@@ -86,7 +87,6 @@ export type ConfigurationOptions = {
  * Gets configuration options from user
  */
 export async function getConfigurationOptions(): Promise<ConfigurationOptions> {
-  const { multiselectPrompt } = await import("@reliverse/prompts");
   const experimental = pc.dim(pc.red("[🚨 Experimental]"));
   const result = await multiselectPrompt({
     title: "Select Vercel deployment options:",

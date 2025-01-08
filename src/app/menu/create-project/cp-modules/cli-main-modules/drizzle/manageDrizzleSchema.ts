@@ -22,7 +22,7 @@ export async function manageDrizzleSchema(cwd: string, isDev: boolean) {
   // Check if Drizzle is configured
   let provider = await detectDatabaseProvider(cwd);
   if (!provider) {
-    provider = await setupDrizzle(cwd);
+    provider = await setupDrizzle(cwd, isDev);
     if (!provider) {
       relinka("error", "Failed to set up Drizzle.");
       return;

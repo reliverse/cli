@@ -30,7 +30,7 @@ async function detectPackageManager(cwd: string): Promise<PackageManager> {
 async function installDependencies(
   cwd: string,
   dependencies: string[],
-  isDev = false,
+  isDev: boolean,
 ) {
   const pm = await detectPackageManager(cwd);
   const installCmd = pm === PackageManager.Npm ? "install" : "add";
@@ -116,6 +116,7 @@ async function updateEnvFile(cwd: string, envVars: Record<string, string>) {
 export async function installIntegration(
   cwd: string,
   config: IntegrationConfig,
+  isDev: boolean,
 ) {
   try {
     relinka("info", `Installing ${config.name}...`);
@@ -130,12 +131,12 @@ export async function installIntegration(
 
     // Install dependencies
     if (config.dependencies.length > 0) {
-      await installDependencies(cwd, config.dependencies);
+      await installDependencies(cwd, config.dependencies, isDev);
     }
 
     // Install dev dependencies
     if (config.devDependencies?.length) {
-      await installDependencies(cwd, config.devDependencies, true);
+      await installDependencies(cwd, config.devDependencies, isDev);
     }
 
     // Update package.json scripts

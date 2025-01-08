@@ -18,7 +18,7 @@ type MainMenuOption = {
 
 export async function getMainMenuOptions(
   cwd: string,
-  isDev = false,
+  isDev: boolean,
 ): Promise<MainMenuOption[]> {
   // 1) Start with the base options
   const options: MainMenuOption[] = [

@@ -15,17 +15,18 @@ type GenerateReliverseFileOptions = {
   projectName: string;
   frontendUsername: string;
   deployService: DeploymentService;
-  domain: string;
+  primaryDomain: string;
   targetDir: string;
   i18nShouldBeEnabled: boolean;
   shouldInstallDeps: boolean;
+  isDeployed: boolean;
 };
 
 export async function generateReliverseFile({
   projectName,
   frontendUsername,
   deployService,
-  domain,
+  primaryDomain,
   targetDir,
   i18nShouldBeEnabled,
   shouldInstallDeps,
@@ -37,7 +38,7 @@ export async function generateReliverseFile({
       frontendUsername ?? "user",
     );
 
-    const githubUsername = memory?.githubUsername ?? "your-github-username";
+    const githubUsername = memory?.githubUsername ?? "";
     const vercelTeamName = memory?.vercelUsername ?? "";
 
     // Store updated info in memory
@@ -70,8 +71,8 @@ export async function generateReliverseFile({
 
     rules.experimental.projectRepository = `https://github.com/${githubUsername}/${projectName}`;
     rules.experimental.projectDeployService = deployService;
-    rules.experimental.projectDomain = domain
-      ? `https://${domain}`
+    rules.experimental.projectDomain = primaryDomain
+      ? `https://${primaryDomain}`
       : `https://${projectName}.${deployService.toLowerCase()}.app`;
     rules.experimental.gitBehavior = "prompt";
 

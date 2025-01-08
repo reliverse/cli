@@ -19,11 +19,16 @@ import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/db/constants.js";
 
 export async function showDevToolsMenu(config: ReliverseConfig) {
+  const cwd = getCurrentWorkingDirectory();
+  const testsRuntimePath = path.join(cwd, "tests-runtime");
+  const testsRuntimeExists = await fs.pathExists(testsRuntimePath);
+
   const option = await selectPrompt({
     title: "Dev tools menu",
     options: [
-      { label: "remove tests-runtime dir", value: "rm-tests-runtime" },
-      { label: "cd tests-runtime", value: "cd-test" },
+      ...(testsRuntimeExists
+        ? [{ label: "remove tests-runtime dir", value: "rm-tests-runtime" }]
+        : []),
       {
         label:
           "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
@@ -33,10 +38,7 @@ export async function showDevToolsMenu(config: ReliverseConfig) {
     ],
   });
 
-  if (option === "cd-test") {
-    await cd("tests-runtime");
-    pwd();
-  } else if (option === "rm-tests-runtime") {
+  if (option === "rm-tests-runtime") {
     const cwd = getCurrentWorkingDirectory();
     const testsRuntimePath = path.join(cwd, "tests-runtime");
     if (await fs.pathExists(testsRuntimePath)) {
@@ -57,7 +59,7 @@ async function downloadTemplateOption(
   config: ReliverseConfig,
 ) {
   const projectName = await askProjectName();
-  const domain = `${projectName}.vercel.app`;
+  const primaryDomain = `${projectName}.vercel.app`;
   const targetDir = await downloadTemplate(template, projectName, true);
 
   relinka("info", `Downloaded template to ${targetDir}`);
@@ -66,19 +68,20 @@ async function downloadTemplateOption(
 
   await composeEnvFile(targetDir, FALLBACK_ENV_EXAMPLE_URL);
 
-  const deployService = await promptGitDeploy({
+  const { deployService } = await promptGitDeploy({
     projectName,
     config,
     targetDir,
-    domain,
+    primaryDomain,
     hasDbPush: false,
     shouldRunDbPush: false,
     shouldInstallDeps: false,
+    isDev: true,
   });
 
   if (deployService === "none") {
     relinka("info", "Skipping deploy process...");
   } else {
-    relinka("success", `Project deployed successfully to ${domain}`);
+    relinka("success", `Project deployed successfully to ${primaryDomain}`);
   }
 }

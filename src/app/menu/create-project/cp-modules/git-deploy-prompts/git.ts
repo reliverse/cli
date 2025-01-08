@@ -30,7 +30,8 @@ const OctokitWithRest = Octokit.plugin(restEndpointMethods);
  */
 export async function isGitRepo(
   dir: string,
-  { isDev = false, projectName = "" } = {},
+  isDev: boolean,
+  projectName = "",
 ): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
@@ -75,7 +76,8 @@ export async function isGitRepo(
  */
 export async function initGit(
   dir: string,
-  { isDev = false, projectName = "" } = {},
+  isDev: boolean,
+  projectName = "",
 ): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
@@ -88,7 +90,7 @@ export async function initGit(
     }
 
     const git: SimpleGit = simpleGit({ baseDir: finalDir });
-    const isExistingRepo = await isGitRepo(finalDir, { isDev, projectName });
+    const isExistingRepo = await isGitRepo(finalDir, isDev, projectName);
 
     if (!isExistingRepo) {
       // Initialize new git repository
@@ -128,7 +130,7 @@ export async function initGit(
 
     return true;
   } catch (error) {
-    const existingRepo = await isGitRepo(finalDir, { isDev, projectName });
+    const existingRepo = await isGitRepo(finalDir, isDev, projectName);
     relinka(
       "error",
       `Failed to ${existingRepo ? "update" : "initialize"} git: ${
@@ -201,7 +203,7 @@ async function isRepoOwner(
 export async function createGithubRepository(
   projectName: string,
   targetDir: string,
-  { isDev = false } = {},
+  isDev: boolean,
 ): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
@@ -284,37 +286,58 @@ export async function createGithubRepository(
           memory,
           newName,
           githubUsername,
-          finalDir, // Use finalDir so it respects isDev
+          finalDir,
+          isDev,
         );
-      } else if (choice === "commit") {
-        // Create Octokit instance with GitHub token
-        const githubOctokit = new OctokitWithRest({
-          auth: memory.githubKey,
-          userAgent: "reliverse-cli/1.4.14",
-        });
-
-        // Get list of changed files from git status
-        const changedPaths = status.files.map((file) => file.path);
-
-        // Create and push commit using GitHub API
-        const success = await commitLocalChanges({
-          octokit: githubOctokit,
-          owner: githubUsername,
-          repo: projectName,
-          directory: finalDir,
-          changedFiles: changedPaths,
-        });
-
-        if (success) {
-          relinka("success", "Created and pushed new commit with changes");
+      } else if (choice === "commit" || choice === "skip") {
+        // Remove existing .git directory if it exists
+        const gitDir = path.join(finalDir, ".git");
+        if (await fs.pathExists(gitDir)) {
+          await fs.remove(gitDir);
+          relinka("info", "Removed template's .git directory");
         }
-        return success;
-      } else {
-        // choice === "skip"
-        relinka(
-          "info",
-          "Using existing repository, skipping creating a commit...",
-        );
+
+        // Initialize git and set up remote
+        const git = simpleGit(finalDir);
+        await git.init();
+
+        // Use authenticated URL with token as username
+        const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${githubUsername}/${projectName}.git`;
+        await git.addRemote("origin", repoUrl);
+
+        // Add all files to git to prevent checkout conflicts
+        await git.add(".");
+        await git.commit("Initial commit before fetching repository");
+
+        // Fetch the repository
+        await git.fetch(["origin", "HEAD"]);
+
+        // Force checkout to handle any conflicts
+        await git.raw(["checkout", "FETCH_HEAD", "-f"]);
+
+        relinka("success", "Retrieved repository git data");
+
+        if (choice === "commit" && hasChanges) {
+          // Create Octokit instance with GitHub token
+          const githubOctokit = new OctokitWithRest({
+            auth: memory.githubKey,
+            userAgent: "reliverse-cli/1.4.15",
+          });
+
+          // Create and push commit using GitHub API
+          const success = await commitLocalChanges({
+            octokit: githubOctokit,
+            owner: githubUsername,
+            repo: projectName,
+            directory: finalDir,
+            changedFiles: status.files.map((file) => file.path),
+          });
+
+          if (success) {
+            relinka("success", "Created and pushed new commit with changes");
+          }
+          return success;
+        }
         return true;
       }
     }
@@ -325,6 +348,7 @@ export async function createGithubRepository(
       projectName,
       githubUsername,
       finalDir,
+      isDev,
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {
@@ -350,13 +374,11 @@ export async function createGithubRepository(
  * @returns Promise<boolean>
  */
 export async function setupGitRemote(
+  isDev: boolean,
+  projectName: string,
   dir: string,
   remoteUrl: string,
   remoteName = "origin",
-  {
-    isDev = false,
-    projectName = "",
-  }: { isDev?: boolean; projectName?: string } = {},
 ): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
@@ -368,7 +390,7 @@ export async function setupGitRemote(
       return false;
     }
 
-    if (!(await isGitRepo(finalDir, { isDev, projectName }))) {
+    if (!(await isGitRepo(finalDir, isDev, projectName))) {
       relinka(
         "error",
         "Not a git repository, git should be initialized before setupGitRemote. Something went wrong. Please notify developers.",
@@ -427,24 +449,19 @@ export async function setupGitRemote(
  * @param projectName - Name of the project (used if isDev = true)
  * @returns Promise<boolean>
  */
-export async function createGitCommit({
-  message,
-  projectPath,
-  isDev = false,
-  projectName = "",
-}: {
-  message: string;
-  projectPath: string;
-  isDev?: boolean;
-  projectName?: string;
-}): Promise<boolean> {
+export async function createGitCommit(
+  message: string,
+  projectPath: string,
+  isDev: boolean,
+  projectName: string,
+): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
-    if (!(await isGitRepo(finalDir, { isDev, projectName }))) {
+    if (!(await isGitRepo(finalDir, isDev, projectName))) {
       relinka("error", "Not a git repository. Please initialize git first.");
       return false;
     }
@@ -482,7 +499,8 @@ export async function createGitCommit({
  */
 export async function pushGitCommits(
   projectPath: string,
-  { isDev = false, projectName = "" } = {},
+  isDev: boolean,
+  projectName: string,
 ): Promise<boolean> {
   const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
@@ -490,7 +508,7 @@ export async function pushGitCommits(
     : projectPath;
 
   try {
-    if (!(await isGitRepo(finalDir, { isDev, projectName }))) {
+    if (!(await isGitRepo(finalDir, isDev, projectName))) {
       relinka("error", "Not a git repository. Please initialize git first.");
       return false;
     }

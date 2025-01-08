@@ -39,34 +39,59 @@ export async function deployProject(
   projectName: string,
   config: ReliverseConfig,
   targetDir: string,
-  domain: string,
-): Promise<DeploymentService | "none"> {
+  primaryDomain: string,
+): Promise<{
+  deployService: DeploymentService | "none";
+  primaryDomain: string;
+  isDeployed: boolean;
+  allDomains: string[];
+}> {
   relinka("info", `Preparing deployment for ${projectName} project...`);
 
   try {
     const deployService = await selectDeploymentService(config);
     if (deployService === "none") {
       relinka("info", "Skipping deployment...");
-      return "none";
+      return {
+        primaryDomain,
+        deployService: "none",
+        isDeployed: false,
+        allDomains: [primaryDomain],
+      };
     }
 
     if (deployService !== "vercel") {
       relinka("info", `Deployment to ${deployService} is not yet implemented`);
-      return "none";
+      return {
+        primaryDomain,
+        deployService: "none",
+        isDeployed: false,
+        allDomains: [primaryDomain],
+      };
     }
 
     const success = await createVercelDeployment(
       projectName,
       targetDir,
-      domain,
+      primaryDomain,
     );
 
     if (success) {
       relinka("success", "Deployment completed!");
-      return deployService;
+      return {
+        primaryDomain,
+        deployService: deployService,
+        isDeployed: true,
+        allDomains: [primaryDomain],
+      };
     } else {
       relinka("error", "Failed to deploy project");
-      return "none";
+      return {
+        primaryDomain,
+        deployService: "none",
+        isDeployed: false,
+        allDomains: [primaryDomain],
+      };
     }
   } catch (error) {
     relinka(
@@ -74,6 +99,11 @@ export async function deployProject(
       "Error during deployment:",
       error instanceof Error ? error.message : String(error),
     );
-    return "none";
+    return {
+      primaryDomain,
+      deployService: "none",
+      isDeployed: false,
+      allDomains: [primaryDomain],
+    };
   }
 }

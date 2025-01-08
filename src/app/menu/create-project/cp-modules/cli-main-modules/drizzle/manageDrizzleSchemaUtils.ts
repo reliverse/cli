@@ -31,6 +31,7 @@ export async function detectDatabaseProvider(
 
 export async function setupDrizzle(
   cwd: string,
+  isDev: boolean,
 ): Promise<DatabaseProvider | null> {
   relinka(
     "info",
@@ -70,13 +71,13 @@ export async function setupDrizzle(
       ],
     };
 
-    await installIntegration(cwd, config);
+    await installIntegration(cwd, config, isDev);
   } else {
     const drizzleConfig = INTEGRATION_CONFIGS["drizzle"];
     if (!drizzleConfig) {
       throw new Error("Drizzle integration configuration not found");
     }
-    await installIntegration(cwd, drizzleConfig);
+    await installIntegration(cwd, drizzleConfig, isDev);
   }
 
   return provider as DatabaseProvider;

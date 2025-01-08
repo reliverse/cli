@@ -4,7 +4,7 @@ import type {
 } from "@vercel/sdk/models/getprojectsop";
 
 import { Octokit } from "@octokit/rest";
-import { spinnerTaskPrompt } from "@reliverse/prompts";
+import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
 import { Vercel } from "@vercel/sdk";
 import fs from "fs-extra";
 import path from "pathe";
@@ -270,7 +270,6 @@ export async function createVercelDeployment(
     // 1. First ensure we have a valid token
     const memory = await readReliverseMemory();
     if (!memory?.vercelKey) {
-      const { inputPrompt } = await import("@reliverse/prompts");
       const token = await inputPrompt({
         title:
           "Please enter your Vercel personal access token.\n(It will be securely stored on your machine):",

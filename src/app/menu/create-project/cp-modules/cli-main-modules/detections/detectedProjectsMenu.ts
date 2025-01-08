@@ -51,6 +51,7 @@ const OctokitWithRest = Octokit.plugin(restEndpointMethods);
 
 export async function showDetectedProjectsMenu(
   projects: DetectedProject[],
+  isDev: boolean,
 ): Promise<void> {
   let selectedProject: DetectedProject | undefined;
 
@@ -249,7 +250,7 @@ export async function showDetectedProjectsMenu(
     });
 
     if (gitAction === "init") {
-      const success = await initGit(selectedProject.path);
+      const success = await initGit(selectedProject.path, isDev);
       if (success) {
         relinka("success", "Git repository initialized successfully");
         selectedProject.hasGit = true;
@@ -260,10 +261,12 @@ export async function showDetectedProjectsMenu(
       });
 
       if (message) {
-        const success = await createGitCommit({
+        const success = await createGitCommit(
           message,
-          projectPath: selectedProject.path,
-        });
+          selectedProject.path,
+          isDev,
+          selectedProject.name,
+        );
 
         if (success) {
           relinka("success", "Commit created successfully");
@@ -275,7 +278,11 @@ export async function showDetectedProjectsMenu(
         }
       }
     } else if (gitAction === "push") {
-      const success = await pushGitCommits(selectedProject.path);
+      const success = await pushGitCommits(
+        selectedProject.path,
+        isDev,
+        selectedProject.name,
+      );
       if (success) {
         relinka("success", "Commits pushed successfully");
         if (selectedProject.gitStatus) {
@@ -286,6 +293,7 @@ export async function showDetectedProjectsMenu(
       const success = await createGithubRepository(
         selectedProject.name,
         selectedProject.path,
+        isDev,
       );
       if (success) {
         relinka("success", "GitHub repository created successfully");
@@ -303,18 +311,18 @@ export async function showDetectedProjectsMenu(
         return;
       }
 
-      const deploymentService = await deployProject(
+      const { deployService } = await deployProject(
         selectedProject.name,
         selectedProject.config,
         selectedProject.path,
         "",
       );
-      if (deploymentService !== "none") {
+
+      if (deployService !== "none") {
         relinka(
           "success",
           `Project deployed successfully to ${
-            deploymentService.charAt(0).toUpperCase() +
-            deploymentService.slice(1)
+            deployService.charAt(0).toUpperCase() + deployService.slice(1)
           }`,
         );
       }
@@ -322,7 +330,7 @@ export async function showDetectedProjectsMenu(
   } else if (action === "codemods") {
     await handleCodemods(selectedProject.config, selectedProject.path);
   } else if (action === "integration") {
-    await handleIntegrations(selectedProject.path);
+    await handleIntegrations(selectedProject.path, isDev);
   } else if (action === "convert-db") {
     const conversionType = await selectPrompt({
       title: "What kind of conversion would you like to perform?",

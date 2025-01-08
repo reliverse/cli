@@ -44,7 +44,7 @@ export async function app({
     const rootProject = await detectProject(cwd);
     if (rootProject) {
       // If project exists in root, directly open its menu
-      await showDetectedProjectsMenu([rootProject]);
+      await showDetectedProjectsMenu([rootProject], isDev);
       await showEndPrompt();
       process.exit(0);
     }
@@ -97,7 +97,7 @@ export async function app({
     const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
     if (await fs.pathExists(searchPath)) {
       const detectedProjects = await detectProjectsWithReliverse(searchPath);
-      await showDetectedProjectsMenu(detectedProjects);
+      await showDetectedProjectsMenu(detectedProjects, isDev);
     }
   } else if (choice === "isDevTools") {
     await showDevToolsMenu(config);
