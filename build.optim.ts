@@ -3,7 +3,7 @@ import { globby } from "globby";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-import { relinka } from "~/utils/console.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 // Parse command-line arguments to check for '--jsr' flag
 const args: string[] = process.argv.slice(2);

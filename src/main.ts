@@ -2,16 +2,16 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 
-import { relinka } from "~/utils/console.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.11",
+    version: "1.4.14",
     description: "https://docs.reliverse.org",
   },
   subCommands: {
-    cli: () => import("~/app/mod.js").then((r) => r.default),
+    cli: () => import("~/app/app-mod.js").then((r) => r.default),
     help: () => import("~/args/help/mod.js").then((r) => r.default),
     login: () => import("~/args/login/mod.js").then((r) => r.default),
     logout: () => import("~/args/logout/mod.js").then((r) => r.default),

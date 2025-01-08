@@ -7,6 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const PKG_ROOT = path.resolve(__dirname, "../../../..");
 
+export const FALLBACK_ENV_EXAMPLE_URL =
+  "https://raw.githubusercontent.com/blefnk/relivator/main/.env.example";
+
 // File conflict settings, useful for prompting user to resolve conflicts during project setup
 export const FILE_CONFLICTS = [
   {

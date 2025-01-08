@@ -1,0 +1,22 @@
+import { ofetch } from "ofetch";
+
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+
+export async function fetchEnvExampleContent(
+  urlResource: string,
+): Promise<string | null> {
+  try {
+    const response = await ofetch<Response>(urlResource);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch .env.example from ${urlResource}`);
+    }
+    const text = await response.text();
+    return typeof text === "string" ? text : null;
+  } catch (error) {
+    relinka(
+      "error",
+      `Error fetching .env.example: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return null;
+  }
+}

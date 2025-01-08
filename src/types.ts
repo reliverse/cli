@@ -152,7 +152,13 @@ export type MonorepoType =
 
 export type TemplateOption =
   | "blefnk/relivator"
-  | "blefnk/next-react-ts-src-minimal";
+  | "blefnk/next-react-ts-src-minimal"
+  | "blefnk/all-in-one-nextjs-template"
+  | "blefnk/create-t3-app"
+  | "blefnk/create-next-app"
+  | "blefnk/astro-starlight-template"
+  | "blefnk/versator"
+  | "reliverse/template-browser-extension";
 
 // design = graphic|video|audio|3d design
 export type ProjectTypeOptions = "" | "development" | "design" | "marketing";

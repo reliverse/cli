@@ -9,7 +9,7 @@ import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { MEMORY_FILE } from "~/app/db/constants.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
-import { relinka } from "~/utils/console.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 const homeDir = os.homedir();
 const dbPath = path.join(homeDir, MEMORY_FILE);

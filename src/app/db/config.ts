@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 
 import type { ConfigKey } from "~/types.js";
 
-import { relinka } from "~/utils/console.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 import { db } from "./client.js";
 import { configKeysTable } from "./schema.js";

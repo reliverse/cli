@@ -2,11 +2,11 @@ import { defineCommand } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { DEFAULT_CONFIG } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/reliverseDefaultConfig.js";
+import { getDefaultReliverseConfig } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/reliverseReadWrite.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { getCurrentWorkingDirectory } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { type ReliverseConfig } from "~/types.js";
-import { DEFAULT_CONFIG } from "~/utils/configs/reliverseDefaultConfig.js";
-import { getDefaultReliverseConfig } from "~/utils/configs/reliverseReadWrite.js";
-import { relinka } from "~/utils/console.js";
-import { getCurrentWorkingDirectory } from "~/utils/fs.js";
 
 export default defineCommand({
   meta: {

@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.4.11",
+  "version": "1.4.14",
   "author": "blefnk",
   "license": "MIT",
   "exports": "./dist-jsr/main.ts",
@@ -31,7 +31,7 @@
       "tsconfig.json",
       "cspell.json",
       "reset.d.ts",
-      "tests-runtime/**"
+      "tests-runtime/"
     ]
   }
 }

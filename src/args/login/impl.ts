@@ -14,9 +14,10 @@ import { isWindows } from "std-env";
 import url from "url";
 
 import { MEMORY_FILE } from "~/app/db/constants.js";
-import { relinka } from "~/utils/console.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 
-import { updateReliverseMemory } from "../memory/impl.js";
+import { readReliverseMemory, updateReliverseMemory } from "../memory/impl.js";
 
 /**
  * Custom error for when a user cancels the process.
@@ -247,4 +248,29 @@ export async function auth({
       }
     },
   });
+}
+
+export async function checkIfUserIsAuthenticated(args: { dev: boolean }) {
+  // Check for existing authentication in SQLite
+  const memory = await readReliverseMemory();
+  const isAuthenticated =
+    memory.code && memory.code !== "" && memory.key && memory.key !== "";
+
+  if (!isAuthenticated) {
+    await showAnykeyPrompt();
+    await auth({ dev: args.dev, useLocalhost: false });
+
+    // Re-check authentication after auth flow
+    const updatedMemory = await readReliverseMemory();
+    const authSuccess =
+      updatedMemory.code &&
+      updatedMemory.code !== "" &&
+      updatedMemory.key &&
+      updatedMemory.key !== "";
+
+    if (!authSuccess) {
+      relinka("error", "Authentication failed. Please try again.");
+      process.exit(1);
+    }
+  }
 }
