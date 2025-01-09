@@ -1,5 +1,6 @@
+import type { Octokit } from "@octokit/rest";
+
 import { RequestError } from "@octokit/request-error";
-import { Octokit } from "@octokit/rest";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
@@ -10,7 +11,7 @@ import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/h
 import { updateReliverseMemory } from "~/args/memory/impl.js";
 
 import { cd } from "../cli-main-modules/handlers/terminal.js";
-import { createOctokitInstance, octokitUserAgent } from "./octokit-instance.js";
+import { createOctokitInstance } from "./octokit-instance.js";
 import { cloneToTempAndCopyFiles, setupGitRemote } from "./utils-git-github.js";
 
 export async function checkGithubRepoOwnership(
@@ -152,20 +153,39 @@ export async function commitLocalChanges({
     // Read all changed files
     const files = await Promise.all(
       changedFiles.map(async (filePath) => {
-        const content = await fs.readFile(
-          path.join(directory, filePath),
-          "utf8",
-        );
-        return { path: filePath, content };
+        const fullPath = path.join(directory, filePath);
+        try {
+          // Check if file exists and is readable
+          if (await fs.pathExists(fullPath)) {
+            const content = await fs.readFile(fullPath, "utf8");
+            return { path: filePath, content };
+          } else {
+            relinka("warn", `File not found: ${filePath}, skipping...`);
+            return null;
+          }
+        } catch (_error) {
+          relinka("warn", `Could not read file ${filePath}, skipping...`);
+          return null;
+        }
       }),
     );
+
+    // Filter out null entries (files that couldn't be read)
+    const validFiles = files.filter(
+      (file): file is { path: string; content: string } => file !== null,
+    );
+
+    if (validFiles.length === 0) {
+      relinka("warn", "No valid files to commit");
+      return false;
+    }
 
     return await createGithubCommit({
       octokit,
       owner,
       repo,
       message,
-      files,
+      files: validFiles,
       branch,
     });
   } catch (error) {
@@ -257,12 +277,7 @@ export async function ensureGithubToken(
   if (memory.githubKey) {
     // Validate existing token
     try {
-      // Providing a custom userAgent to help identify requests on GitHub’s side
-      const octokit = new Octokit({
-        auth: memory.githubKey,
-        userAgent: octokitUserAgent,
-      });
-
+      const octokit = createOctokitInstance(memory.githubKey);
       await octokit.rest.users.getAuthenticated();
       return memory.githubKey;
     } catch (_error) {
@@ -284,10 +299,7 @@ export async function ensureGithubToken(
         return "Token is required";
       }
       try {
-        const octokit = new Octokit({
-          auth: value,
-          userAgent: octokitUserAgent,
-        });
+        const octokit = createOctokitInstance(value);
         await octokit.rest.users.getAuthenticated();
         return true;
       } catch (_error) {

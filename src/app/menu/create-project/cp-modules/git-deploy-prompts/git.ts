@@ -15,13 +15,9 @@ import {
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 
-import {
-  checkGithubRepoOwnership,
-  commitLocalChanges,
-  createGithubRepo,
-} from "./github.js";
-import { createOctokitInstance, OctokitWithRest } from "./octokit-instance.js";
-import { isGitRepo } from "./utils-git-github.js";
+import { checkGithubRepoOwnership, createGithubRepo } from "./github.js";
+import { createOctokitInstance } from "./octokit-instance.js";
+import { cloneToTempAndCopyFiles, isGitRepo } from "./utils-git-github.js";
 
 /**
  * Initializes a git repository if it doesn't exist, or commits if it does
@@ -142,6 +138,7 @@ async function isRepoOwner(
   }
 }
 
+// Export other git-related functions as needed
 /**
  * Creates a GitHub repository and sets it up locally
  * @param projectName - Name of the project/repository
@@ -239,49 +236,47 @@ export async function createGithubRepository(
           isDev,
         );
       } else if (choice === "commit" || choice === "skip") {
-        // Remove existing .git directory if it exists
-        const gitDir = path.join(finalDir, ".git");
-        if (await fs.pathExists(gitDir)) {
-          await fs.remove(gitDir);
-          relinka("info", "Removed template's .git directory");
-        }
-
-        // Initialize git and set up remote
-        const git = simpleGit(finalDir);
-        await git.init();
-
         // Use authenticated URL with token as username
         const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${githubUsername}/${projectName}.git`;
-        await git.addRemote("origin", repoUrl);
 
-        // Fetch the repository
-        await git.fetch(["origin", "HEAD"]);
-
-        // Force checkout to handle any conflicts
-        await git.raw(["checkout", "FETCH_HEAD", "-f"]);
+        // Clone repo to temp dir and copy files
+        const success = await cloneToTempAndCopyFiles(repoUrl, finalDir);
+        if (!success) {
+          throw new Error("Failed to retrieve repository data");
+        }
 
         relinka("success", "Retrieved repository git data");
 
-        if (choice === "commit" && hasChanges) {
+        if (choice === "commit") {
           // Create Octokit instance with GitHub token
-          const githubOctokit = new OctokitWithRest({
-            auth: memory.githubKey,
-            userAgent: "reliverse-cli/1.4.16",
-          });
-
-          // Create and push commit using GitHub API
-          const success = await commitLocalChanges({
-            octokit: githubOctokit,
-            owner: githubUsername,
-            repo: projectName,
-            directory: finalDir,
-            changedFiles: status.files.map((file) => file.path),
-          });
-
-          if (success) {
-            relinka("success", "Created and pushed new commit with changes");
+          if (!memory.githubKey) {
+            throw new Error("GitHub token not found");
           }
-          return success;
+
+          // Add and commit all files in the working directory
+          const git = simpleGit({ baseDir: finalDir });
+          await git.add(".");
+          await git.commit("Update by @reliverse/cli");
+
+          // Get the latest commit details
+          const latestCommit = await git.log({ maxCount: 1 });
+          if (!latestCommit.latest) {
+            throw new Error("Failed to get latest commit");
+          }
+
+          // Push the commit
+          try {
+            await git.push("origin", "main");
+            relinka("success", "Created and pushed new commit with changes");
+            return true;
+          } catch (error) {
+            relinka(
+              "error",
+              "Failed to push commit:",
+              error instanceof Error ? error.message : String(error),
+            );
+            return false;
+          }
         }
         return true;
       }

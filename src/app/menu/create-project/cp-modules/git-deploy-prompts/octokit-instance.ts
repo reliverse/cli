@@ -4,8 +4,11 @@ import { Octokit } from "@octokit/rest";
 export const OctokitWithRest = Octokit.plugin(restEndpointMethods);
 export const octokitUserAgent = "reliverse-cli/1.4.16";
 
-export function createOctokitInstance(githubKey: string): Octokit {
-  return new Octokit({
+// https://github.com/octokit/octokit.js/#readme
+export function createOctokitInstance(
+  githubKey: string,
+): InstanceType<typeof OctokitWithRest> {
+  return new OctokitWithRest({
     auth: githubKey,
     userAgent: octokitUserAgent,
     throttle: {
@@ -16,7 +19,7 @@ export function createOctokitInstance(githubKey: string): Octokit {
           url: string;
           request: { retryCount: number };
         },
-        octokit: InstanceType<typeof Octokit>,
+        octokit: InstanceType<typeof OctokitWithRest>,
       ) => {
         octokit.log.warn(
           `Request quota exhausted for ${options.method} ${options.url}`,
@@ -30,7 +33,7 @@ export function createOctokitInstance(githubKey: string): Octokit {
           url: string;
           request: { retryCount: number };
         },
-        octokit: InstanceType<typeof Octokit>,
+        octokit: InstanceType<typeof OctokitWithRest>,
       ) => {
         octokit.log.warn(
           `Secondary rate limit for ${options.method} ${options.url}`,

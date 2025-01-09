@@ -1,11 +1,10 @@
+import type { Vercel } from "@vercel/sdk";
 import type {
   GetProjectsFramework,
   GetProjectsTarget1,
 } from "@vercel/sdk/models/getprojectsop";
 
-import { Octokit } from "@octokit/rest";
 import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
-import { Vercel } from "@vercel/sdk";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -16,6 +15,7 @@ import {
   updateReliverseMemory,
 } from "~/args/memory/impl.js";
 
+import { createOctokitInstance } from "../octokit-instance.js";
 import { withRateLimit } from "./vercel-api.js";
 import {
   enableAnalytics,
@@ -24,6 +24,7 @@ import {
   getConfigurationOptions,
 } from "./vercel-config.js";
 import { createDeployment } from "./vercel-deploy.js";
+import { createVercelInstance } from "./vercel-instance.js";
 
 export type InlinedFile = {
   file: string;
@@ -129,9 +130,7 @@ export async function isProjectDeployed(projectName: string): Promise<boolean> {
       return false;
     }
 
-    const octokit = new Octokit({
-      auth: memory.githubKey,
-    });
+    const octokit = createOctokitInstance(memory.githubKey);
 
     try {
       // Check for Vercel deployments in GitHub
@@ -290,7 +289,7 @@ export async function createVercelDeployment(
     }
 
     // 2. Initialize Vercel client
-    const vercel = new Vercel({ bearerToken: memory.vercelKey });
+    const vercel = createVercelInstance(memory.vercelKey);
 
     // 3. Now check for existing deployment
     relinka("info", "Checking for existing deployment...");

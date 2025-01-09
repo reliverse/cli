@@ -1,0 +1,74 @@
+{
+  // Unstable features
+  "experimental": {
+    "projectName": "@reliverse/cli",
+    "projectAuthor": "blefnk",
+    "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
+    "projectVersion": "1.4.16",
+    "projectLicense": "MIT",
+    "projectRepository": "git+https://github.com/reliverse/cli.git",
+
+    // Project capabilities
+    "features": {
+      "i18n": false,
+      "analytics": false,
+      "themeMode": "dark-light",
+      "authentication": false,
+      "api": false,
+      "database": false,
+      "testing": false,
+      "docker": false,
+      "ci": false,
+      "commands": [],
+      "webview": [],
+      "language": [],
+      "themes": []
+    },
+
+    // Tech stack of your project
+    "projectFramework": "nextjs",
+    "projectPackageManager": "npm",
+    "monorepo": {
+      "type": "none",
+      "packages": [],
+      "sharedPackages": []
+    },
+    "preferredLibraries": {},
+
+    // Code style preferences
+    "codeStyle": {
+      "lineWidth": 80,
+      "indentSize": 2,
+      "indentStyle": "space",
+      "quoteMark": "double",
+      "semicolons": true,
+      "trailingComma": "all",
+      "bracketSpacing": true,
+      "arrowParens": "always",
+      "tabWidth": 2,
+      "jsToTs": false
+    },
+
+    // Cleaner codemod will ignore these deps
+    "ignoreDependencies": [],
+
+    // Config revalidation (1h | 1d | 2d | 7d)
+    "configLastRevalidate": "2025-01-09T19:31:17.193Z",
+    "configRevalidateFrequency": "7d",
+
+    // Custom rules for Reliverse AI
+    "customRules": {},
+
+    // Do you want autoYes/autoNo below?
+    // Set to true to activate auto-answering.
+    // This is to ensure there is no unexpected behavior.
+    "skipPromptsUseAutoBehavior": false,
+
+    // Prompts behavior (prompt | autoYes | autoNo)
+    "deployBehavior": "prompt",
+    "depsBehavior": "prompt",
+    "gitBehavior": "prompt",
+    "i18nBehavior": "prompt",
+    "scriptsBehavior": "prompt"
+  }
+}

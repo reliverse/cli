@@ -1,5 +1,5 @@
-import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
+
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 
 import type { DeploymentService, ReliverseConfig } from "~/types.js";
@@ -12,6 +12,7 @@ import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGit } from "./git.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
+import { createOctokitInstance } from "./octokit-instance.js";
 import { getVercelProjectDomain } from "./vercel/vercel-domain.js";
 import { isProjectDeployed } from "./vercel/vercel-mod.js";
 
@@ -22,8 +23,6 @@ type GithubSetupResult = {
   octokit?: InstanceType<typeof Octokit>;
   username?: string;
 };
-
-const OctokitWithRest = Octokit.plugin(restEndpointMethods);
 
 /**
  * Makes a decision based on config or user prompt
@@ -136,40 +135,7 @@ export async function handleGithubRepo(
     return { success: false };
   }
 
-  const octokit = new OctokitWithRest({
-    auth: updatedMemory.githubKey,
-    userAgent: "reliverse-cli/1.4.16",
-    throttle: {
-      onRateLimit: (
-        _retryAfter: number,
-        options: {
-          method: string;
-          url: string;
-          request: { retryCount: number };
-        },
-        octokit: InstanceType<typeof Octokit>,
-      ) => {
-        octokit.log.warn(
-          `Request quota exhausted for ${options.method} ${options.url}`,
-        );
-        return options.request.retryCount === 0; // retry once
-      },
-      onSecondaryRateLimit: (
-        _retryAfter: number,
-        options: {
-          method: string;
-          url: string;
-          request: { retryCount: number };
-        },
-        octokit: InstanceType<typeof Octokit>,
-      ) => {
-        octokit.log.warn(
-          `Secondary rate limit for ${options.method} ${options.url}`,
-        );
-        return options.request.retryCount === 0; // retry once
-      },
-    },
-  });
+  const octokit = createOctokitInstance(updatedMemory.githubKey);
 
   return { success: true, octokit, username: githubUsername };
 }

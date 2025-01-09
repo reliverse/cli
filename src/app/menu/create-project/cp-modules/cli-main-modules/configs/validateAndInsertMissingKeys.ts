@@ -62,63 +62,64 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
       const mergedConfig: ReliverseConfig = {
         experimental: {
           // Project details
-          projectName: defaultRules.experimental?.projectName ?? "",
-          projectAuthor: defaultRules.experimental?.projectAuthor ?? "",
+          projectName:
+            parsedContent.experimental?.projectName ??
+            defaultRules.experimental?.projectName ??
+            "",
+          projectAuthor:
+            parsedContent.experimental?.projectAuthor ??
+            defaultRules.experimental?.projectAuthor ??
+            "",
           projectDescription:
-            defaultRules.experimental?.projectDescription ??
             parsedContent.experimental?.projectDescription ??
+            defaultRules.experimental?.projectDescription ??
             "",
           projectVersion:
-            defaultRules.experimental?.projectVersion ??
             parsedContent.experimental?.projectVersion ??
-            "1.0.0",
+            defaultRules.experimental?.projectVersion ??
+            "0.1.0",
           projectLicense:
-            defaultRules.experimental?.projectLicense ??
             parsedContent.experimental?.projectLicense ??
+            defaultRules.experimental?.projectLicense ??
             "MIT",
           projectRepository:
-            defaultRules.experimental?.projectRepository ??
             parsedContent.experimental?.projectRepository ??
+            defaultRules.experimental?.projectRepository ??
             "",
 
           // Project features
-          features: defaultRules.experimental?.features ?? {
-            i18n: false,
-            analytics: false,
-            themeMode: "light",
-            authentication: false,
-            api: false,
-            database: false,
-            testing: false,
-            docker: false,
-            ci: false,
-            commands: [],
-            webview: [],
-            language: [],
-            themes: [],
+          features: {
+            ...defaultRules.experimental?.features,
+            ...parsedContent.experimental?.features,
           },
 
           // Development preferences
-          projectFramework: defaultRules.experimental?.projectFramework,
+          projectFramework:
+            parsedContent.experimental?.projectFramework ??
+            defaultRules.experimental?.projectFramework,
           projectPackageManager:
+            parsedContent.experimental?.projectPackageManager ??
             defaultRules.experimental?.projectPackageManager,
           projectFrameworkVersion:
-            defaultRules.experimental?.projectFrameworkVersion ??
-            parsedContent.experimental?.projectFrameworkVersion,
+            parsedContent.experimental?.projectFrameworkVersion ??
+            defaultRules.experimental?.projectFrameworkVersion,
           nodeVersion:
-            defaultRules.experimental?.nodeVersion ??
-            parsedContent.experimental?.nodeVersion,
+            parsedContent.experimental?.nodeVersion ??
+            defaultRules.experimental?.nodeVersion,
           runtime:
-            defaultRules.experimental?.runtime ??
-            parsedContent.experimental?.runtime,
+            parsedContent.experimental?.runtime ??
+            defaultRules.experimental?.runtime,
           monorepo:
-            defaultRules.experimental?.monorepo ??
-            parsedContent.experimental?.monorepo,
+            parsedContent.experimental?.monorepo ??
+            defaultRules.experimental?.monorepo,
           preferredLibraries: {
             ...defaultRules.experimental?.preferredLibraries,
             ...parsedContent.experimental?.preferredLibraries,
           },
-          codeStyle: defaultRules.experimental?.codeStyle,
+          codeStyle: {
+            ...defaultRules.experimental?.codeStyle,
+            ...parsedContent.experimental?.codeStyle,
+          },
 
           // Dependencies management
           ignoreDependencies:
@@ -126,9 +127,14 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
             defaultRules.experimental?.ignoreDependencies,
 
           // Config revalidation
-          configLastRevalidate: new Date().toISOString(),
+          configLastRevalidate: shouldRevalidate(
+            parsedContent.experimental?.configLastRevalidate,
+            parsedContent.experimental?.configRevalidateFrequency,
+          )
+            ? new Date().toISOString()
+            : parsedContent.experimental?.configLastRevalidate,
           configRevalidateFrequency:
-            parsedContent.experimental?.configRevalidateFrequency ?? "2d",
+            parsedContent.experimental?.configRevalidateFrequency ?? "7d",
 
           // Custom rules
           customRules: {
@@ -138,13 +144,29 @@ export async function validateAndInsertMissingKeys(cwd: string): Promise<void> {
 
           // Generation preferences
           skipPromptsUseAutoBehavior:
-            defaultRules.experimental?.skipPromptsUseAutoBehavior ?? false,
-          deployBehavior: defaultRules.experimental?.deployBehavior ?? "prompt",
-          depsBehavior: defaultRules.experimental?.depsBehavior ?? "prompt",
-          gitBehavior: defaultRules.experimental?.gitBehavior ?? "prompt",
-          i18nBehavior: defaultRules.experimental?.i18nBehavior ?? "prompt",
+            parsedContent.experimental?.skipPromptsUseAutoBehavior ??
+            defaultRules.experimental?.skipPromptsUseAutoBehavior ??
+            false,
+          deployBehavior:
+            parsedContent.experimental?.deployBehavior ??
+            defaultRules.experimental?.deployBehavior ??
+            "prompt",
+          depsBehavior:
+            parsedContent.experimental?.depsBehavior ??
+            defaultRules.experimental?.depsBehavior ??
+            "prompt",
+          gitBehavior:
+            parsedContent.experimental?.gitBehavior ??
+            defaultRules.experimental?.gitBehavior ??
+            "prompt",
+          i18nBehavior:
+            parsedContent.experimental?.i18nBehavior ??
+            defaultRules.experimental?.i18nBehavior ??
+            "prompt",
           scriptsBehavior:
-            defaultRules.experimental?.scriptsBehavior ?? "prompt",
+            parsedContent.experimental?.scriptsBehavior ??
+            defaultRules.experimental?.scriptsBehavior ??
+            "prompt",
         },
       };
 

@@ -148,7 +148,7 @@ export default defineCommand({
           features: {
             i18n: false,
             analytics: false,
-            themeMode: "light",
+            themeMode: "dark-light",
             authentication: false,
             api: false,
             database: false,
@@ -168,7 +168,7 @@ export default defineCommand({
           // Config revalidation
           configLastRevalidate: rules.experimental?.configLastRevalidate ?? "",
           configRevalidateFrequency:
-            rules.experimental?.configRevalidateFrequency ?? "",
+            rules.experimental?.configRevalidateFrequency ?? "7d",
 
           // Custom rules
           customRules: rules.experimental?.customRules ?? {},

@@ -11,6 +11,7 @@ import { detectProjectType } from "../configs/miscellaneousConfigHelpers.js";
 import { parseCodeStyleFromConfigs } from "../configs/parseCodeStyleFromConfigs.js";
 import {
   getDefaultReliverseConfig,
+  shouldRevalidate,
   writeReliverseConfig,
 } from "../configs/reliverseReadWrite.js";
 
@@ -36,122 +37,122 @@ export async function revalidateReliverseJson(cwd: string, rulesPath: string) {
     const configRules = await parseCodeStyleFromConfigs(cwd);
 
     // Always merge with defaults to ensure all fields exist
-    const mergedRules: ReliverseConfig = {
+    const mergedRules = {
       experimental: {
-        // Project details
-        projectName: defaultRules.experimental?.projectName,
-        projectAuthor: defaultRules.experimental?.projectAuthor,
-        projectFramework: defaultRules.experimental?.projectFramework,
-        projectPackageManager: defaultRules.experimental?.projectPackageManager,
+        // Start with user's values
+        ...parsedContent.experimental,
 
-        // Project features
-        features: defaultRules.experimental?.features
-          ? {
-              i18n: defaultRules.experimental.features.i18n ?? false,
-              analytics: defaultRules.experimental.features.analytics ?? false,
-              themeMode:
-                defaultRules.experimental.features.themeMode ?? "light",
-              authentication:
-                defaultRules.experimental.features.authentication ?? false,
-              api: defaultRules.experimental.features.api ?? false,
-              database: defaultRules.experimental.features.database ?? false,
-              testing: defaultRules.experimental.features.testing ?? false,
-              docker: defaultRules.experimental.features.docker ?? false,
-              ci: defaultRules.experimental.features.ci ?? false,
-              commands: defaultRules.experimental.features.commands ?? [],
-              webview: defaultRules.experimental.features.webview ?? [],
-              language: defaultRules.experimental.features.language ?? [],
-              themes: defaultRules.experimental.features.themes ?? [],
-              ...parsedContent.experimental?.features,
-            }
-          : undefined,
+        // Only add defaults for missing fields
+        projectName:
+          parsedContent.experimental?.projectName ??
+          defaultRules.experimental?.projectName ??
+          "",
+        projectAuthor:
+          parsedContent.experimental?.projectAuthor ??
+          defaultRules.experimental?.projectAuthor ??
+          "",
+        projectDescription:
+          parsedContent.experimental?.projectDescription ??
+          defaultRules.experimental?.projectDescription ??
+          "",
+        projectVersion:
+          parsedContent.experimental?.projectVersion ??
+          defaultRules.experimental?.projectVersion ??
+          "0.1.0",
+        projectLicense:
+          parsedContent.experimental?.projectLicense ??
+          defaultRules.experimental?.projectLicense ??
+          "MIT",
+        projectRepository:
+          parsedContent.experimental?.projectRepository ??
+          defaultRules.experimental?.projectRepository ??
+          "",
 
-        // Development preferences
-        preferredLibraries: defaultRules.experimental?.preferredLibraries
-          ? {
-              ...defaultRules.experimental.preferredLibraries,
-              ...parsedContent.experimental?.preferredLibraries,
-            }
-          : undefined,
+        // Project features - only merge if missing
+        features: {
+          ...defaultRules.experimental?.features,
+          ...parsedContent.experimental?.features,
+        },
 
-        // Code style preferences
-        codeStyle: defaultRules.experimental?.codeStyle
+        // Development preferences - only set if missing
+        projectFramework:
+          parsedContent.experimental?.projectFramework ??
+          defaultRules.experimental?.projectFramework,
+        projectPackageManager:
+          parsedContent.experimental?.projectPackageManager ??
+          defaultRules.experimental?.projectPackageManager,
+        projectFrameworkVersion:
+          parsedContent.experimental?.projectFrameworkVersion ??
+          defaultRules.experimental?.projectFrameworkVersion,
+        nodeVersion:
+          parsedContent.experimental?.nodeVersion ??
+          defaultRules.experimental?.nodeVersion,
+        runtime:
+          parsedContent.experimental?.runtime ??
+          defaultRules.experimental?.runtime,
+        monorepo:
+          parsedContent.experimental?.monorepo ??
+          defaultRules.experimental?.monorepo,
+
+        // Merge nested objects only if missing
+        preferredLibraries: {
+          ...defaultRules.experimental?.preferredLibraries,
+          ...parsedContent.experimental?.preferredLibraries,
+        },
+        codeStyle: parsedContent.experimental?.codeStyle
           ? {
-              lineWidth: defaultRules.experimental.codeStyle.lineWidth ?? 80,
-              cjsToEsm: defaultRules.experimental.codeStyle.cjsToEsm ?? true,
-              importSymbol:
-                defaultRules.experimental.codeStyle.importSymbol ?? "import",
-              indentSize: defaultRules.experimental.codeStyle.indentSize ?? 2,
-              indentStyle:
-                defaultRules.experimental.codeStyle.indentStyle ?? "space",
-              dontRemoveComments:
-                defaultRules.experimental.codeStyle.dontRemoveComments ?? false,
-              shouldAddComments:
-                defaultRules.experimental.codeStyle.shouldAddComments ?? true,
-              typeOrInterface:
-                defaultRules.experimental.codeStyle.typeOrInterface ?? "type",
-              importOrRequire:
-                defaultRules.experimental.codeStyle.importOrRequire ?? "import",
-              quoteMark:
-                defaultRules.experimental.codeStyle.quoteMark ?? "double",
-              semicolons:
-                defaultRules.experimental.codeStyle.semicolons ?? true,
-              trailingComma:
-                defaultRules.experimental.codeStyle.trailingComma ?? "all",
-              bracketSpacing:
-                defaultRules.experimental.codeStyle.bracketSpacing ?? true,
-              arrowParens:
-                defaultRules.experimental.codeStyle.arrowParens ?? "always",
-              tabWidth: defaultRules.experimental.codeStyle.tabWidth ?? 2,
-              jsToTs: defaultRules.experimental.codeStyle.jsToTs ?? false,
-              modernize: defaultRules.experimental.codeStyle.modernize
-                ? {
-                    replaceFs:
-                      defaultRules.experimental.codeStyle.modernize.replaceFs ??
-                      true,
-                    replacePath:
-                      defaultRules.experimental.codeStyle.modernize
-                        .replacePath ?? true,
-                    replaceHttp:
-                      defaultRules.experimental.codeStyle.modernize
-                        .replaceHttp ?? true,
-                    replaceProcess:
-                      defaultRules.experimental.codeStyle.modernize
-                        .replaceProcess ?? true,
-                    replaceConsole:
-                      defaultRules.experimental.codeStyle.modernize
-                        .replaceConsole ?? true,
-                    replaceEvents:
-                      defaultRules.experimental.codeStyle.modernize
-                        .replaceEvents ?? true,
-                  }
-                : undefined,
+              ...defaultRules.experimental?.codeStyle,
               ...configRules?.experimental?.codeStyle,
               ...parsedContent.experimental?.codeStyle,
             }
           : undefined,
 
-        // Generation preferences
+        // Generation preferences - only set if missing
         skipPromptsUseAutoBehavior:
-          defaultRules.experimental?.skipPromptsUseAutoBehavior ?? false,
-        deployBehavior: defaultRules.experimental?.deployBehavior ?? "prompt",
-        depsBehavior: defaultRules.experimental?.depsBehavior ?? "prompt",
-        gitBehavior: defaultRules.experimental?.gitBehavior ?? "prompt",
-        i18nBehavior: defaultRules.experimental?.i18nBehavior ?? "prompt",
-        scriptsBehavior: defaultRules.experimental?.scriptsBehavior ?? "prompt",
+          parsedContent.experimental?.skipPromptsUseAutoBehavior ??
+          defaultRules.experimental?.skipPromptsUseAutoBehavior ??
+          false,
+        deployBehavior:
+          parsedContent.experimental?.deployBehavior ??
+          defaultRules.experimental?.deployBehavior ??
+          "prompt",
+        depsBehavior:
+          parsedContent.experimental?.depsBehavior ??
+          defaultRules.experimental?.depsBehavior ??
+          "prompt",
+        gitBehavior:
+          parsedContent.experimental?.gitBehavior ??
+          defaultRules.experimental?.gitBehavior ??
+          "prompt",
+        i18nBehavior:
+          parsedContent.experimental?.i18nBehavior ??
+          defaultRules.experimental?.i18nBehavior ??
+          "prompt",
+        scriptsBehavior:
+          parsedContent.experimental?.scriptsBehavior ??
+          defaultRules.experimental?.scriptsBehavior ??
+          "prompt",
 
         // Config revalidation
-        configLastRevalidate: defaultRules.experimental?.configLastRevalidate,
+        configLastRevalidate: shouldRevalidate(
+          parsedContent.experimental?.configLastRevalidate,
+          parsedContent.experimental?.configRevalidateFrequency,
+        )
+          ? new Date().toISOString()
+          : parsedContent.experimental?.configLastRevalidate,
         configRevalidateFrequency:
-          defaultRules.experimental?.configRevalidateFrequency,
+          parsedContent.experimental?.configRevalidateFrequency ?? "7d",
 
         // Dependencies management
-        ignoreDependencies: defaultRules.experimental?.ignoreDependencies,
+        ignoreDependencies:
+          parsedContent.experimental?.ignoreDependencies ??
+          defaultRules.experimental?.ignoreDependencies,
 
         // Custom rules
-        customRules: defaultRules.experimental?.customRules,
-
-        ...parsedContent.experimental,
+        customRules: {
+          ...defaultRules.experimental?.customRules,
+          ...parsedContent.experimental?.customRules,
+        },
       },
     };
 

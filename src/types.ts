@@ -318,7 +318,14 @@ export type ReliverseConfig = {
 
         // Config revalidation
         configLastRevalidate?: string | undefined;
-        configRevalidateFrequency?: string | undefined;
+        configRevalidateFrequency?:
+          | "1h"
+          | "1d"
+          | "2d"
+          | "7d"
+          | "14d"
+          | "30d"
+          | undefined;
 
         // Dependencies management
         ignoreDependencies?: string[] | undefined;

@@ -1,5 +1,3 @@
-import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
-import { Octokit } from "@octokit/rest";
 import {
   selectPrompt,
   inputPrompt,
@@ -37,6 +35,7 @@ import { readReliverseMemory } from "~/args/memory/impl.js";
 import { checkScriptExists } from "../../../cp-impl.js";
 import { checkGithubRepoOwnership } from "../../git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "../../git-deploy-prompts/helpers/handlePkgJsonScripts.js";
+import { createOctokitInstance } from "../../git-deploy-prompts/octokit-instance.js";
 import { manageDrizzleSchema } from "../drizzle/manageDrizzleSchema.js";
 import {
   convertDatabaseProvider,
@@ -46,8 +45,6 @@ import { handleCleanup } from "../handlers/handleCleanup.js";
 import { handleCodemods } from "../handlers/handleCodemods.js";
 import { handleConfigEditing } from "../handlers/handleConfigEdits.js";
 import { handleIntegrations } from "../handlers/handleIntegrations.js";
-
-const OctokitWithRest = Octokit.plugin(restEndpointMethods);
 
 export async function showDetectedProjectsMenu(
   projects: DetectedProject[],
@@ -194,7 +191,7 @@ export async function showDetectedProjectsMenu(
     if (memory?.githubKey) {
       const githubUsername = await askGithubName();
       if (githubUsername) {
-        const octokit = new OctokitWithRest({ auth: memory.githubKey });
+        const octokit = createOctokitInstance(memory.githubKey);
         const { exists, isOwner } = await checkGithubRepoOwnership(
           octokit,
           githubUsername,

@@ -74,7 +74,7 @@ export async function detectConfigFiles(cwd: string): Promise<ConfigFile[]> {
 export function addConfigMetadata<T extends object>(config: T): T & BaseConfig {
   return {
     ...config,
-    version: "1.0.0",
+    version: "0.1.0",
     generatedAt: new Date().toISOString(),
   };
 }
@@ -158,7 +158,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
           features: {
             i18n: false,
             analytics: false,
-            themeMode: "light",
+            themeMode: "dark-light",
             authentication: false,
             api: false,
             database: false,
@@ -288,7 +288,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
           configRevalidateFrequency:
             rules.experimental?.configRevalidateFrequency ??
             config.experimental?.configRevalidateFrequency ??
-            "2d",
+            "7d",
 
           // Custom rules
           customRules: {

@@ -76,23 +76,35 @@ export async function cloneAndCopyFiles(
     const git = simpleGit();
     await git.clone(repoUrl, tempDir);
 
-    // Remove existing .git directory from target if it exists
-    const targetGitDir = path.join(targetDir, ".git");
-    if (await fs.pathExists(targetGitDir)) {
-      await fs.remove(targetGitDir);
-      relinka("info", "Removed template's .git directory");
-    }
-
-    // Copy .git folder
+    // Copy .git directory
     const gitDir = path.join(tempDir, ".git");
     if (await fs.pathExists(gitDir)) {
-      await fs.copy(gitDir, path.join(targetDir, ".git"));
+      // Remove existing .git directory if it exists
+      const targetGitDir = path.join(targetDir, ".git");
+      if (await fs.pathExists(targetGitDir)) {
+        await fs.remove(targetGitDir);
+        relinka("info", "Removed existing .git directory");
+      }
+      await fs.copy(gitDir, path.join(targetDir, ".git"), {
+        preserveTimestamps: true,
+        dereference: false,
+        errorOnExist: false,
+      });
+      // Set hidden attribute on Windows
+      if (process.platform === "win32") {
+        const { exec } = await import("child_process");
+        exec(`attrib +h "${path.join(targetDir, ".git")}"`, (error) => {
+          if (error) {
+            relinka("warn", "Could not set hidden attribute on .git folder");
+          }
+        });
+      }
       relinka("info", "Copied .git folder from existing repository");
     } else {
       throw new Error("Required .git folder not found");
     }
 
-    // Copy other specified files
+    // Copy specific files
     const filesToCopy = [
       { name: "README.md", required: false },
       { alternatives: ["LICENSE", "LICENSE.md"], required: false },

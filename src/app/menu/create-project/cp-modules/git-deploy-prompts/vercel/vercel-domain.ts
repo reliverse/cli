@@ -1,9 +1,10 @@
-import { VercelCore } from "@vercel/sdk/core.js";
 import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
 import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains.js";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
+
+import { createVercelCoreInstance } from "./vercel-instance.js";
 
 export async function getVercelProjectDomain(
   projectName: string,
@@ -14,9 +15,7 @@ export async function getVercelProjectDomain(
       throw new Error("Vercel token not found");
     }
 
-    const vercel = new VercelCore({
-      bearerToken: memory.vercelKey,
-    });
+    const vercel = createVercelCoreInstance(memory.vercelKey);
 
     const res = await projectsGetProjectDomains(vercel, {
       idOrName: projectName,
@@ -80,9 +79,7 @@ export async function getVercelProjectDomainByName(
       throw new Error("Vercel token not found");
     }
 
-    const vercel = new VercelCore({
-      bearerToken: memory.vercelKey,
-    });
+    const vercel = createVercelCoreInstance(memory.vercelKey);
 
     const res = await projectsGetProjectDomain(vercel, {
       idOrName: projectName,

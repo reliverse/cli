@@ -1,8 +1,10 @@
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/db/constants.js";
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
-import { generateProjectConfigs } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
+import {
+  generateProjectConfigs,
+  updateProjectConfig,
+} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { generateReliverseFile } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/reliverseConfig.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
 
 import {
@@ -27,6 +29,7 @@ export async function createWebProject({
 }: CreateWebProjectOptions): Promise<void> {
   relinka("info", message);
 
+  // Check if we should use data from the config
   const shouldUseDataFromConfig =
     config?.experimental?.skipPromptsUseAutoBehavior ?? false;
 
@@ -69,12 +72,22 @@ export async function createWebProject({
 
   // Setup environment
   await composeEnvFile(targetDir, FALLBACK_ENV_EXAMPLE_URL);
-  await generateProjectConfigs(targetDir);
 
   // Handle dependencies
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     targetDir,
     config,
+  );
+
+  // Generate initial configs with default deployment service
+  await generateProjectConfigs(
+    targetDir,
+    projectName,
+    frontendUsername,
+    "vercel",
+    initialDomain,
+    defaultI18nShouldBeEnabled,
+    shouldInstallDeps,
   );
 
   // Handle deployment
@@ -90,17 +103,14 @@ export async function createWebProject({
       isDev,
     });
 
-  // Generate config file
-  await generateReliverseFile({
-    projectName,
-    frontendUsername,
-    deployService,
-    primaryDomain,
-    targetDir,
-    i18nShouldBeEnabled: defaultI18nShouldBeEnabled,
-    shouldInstallDeps,
-    isDeployed,
-  });
+  // If the deployment service is not vercel or the primary
+  // domain is different from the initial domain, update the config
+  if (deployService !== "vercel" || primaryDomain !== initialDomain) {
+    await updateProjectConfig(targetDir, "reliverse", {
+      deployService,
+      primaryDomain,
+    });
+  }
 
   // Show success message and next steps
   await showSuccessAndNextSteps(
