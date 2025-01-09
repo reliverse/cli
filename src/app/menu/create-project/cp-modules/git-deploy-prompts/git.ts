@@ -1,7 +1,5 @@
 import type { SimpleGit } from "simple-git";
 
-import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
-import { Octokit } from "@octokit/rest";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
@@ -17,54 +15,13 @@ import {
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 
-import { commitLocalChanges, createGithubRepo } from "./github.js";
-
-const OctokitWithRest = Octokit.plugin(restEndpointMethods);
-
-/**
- * Checks if the given directory is a git repository
- * @param dir - Directory to check
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean> - Whether the directory is a git repository
- */
-export async function isGitRepo(
-  dir: string,
-  isDev: boolean,
-  projectName = "",
-): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
-  const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
-
-  try {
-    if (!(await fs.pathExists(finalDir))) {
-      relinka("error", `Directory does not exist: ${finalDir}`);
-      return false;
-    }
-
-    const gitDir = path.join(finalDir, ".git");
-    if (!(await fs.pathExists(gitDir))) {
-      return false;
-    }
-
-    const git = simpleGit({ baseDir: finalDir });
-    return await git.checkIsRepo();
-  } catch (error) {
-    // Only log if it's not a "not a git repo" error
-    if (
-      !(
-        error instanceof Error && error.message.includes("not a git repository")
-      )
-    ) {
-      relinka(
-        "error",
-        "Error checking git repository:",
-        error instanceof Error ? error.message : String(error),
-      );
-    }
-    return false;
-  }
-}
+import {
+  checkGithubRepoOwnership,
+  commitLocalChanges,
+  createGithubRepo,
+} from "./github.js";
+import { createOctokitInstance, OctokitWithRest } from "./octokit-instance.js";
+import { isGitRepo } from "./utils-git-github.js";
 
 /**
  * Initializes a git repository if it doesn't exist, or commits if it does
@@ -168,21 +125,13 @@ async function isRepoOwner(
       return false;
     }
 
-    const octokit = new Octokit({ auth: memory.githubKey });
-
-    try {
-      const { data: repo } = await octokit.repos.get({
-        owner: githubUsername,
-        repo: repoName,
-      });
-
-      return repo.permissions?.admin ?? false;
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("Not Found")) {
-        return false;
-      }
-      throw error;
-    }
+    const octokit = createOctokitInstance(memory.githubKey);
+    const { isOwner } = await checkGithubRepoOwnership(
+      octokit,
+      githubUsername,
+      repoName,
+    );
+    return isOwner;
   } catch (error) {
     relinka(
       "error",
@@ -305,10 +254,6 @@ export async function createGithubRepository(
         const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${githubUsername}/${projectName}.git`;
         await git.addRemote("origin", repoUrl);
 
-        // Add all files to git to prevent checkout conflicts
-        await git.add(".");
-        await git.commit("Initial commit before fetching repository");
-
         // Fetch the repository
         await git.fetch(["origin", "HEAD"]);
 
@@ -321,7 +266,7 @@ export async function createGithubRepository(
           // Create Octokit instance with GitHub token
           const githubOctokit = new OctokitWithRest({
             auth: memory.githubKey,
-            userAgent: "reliverse-cli/1.4.15",
+            userAgent: "reliverse-cli/1.4.16",
           });
 
           // Create and push commit using GitHub API
@@ -360,83 +305,6 @@ export async function createGithubRepository(
         error instanceof Error ? error.message : String(error),
       );
     }
-    return false;
-  }
-}
-
-/**
- * Sets up a remote for an existing local git repository and pushes the initial commit
- * @param dir - Local directory path
- * @param remoteUrl - Remote URL to use
- * @param remoteName - (Optional) name for the remote
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean>
- */
-export async function setupGitRemote(
-  isDev: boolean,
-  projectName: string,
-  dir: string,
-  remoteUrl: string,
-  remoteName = "origin",
-): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
-  const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
-
-  try {
-    // Validate directory and git repo
-    if (!(await fs.pathExists(finalDir))) {
-      relinka("error", `Directory does not exist: ${finalDir}`);
-      return false;
-    }
-
-    if (!(await isGitRepo(finalDir, isDev, projectName))) {
-      relinka(
-        "error",
-        "Not a git repository, git should be initialized before setupGitRemote. Something went wrong. Please notify developers.",
-      );
-      return false;
-    }
-
-    const git = simpleGit({ baseDir: finalDir });
-    const remotes = await git.getRemotes();
-
-    // Setup remote
-    if (!remotes.find((remote) => remote.name === remoteName)) {
-      await git.addRemote(remoteName, remoteUrl);
-      relinka("success", `Remote '${remoteName}' added successfully.`);
-    } else {
-      // Update existing remote URL if different
-      const remoteGetUrl = await git.remote(["get-url", remoteName]);
-      const existingUrl = remoteGetUrl ? remoteGetUrl.trim() : "";
-
-      if (existingUrl !== remoteUrl) {
-        await git.remote(["set-url", remoteName, remoteUrl]);
-        relinka("info", `Updated ${remoteName} remote URL to ${remoteUrl}`);
-      } else {
-        relinka(
-          "info",
-          `Remote '${remoteName}' already exists with correct URL.`,
-        );
-      }
-    }
-
-    // Push initial commit (if any) — sets upstream if it hasn’t been set
-    await git.push(remoteName, "main", ["--set-upstream"]);
-    relinka("success", "Initial commit pushed to remote repository.");
-
-    return true;
-  } catch (error) {
-    relinka(
-      "error",
-      `Failed to setup git remote: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
-    relinka(
-      "info",
-      `You can setup the remote manually:\ncd ${finalDir}\ngit remote add ${remoteName} ${remoteUrl}\ngit push -u ${remoteName} main`,
-    );
     return false;
   }
 }

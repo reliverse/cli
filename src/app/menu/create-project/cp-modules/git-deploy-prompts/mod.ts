@@ -138,7 +138,7 @@ export async function handleGithubRepo(
 
   const octokit = new OctokitWithRest({
     auth: updatedMemory.githubKey,
-    userAgent: "reliverse-cli/1.4.15",
+    userAgent: "reliverse-cli/1.4.16",
     throttle: {
       onRateLimit: (
         _retryAfter: number,

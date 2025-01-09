@@ -1,6 +1,6 @@
-import { multiselectPrompt } from "@reliverse/prompts";
 import type { Vercel } from "@vercel/sdk";
 
+import { multiselectPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";

@@ -32,10 +32,10 @@ import {
   initGit,
   createGithubRepository,
 } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
-import { checkRepoExists } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { checkScriptExists } from "../../../cp-impl.js";
+import { checkGithubRepoOwnership } from "../../git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "../../git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { manageDrizzleSchema } from "../drizzle/manageDrizzleSchema.js";
 import {
@@ -195,7 +195,7 @@ export async function showDetectedProjectsMenu(
       const githubUsername = await askGithubName();
       if (githubUsername) {
         const octokit = new OctokitWithRest({ auth: memory.githubKey });
-        const { exists, isOwner } = await checkRepoExists(
+        const { exists, isOwner } = await checkGithubRepoOwnership(
           octokit,
           githubUsername,
           selectedProject.name,
