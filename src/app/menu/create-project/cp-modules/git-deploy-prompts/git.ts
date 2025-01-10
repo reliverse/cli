@@ -22,10 +22,6 @@ import { cloneToTempAndCopyFiles, isGitRepo } from "./utils-git-github.js";
 /**
  * Initializes a git repository if it doesn't exist, or commits if it does
  * If the repository already exists, it will skip creating a commit.
- * @param dir - Directory to operate in
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean>
  */
 export async function initGit(
   cwd: string,
@@ -113,9 +109,6 @@ export async function initGit(
 
 /**
  * Checks if the user owns the repository with the given name
- * @param githubUsername - GitHub username
- * @param repoName - Repository name to check
- * @returns Promise<boolean> - Whether the user owns the repository
  */
 async function isRepoOwner(
   githubUsername: string,
@@ -147,10 +140,6 @@ async function isRepoOwner(
 
 /**
  * Creates a GitHub repository and sets it up locally
- * @param projectName - Name of the project/repository
- * @param projectPath - Local directory path
- * @param isDev - Whether we are in development mode
- * @returns Promise<boolean> - Whether the operation was successful
  */
 export async function createGithubRepository(
   cwd: string,
@@ -185,11 +174,6 @@ export async function createGithubRepository(
         pwd();
       }
 
-      // Check for uncommitted changes
-      const git = simpleGit({ baseDir: finalDir });
-      const status = await git.status();
-      const hasChanges = status.files.length > 0;
-
       // Prompt user for choice: use, use + new commit, init new repo
       const options = [
         {
@@ -209,9 +193,8 @@ export async function createGithubRepository(
 
       const choice = await selectPrompt({
         title: `Repository ${githubUsername}/${projectName} already exists and you own it. What would you like to do?`,
-        content: `Your project located at ${finalDir}${
-          hasChanges ? "\nNote: You have uncommitted changes" : ""
-        }`,
+        content:
+          "Note: A commit will be created and pushed only if you have uncommitted changes.",
         options,
         defaultValue: "commit",
       });
@@ -244,7 +227,7 @@ export async function createGithubRepository(
         );
       } else if (choice === "commit" || choice === "skip") {
         // Use authenticated URL with token as username
-        const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${githubUsername}/${projectName}.git`;
+        const repoUrl = `https://oauth2:${memory.githubKey}@github.com/${githubUsername}/${projectName}.git`;
 
         // Clone repo to temp dir and copy files
         const success = await cloneToTempAndCopyFiles(repoUrl, finalDir);
@@ -314,11 +297,6 @@ export async function createGithubRepository(
 
 /**
  * Creates a new local commit with the specified message
- * @param message - Commit message
- * @param projectPath - Project directory
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean>
  */
 export async function createGitCommit(
   cwd: string,
@@ -363,10 +341,6 @@ export async function createGitCommit(
 
 /**
  * Pushes local commits to the remote
- * @param projectPath - Project directory
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean>
  */
 export async function pushGitCommits(
   cwd: string,

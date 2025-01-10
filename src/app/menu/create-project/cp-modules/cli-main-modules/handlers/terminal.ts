@@ -10,8 +10,6 @@ export const handleError = (error: unknown) =>
 /**
  * Changes the current working directory to the specified path.
  * Logs a warning if the target directory does not exist.
- *
- * @param dir - The directory to change to.
  */
 export async function cd(dir: string): Promise<void> {
   try {
@@ -36,9 +34,6 @@ export function pwd() {
  * Lists the contents of a directory. If no directory is specified,
  * the current working directory is used. Logs a warning if the directory
  * does not exist.
- *
- * @param dir - The directory to list (optional, defaults to process.cwd()).
- * @returns A Promise that resolves with an array of file and directory names.
  */
 export async function ls(dir?: string): Promise<string[]> {
   const projectPath = dir ?? process.cwd();
@@ -57,8 +52,6 @@ export async function ls(dir?: string): Promise<string[]> {
 
 /**
  * Creates a directory (recursively by default). Logs an error if creation fails.
- *
- * @param dir - The path to the directory to create.
  */
 export async function mkdir(dir: string): Promise<void> {
   try {
@@ -72,8 +65,6 @@ export async function mkdir(dir: string): Promise<void> {
 /**
  * Removes a file or directory (recursively, if it's a directory).
  * Logs an error if removal fails.
- *
- * @param target - The path to remove.
  */
 export async function rm(target: string): Promise<void> {
   try {
@@ -87,9 +78,6 @@ export async function rm(target: string): Promise<void> {
 /**
  * Writes content to a file. If the file does not exist, it is created.
  * Logs an error if write fails.
- *
- * @param filePath - The path to the file.
- * @param content - The content to write.
  */
 export async function echo(filePath: string, content: string): Promise<void> {
   try {
@@ -103,9 +91,6 @@ export async function echo(filePath: string, content: string): Promise<void> {
 /**
  * Reads and returns the content of a file.
  * Logs an error if reading fails.
- *
- * @param filePath - The path to the file.
- * @returns The file contents as a string.
  */
 export async function cat(filePath: string): Promise<string> {
   try {
@@ -118,10 +103,6 @@ export async function cat(filePath: string): Promise<string> {
 
 /**
  * Shows the first n lines of a file.
- *
- * @param filePath - The path to the file.
- * @param n - Number of lines to show (defaults to 10).
- * @returns The first n lines of the file as a string.
  */
 export async function head(filePath: string, n = 10): Promise<string> {
   try {
@@ -135,10 +116,6 @@ export async function head(filePath: string, n = 10): Promise<string> {
 
 /**
  * Shows the last n lines of a file.
- *
- * @param filePath - The path to the file.
- * @param n - Number of lines to show (defaults to 10).
- * @returns The last n lines of the file as a string.
  */
 export async function tail(filePath: string, n = 10): Promise<string> {
   try {
@@ -154,9 +131,6 @@ export async function tail(filePath: string, n = 10): Promise<string> {
 /**
  * Copies a file or directory from one location to another.
  * Logs an error if copying fails.
- *
- * @param src - The source path.
- * @param dest - The destination path.
  */
 export async function cp(src: string, dest: string): Promise<void> {
   try {
@@ -174,9 +148,6 @@ export async function cp(src: string, dest: string): Promise<void> {
 /**
  * Moves a file or directory from one location to another.
  * Logs an error if moving fails.
- *
- * @param src - The source path.
- * @param dest - The destination path.
  */
 export async function mv(src: string, dest: string): Promise<void> {
   try {
@@ -193,9 +164,6 @@ export async function mv(src: string, dest: string): Promise<void> {
 
 /**
  * Returns the current working directory.
- *
- * @param useCache - Whether to use a cached value.
- * @returns The current working directory.
  */
 export function getCurrentWorkingDirectory(useCache = true): string {
   let cachedCWD: null | string = null;

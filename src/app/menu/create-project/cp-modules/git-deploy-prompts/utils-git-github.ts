@@ -1,16 +1,19 @@
+import { confirmPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
+import { createTarGzip } from "nanotar";
 import { homedir } from "os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
+type FileInput = {
+  name: string;
+  data?: Buffer;
+};
+
 /**
  * Checks if the given directory is a git repository
- * @param dir - Directory to check
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean> - Whether the directory is a git repository
  */
 export async function isGitRepo(
   cwd: string,
@@ -54,9 +57,6 @@ export async function isGitRepo(
 
 /**
  * Clones a repository to a temporary directory and copies specified files
- * @param repoUrl - URL of the repository to clone
- * @param projectPath - Directory to copy files to
- * @returns Promise<boolean> - Whether the operation was successful
  */
 export async function cloneAndCopyFiles(
   repoUrl: string,
@@ -75,6 +75,62 @@ export async function cloneAndCopyFiles(
     // Clone repository to temp directory
     const git = simpleGit();
     await git.clone(repoUrl, tempDir);
+
+    const shouldArchive = await confirmPrompt({
+      title:
+        "Would you like to create an archive of the existing repository content?",
+      content:
+        "In the future, you will be able to run `reliverse cli` to use merge operations on the project's old and new content. The term `cluster` is used as the name for the old content.",
+      defaultValue: true,
+    });
+
+    if (shouldArchive) {
+      // Create archive of tempDir content
+      const fileInputs: FileInput[] = [];
+      const tempFiles = await fs.readdir(tempDir);
+
+      for (const file of tempFiles) {
+        if (file !== ".git") {
+          const filePath = path.join(tempDir, file);
+          const stats = await fs.stat(filePath);
+
+          if (stats.isFile()) {
+            const data = await fs.readFile(filePath);
+            fileInputs.push({
+              name: file,
+              data: Buffer.isBuffer(data) ? data : Buffer.from(data),
+            });
+          } else if (stats.isDirectory()) {
+            // Handle directories recursively
+            const dirFiles = (await fs.readdir(filePath, {
+              recursive: true,
+            })) as string[];
+            for (const dirFile of dirFiles) {
+              const fullPath = path.join(tempDir, file, dirFile);
+              if ((await fs.stat(fullPath)).isFile()) {
+                const data = await fs.readFile(fullPath);
+                fileInputs.push({
+                  name: `${file}/${dirFile}`,
+                  data: Buffer.isBuffer(data) ? data : Buffer.from(data),
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Create archive if we have files to archive
+      if (fileInputs.length > 0) {
+        const archiveName = "cluster.tar.gz";
+        const archivePath = path.join(projectPath, archiveName);
+        const tarData = await createTarGzip(fileInputs);
+        await fs.writeFile(archivePath, Buffer.from(tarData));
+        relinka(
+          "info",
+          `Created archive of repository content at ${archiveName}`,
+        );
+      }
+    }
 
     // Copy .git directory
     const gitDir = path.join(tempDir, ".git");
@@ -156,12 +212,6 @@ export async function cloneToTempAndCopyFiles(
 
 /**
  * Sets up a remote for an existing local git repository and pushes the initial commit
- * @param dir - Local directory path
- * @param remoteUrl - Remote URL to use
- * @param remoteName - (Optional) name for the remote
- * @param isDev - Whether we are in development mode
- * @param projectName - Name of the project (used if isDev = true)
- * @returns Promise<boolean>
  */
 export async function setupGitRemote(
   cwd: string,

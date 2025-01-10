@@ -1,6 +1,6 @@
 import type { FooterItem, MainMenuItem } from "~/types.js";
 
-import { getRepoUrl } from "~/app/db/constants.js";
+import { getRepoUrl } from "~/app/constants.js";
 import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
 import { productCategories } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/products.js";
 

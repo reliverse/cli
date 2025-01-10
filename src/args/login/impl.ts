@@ -16,7 +16,7 @@ import url from "url";
 import type { ReliverseMemory } from "~/types.js";
 
 import { getReliverseMemory, updateReliverseMemory } from "~/app/app-utils.js";
-import { MEMORY_FILE } from "~/app/db/constants.js";
+import { MEMORY_FILE } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 
@@ -251,9 +251,10 @@ export async function auth({
   });
 }
 
-export async function ensureUserAuthenticated(
+export async function authCheck(
   isDev: boolean,
   memory: ReliverseMemory,
+  useLocalhost: boolean,
 ) {
   // Check for existing authentication in SQLite
   const isAuthenticated =
@@ -261,7 +262,7 @@ export async function ensureUserAuthenticated(
 
   if (!isAuthenticated) {
     await showAnykeyPrompt();
-    await auth({ isDev, useLocalhost: false });
+    await auth({ isDev, useLocalhost });
 
     // Re-check authentication after auth flow
     const updatedMemory = await getReliverseMemory();

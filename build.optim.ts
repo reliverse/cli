@@ -33,8 +33,6 @@ const jsrFilesToDelete: string[] = ["**/*.test.ts", "**/*.temp.ts"];
 
 /**
  * Deletes files matching the provided patterns within the base directory.
- * @param patterns - Array of glob patterns to match files for deletion.
- * @param baseDir - The base directory to search for files.
  */
 async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
   try {
@@ -72,10 +70,6 @@ async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
 /**
  * Replaces import paths that use '~/' with relative paths.
  * If `isJSR` is true, also replaces '.js' extensions with '.ts'.
- * @param content - The file content.
- * @param fileDir - The directory of the current file.
- * @param rootDir - The root directory to resolve relative paths.
- * @param isJSR - Flag indicating whether to apply JSR-specific transformations.
  * @returns The updated file content with modified import paths.
  */
 function replaceImportPaths(
@@ -121,8 +115,6 @@ function replaceImportPaths(
 /**
  * Removes comments from the given content string.
  * - Strips block comments using `strip-comments`.
- * @param content - The file content.
- * @param filePath - The path of the file being processed.
  * @returns The content without unwanted comments.
  */
 // function removeComments(content: string, filePath: string): string {
@@ -146,7 +138,6 @@ function removeComments(content: string): string {
 /**
  * Processes all relevant files in the given directory
  * by replacing import paths and removing comments.
- * @param dir - The directory to process.
  */
 async function processFiles(dir: string): Promise<void> {
   const files: string[] = await fs.readdir(dir);
@@ -242,7 +233,6 @@ async function copySrcToOutput(): Promise<void> {
 
 /**
  * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
- * @param dir - The directory to process.
  */
 async function renameTsxFiles(dir: string): Promise<void> {
   try {
@@ -267,7 +257,6 @@ async function renameTsxFiles(dir: string): Promise<void> {
 
 /**
  * Optimizes the build for production by processing files and deleting unnecessary ones.
- * @param dir - The directory to optimize.
  */
 async function optimizeBuildForProduction(dir: string): Promise<void> {
   if (isJSR) {

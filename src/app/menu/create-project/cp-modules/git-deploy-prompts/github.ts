@@ -340,7 +340,7 @@ export async function createGithubRepo(
 
       try {
         // Clone repo to temp dir and copy files
-        const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${repoOwner}/${repoName}.git`;
+        const repoUrl = `https://oauth2:${memory.githubKey}@github.com/${repoOwner}/${repoName}.git`;
         const success = await cloneToTempAndCopyFiles(repoUrl, projectPath);
 
         if (!success) {

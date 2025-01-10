@@ -1,4 +1,4 @@
-import { DEFAULT_APP_NAME } from "~/app/db/constants.js";
+import { DEFAULT_APP_NAME } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 import { type InstallerOptions } from "../opts.js";

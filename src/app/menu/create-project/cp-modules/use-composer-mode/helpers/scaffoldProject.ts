@@ -5,14 +5,13 @@ import ora from "ora";
 import path from "pathe";
 import pc from "picocolors";
 
-import { PKG_ROOT } from "~/app/db/constants.js";
+import { PKG_ROOT } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 import type { InstallerOptions } from "../opts.js";
 
 /**
  * Renames all -tsx.txt files back to .tsx in the specified directory and its subdirectories.
- * @param dir - The directory to process.
  */
 async function renameTsxFiles(dir: string): Promise<void> {
   try {

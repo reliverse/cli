@@ -1,6 +1,6 @@
 import path from "pathe";
 
-import { DEFAULT_APP_NAME } from "~/app/db/constants.js";
+import { DEFAULT_APP_NAME } from "~/app/constants.js";
 import { configureEslint } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/eslint.js";
 
 import { dbContainerInstaller } from "./installers/dbContainer.js";

@@ -7,7 +7,7 @@ import type { CopyError } from "~/types.js";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
-import { FILE_CONFLICTS } from "../../../../../db/constants.js";
+import { FILE_CONFLICTS } from "../../../../../constants.js";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(

@@ -3,7 +3,7 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { CONFIG_CATEGORIES } from "~/app/db/constants.js";
+import { CONFIG_CATEGORIES } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   type DeploymentService,

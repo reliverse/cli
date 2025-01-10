@@ -19,7 +19,7 @@ import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-mo
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
 
-import { FALLBACK_ENV_EXAMPLE_URL } from "./app/db/constants.js";
+import { FALLBACK_ENV_EXAMPLE_URL } from "./app/constants.js";
 
 export async function showDevToolsMenu(
   cwd: string,

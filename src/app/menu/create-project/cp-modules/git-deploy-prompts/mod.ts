@@ -30,10 +30,6 @@ type GithubSetupResult = {
 
 /**
  * Makes a decision based on config or user prompt
- * @param config - Reliverse configuration
- * @param behaviorKey - Which behavior to check
- * @param title - Prompt title for user
- * @param defaultValue - Default value if prompting
  */
 export async function decide(
   config: ReliverseConfig,

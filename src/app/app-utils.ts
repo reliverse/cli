@@ -5,9 +5,9 @@ import path from "pathe";
 
 import type { ConfigKey, ReliverseMemory, UserDataKeys } from "~/types.js";
 
+import { MEMORY_FILE } from "~/app/constants.js";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
-import { MEMORY_FILE } from "~/app/db/constants.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 

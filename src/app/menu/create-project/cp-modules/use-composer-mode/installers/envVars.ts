@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import crypto from "node:crypto";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/app/db/constants.js";
+import { PKG_ROOT } from "~/app/constants.js";
 
 import { type DatabaseProvider, type Installer } from "../opts.js";
 

@@ -11,7 +11,7 @@ import {
   DEFAULT_APP_NAME,
   experimental,
   recommended,
-} from "~/app/db/constants.js";
+} from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
 import {

@@ -4,7 +4,7 @@ import path from "pathe";
 
 import type { ConflictHandlerOptions } from "~/types.js";
 
-import { FILE_CONFLICTS } from "~/app/db/constants.js";
+import { FILE_CONFLICTS } from "~/app/constants.js";
 import {
   removeFile,
   renameFile,

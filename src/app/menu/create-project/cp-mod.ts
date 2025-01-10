@@ -1,4 +1,4 @@
-import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/db/constants.js";
+import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import {
   generateProjectConfigs,

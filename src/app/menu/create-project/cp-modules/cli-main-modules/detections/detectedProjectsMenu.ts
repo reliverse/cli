@@ -9,7 +9,7 @@ import pc from "picocolors";
 
 import type { DetectedProject, ReliverseMemory } from "~/types.js";
 
-import { experimental } from "~/app/db/constants.js";
+import { experimental } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   readShadcnConfig,

@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import { getRepoUrl } from "~/app/db/constants.js";
+import { getRepoUrl } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 

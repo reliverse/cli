@@ -1,7 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 
-import { CREATE_RELIVERSE_APP } from "~/app/db/constants.js";
+import { CREATE_RELIVERSE_APP } from "~/app/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 import {

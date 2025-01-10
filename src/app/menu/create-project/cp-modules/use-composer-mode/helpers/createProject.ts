@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/app/db/constants.js";
+import { PKG_ROOT } from "~/app/constants.js";
 
 import type { DatabaseProvider, PkgInstallerMap } from "../opts.js";
 
@@ -28,7 +28,6 @@ type CreateProjectOptions = {
 
 /**
  * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
- * @param dir - The directory to process.
  */
 async function renameTsxFiles(dir: string): Promise<void> {
   try {

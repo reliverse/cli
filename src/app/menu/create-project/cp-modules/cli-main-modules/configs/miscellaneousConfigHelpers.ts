@@ -83,233 +83,170 @@ export function addConfigMetadata<T extends object>(config: T): T & BaseConfig {
 export async function getReliverseConfig(
   cwd: string,
 ): Promise<ReliverseConfig> {
-  const configPath = path.join(cwd, ".reliverse");
-  const rulesPath = path.join(cwd, ".reliverse");
+  const reliversePath = path.join(cwd, ".reliverse");
   let config: ReliverseConfig = { ...DEFAULT_CONFIG };
 
   try {
-    // Try to read .reliverse first
-    if (await fs.pathExists(configPath)) {
-      const configContent = await fs.readFile(configPath, "utf-8");
+    // Check if .reliverse exists and read it
+    if (await fs.pathExists(reliversePath)) {
+      const configContent = await fs.readFile(reliversePath, "utf-8");
       const userConfig = destr<Partial<ReliverseConfig>>(configContent);
       config = { ...config, ...userConfig };
     }
 
-    // Try to read .reliverse and merge if exists
-    if (await fs.pathExists(rulesPath)) {
-      const rulesContent = await fs.readFile(rulesPath, "utf-8");
-      let rules: ReliverseConfig;
+    // Add experimental configuration
+    config = {
+      ...config,
+      experimental: {
+        ...config.experimental,
+        // Project details
+        projectName: config.experimental?.projectName ?? "",
+        projectAuthor: config.experimental?.projectAuthor ?? "",
+        projectDescription: config.experimental?.projectDescription ?? "",
+        projectVersion: config.experimental?.projectVersion ?? "",
+        projectLicense: config.experimental?.projectLicense ?? "",
+        projectRepository: config.experimental?.projectRepository ?? "",
+        productionBranch: config.experimental?.productionBranch ?? "main",
+        deployUrl: config.experimental?.deployUrl ?? "",
+        projectActivation: config.experimental?.projectActivation ?? "auto",
+        projectCategory: config.experimental?.projectCategory ?? "website",
+        projectType: config.experimental?.projectType ?? "library",
+        projectDeployService:
+          config.experimental?.projectDeployService ?? "vercel",
+        projectDisplayName: config.experimental?.projectDisplayName ?? "",
+        projectDomain: config.experimental?.projectDomain ?? "",
+        projectState: config.experimental?.projectState ?? "creating",
+        projectSubcategory:
+          config.experimental?.projectSubcategory ?? "e-commerce",
+        projectTemplate:
+          config.experimental?.projectTemplate ?? "blefnk/relivator",
 
-      try {
-        // Try parsing as JSONC first
-        rules = destr(rulesContent);
-      } catch {
-        // If parsing fails, warn user but continue with existing config
-        relinka(
-          "warn",
-          "Failed to parse .reliverse file, using .reliverse only",
-        );
-        return config;
-      }
-
-      // Merge rules into config, preserving existing values
-      config = {
-        ...config,
-        experimental: {
-          ...config.experimental,
-          // Project details
-          projectName:
-            rules.experimental?.projectName ??
-            config.experimental?.projectName ??
-            "",
-          projectAuthor:
-            rules.experimental?.projectAuthor ??
-            config.experimental?.projectAuthor ??
-            "",
-          projectDescription:
-            rules.experimental?.projectDescription ??
-            config.experimental?.projectDescription ??
-            "",
-          projectVersion:
-            rules.experimental?.projectVersion ??
-            config.experimental?.projectVersion ??
-            "",
-          projectLicense:
-            rules.experimental?.projectLicense ??
-            config.experimental?.projectLicense ??
-            "",
-          projectRepository:
-            rules.experimental?.projectRepository ??
-            config.experimental?.projectRepository ??
-            "",
-          productionBranch: rules.experimental?.productionBranch ?? "main",
-          deployUrl: rules.experimental?.deployUrl ?? "",
-          projectActivation: rules.experimental?.projectActivation ?? "auto",
-          projectCategory: rules.experimental?.projectCategory ?? "website",
-          projectType: rules.experimental?.projectType ?? "library",
-          projectDeployService:
-            rules.experimental?.projectDeployService ?? "vercel",
-          projectDisplayName: rules.experimental?.projectDisplayName ?? "",
-          projectDomain: rules.experimental?.projectDomain ?? "",
-          projectState: rules.experimental?.projectState ?? "creating",
-          projectSubcategory:
-            rules.experimental?.projectSubcategory ?? "e-commerce",
-          projectTemplate:
-            rules.experimental?.projectTemplate ?? "blefnk/relivator",
-
-          // Project features
-          features: {
-            i18n: false,
-            analytics: false,
-            themeMode: "dark-light",
-            authentication: false,
-            api: false,
-            database: false,
-            testing: false,
-            docker: false,
-            ci: false,
-            commands: [],
-            webview: [],
-            language: [],
-            themes: [],
-            ...config.experimental?.features,
-            ...rules.experimental?.features,
-          },
-
-          // Development preferences
-          projectFramework:
-            rules.experimental?.projectFramework ??
-            config.experimental?.projectFramework ??
-            "nextjs",
-          projectFrameworkVersion:
-            rules.experimental?.projectFrameworkVersion ??
-            config.experimental?.projectFrameworkVersion ??
-            "",
-          nodeVersion:
-            rules.experimental?.nodeVersion ??
-            config.experimental?.nodeVersion ??
-            "latest",
-          runtime:
-            rules.experimental?.runtime ??
-            config.experimental?.runtime ??
-            "nodejs",
-          projectPackageManager:
-            rules.experimental?.projectPackageManager ??
-            config.experimental?.projectPackageManager ??
-            "npm",
-          monorepo: rules.experimental?.monorepo ??
-            config.experimental?.monorepo ?? {
-              type: "turborepo",
-              packages: [],
-              sharedPackages: [],
-            },
-          preferredLibraries: {
-            stateManagement: "zustand",
-            styling: "tailwind",
-            database: "drizzle",
-            testing: "vitest",
-            linting: "eslint",
-            formatting: "biome",
-            deployment: "vercel",
-            authentication: "clerk",
-            payment: "stripe",
-            analytics: "vercel",
-            formManagement: "react-hook-form",
-            uiComponents: "shadcn-ui",
-            monitoring: "sentry",
-            logging: "axiom",
-            forms: "react-hook-form",
-            validation: "zod",
-            documentation: "starlight",
-            components: "shadcn",
-            icons: "lucide",
-            mail: "resend",
-            search: "algolia",
-            cache: "redis",
-            storage: "cloudflare",
-            cdn: "cloudflare",
-            api: "trpc",
-            cms: "contentlayer",
-            i18n: "next-intl",
-            seo: "next-seo",
-            ui: "radix",
-            motion: "framer",
-            charts: "recharts",
-            dates: "dayjs",
-            markdown: "mdx",
-            security: "auth",
-            notifications: "sonner",
-            uploads: "uploadthing",
-            routing: "next",
-            ...config.experimental?.preferredLibraries,
-            ...rules.experimental?.preferredLibraries,
-          },
-
-          // Code style preferences
-          codeStyle: {
-            lineWidth: 80,
-            cjsToEsm: true,
-            importSymbol: "import",
-            indentSize: 2,
-            indentStyle: "space",
-            dontRemoveComments: false,
-            shouldAddComments: true,
-            typeOrInterface: "type",
-            importOrRequire: "import",
-            quoteMark: "double",
-            semicolons: true,
-            trailingComma: "all",
-            bracketSpacing: true,
-            arrowParens: "always",
-            tabWidth: 2,
-            jsToTs: false,
-            modernize: {
-              replaceFs: true,
-              replacePath: true,
-              replaceHttp: true,
-              replaceProcess: true,
-              replaceConsole: true,
-              replaceEvents: true,
-              ...config.experimental?.codeStyle?.modernize,
-              ...rules.experimental?.codeStyle?.modernize,
-            },
-            ...config.experimental?.codeStyle,
-            ...rules.experimental?.codeStyle,
-          },
-
-          // Dependencies management
-          ignoreDependencies:
-            rules.experimental?.ignoreDependencies ??
-            config.experimental?.ignoreDependencies ??
-            [],
-
-          // Custom rules
-          customRules: {
-            ...config.experimental?.customRules,
-            ...rules.experimental?.customRules,
-          },
-
-          // Generation preferences
-          skipPromptsUseAutoBehavior:
-            rules.experimental?.skipPromptsUseAutoBehavior ?? false,
-          deployBehavior: rules.experimental?.deployBehavior ?? "prompt",
-          depsBehavior: rules.experimental?.depsBehavior ?? "prompt",
-          gitBehavior: rules.experimental?.gitBehavior ?? "prompt",
-          i18nBehavior: rules.experimental?.i18nBehavior ?? "prompt",
-          scriptsBehavior: rules.experimental?.scriptsBehavior ?? "prompt",
+        // Project features
+        features: {
+          i18n: false,
+          analytics: false,
+          themeMode: "dark-light",
+          authentication: false,
+          api: false,
+          database: false,
+          testing: false,
+          docker: false,
+          ci: false,
+          commands: [],
+          webview: [],
+          language: [],
+          themes: [],
+          ...config.experimental?.features,
         },
-      };
 
-      // If .reliverse exists but .reliverse doesn't, suggest migration
-      if (!(await fs.pathExists(configPath))) {
-        relinka(
-          "info",
-          "Found .reliverse but no .reliverse. Consider migrating to .reliverse for better compatibility.",
-        );
-      }
-    }
+        // Development preferences
+        projectFramework: config.experimental?.projectFramework ?? "nextjs",
+        projectFrameworkVersion:
+          config.experimental?.projectFrameworkVersion ?? "",
+        nodeVersion: config.experimental?.nodeVersion ?? "latest",
+        runtime: config.experimental?.runtime ?? "nodejs",
+        projectPackageManager:
+          config.experimental?.projectPackageManager ?? "npm",
+        monorepo: config.experimental?.monorepo ?? {
+          type: "turborepo",
+          packages: [],
+          sharedPackages: [],
+        },
+        preferredLibraries: {
+          stateManagement: "zustand",
+          styling: "tailwind",
+          database: "drizzle",
+          testing: "vitest",
+          linting: "eslint",
+          formatting: "biome",
+          deployment: "vercel",
+          authentication: "clerk",
+          payment: "stripe",
+          analytics: "vercel",
+          formManagement: "react-hook-form",
+          uiComponents: "shadcn-ui",
+          monitoring: "sentry",
+          logging: "axiom",
+          forms: "react-hook-form",
+          validation: "zod",
+          documentation: "starlight",
+          components: "shadcn",
+          icons: "lucide",
+          mail: "resend",
+          search: "algolia",
+          cache: "redis",
+          storage: "cloudflare",
+          cdn: "cloudflare",
+          api: "trpc",
+          cms: "contentlayer",
+          i18n: "next-intl",
+          seo: "next-seo",
+          ui: "radix",
+          motion: "framer",
+          charts: "recharts",
+          dates: "dayjs",
+          markdown: "mdx",
+          security: "auth",
+          notifications: "sonner",
+          uploads: "uploadthing",
+          routing: "next",
+          ...config.experimental?.preferredLibraries,
+        },
+
+        // Code style preferences
+        codeStyle: {
+          lineWidth: 80,
+          cjsToEsm: true,
+          importSymbol: "import",
+          indentSize: 2,
+          indentStyle: "space",
+          dontRemoveComments: false,
+          shouldAddComments: true,
+          typeOrInterface: "type",
+          importOrRequire: "import",
+          quoteMark: "double",
+          semicolons: true,
+          trailingComma: "all",
+          bracketSpacing: true,
+          arrowParens: "always",
+          tabWidth: 2,
+          jsToTs: false,
+          modernize: {
+            replaceFs: true,
+            replacePath: true,
+            replaceHttp: true,
+            replaceProcess: true,
+            replaceConsole: true,
+            replaceEvents: true,
+            ...config.experimental?.codeStyle?.modernize,
+          },
+          ...config.experimental?.codeStyle,
+        },
+
+        // Dependencies management
+        ignoreDependencies: config.experimental?.ignoreDependencies ?? [],
+
+        // Custom rules
+        customRules: {
+          ...config.experimental?.customRules,
+        },
+
+        // Generation preferences
+        skipPromptsUseAutoBehavior:
+          config.experimental?.skipPromptsUseAutoBehavior ?? false,
+        deployBehavior: config.experimental?.deployBehavior ?? "prompt",
+        depsBehavior: config.experimental?.depsBehavior ?? "prompt",
+        gitBehavior: config.experimental?.gitBehavior ?? "prompt",
+        i18nBehavior: config.experimental?.i18nBehavior ?? "prompt",
+        scriptsBehavior: config.experimental?.scriptsBehavior ?? "prompt",
+      },
+    };
   } catch (error) {
-    console.warn("Error reading configuration files:", error);
+    relinka(
+      "error-verbose",
+      "Error reading configuration files:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 
   return config;

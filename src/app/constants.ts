@@ -2,10 +2,11 @@ import path from "pathe";
 import pc from "picocolors";
 import { fileURLToPath } from "url";
 
+export const useLocalhost = false;
+export const isVerboseEnabled = false;
+
 export const recommended = pc.green("🚀 Recommended");
 export const experimental = pc.red("🚨 Experimental");
-
-export const isVerboseEnabled = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

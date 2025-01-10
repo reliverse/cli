@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { PKG_ROOT } from "~/app/db/constants.js";
+import { PKG_ROOT } from "~/app/constants.js";
 
 import { type Installer } from "../opts.js";
 import { parseNameAndPath } from "../utils/parseNameAndPath.js";
