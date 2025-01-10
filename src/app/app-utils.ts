@@ -11,13 +11,14 @@ import { MEMORY_FILE } from "~/app/db/constants.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
-const homeDir = os.homedir();
-const dbPath = path.join(homeDir, MEMORY_FILE);
+export async function getReliverseMemory(): Promise<ReliverseMemory> {
+  // Ensure directory exists
+  const homeDir = os.homedir();
+  const memoryFile = path.join(homeDir, MEMORY_FILE);
+  if (!(await fs.pathExists(path.dirname(memoryFile)))) {
+    await fs.ensureDir(path.dirname(memoryFile));
+  }
 
-// Ensure directory exists
-await fs.ensureDir(path.dirname(dbPath));
-
-export async function readReliverseMemory(): Promise<ReliverseMemory> {
   try {
     // Read encrypted data from config_keys
     const configRows = await db.select().from(configKeysTable);

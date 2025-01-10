@@ -8,6 +8,7 @@ import type {
   BiomeConfig,
   BiomeConfigResult,
   ConfigFile,
+  ProjectTypeOptions,
   ReliverseConfig,
 } from "~/types.js";
 
@@ -79,7 +80,9 @@ export function addConfigMetadata<T extends object>(config: T): T & BaseConfig {
   };
 }
 
-export async function readConfig(cwd: string): Promise<ReliverseConfig> {
+export async function getReliverseConfig(
+  cwd: string,
+): Promise<ReliverseConfig> {
   const configPath = path.join(cwd, ".reliverse");
   const rulesPath = path.join(cwd, ".reliverse");
   let config: ReliverseConfig = { ...DEFAULT_CONFIG };
@@ -143,7 +146,7 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
           deployUrl: rules.experimental?.deployUrl ?? "",
           projectActivation: rules.experimental?.projectActivation ?? "auto",
           projectCategory: rules.experimental?.projectCategory ?? "website",
-          projectType: rules.experimental?.projectType ?? "development",
+          projectType: rules.experimental?.projectType ?? "library",
           projectDeployService:
             rules.experimental?.projectDeployService ?? "vercel",
           projectDisplayName: rules.experimental?.projectDisplayName ?? "",
@@ -280,16 +283,6 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
             config.experimental?.ignoreDependencies ??
             [],
 
-          // Config revalidation
-          configLastRevalidate:
-            rules.experimental?.configLastRevalidate ??
-            config.experimental?.configLastRevalidate ??
-            "",
-          configRevalidateFrequency:
-            rules.experimental?.configRevalidateFrequency ??
-            config.experimental?.configRevalidateFrequency ??
-            "7d",
-
           // Custom rules
           customRules: {
             ...config.experimental?.customRules,
@@ -325,14 +318,14 @@ export async function readConfig(cwd: string): Promise<ReliverseConfig> {
 let cachedBiomeConfig: BiomeConfigResult = null;
 
 export async function getBiomeConfig(
-  targetDir: string,
+  projectPath: string,
 ): Promise<BiomeConfigResult> {
   if (cachedBiomeConfig !== null) {
     return cachedBiomeConfig;
   }
 
   try {
-    const biomePath = path.join(targetDir, "biome.jsonc");
+    const biomePath = path.join(projectPath, "biome.jsonc");
     if (await fs.pathExists(biomePath)) {
       const content = await fs.readFile(biomePath, "utf-8");
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -359,12 +352,14 @@ export async function getBiomeConfig(
 }
 
 export const PROJECT_TYPE_FILES = {
+  "": [],
+  library: ["jsr.json", "jsr.jsonc"],
   nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
   astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
   react: ["vite.config.js", "vite.config.ts", "react.config.js"],
   vue: ["vue.config.js", "vite.config.ts"],
   svelte: ["svelte.config.js", "svelte.config.ts"],
-} as const;
+} satisfies Record<ProjectTypeOptions, string[]>;
 
 export async function detectProjectType(
   cwd: string,

@@ -1,13 +1,13 @@
 import { endPrompt, startPrompt } from "@reliverse/prompts";
 import { emojify } from "node-emoji";
 
-export async function showStartPrompt(args: { dev: boolean }) {
+export async function showStartPrompt(isDev: boolean) {
   await startPrompt({
     titleColor: "inverse",
     clearConsole: true,
     packageName: "@reliverse/cli",
-    packageVersion: "1.4.16",
-    isDev: args.dev,
+    packageVersion: "1.4.17",
+    isDev,
   });
 }
 

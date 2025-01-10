@@ -1,7 +1,11 @@
 import { selectPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import type { DeploymentService, ReliverseConfig } from "~/types.js";
+import type {
+  DeploymentService,
+  ReliverseConfig,
+  ReliverseMemory,
+} from "~/types.js";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
@@ -38,8 +42,9 @@ export async function selectDeploymentService(
 export async function deployProject(
   projectName: string,
   config: ReliverseConfig,
-  targetDir: string,
+  projectPath: string,
   primaryDomain: string,
+  memory: ReliverseMemory,
 ): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -72,8 +77,9 @@ export async function deployProject(
 
     const success = await createVercelDeployment(
       projectName,
-      targetDir,
+      projectPath,
       primaryDomain,
+      memory,
     );
 
     if (success) {

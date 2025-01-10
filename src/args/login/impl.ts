@@ -13,11 +13,12 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
+import type { ReliverseMemory } from "~/types.js";
+
+import { getReliverseMemory, updateReliverseMemory } from "~/app/app-utils.js";
 import { MEMORY_FILE } from "~/app/db/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
-
-import { readReliverseMemory, updateReliverseMemory } from "../memory/impl.js";
 
 /**
  * Custom error for when a user cancels the process.
@@ -32,10 +33,10 @@ class UserCancellationError extends Error {
 const nanoid = customAlphabet("123456789QAZWSXEDCRFVTGBYHNUJMIKOLP", 5);
 
 export async function auth({
-  dev,
+  isDev,
   useLocalhost,
 }: {
-  dev: boolean;
+  isDev: boolean;
   useLocalhost: boolean;
 }) {
   relinka("info", "Let's authenticate you...");
@@ -140,7 +141,7 @@ export async function auth({
 
       const redirect = `http://localhost:${port}`;
       const code = nanoid();
-      const clientUrl = dev
+      const clientUrl = isDev
         ? useLocalhost
           ? "http://localhost:3000"
           : "https://reliverse.org"
@@ -250,18 +251,21 @@ export async function auth({
   });
 }
 
-export async function checkIfUserIsAuthenticated(args: { dev: boolean }) {
+export async function ensureUserAuthenticated(
+  isDev: boolean,
+  memory: ReliverseMemory,
+) {
   // Check for existing authentication in SQLite
-  const memory = await readReliverseMemory();
   const isAuthenticated =
     memory.code && memory.code !== "" && memory.key && memory.key !== "";
 
   if (!isAuthenticated) {
     await showAnykeyPrompt();
-    await auth({ dev: args.dev, useLocalhost: false });
+    await auth({ isDev, useLocalhost: false });
 
     // Re-check authentication after auth flow
-    const updatedMemory = await readReliverseMemory();
+    const updatedMemory = await getReliverseMemory();
+
     const authSuccess =
       updatedMemory.code &&
       updatedMemory.code !== "" &&

@@ -7,10 +7,18 @@ import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
-import { DEFAULT_APP_NAME } from "~/app/db/constants.js";
+import {
+  DEFAULT_APP_NAME,
+  experimental,
+  recommended,
+} from "~/app/db/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
-import { type ReliverseConfig, type TemplateOption } from "~/types.js";
+import {
+  type ReliverseConfig,
+  type ReliverseMemory,
+  type TemplateOption,
+} from "~/types.js";
 
 import {
   randomProjectFrameworkTitle,
@@ -19,9 +27,6 @@ import {
   randomWebsiteDetailsTitle,
 } from "../db/messages.js";
 import { createWebProject } from "./create-project/cp-mod.js";
-
-const recommended = pc.green("[🚀 Recommended]");
-const experimental = pc.red("[🚨 Experimental]");
 
 const TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
@@ -34,7 +39,14 @@ const TEMPLATE_OPTIONS = {
     value: "blefnk/next-react-ts-src-minimal",
     hint: pc.dim("Essentials only: minimal Next.js with TypeScript template"),
   },
-} as const;
+} as const satisfies Partial<
+  Record<TemplateOption, { label: string; value: TemplateOption; hint: string }>
+>;
+
+type VSCodeTemplateOption =
+  | "microsoft/vscode-extension-samples"
+  | "microsoft/vscode-extension-template"
+  | "coming-soon";
 
 const VSCODE_TEMPLATE_OPTIONS = {
   "microsoft/vscode-extension-samples": {
@@ -47,7 +59,10 @@ const VSCODE_TEMPLATE_OPTIONS = {
     value: "microsoft/vscode-extension-template",
     hint: pc.dim("Basic VS Code extension template"),
   },
-} as const;
+} as const satisfies Record<
+  Exclude<VSCodeTemplateOption, "coming-soon">,
+  { label: string; value: VSCodeTemplateOption; hint: string }
+>;
 
 async function configureVSCodeExtension() {
   const extensionConfig = {
@@ -135,8 +150,10 @@ async function configureVSCodeExtension() {
 }
 
 export async function buildBrandNewThing(
+  cwd: string,
   isDev: boolean,
-  config?: ReliverseConfig,
+  memory: ReliverseMemory,
+  config: ReliverseConfig,
 ): Promise<void> {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org";
@@ -190,7 +207,7 @@ export async function buildBrandNewThing(
   });
 
   if (projectType === "vscode") {
-    const template = await selectPrompt({
+    const template = (await selectPrompt({
       endTitle,
       title: "Which VS Code extension template would you like to use?",
       options: [
@@ -202,15 +219,18 @@ export async function buildBrandNewThing(
           disabled: true,
         },
       ],
-    });
+    })) as VSCodeTemplateOption;
 
     const extensionConfig = await configureVSCodeExtension();
 
     await createWebProject({
-      webProjectTemplate: template as TemplateOption,
+      webProjectTemplate: template as Exclude<
+        VSCodeTemplateOption,
+        "coming-soon"
+      >,
       message: initialMessage,
       mode: "buildBrandNewThing",
-      i18nShouldBeEnabled: false,
+      i18nShouldBeEnabled: true,
       isDev,
       config: config ?? {
         experimental: {
@@ -239,6 +259,8 @@ export async function buildBrandNewThing(
           projectAuthor: extensionConfig.publisher,
         },
       },
+      memory,
+      cwd,
     });
     return;
   }
@@ -367,6 +389,8 @@ export async function buildBrandNewThing(
           projectFramework: "nextjs",
         },
       },
+      memory,
+      cwd,
     });
   }
 }

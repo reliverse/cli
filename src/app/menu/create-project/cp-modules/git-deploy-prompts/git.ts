@@ -6,14 +6,14 @@ import path from "pathe";
 import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
+import type { ReliverseMemory } from "~/types.js";
+
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   cd,
-  getCurrentWorkingDirectory,
   pwd,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
-import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { checkGithubRepoOwnership, createGithubRepo } from "./github.js";
 import { createOctokitInstance } from "./octokit-instance.js";
@@ -28,12 +28,14 @@ import { cloneToTempAndCopyFiles, isGitRepo } from "./utils-git-github.js";
  * @returns Promise<boolean>
  */
 export async function initGit(
-  dir: string,
+  cwd: string,
   isDev: boolean,
-  projectName = "",
+  projectPath: string,
+  projectName: string,
 ): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
-  const finalDir = isDev ? path.join(cwd, "tests-runtime", projectName) : dir;
+  const finalDir = isDev
+    ? path.join(cwd, "tests-runtime", projectName)
+    : projectPath;
 
   try {
     // Validate directory
@@ -43,7 +45,12 @@ export async function initGit(
     }
 
     const git: SimpleGit = simpleGit({ baseDir: finalDir });
-    const isExistingRepo = await isGitRepo(finalDir, isDev, projectName);
+    const isExistingRepo = await isGitRepo(
+      cwd,
+      isDev,
+      projectName,
+      projectPath,
+    );
 
     if (!isExistingRepo) {
       // Initialize new git repository
@@ -83,7 +90,7 @@ export async function initGit(
 
     return true;
   } catch (error) {
-    const existingRepo = await isGitRepo(finalDir, isDev, projectName);
+    const existingRepo = await isGitRepo(cwd, isDev, projectName, projectPath);
     relinka(
       "error",
       `Failed to ${existingRepo ? "update" : "initialize"} git: ${
@@ -113,9 +120,9 @@ export async function initGit(
 async function isRepoOwner(
   githubUsername: string,
   repoName: string,
+  memory: ReliverseMemory,
 ): Promise<boolean> {
   try {
-    const memory = await readReliverseMemory();
     if (!memory?.githubKey) {
       relinka("error-verbose", "GitHub token not found in memory");
       return false;
@@ -138,39 +145,38 @@ async function isRepoOwner(
   }
 }
 
-// Export other git-related functions as needed
 /**
  * Creates a GitHub repository and sets it up locally
  * @param projectName - Name of the project/repository
- * @param targetDir - Local directory path
+ * @param projectPath - Local directory path
  * @param isDev - Whether we are in development mode
  * @returns Promise<boolean> - Whether the operation was successful
  */
 export async function createGithubRepository(
-  projectName: string,
-  targetDir: string,
+  cwd: string,
   isDev: boolean,
+  memory: ReliverseMemory,
+  projectName: string,
+  projectPath: string,
 ): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
-    : targetDir;
+    : projectPath;
 
   try {
-    const memory = await readReliverseMemory();
     if (!memory) {
       relinka("error", "Failed to read reliverse memory");
       return false;
     }
 
-    const githubUsername = await askGithubName();
+    const githubUsername = await askGithubName(memory);
     if (!githubUsername) {
       relinka("error", "Could not determine GitHub username");
       return false;
     }
 
     // Check if repo exists and user owns it
-    const repoExists = await isRepoOwner(githubUsername, projectName);
+    const repoExists = await isRepoOwner(githubUsername, projectName, memory);
 
     if (repoExists) {
       // Change to project directory if in dev mode
@@ -234,6 +240,7 @@ export async function createGithubRepository(
           githubUsername,
           finalDir,
           isDev,
+          cwd,
         );
       } else if (choice === "commit" || choice === "skip") {
         // Use authenticated URL with token as username
@@ -289,6 +296,7 @@ export async function createGithubRepository(
       githubUsername,
       finalDir,
       isDev,
+      cwd,
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {
@@ -313,18 +321,18 @@ export async function createGithubRepository(
  * @returns Promise<boolean>
  */
 export async function createGitCommit(
-  message: string,
-  projectPath: string,
+  cwd: string,
   isDev: boolean,
   projectName: string,
+  projectPath: string,
+  message: string,
 ): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
-    if (!(await isGitRepo(finalDir, isDev, projectName))) {
+    if (!(await isGitRepo(cwd, isDev, projectName, projectPath))) {
       relinka("error", "Not a git repository. Please initialize git first.");
       return false;
     }
@@ -361,17 +369,17 @@ export async function createGitCommit(
  * @returns Promise<boolean>
  */
 export async function pushGitCommits(
-  projectPath: string,
+  cwd: string,
   isDev: boolean,
   projectName: string,
+  projectPath: string,
 ): Promise<boolean> {
-  const cwd = getCurrentWorkingDirectory();
   const finalDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
-    if (!(await isGitRepo(finalDir, isDev, projectName))) {
+    if (!(await isGitRepo(cwd, isDev, projectName, projectPath))) {
       relinka("error", "Not a git repository. Please initialize git first.");
       return false;
     }

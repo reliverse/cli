@@ -1,14 +1,22 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 
-import type { TemplateOption } from "~/types.js";
+import type {
+  ReliverseConfig,
+  ReliverseMemory,
+  TemplateOption,
+} from "~/types.js";
 
+import { createWebProject } from "~/app/menu/create-project/cp-mod.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
+import { buildBrandNewThing } from "~/app/menu/menu-mod.js";
 
-import { buildBrandNewThing } from "../../../../menu-mod.js";
-import { createWebProject } from "../../../cp-mod.js";
-
-export async function installAnyGitRepo(isDev: boolean) {
+export async function installAnyGitRepo(
+  cwd: string,
+  isDev: boolean,
+  memory: ReliverseMemory,
+  config: ReliverseConfig,
+) {
   relinka(
     "info",
     "At the moment, the current mode is optimized for installing any package.json-based projects from GitHub. Support for other types of projects and git providers will be added in the future.",
@@ -116,14 +124,14 @@ export async function installAnyGitRepo(isDev: boolean) {
     repoToInstall === "blefnk/relivator" ||
     repoToInstall === "blefnk/next-react-ts-src-minimal"
   ) {
-    return buildBrandNewThing(isDev);
+    return buildBrandNewThing(cwd, isDev, memory, config);
   }
 
   await createWebProject({
     webProjectTemplate: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
     mode: "installAnyGitRepo",
-    i18nShouldBeEnabled: false,
+    i18nShouldBeEnabled: true,
     isDev,
     config: {
       experimental: {
@@ -131,5 +139,7 @@ export async function installAnyGitRepo(isDev: boolean) {
         projectFramework: "nextjs",
       },
     },
+    memory,
+    cwd,
   });
 }

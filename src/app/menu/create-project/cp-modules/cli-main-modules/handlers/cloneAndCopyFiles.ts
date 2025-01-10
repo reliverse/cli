@@ -12,7 +12,7 @@ import { FILE_CONFLICTS } from "../../../../../db/constants.js";
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(
   filesToDownload: string[],
-  targetDir: string,
+  projectPath: string,
   overwrite: boolean,
   repoUrl: string,
   tempRepoDir: string,
@@ -51,7 +51,7 @@ export async function cloneAndCopyFiles(
       }
 
       const sourcePath = path.join(tempRepoDir, fileName);
-      const destPath = path.join(targetDir, fileName);
+      const destPath = path.join(projectPath, fileName);
 
       // Skip if source and destination are the same
       if (path.resolve(sourcePath) === path.resolve(destPath)) {

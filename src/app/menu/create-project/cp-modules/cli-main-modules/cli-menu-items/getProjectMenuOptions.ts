@@ -4,8 +4,6 @@ import pc from "picocolors";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
-import { revalidateReliverseJson } from "../handlers/revalidateReliverseJson.js";
-
 export async function getProjectMenuOptions(
   cwd: string,
 ): Promise<{ label: string; value: string; hint?: string }[]> {
@@ -23,7 +21,7 @@ export async function getProjectMenuOptions(
     const rulesFileExists = await fs.pathExists(rulesPath);
 
     if (rulesFileExists) {
-      await revalidateReliverseJson(cwd, rulesPath);
+      relinka("info-verbose", "Using existing .reliverse file");
     }
   } catch (error) {
     // Only show warning for non-initialization errors

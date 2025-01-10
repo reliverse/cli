@@ -8,12 +8,11 @@ import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ReliverseMemory } from "~/types.js";
+
+import { updateReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
-import {
-  readReliverseMemory,
-  updateReliverseMemory,
-} from "~/args/memory/impl.js";
 
 import { createOctokitInstance } from "../octokit-instance.js";
 import { withRateLimit } from "./vercel-api.js";
@@ -37,8 +36,10 @@ type VercelFramework = GetProjectsFramework;
 /**
  * Saves token to memory and persists it
  */
-async function saveToken(token: string): Promise<void> {
-  const memory = await readReliverseMemory();
+async function saveToken(
+  token: string,
+  memory: ReliverseMemory,
+): Promise<void> {
   memory.vercelKey = token;
   await updateReliverseMemory(memory);
   relinka("success", "Vercel token saved successfully!");
@@ -47,7 +48,7 @@ async function saveToken(token: string): Promise<void> {
 /**
  * Gets environment variables from .env file
  */
-async function getEnvVars(targetDir: string): Promise<
+async function getEnvVars(projectPath: string): Promise<
   {
     key: string;
     value: string;
@@ -55,7 +56,7 @@ async function getEnvVars(targetDir: string): Promise<
     type: "plain" | "encrypted" | "sensitive";
   }[]
 > {
-  const envFile = path.join(targetDir, ".env");
+  const envFile = path.join(projectPath, ".env");
   const envVars: {
     key: string;
     value: string;
@@ -116,15 +117,17 @@ async function getEnvVars(targetDir: string): Promise<
 /**
  * Checks if a project is already deployed to Vercel
  */
-export async function isProjectDeployed(projectName: string): Promise<boolean> {
+export async function isProjectDeployed(
+  projectName: string,
+  memory: ReliverseMemory,
+): Promise<boolean> {
   try {
-    const memory = await readReliverseMemory();
     if (!memory?.githubKey) {
       relinka("error-verbose", "GitHub token not found in Reliverse's memory");
       return false;
     }
 
-    const githubUsername = await askGithubName();
+    const githubUsername = await askGithubName(memory);
     if (!githubUsername) {
       relinka("error", "Could not determine GitHub username");
       return false;
@@ -262,12 +265,12 @@ async function verifyDomain(
  */
 export async function createVercelDeployment(
   projectName: string,
-  targetDir: string,
+  projectPath: string,
   domain: string,
+  memory: ReliverseMemory,
 ): Promise<boolean> {
   try {
     // 1. First ensure we have a valid token
-    const memory = await readReliverseMemory();
     if (!memory?.vercelKey) {
       const token = await inputPrompt({
         title:
@@ -284,7 +287,7 @@ export async function createVercelDeployment(
         return false;
       }
 
-      await saveToken(token);
+      await saveToken(token, memory);
       memory.vercelKey = token;
     }
 
@@ -293,7 +296,7 @@ export async function createVercelDeployment(
 
     // 3. Now check for existing deployment
     relinka("info", "Checking for existing deployment...");
-    const isDeployed = await isProjectDeployed(projectName);
+    const isDeployed = await isProjectDeployed(projectName, memory);
     if (isDeployed) {
       relinka("info", "Project is already deployed to Vercel");
     } else {
@@ -318,7 +321,7 @@ export async function createVercelDeployment(
         let projectId: string | undefined;
         if (!isDeployed) {
           updateMessage("Creating new project...");
-          const framework = await detectFramework(targetDir);
+          const framework = await detectFramework(projectPath);
           const projectResponse = await withRateLimit(async () => {
             return await vercel.projects.createProject({
               requestBody: {
@@ -370,7 +373,7 @@ export async function createVercelDeployment(
         // 4. Environment Variables Phase
         if (isDeployed || selectedOptions.options.includes("env")) {
           updateMessage("Setting up environment variables...");
-          const envVars = await getEnvVars(targetDir);
+          const envVars = await getEnvVars(projectPath);
           if (envVars.length > 0) {
             await withRateLimit(async () => {
               await vercel.projects.createProjectEnv({
@@ -385,7 +388,7 @@ export async function createVercelDeployment(
         }
 
         // 5. Deployment Phase
-        const githubUsername = await askGithubName();
+        const githubUsername = await askGithubName(memory);
         if (!githubUsername) {
           throw new Error("Could not determine GitHub username");
         }
@@ -394,7 +397,7 @@ export async function createVercelDeployment(
           vercel,
           projectName,
           {
-            framework: await detectFramework(targetDir),
+            framework: await detectFramework(projectPath),
           },
           updateMessage,
           {

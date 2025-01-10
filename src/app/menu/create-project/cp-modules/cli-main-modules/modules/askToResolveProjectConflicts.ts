@@ -11,7 +11,7 @@ import {
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/fileUtils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
-export const resolveProjectConflicts = async (targetDir: string) => {
+export const resolveProjectConflicts = async (projectPath: string) => {
   // Ask user if they want to decide what to do with each file conflict
   const shouldAskAboutHandlingConflicts = false;
   let automaticConflictHandling = true;
@@ -28,7 +28,7 @@ export const resolveProjectConflicts = async (targetDir: string) => {
   await handleFileConflicts({
     files: FILE_CONFLICTS,
     automaticConflictHandling,
-    targetDir,
+    projectPath,
   });
 };
 
@@ -36,17 +36,17 @@ export const resolveProjectConflicts = async (targetDir: string) => {
 const handleFileConflicts = async ({
   files,
   automaticConflictHandling,
-  targetDir,
+  projectPath,
 }: ConflictHandlerOptions): Promise<void> => {
   for (const { customMessage, description, fileName } of files) {
-    const filePath = path.join(targetDir, fileName);
+    const filePath = path.join(projectPath, fileName);
 
     if (fs.pathExistsSync(filePath)) {
       const fileDescription = description ?? fileName;
 
       relinka(
         "info-verbose",
-        `${fileDescription} file exists at ${targetDir}.`,
+        `${fileDescription} file exists at ${projectPath}.`,
       );
 
       if (automaticConflictHandling) {

@@ -1,13 +1,12 @@
 import { inputPrompt } from "@reliverse/prompts";
 
-import {
-  readReliverseMemory,
-  updateReliverseMemory,
-} from "~/args/memory/impl.js";
+import type { ReliverseMemory } from "~/types.js";
 
-export async function askVercelName(): Promise<string> {
-  const memory = await readReliverseMemory();
+import { updateReliverseMemory } from "~/app/app-utils.js";
 
+export async function askVercelName(
+  memory: ReliverseMemory,
+): Promise<string | null> {
   let placeholder = "";
 
   if (memory.vercelUsername) {

@@ -2,11 +2,15 @@ import type { Octokit } from "@octokit/rest";
 
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 
-import type { DeploymentService, ReliverseConfig } from "~/types.js";
+import type {
+  DeploymentService,
+  ReliverseConfig,
+  ReliverseMemory,
+} from "~/types.js";
 
+import { getReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
-import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGit } from "./git.js";
@@ -76,10 +80,12 @@ export async function decide(
  * Handles the git initialization step
  */
 export async function handleGitInit(
-  targetDir: string,
+  cwd: string,
   isDev: boolean,
+  projectName: string,
+  projectPath: string,
 ): Promise<boolean> {
-  const gitInitialized = await initGit(targetDir, isDev);
+  const gitInitialized = await initGit(cwd, isDev, projectName, projectPath);
   if (!gitInitialized) {
     relinka(
       "error",
@@ -94,21 +100,22 @@ export async function handleGitInit(
  * Handles the GitHub repository creation step
  */
 export async function handleGithubRepo(
-  projectName: string,
-  targetDir: string,
+  cwd: string,
   isDev: boolean,
+  memory: ReliverseMemory,
+  projectName: string,
+  projectPath: string,
 ): Promise<{
   success: boolean;
   octokit?: InstanceType<typeof Octokit>;
   username?: string;
 }> {
-  const memory = await readReliverseMemory();
   if (!memory) {
     relinka("error", "Failed to read reliverse memory");
     return { success: false };
   }
 
-  const githubUsername = await askGithubName();
+  const githubUsername = await askGithubName(memory);
   if (!githubUsername) {
     relinka("error", "Could not determine GitHub username");
     return { success: false };
@@ -116,9 +123,11 @@ export async function handleGithubRepo(
 
   // Even if token is not found, we proceed to createGithubRepo which will handle token prompting
   const repoCreated = await createGithubRepository(
-    projectName,
-    targetDir,
+    cwd,
     isDev,
+    memory,
+    projectName,
+    projectPath,
   );
   if (!repoCreated) {
     relinka(
@@ -128,8 +137,9 @@ export async function handleGithubRepo(
     return { success: false };
   }
 
-  // Create a new Octokit instance with the potentially new token from memory
-  const updatedMemory = await readReliverseMemory();
+  // Read the memory again to get the new GitHub token
+  const updatedMemory = await getReliverseMemory();
+
   if (!updatedMemory?.githubKey) {
     relinka("error", "GitHub token still not found after setup");
     return { success: false };
@@ -140,9 +150,12 @@ export async function handleGithubRepo(
   return { success: true, octokit, username: githubUsername };
 }
 
-async function checkVercelDeployment(projectName: string): Promise<boolean> {
+async function checkVercelDeployment(
+  projectName: string,
+  memory: ReliverseMemory,
+): Promise<boolean> {
   try {
-    return await isProjectDeployed(projectName);
+    return await isProjectDeployed(projectName, memory);
   } catch (error) {
     // If we can't check deployments, assume there are none
     relinka(
@@ -160,21 +173,25 @@ async function checkVercelDeployment(projectName: string): Promise<boolean> {
 export async function promptGitDeploy({
   projectName,
   config,
-  targetDir,
+  projectPath,
   primaryDomain,
   hasDbPush,
   shouldRunDbPush,
   shouldInstallDeps,
   isDev,
+  memory,
+  cwd,
 }: {
   projectName: string;
   config: ReliverseConfig;
-  targetDir: string;
+  projectPath: string;
   primaryDomain: string;
   hasDbPush: boolean;
   shouldRunDbPush: boolean;
   shouldInstallDeps: boolean;
   isDev: boolean;
+  memory: ReliverseMemory;
+  cwd: string;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -218,7 +235,7 @@ export async function promptGitDeploy({
       }
 
       // Only initialize git if user wants git but not GitHub
-      if (!(await handleGitInit(targetDir, isDev))) {
+      if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
         relinka(
           "error",
           "Failed to initialize git. You can try to initialize it manually later.",
@@ -246,7 +263,13 @@ export async function promptGitDeploy({
 
     while (retryCount < 3 && !skipGitHub) {
       try {
-        githubData = await handleGithubRepo(projectName, targetDir, isDev);
+        githubData = await handleGithubRepo(
+          cwd,
+          isDev,
+          memory,
+          projectName,
+          projectPath,
+        );
         if (githubData.success) {
           break;
         }
@@ -279,7 +302,9 @@ export async function promptGitDeploy({
             case "skip":
               skipGitHub = true;
               // Initialize git locally if GitHub is skipped
-              if (!(await handleGitInit(targetDir, isDev))) {
+              if (
+                !(await handleGitInit(cwd, isDev, projectName, projectPath))
+              ) {
                 relinka(
                   "error",
                   "Failed to initialize git. You can try to initialize it manually later.",
@@ -337,7 +362,9 @@ export async function promptGitDeploy({
             case "skip":
               skipGitHub = true;
               // Initialize git locally if GitHub is skipped
-              if (!(await handleGitInit(targetDir, isDev))) {
+              if (
+                !(await handleGitInit(cwd, isDev, projectName, projectPath))
+              ) {
                 relinka(
                   "error",
                   "Failed to initialize git. You can try to initialize it manually later.",
@@ -384,7 +411,7 @@ export async function promptGitDeploy({
       switch (action) {
         case "skip":
           // Initialize git locally if GitHub is skipped
-          if (!(await handleGitInit(targetDir, isDev))) {
+          if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
             relinka(
               "error",
               "Failed to initialize git. You can try to initialize it manually later.",
@@ -418,7 +445,10 @@ export async function promptGitDeploy({
     ) {
       try {
         // Check for Vercel deployments
-        const hasVercelDeployment = await checkVercelDeployment(projectName);
+        const hasVercelDeployment = await checkVercelDeployment(
+          projectName,
+          memory,
+        );
 
         if (hasVercelDeployment) {
           relinka(
@@ -459,7 +489,7 @@ export async function promptGitDeploy({
           hasDbPush,
           shouldRunDbPush,
           shouldInstallDeps,
-          targetDir,
+          projectPath,
         );
 
         if (dbStatus === "cancel") {
@@ -479,7 +509,7 @@ export async function promptGitDeploy({
         if (!hasVercelDeployment) {
           primaryDomain = await promptForDomain(projectName);
         } else {
-          const result = await getVercelProjectDomain(projectName);
+          const result = await getVercelProjectDomain(projectName, memory);
           primaryDomain = result.primary;
           allDomains = result.domains;
         }
@@ -489,8 +519,9 @@ export async function promptGitDeploy({
             const deployResult = await deployProject(
               projectName,
               config,
-              targetDir,
+              projectPath,
               primaryDomain,
+              memory,
             );
             if (deployResult.deployService !== "none") {
               relinka(

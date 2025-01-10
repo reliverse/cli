@@ -1,16 +1,17 @@
 import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
 import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains.js";
 
+import type { ReliverseMemory } from "~/types.js";
+
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { createVercelCoreInstance } from "./vercel-instance.js";
 
 export async function getVercelProjectDomain(
   projectName: string,
+  memory: ReliverseMemory,
 ): Promise<{ domains: string[]; primary: string }> {
   try {
-    const memory = await readReliverseMemory();
     if (!memory?.vercelKey) {
       throw new Error("Vercel token not found");
     }
@@ -72,9 +73,9 @@ export async function getVercelProjectDomain(
 export async function getVercelProjectDomainByName(
   projectName: string,
   domainName: string,
+  memory: ReliverseMemory,
 ): Promise<string | null> {
   try {
-    const memory = await readReliverseMemory();
     if (!memory?.vercelKey) {
       throw new Error("Vercel token not found");
     }

@@ -8,7 +8,7 @@ export async function ensureDbInitialized(
   hasDbPush: boolean,
   shouldRunDbPush: boolean,
   shouldInstallDeps: boolean,
-  targetDir: string,
+  projectPath: string,
 ): Promise<"success" | "skip" | "cancel"> {
   // If db:push is not available or already run, proceed
   if (!hasDbPush || shouldRunDbPush) {
@@ -50,12 +50,12 @@ export async function ensureDbInitialized(
   try {
     if (!shouldInstallDeps) {
       await installDependencies({
-        cwd: targetDir,
+        cwd: projectPath,
       });
     }
 
     await execa("bun", ["db:push"], {
-      cwd: targetDir,
+      cwd: projectPath,
       stdio: "inherit",
     });
     return "success";

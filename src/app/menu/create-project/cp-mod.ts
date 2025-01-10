@@ -26,6 +26,8 @@ export async function createWebProject({
   i18nShouldBeEnabled: defaultI18nShouldBeEnabled,
   isDev,
   config,
+  memory,
+  cwd,
 }: CreateWebProjectOptions): Promise<void> {
   relinka("info", message);
 
@@ -35,6 +37,7 @@ export async function createWebProject({
 
   // Initialize project configuration
   const projectConfig = await initializeProjectConfig(
+    memory,
     config,
     shouldUseDataFromConfig,
   );
@@ -44,7 +47,7 @@ export async function createWebProject({
     primaryDomain: initialDomain,
   } = projectConfig;
 
-  let targetDir = "";
+  let projectPath = "";
 
   // Download and setup template
   try {
@@ -52,14 +55,19 @@ export async function createWebProject({
       "info",
       `Now I'm downloading the ${webProjectTemplate} template...`,
     );
-    targetDir = await downloadTemplate(webProjectTemplate, projectName, isDev);
+    projectPath = await downloadTemplate({
+      webProjectTemplate,
+      projectName,
+      isDev,
+      cwd,
+    });
   } catch (error) {
     relinka("error", "Failed to download template:", String(error));
     throw error;
   }
 
   // Replace template strings
-  await replaceTemplateStrings(targetDir, webProjectTemplate, {
+  await replaceTemplateStrings(projectPath, webProjectTemplate, {
     primaryDomain: initialDomain,
     frontendUsername,
     projectName,
@@ -67,21 +75,22 @@ export async function createWebProject({
 
   // Setup i18n if needed
   if (defaultI18nShouldBeEnabled) {
-    await setupI18nSupport(targetDir, config, shouldUseDataFromConfig);
+    await setupI18nSupport(projectPath, config, shouldUseDataFromConfig);
   }
 
   // Setup environment
-  await composeEnvFile(targetDir, FALLBACK_ENV_EXAMPLE_URL);
+  await composeEnvFile(projectPath, FALLBACK_ENV_EXAMPLE_URL);
 
   // Handle dependencies
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
-    targetDir,
+    projectPath,
     config,
   );
 
   // Generate initial configs with default deployment service
   await generateProjectConfigs(
-    targetDir,
+    memory,
+    projectPath,
     projectName,
     frontendUsername,
     "vercel",
@@ -95,18 +104,20 @@ export async function createWebProject({
     await handleDeployment({
       projectName,
       config,
-      targetDir,
+      projectPath,
       primaryDomain: initialDomain,
       hasDbPush: shouldRunDbPush,
       shouldRunDbPush,
       shouldInstallDeps,
       isDev,
+      memory,
+      cwd,
     });
 
   // If the deployment service is not vercel or the primary
   // domain is different from the initial domain, update the config
   if (deployService !== "vercel" || primaryDomain !== initialDomain) {
-    await updateProjectConfig(targetDir, "reliverse", {
+    await updateProjectConfig(projectPath, "reliverse", {
       deployService,
       primaryDomain,
     });
@@ -114,7 +125,7 @@ export async function createWebProject({
 
   // Show success message and next steps
   await showSuccessAndNextSteps(
-    targetDir,
+    projectPath,
     webProjectTemplate,
     frontendUsername,
     isDeployed,

@@ -1,5 +1,9 @@
 import path from "pathe";
+import pc from "picocolors";
 import { fileURLToPath } from "url";
+
+export const recommended = pc.green("🚀 Recommended");
+export const experimental = pc.red("🚨 Experimental");
 
 export const isVerboseEnabled = false;
 

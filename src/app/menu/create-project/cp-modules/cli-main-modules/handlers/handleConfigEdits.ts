@@ -157,7 +157,7 @@ export async function handleConfigEditing(cwd: string) {
       );
       break;
 
-    // Cases for other config types as needed
+    // Cases for other config types
     default:
       relinka(
         "info",

@@ -48,17 +48,17 @@ const PUTOUT_MINIMAL_CONFIG: PutoutConfig = addConfigMetadata({
   ignore: ["node_modules", "dist", "build", "coverage", ".next", "*.d.ts"],
 });
 
-async function validateTargetDir(targetDir: string): Promise<void> {
-  if (!targetDir) {
+async function validateProjectPath(projectPath: string): Promise<void> {
+  if (!projectPath) {
     throw new Error("Target directory is required");
   }
 
-  if (!(await fs.pathExists(targetDir))) {
-    throw new Error(`Target directory does not exist: ${targetDir}`);
+  if (!(await fs.pathExists(projectPath))) {
+    throw new Error(`Target directory does not exist: ${projectPath}`);
   }
 
-  if (!(await fs.stat(targetDir).then((stat) => stat.isDirectory()))) {
-    throw new Error(`Target path is not a directory: ${targetDir}`);
+  if (!(await fs.stat(projectPath).then((stat) => stat.isDirectory()))) {
+    throw new Error(`Target path is not a directory: ${projectPath}`);
   }
 }
 
@@ -69,8 +69,8 @@ export async function configurePutout(
   >,
 ) {
   try {
-    const targetDir = path.dirname(config.putoutConfig);
-    await validateTargetDir(targetDir);
+    const projectPath = path.dirname(config.putoutConfig);
+    await validateProjectPath(projectPath);
 
     const putoutConfigPath = config.putoutConfig;
     const putoutConfigExists = await fileExists(putoutConfigPath);

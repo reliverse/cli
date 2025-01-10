@@ -3,13 +3,13 @@ import path from "pathe";
 
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
-export async function setupI18nFiles(targetDir: string): Promise<void> {
+export async function setupI18nFiles(projectPath: string): Promise<void> {
   try {
     // Ensure target directory exists
-    await fs.ensureDir(targetDir);
+    await fs.ensureDir(projectPath);
 
     // Generate i18n layout file
-    const layoutPath = path.join(targetDir, "src/app/layout.tsx");
+    const layoutPath = path.join(projectPath, "src/app/layout.tsx");
     await fs.ensureDir(path.dirname(layoutPath));
     const layoutContent = `
 import { dir } from "i18next";
@@ -44,7 +44,7 @@ export function generateStaticParams() {
     relinka("success", "Generated i18n layout file");
 
     // Generate i18n page file
-    const pagePath = path.join(targetDir, "src/app/page.tsx");
+    const pagePath = path.join(projectPath, "src/app/page.tsx");
     const pageContent = `
 import { useTranslation } from "~/utils/i18n";
 
@@ -61,7 +61,7 @@ export default async function Home() {
     relinka("success", "Generated i18n page file");
 
     // Generate i18n config
-    const i18nConfigPath = path.join(targetDir, "src/config/i18n.ts");
+    const i18nConfigPath = path.join(projectPath, "src/config/i18n.ts");
     await fs.ensureDir(path.dirname(i18nConfigPath));
     const i18nConfigContent = `
 export const languages = ["en", "es", "fr"];

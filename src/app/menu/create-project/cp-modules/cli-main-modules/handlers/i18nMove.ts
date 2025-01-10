@@ -8,10 +8,10 @@ const IGNORED_PATHS = ["api"];
 
 // Function to move content between src/app and src/app/[locale]
 export async function i18nMove(
-  targetDir: string,
+  projectPath: string,
   mode: "moveAppToLocale" | "moveLocaleToApp",
 ): Promise<void> {
-  const appDir = path.join(targetDir, "src", "app");
+  const appDir = path.join(projectPath, "src", "app");
   const localeDir = path.join(appDir, "[locale]");
 
   // Check if the app directory exists

@@ -1,14 +1,14 @@
 import { inputPrompt } from "@reliverse/prompts";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import {
-  readReliverseMemory,
-  updateReliverseMemory,
-} from "~/args/memory/impl.js";
+import type { ReliverseMemory } from "~/types.js";
 
-export async function askGithubName(): Promise<string | null> {
+import { updateReliverseMemory } from "~/app/app-utils.js";
+import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+
+export async function askGithubName(
+  memory: ReliverseMemory,
+): Promise<string | null> {
   try {
-    const memory = await readReliverseMemory();
     if (!memory) {
       relinka("error", "Failed to read reliverse memory");
       return null;

@@ -1,8 +1,7 @@
 import { defineCommand } from "@reliverse/prompts";
 
+import { getReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-
-import { readReliverseMemory } from "./impl.js";
 
 export default defineCommand({
   meta: {
@@ -11,7 +10,7 @@ export default defineCommand({
     hidden: true,
   },
   run: async () => {
-    const memory = await readReliverseMemory();
+    const memory = await getReliverseMemory();
     relinka("info", "Current memory values:");
     console.log({
       code: memory.code === "" ? "" : "exists",

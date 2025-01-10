@@ -290,14 +290,14 @@ export async function createDeployment(
 export async function handleDeployment(
   vercel: Vercel,
   projectName: string,
-  targetDir: string,
+  projectPath: string,
   isDeployed: boolean,
   selectedOptions: DeploymentOptions,
   getEnvVars: (dir: string) => Promise<{ key: string; value: string }[]>,
 ): Promise<void> {
   if (isDeployed || selectedOptions.options.includes("env")) {
     relinka("info", "Setting up environment variables...");
-    const rawEnvVars = await getEnvVars(targetDir);
+    const rawEnvVars = await getEnvVars(projectPath);
     const envVars = rawEnvVars.map((env) => ({
       ...env,
       type: "encrypted" as const,

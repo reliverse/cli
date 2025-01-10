@@ -20,6 +20,7 @@ import type {
   Behavior,
   DeploymentService,
   ReliverseConfig,
+  ReliverseMemory,
   TemplateOption,
 } from "~/types.js";
 
@@ -47,6 +48,8 @@ export type CreateWebProjectOptions = {
   i18nShouldBeEnabled: boolean;
   isDev: boolean;
   config: ReliverseConfig;
+  memory: ReliverseMemory;
+  cwd: string;
 };
 
 export type ProjectConfig = {
@@ -56,18 +59,19 @@ export type ProjectConfig = {
 };
 
 export async function initializeProjectConfig(
+  memory: ReliverseMemory,
   config: ReliverseConfig,
   shouldUseDataFromConfig: boolean,
 ): Promise<ProjectConfig> {
   const frontendUsername =
     shouldUseDataFromConfig && config?.experimental?.projectAuthor
       ? config.experimental.projectAuthor
-      : await askUserName();
+      : ((await askUserName(memory)) ?? "");
 
   const projectName =
     shouldUseDataFromConfig && config?.experimental?.projectTemplate
       ? path.basename(config.experimental.projectTemplate)
-      : await askProjectName();
+      : ((await askProjectName()) ?? "");
 
   const primaryDomain =
     shouldUseDataFromConfig && config?.experimental?.projectDomain
@@ -78,7 +82,7 @@ export async function initializeProjectConfig(
 }
 
 export async function replaceTemplateStrings(
-  targetDir: string,
+  projectPath: string,
   webProjectTemplate: TemplateOption,
   config: ProjectConfig,
 ) {
@@ -107,7 +111,7 @@ export async function replaceTemplateStrings(
       );
 
       try {
-        await replaceStringsInFiles(targetDir, validReplacements);
+        await replaceStringsInFiles(projectPath, validReplacements);
       } catch (error) {
         relinka(
           "error",
@@ -120,7 +124,7 @@ export async function replaceTemplateStrings(
 }
 
 export async function setupI18nSupport(
-  targetDir: string,
+  projectPath: string,
   config: ReliverseConfig,
   shouldUseDataFromConfig: boolean,
 ) {
@@ -136,7 +140,7 @@ export async function setupI18nSupport(
         });
 
   const i18nFolderExists = await fs.pathExists(
-    path.join(targetDir, "src/app/[locale]"),
+    path.join(projectPath, "src/app/[locale]"),
   );
 
   if (i18nFolderExists) {
@@ -145,12 +149,12 @@ export async function setupI18nSupport(
   }
 
   if (i18nShouldBeEnabled) {
-    await setupI18nFiles(targetDir);
+    await setupI18nFiles(projectPath);
   }
 }
 
 export async function handleDependencies(
-  targetDir: string,
+  projectPath: string,
   config: ReliverseConfig,
 ) {
   const depsBehavior: Behavior = config?.experimental?.depsBehavior ?? "prompt";
@@ -159,9 +163,9 @@ export async function handleDependencies(
   let shouldRunDbPush = false;
 
   if (shouldInstallDeps) {
-    await installDependencies({ cwd: targetDir });
+    await installDependencies({ cwd: projectPath });
     const scriptStatus = await promptPackageJsonScripts(
-      targetDir,
+      projectPath,
       shouldRunDbPush,
       true,
     );
@@ -214,7 +218,7 @@ async function moveProjectFromTestRuntime(
     }
 
     const defaultPath = getDefaultProjectPath();
-    const targetDir = await inputPrompt({
+    const projectPath = await inputPrompt({
       title: "Where would you like to move the project?",
       content: "Enter the path where you want to move the project:",
       placeholder: `Press <Enter> to use the default path: ${defaultPath}`,
@@ -222,17 +226,17 @@ async function moveProjectFromTestRuntime(
     });
 
     // Ensure target directory exists
-    await fs.ensureDir(targetDir);
+    await fs.ensureDir(projectPath);
 
     // Check if a directory with the same name exists
     let finalProjectName = projectName;
-    const originalTargetPath = path.join(targetDir, projectName);
+    const originalTargetPath = path.join(projectPath, projectName);
     let targetPath = originalTargetPath;
     let counter = 1;
 
     while (await fs.pathExists(targetPath)) {
       const newName = await inputPrompt({
-        title: `Directory ${finalProjectName} already exists at ${targetDir}`,
+        title: `Directory ${finalProjectName} already exists at ${projectPath}`,
         content: "Please enter a new name for the project directory",
         defaultValue: `${projectName}-${counter}`,
         validate: (value: string) => {
@@ -243,7 +247,7 @@ async function moveProjectFromTestRuntime(
       });
 
       finalProjectName = newName;
-      targetPath = path.join(targetDir, finalProjectName);
+      targetPath = path.join(projectPath, finalProjectName);
       counter++;
     }
 
@@ -264,12 +268,14 @@ async function moveProjectFromTestRuntime(
 export async function handleDeployment(params: {
   projectName: string;
   config: ReliverseConfig;
-  targetDir: string;
+  projectPath: string;
   primaryDomain: string;
   hasDbPush: boolean;
   shouldRunDbPush: boolean;
   shouldInstallDeps: boolean;
   isDev: boolean;
+  memory: ReliverseMemory;
+  cwd: string;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -280,7 +286,7 @@ export async function handleDeployment(params: {
 }
 
 export async function showSuccessAndNextSteps(
-  targetDir: string,
+  projectPath: string,
   webProjectTemplate: TemplateOption,
   frontendUsername: string,
   isDeployed: boolean,
@@ -288,21 +294,21 @@ export async function showSuccessAndNextSteps(
   allDomains: string[],
   isDev: boolean,
 ) {
-  let finalTargetDir = targetDir;
+  let finalProjectPath = projectPath;
 
   if (isDev) {
     const newPath = await moveProjectFromTestRuntime(
-      path.basename(targetDir),
-      targetDir,
+      path.basename(projectPath),
+      projectPath,
     );
     if (newPath) {
-      finalTargetDir = newPath;
+      finalProjectPath = newPath;
     }
   }
 
   relinka(
     "info",
-    `🎉 ${webProjectTemplate} was successfully installed to ${finalTargetDir}.`,
+    `🎉 ${webProjectTemplate} was successfully installed to ${finalProjectPath}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
@@ -311,8 +317,8 @@ export async function showSuccessAndNextSteps(
     title: "🤘 Project created successfully! Next steps to get started:",
     titleColor: "cyanBright",
     content: [
-      `- If you have VSCode installed, run: code ${finalTargetDir}`,
-      `- You can open the project in your terminal: cd ${finalTargetDir}`,
+      `- If you have VSCode installed, run: code ${finalProjectPath}`,
+      `- You can open the project in your terminal: cd ${finalProjectPath}`,
       "- Install dependencies manually if needed: bun i OR pnpm i",
       "- Apply linting and formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
@@ -320,7 +326,7 @@ export async function showSuccessAndNextSteps(
   });
 
   await handleNextActions(
-    finalTargetDir,
+    finalProjectPath,
     vscodeInstalled,
     frontendUsername,
     isDeployed,
@@ -330,7 +336,7 @@ export async function showSuccessAndNextSteps(
 }
 
 export async function handleNextActions(
-  targetDir: string,
+  projectPath: string,
   vscodeInstalled: boolean,
   frontendUsername: string,
   isDeployed: boolean,
@@ -373,7 +379,7 @@ export async function handleNextActions(
   });
 
   for (const action of nextActions) {
-    await handleNextAction(action, targetDir, primaryDomain, allDomains);
+    await handleNextAction(action, projectPath, primaryDomain, allDomains);
   }
 
   relinka(
@@ -390,7 +396,7 @@ export async function handleNextActions(
 
 export async function handleNextAction(
   action: string,
-  targetDir: string,
+  projectPath: string,
   primaryDomain: string,
   allDomains?: string[],
 ): Promise<void> {
@@ -405,13 +411,13 @@ export async function handleNextAction(
             : "Trying to open the project in your default IDE...",
         );
         try {
-          await execa("code", [targetDir]);
+          await execa("code", [projectPath]);
         } catch (error) {
           relinka(
             "error",
             "Error opening project in your IDE:",
             error instanceof Error ? error.message : String(error),
-            `Try to open the project manually with command like: code ${targetDir}`,
+            `Try to open the project manually with command like: code ${projectPath}`,
           );
         }
         break;
@@ -458,11 +464,11 @@ export async function handleNextAction(
  * Checks if a specific script exists in package.json
  */
 export async function checkScriptExists(
-  targetDir: string,
+  projectPath: string,
   scriptName: string,
 ): Promise<boolean> {
   try {
-    const packageJson = await readPackageJson(targetDir);
+    const packageJson = await readPackageJson(projectPath);
     return !!packageJson?.scripts?.[scriptName];
   } catch (error: unknown) {
     relinka(
@@ -478,9 +484,9 @@ export async function checkScriptExists(
  * Reads and parses package.json file
  */
 export async function readPackageJson(
-  targetDir: string,
+  projectPath: string,
 ): Promise<PackageJson | null> {
-  const packageJsonPath = path.join(targetDir, "package.json");
+  const packageJsonPath = path.join(projectPath, "package.json");
   try {
     if (await fs.pathExists(packageJsonPath)) {
       return await fs.readJson(packageJsonPath);
@@ -500,11 +506,11 @@ export async function readPackageJson(
  * Checks if specific dependencies exist in package.json
  */
 export async function checkDependenciesExist(
-  targetDir: string,
+  projectPath: string,
   dependencies: string[],
 ): Promise<{ exists: boolean; missing: string[] }> {
   try {
-    const packageJson = await readPackageJson(targetDir);
+    const packageJson = await readPackageJson(projectPath);
     if (!packageJson) {
       return { exists: false, missing: dependencies };
     }
@@ -533,13 +539,13 @@ export async function checkDependenciesExist(
  * Validates project directory structure
  */
 export async function validateProjectStructure(
-  targetDir: string,
+  projectPath: string,
   requiredPaths: string[] = ["src", "public"],
 ): Promise<{ isValid: boolean; missing: string[] }> {
   try {
     const missing = [];
     for (const dirPath of requiredPaths) {
-      const fullPath = path.join(targetDir, dirPath);
+      const fullPath = path.join(projectPath, dirPath);
       if (!(await fs.pathExists(fullPath))) {
         missing.push(dirPath);
       }
@@ -562,15 +568,15 @@ export async function validateProjectStructure(
  * Updates package.json with new values
  */
 export async function updatePackageJson(
-  targetDir: string,
+  projectPath: string,
   updates: Partial<PackageJson>,
 ): Promise<boolean> {
   try {
-    const packageJson = await readPackageJson(targetDir);
+    const packageJson = await readPackageJson(projectPath);
     if (!packageJson) return false;
 
     const updatedPackageJson = { ...packageJson, ...updates };
-    const packageJsonPath = path.join(targetDir, "package.json");
+    const packageJsonPath = path.join(projectPath, "package.json");
 
     await fs.writeJson(packageJsonPath, updatedPackageJson, { spaces: 2 });
     return true;

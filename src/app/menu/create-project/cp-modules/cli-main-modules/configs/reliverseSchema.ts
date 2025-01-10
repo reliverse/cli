@@ -76,12 +76,6 @@ const experimentalSchema = z.object({
   // Dependencies management
   ignoreDependencies: z.array(z.string()).default([]),
 
-  // Config revalidation
-  configLastRevalidate: z.string().datetime().optional(),
-  configRevalidateFrequency: z
-    .enum(["1h", "1d", "2d", "7d", "14d", "30d"])
-    .default("7d"),
-
   // Custom rules
   customRules: z.record(z.unknown()).default({}),
 

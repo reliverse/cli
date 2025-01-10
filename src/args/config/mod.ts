@@ -47,7 +47,7 @@ export default defineCommand({
           projectRepository: rules.experimental?.projectRepository ?? "",
           projectActivation: rules.experimental?.projectActivation ?? "auto",
           projectCategory: rules.experimental?.projectCategory ?? "website",
-          projectType: rules.experimental?.projectType ?? "development",
+          projectType: rules.experimental?.projectType ?? "library",
           projectDeployService:
             rules.experimental?.projectDeployService ?? "vercel",
           projectDisplayName: rules.experimental?.projectDisplayName ?? "",
@@ -164,11 +164,6 @@ export default defineCommand({
 
           // Dependencies management
           ignoreDependencies: rules.experimental?.ignoreDependencies ?? [],
-
-          // Config revalidation
-          configLastRevalidate: rules.experimental?.configLastRevalidate ?? "",
-          configRevalidateFrequency:
-            rules.experimental?.configRevalidateFrequency ?? "7d",
 
           // Custom rules
           customRules: rules.experimental?.customRules ?? {},

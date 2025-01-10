@@ -7,18 +7,17 @@ import { CONFIG_CATEGORIES } from "~/app/db/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   type DeploymentService,
+  type ReliverseMemory,
   type VSCodeSettings,
-  type ReliverseConfig,
 } from "~/types.js";
 
-import { shouldRevalidate } from "../configs/reliverseReadWrite.js";
 import { generateReliverseFile } from "./reliverseConfig.js";
 
 async function generateBiomeConfig(
-  targetDir: string,
+  projectPath: string,
   overwrite: boolean,
 ): Promise<void> {
-  const biomePath = path.join(targetDir, "biome.json");
+  const biomePath = path.join(projectPath, "biome.json");
   if (overwrite ?? !(await fs.pathExists(biomePath))) {
     const biomeConfig = {
       $schema: "https://biomejs.dev/schemas/1.5.3/schema.json",
@@ -45,10 +44,10 @@ async function generateBiomeConfig(
 }
 
 async function generateVSCodeSettings(
-  targetDir: string,
+  projectPath: string,
   overwrite: boolean,
 ): Promise<void> {
-  const vscodePath = path.join(targetDir, ".vscode");
+  const vscodePath = path.join(projectPath, ".vscode");
   await fs.ensureDir(vscodePath);
 
   const settingsPath = path.join(vscodePath, "settings.json");
@@ -118,7 +117,8 @@ async function generateVSCodeSettings(
 }
 
 async function generateConfigFiles(
-  targetDir: string,
+  memory: ReliverseMemory,
+  projectPath: string,
   overwrite: boolean,
   projectName: string,
   frontendUsername: string,
@@ -151,13 +151,14 @@ async function generateConfigFiles(
               frontendUsername,
               deployService,
               primaryDomain,
-              targetDir,
+              projectPath,
               i18nShouldBeEnabled,
               shouldInstallDeps,
               overwrite,
+              memory,
             }),
-          "biome.json": () => generateBiomeConfig(targetDir, overwrite),
-          "settings.json": () => generateVSCodeSettings(targetDir, overwrite),
+          "biome.json": () => generateBiomeConfig(projectPath, overwrite),
+          "settings.json": () => generateVSCodeSettings(projectPath, overwrite),
         };
 
         await Promise.all(
@@ -178,7 +179,8 @@ async function generateConfigFiles(
 }
 
 export async function generateProjectConfigs(
-  targetDir: string,
+  memory: ReliverseMemory,
+  projectPath: string,
   projectName: string,
   frontendUsername: string,
   deployService: DeploymentService,
@@ -193,7 +195,7 @@ export async function generateProjectConfigs(
       for (const file of CONFIG_CATEGORIES[
         category as keyof typeof CONFIG_CATEGORIES
       ]) {
-        const filePath = path.join(targetDir, file);
+        const filePath = path.join(projectPath, file);
         if (await fs.pathExists(filePath)) {
           existingFiles.push(file);
         }
@@ -207,7 +209,8 @@ export async function generateProjectConfigs(
       );
       // Generate missing files without overwriting existing ones
       await generateConfigFiles(
-        targetDir,
+        memory,
+        projectPath,
         false,
         projectName,
         frontendUsername,
@@ -219,7 +222,8 @@ export async function generateProjectConfigs(
     } else {
       // No existing files, generate everything
       await generateConfigFiles(
-        targetDir,
+        memory,
+        projectPath,
         true,
         projectName,
         frontendUsername,
@@ -239,7 +243,7 @@ export async function generateProjectConfigs(
 }
 
 export async function updateProjectConfig(
-  targetDir: string,
+  projectPath: string,
   configType: "reliverse" | "biome" | "vscode",
   updates: Record<string, unknown>,
 ): Promise<boolean> {
@@ -250,7 +254,7 @@ export async function updateProjectConfig(
       vscode: ".vscode/settings.json",
     };
 
-    const configPath = path.join(targetDir, configPaths[configType]);
+    const configPath = path.join(projectPath, configPaths[configType]);
 
     if (!(await fs.pathExists(configPath))) {
       relinka("error", `No ${configPaths[configType]} config file found`);
@@ -267,45 +271,6 @@ export async function updateProjectConfig(
       ...existingContent,
       ...updates,
     };
-
-    // Only update configLastRevalidate if it's a reliverse config and there are actual changes
-    if (configType === "reliverse") {
-      const config = updatedConfig as ReliverseConfig;
-      const existingConfig = existingContent as ReliverseConfig;
-
-      const hasChanges = Object.keys(updates).some((key) => {
-        // For experimental object, check its properties
-        if (key === "experimental") {
-          const existingExp = existingConfig.experimental ?? {};
-          const updatesExp = (updates[key] as Record<string, unknown>) ?? {};
-          return Object.keys(updatesExp).some(
-            (expKey) =>
-              JSON.stringify(
-                (existingExp as Record<string, unknown>)[expKey],
-              ) !== JSON.stringify(updatesExp[expKey]),
-          );
-        }
-        // For other root properties
-        return (
-          JSON.stringify(existingConfig[key as keyof ReliverseConfig]) !==
-          JSON.stringify(updates[key])
-        );
-      });
-
-      if (hasChanges) {
-        config.experimental = {
-          ...(config.experimental ?? {}),
-          configLastRevalidate: shouldRevalidate(
-            existingConfig.experimental?.configLastRevalidate,
-            existingConfig.experimental?.configRevalidateFrequency,
-          )
-            ? new Date().toISOString()
-            : existingConfig.experimental?.configLastRevalidate,
-          configRevalidateFrequency:
-            config.experimental?.configRevalidateFrequency ?? "7d",
-        };
-      }
-    }
 
     await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2));
     relinka("success-verbose", `Updated ${configPaths[configType]} config`);

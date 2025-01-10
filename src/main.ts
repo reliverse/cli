@@ -7,7 +7,7 @@ import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/h
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.16",
+    version: "1.4.17",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

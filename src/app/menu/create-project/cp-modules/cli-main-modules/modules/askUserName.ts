@@ -1,16 +1,16 @@
 import { inputPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
+import type { ReliverseMemory } from "~/types.js";
+
+import { updateReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import {
-  readReliverseMemory,
-  updateReliverseMemory,
-} from "~/args/memory/impl.js";
 
 const DEFAULT_NAME = "johnny911";
 
-export async function askUserName(): Promise<string> {
-  const memory = await readReliverseMemory();
+export async function askUserName(
+  memory: ReliverseMemory,
+): Promise<string | null> {
   const previousName = typeof memory.name === "string" ? memory.name : "";
   const hasPreviousName = previousName !== "";
 

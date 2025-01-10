@@ -27,10 +27,10 @@ type CommentSections = {
  * Safely writes config to file with backup and atomic operations
  */
 export async function safeWriteConfig(
-  targetDir: string,
+  projectPath: string,
   config: ReliverseConfig,
 ): Promise<void> {
-  const configPath = path.join(targetDir, ".reliverse");
+  const configPath = path.join(projectPath, ".reliverse");
   const backupPath = configPath + BACKUP_EXTENSION;
   const tempPath = configPath + TEMP_EXTENSION;
 
@@ -62,7 +62,6 @@ export async function safeWriteConfig(
           projectFramework: [c("Tech stack of your project")],
           codeStyle: [c("Code style preferences")],
           ignoreDependencies: [c("Cleaner codemod will ignore these deps")],
-          configLastRevalidate: [c("Config revalidation (1h | 1d | 2d | 7d)")],
           customRules: [c("Custom rules for Reliverse AI")],
           deployBehavior: [c("Prompts behavior (prompt | autoYes | autoNo)")],
         },
@@ -142,10 +141,10 @@ export async function safeWriteConfig(
 /**
  * Safely reads and validates config from file
  */
-export async function safeReadConfig(
-  targetDir: string,
+export async function safeGetReliverseConfig(
+  projectPath: string,
 ): Promise<ReliverseConfig | null> {
-  const configPath = path.join(targetDir, ".reliverse");
+  const configPath = path.join(projectPath, ".reliverse");
   const backupPath = configPath + BACKUP_EXTENSION;
 
   try {
@@ -156,20 +155,20 @@ export async function safeReadConfig(
       // Handle empty file or just {}
       if (!content.trim() || content.trim() === "{}") {
         const defaultConfig = await getDefaultReliverseConfig(
-          path.basename(targetDir),
+          path.basename(projectPath),
           "user",
         );
-        await safeWriteConfig(targetDir, defaultConfig);
+        await safeWriteConfig(projectPath, defaultConfig);
         return defaultConfig;
       }
 
       const parsed = destr(content);
       if (!parsed || typeof parsed !== "object") {
         const defaultConfig = await getDefaultReliverseConfig(
-          path.basename(targetDir),
+          path.basename(projectPath),
           "user",
         );
-        await safeWriteConfig(targetDir, defaultConfig);
+        await safeWriteConfig(projectPath, defaultConfig);
         return defaultConfig;
       }
 
@@ -198,7 +197,7 @@ export async function safeReadConfig(
 
       // If we have missing fields, merge with defaults
       const defaultConfig = await getDefaultReliverseConfig(
-        path.basename(targetDir),
+        path.basename(projectPath),
         "user",
       );
 
@@ -230,7 +229,7 @@ export async function safeReadConfig(
       // Validate merged config
       const mergedValidation = reliverseConfigSchema.safeParse(mergedConfig);
       if (mergedValidation.success) {
-        await safeWriteConfig(targetDir, mergedValidation.data);
+        await safeWriteConfig(projectPath, mergedValidation.data);
         relinka(
           "info",
           "Updated config with missing fields while preserving existing values",
@@ -263,10 +262,10 @@ export async function safeReadConfig(
 
     // If no valid config found, create default
     const defaultConfig = await getDefaultReliverseConfig(
-      path.basename(targetDir),
+      path.basename(projectPath),
       "user",
     );
-    await safeWriteConfig(targetDir, defaultConfig);
+    await safeWriteConfig(projectPath, defaultConfig);
     return defaultConfig;
   } catch (error) {
     relinka(
@@ -282,11 +281,11 @@ export async function safeReadConfig(
  * Safely updates specific fields in the config
  */
 export async function safeUpdateConfig(
-  targetDir: string,
+  projectPath: string,
   updates: Partial<ReliverseConfig>,
 ): Promise<boolean> {
   try {
-    const currentConfig = await safeReadConfig(targetDir);
+    const currentConfig = await safeGetReliverseConfig(projectPath);
     if (!currentConfig) {
       return false;
     }
@@ -299,7 +298,7 @@ export async function safeUpdateConfig(
       },
     };
 
-    await safeWriteConfig(targetDir, updatedConfig);
+    await safeWriteConfig(projectPath, updatedConfig);
     return true;
   } catch (error) {
     relinka(

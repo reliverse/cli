@@ -27,6 +27,7 @@ export async function cd(dir: string): Promise<void> {
  * Returns the current working directory.
  */
 export function pwd() {
+  // Re-check the current working directory
   const cwd = getCurrentWorkingDirectory();
   relinka("info-verbose", `Current working directory: ${cwd}`);
 }
@@ -40,14 +41,14 @@ export function pwd() {
  * @returns A Promise that resolves with an array of file and directory names.
  */
 export async function ls(dir?: string): Promise<string[]> {
-  const targetDir = dir ?? process.cwd();
+  const projectPath = dir ?? process.cwd();
   try {
-    await fs.access(targetDir);
-    return await fs.readdir(targetDir);
+    await fs.access(projectPath);
+    return await fs.readdir(projectPath);
   } catch (error) {
     relinka(
       "warn",
-      `Directory does not exist: ${targetDir}`,
+      `Directory does not exist: ${projectPath}`,
       handleError(error),
     );
     return [];

@@ -7,8 +7,9 @@ import {
 import { installDependencies } from "nypm";
 import pc from "picocolors";
 
-import type { DetectedProject } from "~/types.js";
+import type { DetectedProject, ReliverseMemory } from "~/types.js";
 
+import { experimental } from "~/app/db/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   readShadcnConfig,
@@ -30,7 +31,6 @@ import {
   initGit,
   createGithubRepository,
 } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
-import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { checkScriptExists } from "../../../cp-impl.js";
 import { checkGithubRepoOwnership } from "../../git-deploy-prompts/github.js";
@@ -49,6 +49,8 @@ import { handleIntegrations } from "../handlers/handleIntegrations.js";
 export async function showDetectedProjectsMenu(
   projects: DetectedProject[],
   isDev: boolean,
+  memory: ReliverseMemory,
+  cwd: string,
 ): Promise<void> {
   let selectedProject: DetectedProject | undefined;
 
@@ -123,7 +125,6 @@ export async function showDetectedProjectsMenu(
       } unpushed commits)`
     : "";
 
-  const experimental = pc.dim(pc.red("[🚨 Experimental]"));
   const needsDepsInstall = selectedProject.needsDepsInstall ?? false;
 
   const action = await selectPrompt({
@@ -184,12 +185,11 @@ export async function showDetectedProjectsMenu(
     // Check GitHub repository existence before showing menu
     let showCreateGithubOption = true;
     let hasGithubRepo = false;
-    const memory = await readReliverseMemory();
     const hasDbPush = await checkScriptExists(selectedProject.path, "db:push");
     const shouldRunDbPush = false;
 
     if (memory?.githubKey) {
-      const githubUsername = await askGithubName();
+      const githubUsername = await askGithubName(memory);
       if (githubUsername) {
         const octokit = createOctokitInstance(memory.githubKey);
         const { exists, isOwner } = await checkGithubRepoOwnership(
@@ -247,7 +247,12 @@ export async function showDetectedProjectsMenu(
     });
 
     if (gitAction === "init") {
-      const success = await initGit(selectedProject.path, isDev);
+      const success = await initGit(
+        cwd,
+        isDev,
+        selectedProject.path,
+        selectedProject.name,
+      );
       if (success) {
         relinka("success", "Git repository initialized successfully");
         selectedProject.hasGit = true;
@@ -259,10 +264,11 @@ export async function showDetectedProjectsMenu(
 
       if (message) {
         const success = await createGitCommit(
-          message,
-          selectedProject.path,
+          cwd,
           isDev,
           selectedProject.name,
+          selectedProject.path,
+          message,
         );
 
         if (success) {
@@ -276,9 +282,10 @@ export async function showDetectedProjectsMenu(
       }
     } else if (gitAction === "push") {
       const success = await pushGitCommits(
-        selectedProject.path,
+        cwd,
         isDev,
         selectedProject.name,
+        selectedProject.path,
       );
       if (success) {
         relinka("success", "Commits pushed successfully");
@@ -288,9 +295,11 @@ export async function showDetectedProjectsMenu(
       }
     } else if (gitAction === "github") {
       const success = await createGithubRepository(
+        cwd,
+        isDev,
+        memory,
         selectedProject.name,
         selectedProject.path,
-        isDev,
       );
       if (success) {
         relinka("success", "GitHub repository created successfully");
@@ -313,6 +322,7 @@ export async function showDetectedProjectsMenu(
         selectedProject.config,
         selectedProject.path,
         "",
+        memory,
       );
 
       if (deployService !== "none") {

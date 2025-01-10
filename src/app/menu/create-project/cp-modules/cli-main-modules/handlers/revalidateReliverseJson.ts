@@ -11,7 +11,6 @@ import { detectProjectType } from "../configs/miscellaneousConfigHelpers.js";
 import { parseCodeStyleFromConfigs } from "../configs/parseCodeStyleFromConfigs.js";
 import {
   getDefaultReliverseConfig,
-  shouldRevalidate,
   writeReliverseConfig,
 } from "../configs/reliverseReadWrite.js";
 
@@ -132,16 +131,6 @@ export async function revalidateReliverseJson(cwd: string, rulesPath: string) {
           parsedContent.experimental?.scriptsBehavior ??
           defaultRules.experimental?.scriptsBehavior ??
           "prompt",
-
-        // Config revalidation
-        configLastRevalidate: shouldRevalidate(
-          parsedContent.experimental?.configLastRevalidate,
-          parsedContent.experimental?.configRevalidateFrequency,
-        )
-          ? new Date().toISOString()
-          : parsedContent.experimental?.configLastRevalidate,
-        configRevalidateFrequency:
-          parsedContent.experimental?.configRevalidateFrequency ?? "7d",
 
         // Dependencies management
         ignoreDependencies:

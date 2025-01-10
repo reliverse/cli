@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.4.16",
+  "version": "1.4.17",
   "author": "blefnk",
   "type": "module",
   "description": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
@@ -44,9 +44,17 @@
     "url": "https://github.com/reliverse/cli/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE.md",
+    "dist-npm"
+  ],
   "homepage": "https://github.com/reliverse/cli",
-  "keywords": ["cli", "reliverse"],
+  "keywords": [
+    "cli",
+    "reliverse"
+  ],
   "license": "MIT",
   "dependencies": {
     "@clack/core": "^0.4.0",

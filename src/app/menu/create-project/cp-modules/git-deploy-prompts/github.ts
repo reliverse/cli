@@ -7,8 +7,8 @@ import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
 
+import { updateReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { updateReliverseMemory } from "~/args/memory/impl.js";
 
 import { cd } from "../cli-main-modules/handlers/terminal.js";
 import { createOctokitInstance } from "./octokit-instance.js";
@@ -316,15 +316,16 @@ export async function createGithubRepo(
   memory: ReliverseMemory,
   repoName: string,
   repoOwner: string,
-  targetDir: string,
+  projectPath: string,
   isDev: boolean,
+  cwd: string,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
     const githubKey = await ensureGithubToken(memory);
     const octokit = createOctokitInstance(githubKey);
 
-    await cd(targetDir);
+    await cd(projectPath);
 
     // 2. Get an available repository name and check its status
     relinka("info", "Checking repository status...");
@@ -340,7 +341,7 @@ export async function createGithubRepo(
       try {
         // Clone repo to temp dir and copy files
         const repoUrl = `https://${memory.githubKey}:x-oauth-basic@github.com/${repoOwner}/${repoName}.git`;
-        const success = await cloneToTempAndCopyFiles(repoUrl, targetDir);
+        const success = await cloneToTempAndCopyFiles(repoUrl, projectPath);
 
         if (!success) {
           throw new Error("Failed to retrieve repository data");
@@ -415,9 +416,10 @@ export async function createGithubRepo(
     const remoteUrl = `https://github.com/${repoOwner}/${repoName}.git`;
     relinka("info", "Setting up Git remote and pushing initial commit...");
     return await setupGitRemote(
+      cwd,
       isDev,
       repoName,
-      targetDir,
+      projectPath,
       remoteUrl,
       "origin",
     );

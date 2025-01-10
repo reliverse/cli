@@ -2,13 +2,16 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig, TemplateOption } from "~/types.js";
+import type {
+  ReliverseConfig,
+  ReliverseMemory,
+  TemplateOption,
+} from "~/types.js";
 
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   cd,
-  getCurrentWorkingDirectory,
   pwd,
   rm,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
@@ -18,8 +21,12 @@ import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/db/constants.js";
 
-export async function showDevToolsMenu(config: ReliverseConfig) {
-  const cwd = getCurrentWorkingDirectory();
+export async function showDevToolsMenu(
+  cwd: string,
+  isDev: boolean,
+  config: ReliverseConfig,
+  memory: ReliverseMemory,
+) {
   const testsRuntimePath = path.join(cwd, "tests-runtime");
   const testsRuntimeExists = await fs.pathExists(testsRuntimePath);
 
@@ -39,7 +46,6 @@ export async function showDevToolsMenu(config: ReliverseConfig) {
   });
 
   if (option === "rm-tests-runtime") {
-    const cwd = getCurrentWorkingDirectory();
     const testsRuntimePath = path.join(cwd, "tests-runtime");
     if (await fs.pathExists(testsRuntimePath)) {
       const shouldRemoveTestsRuntime = await confirmPrompt({
@@ -50,33 +56,49 @@ export async function showDevToolsMenu(config: ReliverseConfig) {
       }
     }
   } else if (option === "download-template") {
-    await downloadTemplateOption("blefnk/relivator", config);
+    await downloadTemplateOption(
+      "blefnk/relivator",
+      config,
+      memory,
+      isDev,
+      cwd,
+    );
   }
 }
 
 async function downloadTemplateOption(
   template: TemplateOption,
   config: ReliverseConfig,
+  memory: ReliverseMemory,
+  isDev: boolean,
+  cwd: string,
 ) {
   const projectName = await askProjectName();
   const primaryDomain = `${projectName}.vercel.app`;
-  const targetDir = await downloadTemplate(template, projectName, true);
+  const projectPath = await downloadTemplate({
+    webProjectTemplate: template,
+    projectName,
+    isDev,
+    cwd,
+  });
 
-  relinka("info", `Downloaded template to ${targetDir}`);
-  await cd(targetDir);
+  relinka("info", `Downloaded template to ${projectPath}`);
+  await cd(projectPath);
   pwd();
 
-  await composeEnvFile(targetDir, FALLBACK_ENV_EXAMPLE_URL);
+  await composeEnvFile(projectPath, FALLBACK_ENV_EXAMPLE_URL);
 
   const { deployService } = await promptGitDeploy({
     projectName,
     config,
-    targetDir,
+    projectPath,
     primaryDomain,
     hasDbPush: false,
     shouldRunDbPush: false,
     shouldInstallDeps: false,
     isDev: true,
+    memory,
+    cwd,
   });
 
   if (deployService === "none") {

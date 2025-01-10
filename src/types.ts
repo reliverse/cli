@@ -158,10 +158,18 @@ export type TemplateOption =
   | "blefnk/create-next-app"
   | "blefnk/astro-starlight-template"
   | "blefnk/versator"
-  | "reliverse/template-browser-extension";
+  | "reliverse/template-browser-extension"
+  | "microsoft/vscode-extension-samples"
+  | "microsoft/vscode-extension-template";
 
-// design = graphic|video|audio|3d design
-export type ProjectTypeOptions = "" | "development" | "design" | "marketing";
+export type ProjectTypeOptions =
+  | ""
+  | "library"
+  | "nextjs"
+  | "astro"
+  | "react"
+  | "vue"
+  | "svelte";
 
 export type ProjectCategory =
   | ""
@@ -316,17 +324,6 @@ export type ReliverseConfig = {
             }
           | undefined;
 
-        // Config revalidation
-        configLastRevalidate?: string | undefined;
-        configRevalidateFrequency?:
-          | "1h"
-          | "1d"
-          | "2d"
-          | "7d"
-          | "14d"
-          | "30d"
-          | undefined;
-
         // Dependencies management
         ignoreDependencies?: string[] | undefined;
 
@@ -466,7 +463,7 @@ export type FileConflict = {
 export type ConflictHandlerOptions = {
   files: FileConflict[]; // List of files to check for conflicts
   automaticConflictHandling: boolean; // Whether to ask the user or automatically remove files
-  targetDir: string; // Directory where the conflicts may happen
+  projectPath: string; // Directory where the conflicts may happen
 };
 
 export type CloneError = {

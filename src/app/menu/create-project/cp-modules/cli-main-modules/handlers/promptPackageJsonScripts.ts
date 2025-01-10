@@ -65,7 +65,7 @@ const BOOTSTRAP_SCRIPTS = ["latest", "db:push", "db:seed", "check"];
 const DEFAULT_BOOTSTRAP_SCRIPTS = ["db:push", "check"];
 
 export async function promptPackageJsonScripts(
-  targetDir: string,
+  projectPath: string,
   shouldRunDbPush: boolean,
   isProjectBootstrapping: boolean,
 ): Promise<ScriptStatus> {
@@ -79,15 +79,15 @@ export async function promptPackageJsonScripts(
 
   // Check for available scripts with correct script names
   const scripts = {
-    latest: await checkScriptExists(targetDir, "latest"),
-    dbPush: await checkScriptExists(targetDir, "db:push"),
-    dbSeed: await checkScriptExists(targetDir, "db:seed"),
-    dbGenerate: await checkScriptExists(targetDir, "db:generate"),
-    dbMigrate: await checkScriptExists(targetDir, "db:migrate"),
-    check: await checkScriptExists(targetDir, "check"),
-    typecheck: await checkScriptExists(targetDir, "typecheck"),
-    lint: await checkScriptExists(targetDir, "lint"),
-    format: await checkScriptExists(targetDir, "format"),
+    latest: await checkScriptExists(projectPath, "latest"),
+    dbPush: await checkScriptExists(projectPath, "db:push"),
+    dbSeed: await checkScriptExists(projectPath, "db:seed"),
+    dbGenerate: await checkScriptExists(projectPath, "db:generate"),
+    dbMigrate: await checkScriptExists(projectPath, "db:migrate"),
+    check: await checkScriptExists(projectPath, "check"),
+    typecheck: await checkScriptExists(projectPath, "typecheck"),
+    lint: await checkScriptExists(projectPath, "lint"),
+    format: await checkScriptExists(projectPath, "format"),
   };
 
   const scriptOptions: ScriptOption[] = [];
@@ -162,7 +162,7 @@ export async function promptPackageJsonScripts(
 
         relinka("info", `Running ${script}...`);
         await execa("bun", [script], {
-          cwd: targetDir,
+          cwd: projectPath,
           stdio: "inherit",
         });
         msg({ type: "M_BAR" });

@@ -2,13 +2,14 @@ import destr from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { DeploymentService, ReliverseConfig } from "~/types.js";
+import type {
+  DeploymentService,
+  ReliverseConfig,
+  ReliverseMemory,
+} from "~/types.js";
 
+import { updateReliverseMemory } from "~/app/app-utils.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import {
-  readReliverseMemory,
-  updateReliverseMemory,
-} from "~/args/memory/impl.js";
 
 import { DEFAULT_CONFIG } from "../configs/reliverseDefaultConfig.js";
 import {
@@ -21,11 +22,12 @@ type GenerateReliverseFileOptions = {
   frontendUsername: string;
   deployService: DeploymentService;
   primaryDomain: string;
-  targetDir: string;
+  projectPath: string;
   i18nShouldBeEnabled: boolean;
   shouldInstallDeps: boolean;
   isDeployed?: boolean;
   overwrite?: boolean;
+  memory: ReliverseMemory;
 };
 
 export async function generateReliverseFile({
@@ -33,14 +35,14 @@ export async function generateReliverseFile({
   frontendUsername,
   deployService,
   primaryDomain,
-  targetDir,
+  projectPath,
   i18nShouldBeEnabled,
   shouldInstallDeps,
   overwrite,
+  memory,
 }: GenerateReliverseFileOptions): Promise<boolean> {
   try {
     // Read memory to get stored usernames
-    const memory = await readReliverseMemory();
     const githubUsername = memory?.githubUsername ?? "";
     const vercelTeamName = memory?.vercelUsername ?? "";
 
@@ -120,18 +122,14 @@ export async function generateReliverseFile({
       monorepo: rules.experimental.monorepo,
       preferredLibraries: rules.experimental.preferredLibraries,
       codeStyle: rules.experimental.codeStyle,
-
-      // Config revalidation
-      configLastRevalidate: rules.experimental.configLastRevalidate,
-      configRevalidateFrequency: rules.experimental.configRevalidateFrequency,
     });
 
     // Define the path for .reliverse
-    const configPath = path.join(targetDir, ".reliverse");
+    const configPath = path.join(projectPath, ".reliverse");
 
     // If overwrite is requested, always write fresh
     if (overwrite) {
-      await writeReliverseConfig(targetDir, configContent);
+      await writeReliverseConfig(projectPath, configContent);
       relinka(
         "success-verbose",
         "Overwrote existing .reliverse with new config",
@@ -152,14 +150,9 @@ export async function generateReliverseFile({
             experimental: {
               ...(existingContent as ReliverseConfig).experimental,
               ...configContent?.experimental,
-              // Preserve configLastRevalidate from existing config if it exists
-              configLastRevalidate:
-                (existingContent as ReliverseConfig).experimental
-                  ?.configLastRevalidate ??
-                configContent?.experimental?.configLastRevalidate,
             },
           };
-          await writeReliverseConfig(targetDir, mergedContent);
+          await writeReliverseConfig(projectPath, mergedContent);
           relinka(
             "success-verbose",
             "Updated existing .reliverse with merged config",
@@ -171,10 +164,10 @@ export async function generateReliverseFile({
           "Error reading existing .reliverse, creating new one",
           error instanceof Error ? error.message : String(error),
         );
-        await writeReliverseConfig(targetDir, configContent);
+        await writeReliverseConfig(projectPath, configContent);
       }
     } else {
-      await writeReliverseConfig(targetDir, configContent);
+      await writeReliverseConfig(projectPath, configContent);
       relinka(
         "success-verbose",
         "Generated .reliverse with project-specific settings",

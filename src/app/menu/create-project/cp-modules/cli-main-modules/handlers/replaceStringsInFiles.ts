@@ -4,11 +4,11 @@ import path from "pathe";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 
 export async function replaceStringsInFiles(
-  targetDir: string,
+  projectPath: string,
   oldValues: Record<string, string>,
 ): Promise<void> {
   // Validate inputs
-  if (!targetDir || typeof targetDir !== "string") {
+  if (!projectPath || typeof projectPath !== "string") {
     throw new Error("Target directory is required and must be a string");
   }
   if (!oldValues || typeof oldValues !== "object") {
@@ -83,7 +83,7 @@ export async function replaceStringsInFiles(
         await fs.promises.writeFile(filePath, newContent, "utf8");
         relinka(
           "info-verbose",
-          `Updated strings in ${path.relative(targetDir, filePath)}`,
+          `Updated strings in ${path.relative(projectPath, filePath)}`,
         );
       }
     } catch (error) {
@@ -115,11 +115,11 @@ export async function replaceStringsInFiles(
   }
 
   try {
-    const exists = await fs.pathExists(targetDir);
+    const exists = await fs.pathExists(projectPath);
     if (!exists) {
-      throw new Error(`Target directory does not exist: ${targetDir}`);
+      throw new Error(`Target directory does not exist: ${projectPath}`);
     }
-    await traverseDirectory(targetDir);
+    await traverseDirectory(projectPath);
   } catch (error) {
     relinka("error", "Failed to process directory:", String(error));
     throw error;

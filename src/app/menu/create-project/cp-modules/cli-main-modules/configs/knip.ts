@@ -43,17 +43,17 @@ async function backupConfig(configPath: string): Promise<void> {
   }
 }
 
-async function validateTargetDir(targetDir: string): Promise<void> {
-  if (!targetDir) {
+async function validateProjectPath(projectPath: string): Promise<void> {
+  if (!projectPath) {
     throw new Error("Target directory is required");
   }
 
-  if (!(await fs.pathExists(targetDir))) {
-    throw new Error(`Target directory does not exist: ${targetDir}`);
+  if (!(await fs.pathExists(projectPath))) {
+    throw new Error(`Target directory does not exist: ${projectPath}`);
   }
 
-  if (!(await fs.stat(targetDir).then((stat) => stat.isDirectory()))) {
-    throw new Error(`Target path is not a directory: ${targetDir}`);
+  if (!(await fs.stat(projectPath).then((stat) => stat.isDirectory()))) {
+    throw new Error(`Target path is not a directory: ${projectPath}`);
   }
 }
 
@@ -64,8 +64,8 @@ export async function configureKnip(
   >,
 ) {
   try {
-    const targetDir = path.dirname(paths.knipConfig);
-    await validateTargetDir(targetDir);
+    const projectPath = path.dirname(paths.knipConfig);
+    await validateProjectPath(projectPath);
 
     const knipConfigPath = paths.knipConfig;
     const knipConfigExists = await fileExists(knipConfigPath);

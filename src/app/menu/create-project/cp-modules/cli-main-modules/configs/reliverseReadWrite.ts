@@ -5,50 +5,19 @@ import { readPackageJSON } from "pkg-types";
 import type { ReliverseConfig } from "~/types.js";
 
 import { getBiomeConfig } from "./miscellaneousConfigHelpers.js";
-import { safeReadConfig, safeWriteConfig } from "./reliverseFileOps.js";
-
-// Helper function to check if revalidation is needed
-export function shouldRevalidate(
-  lastRevalidate: string | undefined,
-  frequency: string | undefined,
-): boolean {
-  if (!lastRevalidate || !frequency) {
-    return true;
-  }
-
-  const now = new Date();
-  const lastCheck = new Date(lastRevalidate);
-  const diff = now.getTime() - lastCheck.getTime();
-
-  switch (frequency) {
-    case "1h":
-      return diff > 60 * 60 * 1000;
-    case "1d":
-      return diff > 24 * 60 * 60 * 1000;
-    case "2d":
-      return diff > 2 * 24 * 60 * 60 * 1000;
-    case "7d":
-      return diff > 7 * 24 * 60 * 60 * 1000;
-    case "14d":
-      return diff > 14 * 24 * 60 * 60 * 1000;
-    case "30d":
-      return diff > 30 * 24 * 60 * 60 * 1000;
-    default:
-      return true;
-  }
-}
+import { safeGetReliverseConfig, safeWriteConfig } from "./reliverseFileOps.js";
 
 export async function writeReliverseConfig(
-  targetDir: string,
+  projectPath: string,
   rules: ReliverseConfig,
 ): Promise<void> {
-  await safeWriteConfig(targetDir, rules);
+  await safeWriteConfig(projectPath, rules);
 }
 
 export async function readReliverseConfig(
-  targetDir: string,
+  projectPath: string,
 ): Promise<ReliverseConfig | null> {
-  return safeReadConfig(targetDir);
+  return safeGetReliverseConfig(projectPath);
 }
 
 export async function getDefaultReliverseConfig(
@@ -127,10 +96,6 @@ export async function getDefaultReliverseConfig(
 
       // Dependencies management
       ignoreDependencies: [],
-
-      // Config revalidation
-      configLastRevalidate: new Date().toISOString(),
-      configRevalidateFrequency: "7d",
 
       // Custom rules
       customRules: {},

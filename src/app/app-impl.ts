@@ -2,27 +2,19 @@ import { pm, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/types.js";
+import type { ReliverseConfig, ReliverseMemory } from "~/types.js";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
-import { generateDefaultRulesForProject } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/generateDefaultRulesForProject.js";
-import { detectProjectType } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/miscellaneousConfigHelpers.js";
-import {
-  readReliverseConfig,
-  writeReliverseConfig,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/reliverseReadWrite.js";
 import { showDetectedProjectsMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import {
   detectProject,
   detectProjectsWithReliverse,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectReliverseProjects.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { getCurrentWorkingDirectory } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import {
   showEndPrompt,
   showStartPrompt,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
-import { readReliverseMemory } from "~/args/memory/impl.js";
 
 import { showDevToolsMenu } from "../dev.js";
 import {
@@ -32,45 +24,32 @@ import {
 import { buildBrandNewThing } from "./menu/menu-mod.js";
 
 export async function app({
+  cwd,
   isDev,
+  memory,
   config,
-}: { isDev: boolean; config: ReliverseConfig }) {
-  const cwd = getCurrentWorkingDirectory();
-
-  await showStartPrompt({ dev: isDev });
+}: {
+  cwd: string;
+  isDev: boolean;
+  memory: ReliverseMemory;
+  config: ReliverseConfig;
+}) {
+  await showStartPrompt(isDev);
 
   // In non-dev mode, check if there's a project in the root directory
   if (!isDev) {
     const rootProject = await detectProject(cwd);
     if (rootProject) {
       // If project exists in root, directly open its menu
-      await showDetectedProjectsMenu([rootProject], isDev);
+      await showDetectedProjectsMenu([rootProject], isDev, memory, cwd);
       await showEndPrompt();
-      process.exit(0);
+      return;
     }
   }
 
   relinka("info-verbose", "Detected project manager:", pm);
 
-  // Check for .reliverse and project type
-  let rules = await readReliverseConfig(cwd);
-  const projectType = await detectProjectType(cwd);
-
-  // If no rules file exists but we detected a project type, generate default rules
-  if (!rules && projectType) {
-    rules = await generateDefaultRulesForProject(cwd);
-    if (rules) {
-      await writeReliverseConfig(cwd, rules);
-      relinka(
-        "success",
-        "Generated .reliverse based on detected project type. Please review it and adjust as needed.",
-      );
-    }
-  }
-
   const options = await getMainMenuOptions(cwd, isDev);
-
-  const memory = await readReliverseMemory();
 
   const choice = await selectPrompt({
     options,
@@ -92,15 +71,15 @@ export async function app({
   });
 
   if (choice === "create") {
-    await buildBrandNewThing(isDev, config);
+    await buildBrandNewThing(cwd, isDev, memory, config);
   } else if (choice === "detected-projects") {
     const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
     if (await fs.pathExists(searchPath)) {
       const detectedProjects = await detectProjectsWithReliverse(searchPath);
-      await showDetectedProjectsMenu(detectedProjects, isDev);
+      await showDetectedProjectsMenu(detectedProjects, isDev, memory, cwd);
     }
   } else if (choice === "isDevTools") {
-    await showDevToolsMenu(config);
+    await showDevToolsMenu(cwd, isDev, config, memory);
   }
 
   await showEndPrompt();

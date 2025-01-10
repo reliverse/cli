@@ -5,13 +5,10 @@ import path from "pathe";
 
 import { getRepoUrl } from "~/app/db/constants.js";
 import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { getCurrentWorkingDirectory } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 
 import { downloadGitRepo } from "../downloads/downloadGitRepo.js";
 import { replaceImportSymbol } from "../handlers/codemods/replaceImportSymbol.js";
-
-const cwd = getCurrentWorkingDirectory();
 
 type UpdateConfig = {
   actions: {
@@ -23,7 +20,7 @@ type UpdateConfig = {
   }[];
 };
 
-export async function showUpdateCloneMenu(isDev: boolean) {
+export async function showUpdateCloneMenu(isDev: boolean, cwd: string) {
   relinka(
     "info",
     "🔥 The current mode is in active development and may not be stable. ✨ Select the supported repository you have cloned from GitHub to update it with the latest changes.",
@@ -54,6 +51,7 @@ export async function showUpdateCloneMenu(isDev: boolean) {
       "test-name",
       "blefnk/relivator",
       isDev,
+      cwd,
     );
     if (projectPath) {
       await loadAndRunConfig(
@@ -61,13 +59,13 @@ export async function showUpdateCloneMenu(isDev: boolean) {
       );
     }
   } else {
-    await downloadAndRunConfig(option);
+    await downloadAndRunConfig(option, cwd);
   }
 
   relinka("success", "The repository has been updated successfully.");
 }
 
-async function downloadAndRunConfig(repoShortUrl: string) {
+async function downloadAndRunConfig(repoShortUrl: string, cwd: string) {
   const configUrl = `https://raw.githubusercontent.com/${repoShortUrl}/main/scripts/update-config.json`;
   const configPath = path.join(cwd, "update-config.json");
 
