@@ -4,8 +4,9 @@ import { createHydrationHelpers } from "@trpc/react-query/rsc";
 import { headers } from "next/headers";
 import { cache } from "react";
 
-import { type AppRouter } from "../server/api/root.js";
-import { createTRPCContext } from "../server/api/trpc.js";
+import { type AppRouter } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/server/api/root.js";
+import { createTRPCContext } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/server/api/trpc.js";
+
 import { createQueryClient } from "./query-client.js";
 
 /**

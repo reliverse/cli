@@ -4,6 +4,7 @@ import eslint from "@eslint/js";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
 import stylistic from "@stylistic/eslint-plugin";
+import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 import perfectionist from "eslint-plugin-perfectionist";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,6 +35,7 @@ const config = tseslint.config(
       perfectionist,
       // @ts-expect-error wrong issue
       "@stylistic": stylistic,
+      "no-relative-import-paths": noRelativeImportPaths,
     },
     rules: {
       "@typescript-eslint/restrict-template-expressions": "off",
@@ -86,6 +88,10 @@ const config = tseslint.config(
       "@stylistic/quotes": "off",
       "@stylistic/quote-props": "off",
       "@stylistic/indent-binary-ops": "off",
+      "no-relative-import-paths/no-relative-import-paths": [
+        "warn",
+        { allowSameFolder: true, rootDir: "src", prefix: "~" },
+      ],
     },
   },
   {
@@ -125,6 +131,12 @@ const config = tseslint.config(
           ],
         },
       ],
+    },
+  },
+  {
+    files: ["**/reliverseConfig.ts"],
+    rules: {
+      "max-lines": "off",
     },
   },
 );

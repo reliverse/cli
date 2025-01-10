@@ -2,14 +2,9 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type {
-  ReliverseConfig,
-  ReliverseMemory,
-  TemplateOption,
-} from "~/types.js";
+import type { ReliverseMemory, TemplateOption } from "~/types.js";
 
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   cd,
   pwd,
@@ -18,6 +13,9 @@ import {
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+
+import type { ReliverseConfig } from "./utils/reliverseConfig.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/constants.js";
 
@@ -40,6 +38,10 @@ export async function showDevToolsMenu(
         label:
           "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
         value: "download-template",
+      },
+      {
+        label: "Create config or force re-population",
+        value: "force-populate-config",
       },
       { label: "Exit", value: "exit" },
     ],

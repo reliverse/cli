@@ -1,8 +1,8 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function askSummaryConfirmation(
   template: string,

@@ -19,20 +19,20 @@ import pc from "picocolors";
 import type {
   Behavior,
   DeploymentService,
-  ReliverseConfig,
   ReliverseMemory,
   TemplateOption,
 } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/extractRepoInfo.js";
 import { isVSCodeInstalled } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/isAppInstalled.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/promptPackageJsonScripts.js";
 import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/replaceStringsInFiles.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export type PackageJson = {
   name?: string;
@@ -64,18 +64,18 @@ export async function initializeProjectConfig(
   shouldUseDataFromConfig: boolean,
 ): Promise<ProjectConfig> {
   const frontendUsername =
-    shouldUseDataFromConfig && config?.experimental?.projectAuthor
-      ? config.experimental.projectAuthor
+    shouldUseDataFromConfig && config?.projectAuthor
+      ? config.projectAuthor
       : ((await askUserName(memory)) ?? "");
 
   const projectName =
-    shouldUseDataFromConfig && config?.experimental?.projectTemplate
-      ? path.basename(config.experimental.projectTemplate)
+    shouldUseDataFromConfig && config?.projectTemplate
+      ? path.basename(config.projectTemplate)
       : ((await askProjectName()) ?? "");
 
   const primaryDomain =
-    shouldUseDataFromConfig && config?.experimental?.projectDomain
-      ? config.experimental.projectDomain
+    shouldUseDataFromConfig && config?.projectDomain
+      ? config.projectDomain
       : `${projectName}.vercel.app`;
 
   return { frontendUsername, projectName, primaryDomain };
@@ -129,9 +129,8 @@ export async function setupI18nSupport(
   shouldUseDataFromConfig: boolean,
 ) {
   const i18nShouldBeEnabled =
-    shouldUseDataFromConfig &&
-    config?.experimental?.features?.i18n !== undefined
-      ? config.experimental.features.i18n
+    shouldUseDataFromConfig && config?.features?.i18n !== undefined
+      ? config.features.i18n
       : await confirmPrompt({
           title:
             "Do you want to enable i18n (internationalization) for this project?",
@@ -157,7 +156,7 @@ export async function handleDependencies(
   projectPath: string,
   config: ReliverseConfig,
 ) {
-  const depsBehavior: Behavior = config?.experimental?.depsBehavior ?? "prompt";
+  const depsBehavior: Behavior = config?.depsBehavior ?? "prompt";
 
   const shouldInstallDeps = await determineShouldInstallDeps(depsBehavior);
   let shouldRunDbPush = false;

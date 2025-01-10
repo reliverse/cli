@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { api } from "../../utils/api.js";
-import styles from "../index.module.css";
+import styles from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/app/index.module.css";
+import { api } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/utils/api.js";
 
 export function LatestPost() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();

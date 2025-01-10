@@ -3,8 +3,10 @@ import crypto from "node:crypto";
 import path from "pathe";
 
 import { PKG_ROOT } from "~/app/constants.js";
-
-import { type DatabaseProvider, type Installer } from "../opts.js";
+import {
+  type DatabaseProvider,
+  type Installer,
+} from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
 export const envVariablesInstaller: Installer = ({
   projectDir,

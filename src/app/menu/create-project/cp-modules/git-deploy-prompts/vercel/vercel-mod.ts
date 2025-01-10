@@ -10,11 +10,11 @@ import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { updateReliverseMemory } from "~/app/app-utils.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
-import { createOctokitInstance } from "../octokit-instance.js";
 import { withRateLimit } from "./vercel-api.js";
 import {
   enableAnalytics,

@@ -3,7 +3,7 @@ import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectD
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import { createVercelCoreInstance } from "./vercel-instance.js";
 

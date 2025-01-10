@@ -3,8 +3,8 @@ import { selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { type ConfigPaths } from "~/types.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const ESLINT_DEFAULT_CONFIG = `// @ts-check
 

@@ -1,6 +1,6 @@
 import { ofetch } from "ofetch";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function fetchEnvExampleContent(
   urlResource: string,

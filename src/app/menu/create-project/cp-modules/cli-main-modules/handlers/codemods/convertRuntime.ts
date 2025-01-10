@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const RUNTIME_REPLACEMENTS = {
   bun: {

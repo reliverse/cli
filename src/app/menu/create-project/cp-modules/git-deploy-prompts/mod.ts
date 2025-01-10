@@ -2,15 +2,12 @@ import type { Octokit } from "@octokit/rest";
 
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 
-import type {
-  DeploymentService,
-  ReliverseConfig,
-  ReliverseMemory,
-} from "~/types.js";
+import type { DeploymentService, ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
-import { getReliverseMemory } from "~/app/app-utils.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGit } from "./git.js";
@@ -39,7 +36,7 @@ export async function decide(
   defaultValue = true,
 ): Promise<boolean> {
   try {
-    const behavior = config?.experimental?.[behaviorKey] ?? "prompt";
+    const behavior = config?.[behaviorKey] ?? "prompt";
 
     switch (behavior) {
       case "autoYes":

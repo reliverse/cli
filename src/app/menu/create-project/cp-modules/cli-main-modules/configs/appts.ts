@@ -12,8 +12,8 @@ import pc from "picocolors";
 
 import type { ApptsConfig } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function configureAppts({ apptsConfig }: ApptsConfig) {
   const apptsConfigPath = join(apptsConfig, "app.ts");

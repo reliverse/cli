@@ -118,20 +118,20 @@ export type PreferredLibraries = {
 };
 
 export type CodeStylePreferences = {
-  dontRemoveComments: boolean;
-  shouldAddComments: boolean;
-  typeOrInterface: "type" | "interface" | "mixed";
-  importOrRequire: "import" | "require" | "mixed";
-  quoteMark: "single" | "double";
-  semicolons: boolean;
-  lineWidth: number;
-  indentStyle: "space" | "tab";
-  indentSize: 2 | 4 | 8;
+  dontRemoveComments?: boolean;
+  shouldAddComments?: boolean;
+  typeOrInterface?: "type" | "interface" | "mixed";
+  importOrRequire?: "import" | "require" | "mixed";
+  quoteMark?: "single" | "double";
+  semicolons?: boolean;
+  lineWidth?: number;
+  indentStyle?: "space" | "tab";
+  indentSize?: 2 | 4 | 8;
   cjsToEsm?: boolean;
-  trailingComma: "all" | "es5" | "none";
-  bracketSpacing: boolean;
-  arrowParens: "always" | "as-needed" | "never";
-  tabWidth: 2 | 4 | 8;
+  trailingComma?: "all" | "es5" | "none";
+  bracketSpacing?: boolean;
+  arrowParens?: "always" | "as-needed" | "never";
+  tabWidth?: 2 | 4 | 8;
   modernize?: {
     replaceFs?: boolean;
     replacePath?: boolean;
@@ -184,154 +184,7 @@ export type ProjectSubcategory = "" | "e-commerce" | "tool";
 
 export type ProjectState = "" | "creating" | "created";
 
-export type ReliverseConfig = {
-  experimental?:
-    | {
-        // Do you want autoYes/autoNo below?
-        // Set to true to activate auto-answering.
-        // This is to ensure there is no unexpected behavior.
-        skipPromptsUseAutoBehavior?: boolean | undefined;
-
-        // Generation preferences
-        deployBehavior?: Behavior | undefined;
-        depsBehavior?: Behavior | undefined;
-        gitBehavior?: Behavior | undefined;
-        i18nBehavior?: Behavior | undefined;
-        scriptsBehavior?: Behavior | undefined;
-
-        // Project details
-        projectName?: string | undefined;
-        projectAuthor?: string | undefined;
-        projectDescription?: string | undefined;
-        projectVersion?: string | undefined;
-        projectLicense?: string | undefined;
-        projectRepository?: string | undefined;
-        projectState?: ProjectState | undefined;
-        projectDomain?: string | undefined;
-        projectType?: ProjectTypeOptions | undefined;
-        projectCategory?: ProjectCategory | undefined;
-        projectSubcategory?: ProjectSubcategory | undefined;
-        projectTemplate?: TemplateOption | undefined;
-        projectDeployService?: DeploymentService | undefined;
-        projectActivation?: string | undefined;
-        projectFramework?: string | undefined;
-        projectPackageManager?: string | undefined;
-        projectFrameworkVersion?: string | undefined;
-        projectDisplayName?: string | undefined;
-        nodeVersion?: string | undefined;
-        runtime?: string | undefined;
-        productionBranch?: string | undefined;
-        deployUrl?: string | undefined;
-        monorepo?:
-          | {
-              type: string;
-              packages: string[];
-              sharedPackages: string[];
-            }
-          | undefined;
-
-        // Project features
-        features?:
-          | {
-              i18n?: boolean | undefined;
-              analytics?: boolean | undefined;
-              themeMode?: "dark-light" | "dark" | "light" | undefined;
-              authentication?: boolean | undefined;
-              api?: boolean | undefined;
-              database?: boolean | undefined;
-              testing?: boolean | undefined;
-              docker?: boolean | undefined;
-              ci?: boolean | undefined;
-              commands?: string[] | undefined;
-              webview?: string[] | undefined;
-              language?: string[] | undefined;
-              themes?: string[] | undefined;
-            }
-          | undefined;
-
-        // Development preferences
-        preferredLibraries?:
-          | {
-              stateManagement?: string | undefined;
-              formManagement?: string | undefined;
-              styling?: string | undefined;
-              uiComponents?: string | undefined;
-              testing?: string | undefined;
-              authentication?: string | undefined;
-              database?: string | undefined;
-              api?: string | undefined;
-              linting?: string | undefined;
-              formatting?: string | undefined;
-              deployment?: string | undefined;
-              payment?: string | undefined;
-              analytics?: string | undefined;
-              monitoring?: string | undefined;
-              logging?: string | undefined;
-              forms?: string | undefined;
-              validation?: string | undefined;
-              documentation?: string | undefined;
-              components?: string | undefined;
-              icons?: string | undefined;
-              mail?: string | undefined;
-              search?: string | undefined;
-              cache?: string | undefined;
-              storage?: string | undefined;
-              cdn?: string | undefined;
-              cms?: string | undefined;
-              i18n?: string | undefined;
-              seo?: string | undefined;
-              ui?: string | undefined;
-              motion?: string | undefined;
-              charts?: string | undefined;
-              dates?: string | undefined;
-              markdown?: string | undefined;
-              security?: string | undefined;
-              notifications?: string | undefined;
-              uploads?: string | undefined;
-              routing?: string | undefined;
-            }
-          | undefined;
-
-        // Code style preferences
-        codeStyle?:
-          | {
-              lineWidth?: number | undefined;
-              cjsToEsm?: boolean | undefined;
-              importSymbol?: string | undefined;
-              indentSize?: number | undefined;
-              indentStyle?: "space" | "tab" | undefined;
-              dontRemoveComments?: boolean | undefined;
-              shouldAddComments?: boolean | undefined;
-              typeOrInterface?: "type" | "interface" | undefined;
-              importOrRequire?: "import" | "require" | undefined;
-              quoteMark?: "single" | "double" | undefined;
-              semicolons?: boolean | undefined;
-              trailingComma?: "all" | "es5" | "none" | undefined;
-              bracketSpacing?: boolean | undefined;
-              arrowParens?: "always" | "avoid" | undefined;
-              tabWidth?: number | undefined;
-              jsToTs?: boolean | undefined;
-              modernize?:
-                | {
-                    replaceFs?: boolean | undefined;
-                    replacePath?: boolean | undefined;
-                    replaceHttp?: boolean | undefined;
-                    replaceProcess?: boolean | undefined;
-                    replaceConsole?: boolean | undefined;
-                    replaceEvents?: boolean | undefined;
-                  }
-                | undefined;
-            }
-          | undefined;
-
-        // Dependencies management
-        ignoreDependencies?: string[] | undefined;
-
-        // Custom rules
-        customRules?: Record<string, unknown> | undefined;
-      }
-    | undefined;
-};
+export type PackageManagerName = "npm" | "yarn" | "pnpm" | "bun" | "deno";
 
 // Return type explicitly first
 export type BiomeConfigResult = {
@@ -405,12 +258,6 @@ export type NextJsConfig = BaseConfig & {
       protocol: string;
       hostname: string;
     }[];
-  };
-  experimental?: {
-    typedRoutes?: boolean;
-    serverActions?: {
-      allowedOrigins?: string[];
-    };
   };
   logging?: {
     fetches?: {
@@ -660,18 +507,6 @@ export type ModernizeConfig = {
   replaceProcess?: boolean;
   replaceConsole?: boolean;
   replaceEvents?: boolean;
-};
-
-export type DetectedProject = {
-  name: string;
-  path: string;
-  config: ReliverseConfig;
-  gitStatus?: {
-    uncommittedChanges: number;
-    unpushedCommits: number;
-  };
-  needsDepsInstall?: boolean;
-  hasGit?: boolean;
 };
 
 export type GitCommitOptions = {

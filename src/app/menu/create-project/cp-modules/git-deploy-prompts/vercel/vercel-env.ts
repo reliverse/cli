@@ -3,7 +3,7 @@ import type { Vercel } from "@vercel/sdk";
 import { confirmPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 

@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
-import { relinka } from "../logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 // Cleanup's functions
 export async function removeComments(cwd: string): Promise<void> {

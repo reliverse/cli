@@ -2,21 +2,22 @@ import { pm, selectPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig, ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/types.js";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import { showDetectedProjectsMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import {
-  detectProject,
-  detectProjectsWithReliverse,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectReliverseProjects.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import {
   showEndPrompt,
   showStartPrompt,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
+import { showDevToolsMenu } from "~/dev.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import {
+  detectProject,
+  detectProjectsWithReliverse,
+  type ReliverseConfig,
+} from "~/utils/reliverseConfig.js";
 
-import { showDevToolsMenu } from "../dev.js";
 import {
   randomReliverseMenuTitle,
   randomWelcomeMessages,

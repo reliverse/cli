@@ -1,4 +1,4 @@
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 function handlePromptCancellation(input: unknown, exitMessage: string): void {
   if (typeof input === "symbol" && String(input) === "Symbol(clack:cancel)") {

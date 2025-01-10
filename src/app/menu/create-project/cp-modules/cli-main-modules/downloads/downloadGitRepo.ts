@@ -3,10 +3,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import {
-  relinka,
-  throwError,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka, throwError } from "~/utils/loggerRelinka.js";
 
 export async function downloadGitRepo(
   name: string,

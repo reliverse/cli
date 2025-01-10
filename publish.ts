@@ -3,7 +3,7 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { execa } from "execa";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const main = defineCommand({
   meta: {

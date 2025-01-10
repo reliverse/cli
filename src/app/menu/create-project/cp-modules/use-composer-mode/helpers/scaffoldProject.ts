@@ -5,10 +5,10 @@ import ora from "ora";
 import path from "pathe";
 import pc from "picocolors";
 
-import { PKG_ROOT } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import type { InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
-import type { InstallerOptions } from "../opts.js";
+import { PKG_ROOT } from "~/app/constants.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 /**
  * Renames all -tsx.txt files back to .tsx in the specified directory and its subdirectories.

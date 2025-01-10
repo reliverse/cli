@@ -3,7 +3,7 @@ import path from "pathe";
 
 import type { PrismaField, PrismaModel } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 function parsePrismaSchema(content: string): PrismaModel[] {
   const models: PrismaModel[] = [];

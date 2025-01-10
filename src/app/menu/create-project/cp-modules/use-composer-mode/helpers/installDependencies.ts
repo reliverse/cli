@@ -2,12 +2,11 @@ import { execa } from "execa";
 import ora, { type Ora } from "ora";
 import pc from "picocolors";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-
 import {
   getUserPkgManager,
   type PackageManager,
-} from "../utils/getUserPkgManager.js";
+} from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const execWithSpinner = async (
   projectDir: string,

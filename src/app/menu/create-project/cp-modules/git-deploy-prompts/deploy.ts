@@ -1,13 +1,10 @@
 import { selectPrompt } from "@reliverse/prompts";
 import pc from "picocolors";
 
-import type {
-  DeploymentService,
-  ReliverseConfig,
-  ReliverseMemory,
-} from "~/types.js";
+import type { DeploymentService, ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import { createVercelDeployment } from "./vercel/vercel-mod.js";
 
@@ -15,10 +12,10 @@ export async function selectDeploymentService(
   config: ReliverseConfig,
 ): Promise<DeploymentService> {
   if (
-    config?.experimental?.projectDeployService &&
-    config.experimental.projectDeployService !== "none"
+    config.projectDeployService !== undefined &&
+    config.projectDeployService !== "none"
   ) {
-    const deployService = config.experimental.projectDeployService;
+    const deployService = config.projectDeployService;
     relinka("info", `Using configured deployment service: ${deployService}`);
     return deployService;
   }

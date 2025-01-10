@@ -4,10 +4,10 @@ import path from "pathe";
 
 import type { ColumnType, DatabaseProvider, TableSchema } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { installIntegration } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrations.js";
+import { INTEGRATION_CONFIGS } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrationsIntegrConfig.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
-import { installIntegration } from "../integrations/integrations.js";
-import { INTEGRATION_CONFIGS } from "../integrations/integrationsIntegrConfig.js";
 import { COLUMN_TYPES } from "./manageDrizzleConstants.js";
 
 export async function detectDatabaseProvider(

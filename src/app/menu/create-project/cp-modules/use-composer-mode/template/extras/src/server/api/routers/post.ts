@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-} from "../trpc.js";
+} from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/server/api/trpc.js";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure

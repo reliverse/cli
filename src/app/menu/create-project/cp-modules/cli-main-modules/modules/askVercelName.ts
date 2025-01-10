@@ -2,7 +2,7 @@ import { inputPrompt } from "@reliverse/prompts";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { updateReliverseMemory } from "~/app/app-utils.js";
+import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 export async function askVercelName(
   memory: ReliverseMemory,

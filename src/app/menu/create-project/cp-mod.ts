@@ -4,8 +4,8 @@ import {
   generateProjectConfigs,
   updateProjectConfig,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   initializeProjectConfig,
@@ -32,8 +32,7 @@ export async function createWebProject({
   relinka("info", message);
 
   // Check if we should use data from the config
-  const shouldUseDataFromConfig =
-    config?.experimental?.skipPromptsUseAutoBehavior ?? false;
+  const shouldUseDataFromConfig = config?.skipPromptsUseAutoBehavior ?? false;
 
   // Initialize project configuration
   const projectConfig = await initializeProjectConfig(
@@ -89,14 +88,13 @@ export async function createWebProject({
 
   // Generate initial configs with default deployment service
   await generateProjectConfigs(
-    memory,
     projectPath,
     projectName,
     frontendUsername,
     "vercel",
     initialDomain,
     defaultI18nShouldBeEnabled,
-    shouldInstallDeps,
+    frontendUsername,
   );
 
   // Handle deployment

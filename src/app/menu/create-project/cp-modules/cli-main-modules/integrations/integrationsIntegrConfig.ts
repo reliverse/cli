@@ -2,7 +2,7 @@ import { execa } from "execa";
 
 import type { IntegrationConfig } from "~/types.js";
 
-import { relinka } from "../handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 // Integration configurations
 export const INTEGRATION_CONFIGS: Record<string, IntegrationConfig> = {

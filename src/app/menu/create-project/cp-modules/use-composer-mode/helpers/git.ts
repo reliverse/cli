@@ -6,7 +6,7 @@ import ora from "ora";
 import path from "pathe";
 import pc from "picocolors";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const isGitInstalled = (dir: string): boolean => {
   try {

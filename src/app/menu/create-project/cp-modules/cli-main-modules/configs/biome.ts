@@ -4,9 +4,8 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import { type BiomeConfig, type ConfigPaths } from "~/types.js";
-
-import { relinka } from "../handlers/logger.js";
-import { addConfigMetadata } from "./miscellaneousConfigHelpers.js";
+import { addConfigMetadata } from "~/utils/configHandler.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 const BIOME_DEFAULT_CONFIG: BiomeConfig = addConfigMetadata({
   $schema: "https://biomejs.dev/schemas/1.5.3/schema.json",

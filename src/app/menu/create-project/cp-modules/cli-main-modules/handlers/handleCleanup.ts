@@ -6,22 +6,34 @@ import path from "pathe";
 
 import type { KnipConfig } from "~/types.js";
 
-import { readReliverseConfig } from "../configs/reliverseReadWrite.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { readReliverseConfig } from "~/utils/reliverseConfig.js";
+
 import { removeComments } from "./codemods/removeComments.js";
 import { getUnusedDependencies } from "./codemods/removeUnusedDeps.js";
 import { uninstallDependencies } from "./dependencies.js";
-import { relinka } from "./logger.js";
 
-export async function handleCleanup(cwd: string) {
+const defaultIgnoredDeps: string[] = [
+  // TODO: We should add here any default dependencies that should always be ignored
+];
+
+export async function handleCleanup(
+  cwd: string,
+  configPath: string,
+  projectName: string,
+) {
+  const ignoredDeps = new Set<string>(defaultIgnoredDeps);
+
   // Try to read Knip config for ignoreDependencies
-  let ignoredDeps: string[] = [];
   try {
     const knipConfigPath = path.join(cwd, "knip.json");
     if (await fs.pathExists(knipConfigPath)) {
       const knipConfig = destr<KnipConfig>(
         await fs.readFile(knipConfigPath, "utf-8"),
       );
-      ignoredDeps = knipConfig.ignoreDependencies ?? [];
+      if (knipConfig?.ignoreDependencies) {
+        knipConfig.ignoreDependencies.forEach((dep) => ignoredDeps.add(dep));
+      }
     }
   } catch (error) {
     relinka(
@@ -33,11 +45,9 @@ export async function handleCleanup(cwd: string) {
 
   // Read ignoreDependencies from .reliverse if exists
   try {
-    const rules = await readReliverseConfig(cwd);
-    if (rules?.experimental?.ignoreDependencies) {
-      ignoredDeps = [
-        ...new Set([...ignoredDeps, ...rules.experimental.ignoreDependencies]),
-      ];
+    const rules = await readReliverseConfig(projectName, configPath, cwd);
+    if (rules?.ignoreDependencies) {
+      rules.ignoreDependencies.forEach((dep) => ignoredDeps.add(dep));
     }
   } catch (error) {
     relinka(
@@ -74,7 +84,10 @@ export async function handleCleanup(cwd: string) {
       await removeComments(cwd);
     }
   } else if (action === "dependencies") {
-    const unusedDeps = await getUnusedDependencies(cwd, ignoredDeps);
+    const unusedDeps = await getUnusedDependencies(
+      cwd,
+      Array.from(ignoredDeps),
+    );
 
     if (unusedDeps.length === 0) {
       relinka("info", "No unused dependencies found!");

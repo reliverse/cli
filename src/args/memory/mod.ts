@@ -1,7 +1,7 @@
 import { defineCommand } from "@reliverse/prompts";
 
-import { getReliverseMemory } from "~/app/app-utils.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
 export default defineCommand({
   meta: {

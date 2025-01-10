@@ -2,7 +2,7 @@ import { selectPrompt } from "@reliverse/prompts";
 import { execa } from "execa";
 import { installDependencies } from "nypm";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function ensureDbInitialized(
   hasDbPush: boolean,

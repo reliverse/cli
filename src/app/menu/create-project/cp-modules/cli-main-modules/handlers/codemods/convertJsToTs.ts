@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 function generateTypeDefinitions(content: string): string {
   let result = content;

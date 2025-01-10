@@ -1,9 +1,9 @@
 import { defineCommand } from "@reliverse/prompts";
 
-import { getReliverseMemory } from "~/app/app-utils.js";
 import { useLocalhost } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { auth } from "./impl.js";
 

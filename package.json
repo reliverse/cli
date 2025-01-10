@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.4.19",
+  "version": "1.4.20",
   "author": "blefnk",
   "type": "module",
   "description": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
@@ -134,6 +134,7 @@
     "@types/strip-comments": "^2.0.4",
     "drizzle-kit": "^0.30.1",
     "eslint": "^9.17.0",
+    "eslint-plugin-no-relative-import-paths": "^1.6.1",
     "eslint-plugin-perfectionist": "^4.6.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",

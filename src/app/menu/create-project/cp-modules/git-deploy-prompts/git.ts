@@ -8,12 +8,12 @@ import { simpleGit } from "simple-git";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import {
   cd,
   pwd,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import { checkGithubRepoOwnership, createGithubRepo } from "./github.js";
 import { createOctokitInstance } from "./octokit-instance.js";

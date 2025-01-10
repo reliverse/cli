@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
 
-import { detectProjectsWithReliverse } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectReliverseProjects.js";
+import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 export type MainMenuChoice =
   | "create"

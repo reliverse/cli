@@ -7,10 +7,10 @@ import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { updateReliverseMemory } from "~/app/app-utils.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { cd } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
-import { cd } from "../cli-main-modules/handlers/terminal.js";
 import { createOctokitInstance } from "./octokit-instance.js";
 import { cloneToTempAndCopyFiles, setupGitRemote } from "./utils-git-github.js";
 

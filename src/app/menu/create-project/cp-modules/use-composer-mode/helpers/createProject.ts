@@ -2,11 +2,14 @@ import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
+import type {
+  DatabaseProvider,
+  PkgInstallerMap,
+} from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
+
 import { PKG_ROOT } from "~/app/constants.js";
+import { getUserPkgManager } from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
 
-import type { DatabaseProvider, PkgInstallerMap } from "../opts.js";
-
-import { getUserPkgManager } from "../utils/getUserPkgManager.js";
 import { installPackages } from "./installPackages.js";
 import { scaffoldProject } from "./scaffoldProject.js";
 import {

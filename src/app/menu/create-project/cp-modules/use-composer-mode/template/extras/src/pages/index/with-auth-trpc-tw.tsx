@@ -5,7 +5,7 @@ import Head from "next/head";
 import Link from "next/link";
 import React from "react";
 
-import { api } from "../../utils/api.js";
+import { api } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/utils/api.js";
 
 export default function Home() {
   const hello = api.post.hello.useQuery({ text: "from tRPC" });

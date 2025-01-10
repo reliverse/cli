@@ -4,14 +4,9 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import { CONFIG_CATEGORIES } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import {
-  type DeploymentService,
-  type ReliverseMemory,
-  type VSCodeSettings,
-} from "~/types.js";
-
-import { generateReliverseFile } from "./reliverseConfig.js";
+import { type DeploymentService, type VSCodeSettings } from "~/types.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import { generateReliverseConfig } from "~/utils/reliverseConfig.js";
 
 async function generateBiomeConfig(
   projectPath: string,
@@ -117,7 +112,6 @@ async function generateVSCodeSettings(
 }
 
 async function generateConfigFiles(
-  memory: ReliverseMemory,
   projectPath: string,
   overwrite: boolean,
   projectName: string,
@@ -125,7 +119,7 @@ async function generateConfigFiles(
   deployService: DeploymentService,
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
-  shouldInstallDeps: boolean,
+  githubUsername: string,
   filesToGenerate: string[] = [],
 ): Promise<void> {
   await spinnerTaskPrompt({
@@ -146,16 +140,15 @@ async function generateConfigFiles(
 
         const configGenerators = {
           ".reliverse": async () =>
-            generateReliverseFile({
+            generateReliverseConfig({
               projectName,
               frontendUsername,
               deployService,
               primaryDomain,
               projectPath,
               i18nShouldBeEnabled,
-              shouldInstallDeps,
               overwrite,
-              memory,
+              githubUsername,
             }),
           "biome.json": () => generateBiomeConfig(projectPath, overwrite),
           "settings.json": () => generateVSCodeSettings(projectPath, overwrite),
@@ -179,14 +172,13 @@ async function generateConfigFiles(
 }
 
 export async function generateProjectConfigs(
-  memory: ReliverseMemory,
   projectPath: string,
   projectName: string,
   frontendUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
-  shouldInstallDeps: boolean,
+  githubUsername: string,
 ): Promise<void> {
   try {
     // Check which files exist
@@ -209,7 +201,6 @@ export async function generateProjectConfigs(
       );
       // Generate missing files without overwriting existing ones
       await generateConfigFiles(
-        memory,
         projectPath,
         false,
         projectName,
@@ -217,12 +208,11 @@ export async function generateProjectConfigs(
         deployService,
         primaryDomain,
         i18nShouldBeEnabled,
-        shouldInstallDeps,
+        githubUsername,
       );
     } else {
       // No existing files, generate everything
       await generateConfigFiles(
-        memory,
         projectPath,
         true,
         projectName,
@@ -230,7 +220,7 @@ export async function generateProjectConfigs(
         deployService,
         primaryDomain,
         i18nShouldBeEnabled,
-        shouldInstallDeps,
+        githubUsername,
       );
     }
   } catch (error) {

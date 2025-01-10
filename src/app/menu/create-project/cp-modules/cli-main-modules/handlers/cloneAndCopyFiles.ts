@@ -5,9 +5,8 @@ import { simpleGit } from "simple-git";
 import type { CloneError } from "~/types.js";
 import type { CopyError } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-
-import { FILE_CONFLICTS } from "../../../../../constants.js";
+import { FILE_CONFLICTS } from "~/app/constants.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(

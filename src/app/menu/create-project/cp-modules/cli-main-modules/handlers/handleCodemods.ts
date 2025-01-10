@@ -1,6 +1,9 @@
 import { confirmPrompt, multiselectPrompt } from "@reliverse/prompts";
 
-import type { MonorepoType, ReliverseConfig } from "~/types.js";
+import type { MonorepoType } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+
+import { relinka } from "~/utils/loggerRelinka.js";
 
 import { convertCjsToEsm } from "./codemods/convertCjsToEsm.js";
 import { convertTypeDefinitions } from "./codemods/convertDefinitions.js";
@@ -12,13 +15,9 @@ import { convertTailwindV3ToV4 } from "./codemods/convertTailwind.js";
 import { convertToMonorepo } from "./codemods/convertToMonorepo.js";
 import { replaceImportSymbol } from "./codemods/replaceImportSymbol.js";
 import { replaceWithModern } from "./codemods/replaceWithModern.js";
-import { relinka } from "./logger.js";
 
 export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
-  if (
-    !rules.experimental?.codeStyle ||
-    !rules.experimental?.preferredLibraries
-  ) {
+  if (!rules.codeStyle || !rules.preferredLibraries) {
     relinka("error", "Missing required configuration in .reliverse");
     return;
   }
@@ -26,7 +25,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   const availableCodemods = [];
 
   // Push: Tailwind v3 to v4 conversion codemod
-  if (rules.experimental.preferredLibraries.styling === "tailwind") {
+  if (rules.preferredLibraries?.styling === "tailwind") {
     availableCodemods.push({
       label: "Convert Tailwind CSS v3 to v4",
       value: "tailwind-v4",
@@ -35,11 +34,11 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: import symbol codemod if rule exists
-  if (rules.experimental.codeStyle.importSymbol?.length) {
+  if (rules.codeStyle?.importSymbol?.length) {
     availableCodemods.push({
       label: "Replace Import Symbols",
       value: "import-symbols",
-      hint: `${rules.experimental.codeStyle.importSymbol.length} symbol(s) to replace`,
+      hint: `${rules.codeStyle.importSymbol.length} symbol(s) to replace`,
     });
   }
 
@@ -47,31 +46,31 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   availableCodemods.push({
     label: "Convert Quote Style",
     value: "quote-style",
-    hint: `Convert all quotes to ${rules.experimental.codeStyle.quoteMark}`,
+    hint: `Convert all quotes to ${rules.codeStyle.quoteMark}`,
   });
 
   // Push: import style codemod
-  const importStyle = rules.experimental.codeStyle.importOrRequire;
-  if (importStyle && (importStyle === "import" || importStyle === "require")) {
+  const importStyle = rules.codeStyle?.importOrRequire;
+  if (importStyle && importStyle !== "mixed") {
     availableCodemods.push({
       label: "Convert Import Style",
       value: "import-style",
-      hint: `Convert to ${importStyle} style`,
+      hint: `Convert all imports to ${importStyle} style`,
     });
   }
 
   // Push: Definitions converter codemod
-  const typeStyle = rules.experimental.codeStyle.typeOrInterface;
-  if (typeStyle && (typeStyle === "type" || typeStyle === "interface")) {
+  const typeStyle = rules.codeStyle?.typeOrInterface;
+  if (typeStyle && typeStyle !== "mixed") {
     availableCodemods.push({
       label: "Convert Type Definitions",
       value: "type-definitions",
-      hint: `Convert to ${typeStyle} style`,
+      hint: `Convert all declarations to ${typeStyle}s`,
     });
   }
 
   // Push: CJS to ESM codemod if enabled
-  if (rules.experimental.codeStyle.cjsToEsm) {
+  if (rules.codeStyle?.cjsToEsm) {
     availableCodemods.push({
       label: "Convert CommonJS to ESM",
       value: "cjs-to-esm",
@@ -80,7 +79,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: runtime conversion codemods
-  if (rules.experimental.runtime === "nodejs") {
+  if (rules.runtime === "nodejs") {
     availableCodemods.push(
       {
         label: "Convert to Bun",
@@ -96,18 +95,18 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: monorepo conversion codemod if configured
-  if (rules.experimental.monorepo?.type) {
+  if (rules.monorepo?.type) {
     availableCodemods.push({
       label: "Convert to Monorepo",
       value: "single-to-monorepo",
-      hint: `Convert to ${rules.experimental.monorepo.type} monorepo`,
+      hint: `Convert to ${rules.monorepo.type} monorepo`,
     });
   }
 
   // Push: modernize codemod if any modernize options are enabled
   if (
-    rules.experimental.codeStyle.modernize &&
-    Object.values(rules.experimental.codeStyle.modernize).some(Boolean)
+    rules.codeStyle?.modernize &&
+    Object.values(rules.codeStyle.modernize).some(Boolean)
   ) {
     availableCodemods.push({
       label: "Modernize Code",
@@ -117,7 +116,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: JS to TS codemod if enabled
-  if (rules.experimental.codeStyle.jsToTs) {
+  if (rules.codeStyle?.jsToTs) {
     availableCodemods.push({
       label: "Convert JavaScript to TypeScript",
       value: "js-to-ts",
@@ -148,7 +147,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
         await convertTailwindV3ToV4(cwd);
       }
     } else if (codemod === "import-symbols") {
-      const targetSymbol = rules.experimental.codeStyle.importSymbol;
+      const targetSymbol = rules.codeStyle?.importSymbol;
       if (!targetSymbol) {
         continue;
       }
@@ -166,21 +165,18 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
           `Replaced detected import symbol with "${targetSymbol}"`,
         );
       }
-    } else if (
-      codemod === "quote-style" &&
-      rules.experimental.codeStyle.quoteMark
-    ) {
+    } else if (codemod === "quote-style" && rules.codeStyle?.quoteMark) {
       const shouldConvert = await confirmPrompt({
-        title: `Convert all quotes to ${rules.experimental.codeStyle.quoteMark}?`,
+        title: `Convert all quotes to ${rules.codeStyle.quoteMark}?`,
         defaultValue: true,
       });
 
       if (shouldConvert) {
-        await convertQuoteStyle(cwd, rules.experimental.codeStyle.quoteMark);
+        await convertQuoteStyle(cwd, rules.codeStyle.quoteMark);
       }
     } else if (codemod === "import-style") {
-      const style = rules.experimental.codeStyle.importOrRequire;
-      if (style && (style === "import" || style === "require")) {
+      const style = rules.codeStyle?.importOrRequire;
+      if (style && style !== "mixed") {
         const shouldConvert = await confirmPrompt({
           title: `Convert to ${style} style?`,
           defaultValue: true,
@@ -191,8 +187,8 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
         }
       }
     } else if (codemod === "type-definitions") {
-      const style = rules.experimental.codeStyle.typeOrInterface;
-      if (style && (style === "type" || style === "interface")) {
+      const style = rules.codeStyle?.typeOrInterface;
+      if (style && style !== "mixed") {
         const shouldConvert = await confirmPrompt({
           title: `Convert TS definitions to ${style} style?`,
           defaultValue: true,
@@ -229,11 +225,8 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
       if (shouldConvert) {
         await convertRuntime(cwd, "deno");
       }
-    } else if (
-      codemod === "single-to-monorepo" &&
-      rules.experimental.monorepo?.type
-    ) {
-      const monorepoType = rules.experimental.monorepo.type;
+    } else if (codemod === "single-to-monorepo" && rules.monorepo?.type) {
+      const monorepoType = rules.monorepo.type;
       if (isValidMonorepoType(monorepoType)) {
         const shouldConvert = await confirmPrompt({
           title: `Convert to ${monorepoType} monorepo?`,
@@ -244,8 +237,8 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
           await convertToMonorepo(
             cwd,
             monorepoType,
-            rules.experimental.monorepo.packages,
-            rules.experimental.monorepo.sharedPackages,
+            rules.monorepo.packages,
+            rules.monorepo.sharedPackages,
           );
         }
       }

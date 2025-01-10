@@ -6,14 +6,13 @@ import pc from "picocolors";
 
 import { siteConfig } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/app.js";
 import { configureAppts } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/appts.js";
+import { configureBiome } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/biome.js";
 import { configureEnv } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/envjs.js";
 import { configureEslint } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/eslint.js";
 import { configureKnip } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/knip.js";
+import { configureNext } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/nextjs.js";
 import { configurePutout } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/putout.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-
-import { configureBiome } from "../configs/biome.js";
-import { configureNext } from "../configs/nextjs.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function runReliverseSetup() {
   const currentDirname = getCurrentDirname(import.meta.url);

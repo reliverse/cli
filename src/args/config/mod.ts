@@ -2,11 +2,13 @@ import { defineCommand } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { DEFAULT_CONFIG } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/reliverseDefaultConfig.js";
-import { getDefaultReliverseConfig } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/reliverseReadWrite.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { getCurrentWorkingDirectory } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
-import { type ReliverseConfig } from "~/types.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import {
+  DEFAULT_CONFIG,
+  getDefaultReliverseConfig,
+  type ReliverseConfig,
+} from "~/utils/reliverseConfig.js";
 
 export default defineCommand({
   meta: {
@@ -34,149 +36,146 @@ export default defineCommand({
         process.exit(1);
       }
 
-      const rules = await getDefaultReliverseConfig("my-app", "user");
+      const rules = await getDefaultReliverseConfig(
+        cwd,
+        "my-app",
+        "user",
+        "nextjs",
+      );
       // Create a config that includes both rules and legacy config fields
       const config: ReliverseConfig = {
-        experimental: {
-          // Project details
-          projectName: rules.experimental?.projectName ?? "my-app",
-          projectAuthor: rules.experimental?.projectAuthor ?? "user",
-          projectDescription: rules.experimental?.projectDescription ?? "",
-          projectVersion: rules.experimental?.projectVersion ?? "0.1.0",
-          projectLicense: rules.experimental?.projectLicense ?? "MIT",
-          projectRepository: rules.experimental?.projectRepository ?? "",
-          projectActivation: rules.experimental?.projectActivation ?? "auto",
-          projectCategory: rules.experimental?.projectCategory ?? "website",
-          projectType: rules.experimental?.projectType ?? "library",
-          projectDeployService:
-            rules.experimental?.projectDeployService ?? "vercel",
-          projectDisplayName: rules.experimental?.projectDisplayName ?? "",
-          projectDomain: rules.experimental?.projectDomain ?? "",
-          projectState: rules.experimental?.projectState ?? "creating",
-          projectSubcategory:
-            rules.experimental?.projectSubcategory ?? "e-commerce",
-          projectTemplate:
-            rules.experimental?.projectTemplate ?? "blefnk/relivator",
-          projectFramework: rules.experimental?.projectFramework ?? "nextjs",
-          projectFrameworkVersion:
-            rules.experimental?.projectFrameworkVersion ?? "latest",
-          projectPackageManager:
-            rules.experimental?.projectPackageManager ?? "npm",
-          nodeVersion: rules.experimental?.nodeVersion ?? "latest",
-          runtime: rules.experimental?.runtime ?? "nodejs",
-          productionBranch: rules.experimental?.productionBranch ?? "main",
-          deployUrl: rules.experimental?.deployUrl ?? "",
+        // Project details
+        projectName: rules.projectName ?? "my-app",
+        projectAuthor: rules.projectAuthor ?? "user",
+        projectDescription: rules.projectDescription ?? "",
+        projectVersion: rules.projectVersion ?? "0.1.0",
+        projectLicense: rules.projectLicense ?? "MIT",
+        projectRepository: rules.projectRepository ?? "",
+        projectActivation: rules.projectActivation ?? "auto",
+        projectCategory: rules.projectCategory ?? "website",
+        projectType: rules.projectType ?? "library",
+        projectDeployService: rules.projectDeployService ?? "vercel",
+        projectDisplayName: rules.projectDisplayName ?? "",
+        projectDomain: rules.projectDomain ?? "",
+        projectState: rules.projectState ?? "creating",
+        projectSubcategory: rules.projectSubcategory ?? "e-commerce",
+        projectTemplate: rules.projectTemplate ?? "blefnk/relivator",
+        projectFramework: rules.projectFramework ?? "nextjs",
+        projectFrameworkVersion: rules.projectFrameworkVersion ?? "latest",
+        projectPackageManager: rules.projectPackageManager ?? "bun",
+        nodeVersion: rules.nodeVersion ?? "latest",
+        runtime: rules.runtime ?? "nodejs",
+        productionBranch: rules.productionBranch ?? "main",
+        deployUrl: rules.deployUrl ?? "",
 
-          // Development preferences
-          monorepo: rules.experimental?.monorepo ?? {
-            type: "turborepo",
-            packages: [],
-            sharedPackages: [],
-          },
-
-          preferredLibraries: {
-            stateManagement: "zustand",
-            styling: "tailwind",
-            database: "drizzle",
-            testing: "vitest",
-            linting: "eslint",
-            formatting: "biome",
-            deployment: "vercel",
-            authentication: "clerk",
-            payment: "stripe",
-            analytics: "vercel",
-            formManagement: "react-hook-form",
-            uiComponents: "shadcn-ui",
-            monitoring: "sentry",
-            logging: "axiom",
-            forms: "react-hook-form",
-            validation: "zod",
-            documentation: "starlight",
-            components: "shadcn",
-            icons: "lucide",
-            mail: "resend",
-            search: "algolia",
-            cache: "redis",
-            storage: "cloudflare",
-            cdn: "cloudflare",
-            api: "trpc",
-            cms: "contentlayer",
-            i18n: "next-intl",
-            seo: "next-seo",
-            ui: "radix",
-            motion: "framer",
-            charts: "recharts",
-            dates: "dayjs",
-            markdown: "mdx",
-            security: "auth",
-            notifications: "sonner",
-            uploads: "uploadthing",
-            routing: "next",
-            ...rules.experimental?.preferredLibraries,
-          },
-
-          codeStyle: {
-            lineWidth: 80,
-            cjsToEsm: true,
-            importSymbol: "import",
-            indentSize: 2,
-            indentStyle: "space",
-            dontRemoveComments: false,
-            shouldAddComments: true,
-            typeOrInterface: "type",
-            importOrRequire: "import",
-            quoteMark: "double",
-            semicolons: true,
-            trailingComma: "all",
-            bracketSpacing: true,
-            arrowParens: "always",
-            tabWidth: 2,
-            jsToTs: false,
-            modernize: {
-              replaceFs: true,
-              replacePath: true,
-              replaceHttp: true,
-              replaceProcess: true,
-              replaceConsole: true,
-              replaceEvents: true,
-              ...rules.experimental?.codeStyle?.modernize,
-            },
-            ...rules.experimental?.codeStyle,
-          },
-
-          // Project features
-          features: {
-            i18n: false,
-            analytics: false,
-            themeMode: "dark-light",
-            authentication: false,
-            api: false,
-            database: false,
-            testing: false,
-            docker: false,
-            ci: false,
-            commands: [],
-            webview: [],
-            language: [],
-            themes: [],
-            ...rules.experimental?.features,
-          },
-
-          // Dependencies management
-          ignoreDependencies: rules.experimental?.ignoreDependencies ?? [],
-
-          // Custom rules
-          customRules: rules.experimental?.customRules ?? {},
-
-          // Generation preferences
-          skipPromptsUseAutoBehavior:
-            rules.experimental?.skipPromptsUseAutoBehavior ?? false,
-          deployBehavior: rules.experimental?.deployBehavior ?? "prompt",
-          depsBehavior: rules.experimental?.depsBehavior ?? "prompt",
-          gitBehavior: rules.experimental?.gitBehavior ?? "prompt",
-          i18nBehavior: rules.experimental?.i18nBehavior ?? "prompt",
-          scriptsBehavior: rules.experimental?.scriptsBehavior ?? "prompt",
+        // Development preferences
+        monorepo: rules.monorepo ?? {
+          type: "turborepo",
+          packages: [],
+          sharedPackages: [],
         },
+
+        preferredLibraries: {
+          stateManagement: "zustand",
+          styling: "tailwind",
+          database: "drizzle",
+          testing: "vitest",
+          linting: "eslint",
+          formatting: "biome",
+          deployment: "vercel",
+          authentication: "clerk",
+          payment: "stripe",
+          analytics: "vercel",
+          formManagement: "react-hook-form",
+          uiComponents: "shadcn-ui",
+          monitoring: "sentry",
+          logging: "axiom",
+          forms: "react-hook-form",
+          validation: "zod",
+          documentation: "starlight",
+          components: "shadcn",
+          icons: "lucide",
+          mail: "resend",
+          search: "algolia",
+          cache: "redis",
+          storage: "cloudflare",
+          cdn: "cloudflare",
+          api: "trpc",
+          cms: "contentlayer",
+          i18n: "next-intl",
+          seo: "next-seo",
+          ui: "radix",
+          motion: "framer",
+          charts: "recharts",
+          dates: "dayjs",
+          markdown: "mdx",
+          security: "auth",
+          notifications: "sonner",
+          uploads: "uploadthing",
+          routing: "next",
+          ...rules.preferredLibraries,
+        },
+
+        codeStyle: {
+          lineWidth: 80,
+          cjsToEsm: true,
+          importSymbol: "import",
+          indentSize: 2,
+          indentStyle: "space",
+          dontRemoveComments: false,
+          shouldAddComments: true,
+          typeOrInterface: "type",
+          importOrRequire: "import",
+          quoteMark: "double",
+          semicolons: true,
+          trailingComma: "all",
+          bracketSpacing: true,
+          arrowParens: "always",
+          tabWidth: 2,
+          jsToTs: false,
+          modernize: {
+            replaceFs: true,
+            replacePath: true,
+            replaceHttp: true,
+            replaceProcess: true,
+            replaceConsole: true,
+            replaceEvents: true,
+            ...rules.codeStyle?.modernize,
+          },
+          ...rules.codeStyle,
+        },
+
+        // Project features
+        features: {
+          i18n: false,
+          analytics: false,
+          themeMode: "dark-light",
+          authentication: false,
+          api: false,
+          database: false,
+          testing: false,
+          docker: false,
+          ci: false,
+          commands: [],
+          webview: [],
+          language: [],
+          themes: [],
+          ...rules.features,
+        },
+
+        // Dependencies management
+        ignoreDependencies: rules.ignoreDependencies ?? [],
+
+        // Custom rules
+        customRules: rules.customRules ?? {},
+
+        // Generation preferences
+        skipPromptsUseAutoBehavior: rules.skipPromptsUseAutoBehavior ?? false,
+        deployBehavior: rules.deployBehavior ?? "prompt",
+        depsBehavior: rules.depsBehavior ?? "prompt",
+        gitBehavior: rules.gitBehavior ?? "prompt",
+        i18nBehavior: rules.i18nBehavior ?? "prompt",
+        scriptsBehavior: rules.scriptsBehavior ?? "prompt",
       };
 
       try {

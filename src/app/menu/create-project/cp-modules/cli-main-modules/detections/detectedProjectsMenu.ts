@@ -7,10 +7,20 @@ import {
 import { installDependencies } from "nypm";
 import pc from "picocolors";
 
-import type { DetectedProject, ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/types.js";
+import type { DetectedProject } from "~/utils/reliverseConfig.js";
 
 import { experimental } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { checkScriptExists } from "~/app/menu/create-project/cp-impl.js";
+import { manageDrizzleSchema } from "~/app/menu/create-project/cp-modules/cli-main-modules/drizzle/manageDrizzleSchema.js";
+import {
+  convertDatabaseProvider,
+  convertPrismaToDrizzle,
+} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/convertDatabase.js";
+import { handleCleanup } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleCleanup.js";
+import { handleCodemods } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleCodemods.js";
+import { handleConfigEditing } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleConfigEdits.js";
+import { handleIntegrations } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleIntegrations.js";
 import {
   readShadcnConfig,
   getInstalledComponents,
@@ -31,20 +41,10 @@ import {
   initGit,
   createGithubRepository,
 } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
-
-import { checkScriptExists } from "../../../cp-impl.js";
-import { checkGithubRepoOwnership } from "../../git-deploy-prompts/github.js";
-import { ensureDbInitialized } from "../../git-deploy-prompts/helpers/handlePkgJsonScripts.js";
-import { createOctokitInstance } from "../../git-deploy-prompts/octokit-instance.js";
-import { manageDrizzleSchema } from "../drizzle/manageDrizzleSchema.js";
-import {
-  convertDatabaseProvider,
-  convertPrismaToDrizzle,
-} from "../handlers/codemods/convertDatabase.js";
-import { handleCleanup } from "../handlers/handleCleanup.js";
-import { handleCodemods } from "../handlers/handleCodemods.js";
-import { handleConfigEditing } from "../handlers/handleConfigEdits.js";
-import { handleIntegrations } from "../handlers/handleIntegrations.js";
+import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
+import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
+import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function showDetectedProjectsMenu(
   projects: DetectedProject[],
@@ -486,7 +486,7 @@ export async function showDetectedProjectsMenu(
   } else if (action === "drizzle-schema") {
     await manageDrizzleSchema(selectedProject.path, false);
   } else if (action === "cleanup") {
-    await handleCleanup(selectedProject.path);
+    await handleCleanup(cwd, selectedProject.path, selectedProject.name);
   } else if (action === "edit-config") {
     await handleConfigEditing(selectedProject.path);
   }

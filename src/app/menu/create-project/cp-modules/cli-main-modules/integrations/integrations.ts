@@ -4,7 +4,7 @@ import path from "pathe";
 
 import type { IntegrationConfig, RemovalConfig } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 enum PackageManager {
   Bun = "bun",

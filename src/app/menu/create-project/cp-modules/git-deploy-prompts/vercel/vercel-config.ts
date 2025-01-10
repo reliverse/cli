@@ -3,7 +3,7 @@ import type { Vercel } from "@vercel/sdk";
 import { multiselectPrompt } from "@reliverse/prompts";
 
 import { experimental } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 /**
  * Enables analytics for the project

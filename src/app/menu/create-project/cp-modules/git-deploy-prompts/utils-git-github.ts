@@ -1,3 +1,5 @@
+import type { PackageJson } from "pkg-types";
+
 import { confirmPrompt } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { createTarGzip } from "nanotar";
@@ -5,7 +7,9 @@ import { homedir } from "os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import type { ReliverseMemory } from "~/types.js";
+
+import { relinka } from "~/utils/loggerRelinka.js";
 
 type FileInput = {
   name: string;
@@ -281,4 +285,26 @@ export async function setupGitRemote(
     );
     return false;
   }
+}
+
+export function extractGithubUsername(
+  packageJson: PackageJson | null,
+  memory: ReliverseMemory,
+  fallback: string,
+): string {
+  let githubUsername = memory.githubUsername;
+  if (!githubUsername && packageJson?.repository) {
+    const repoUrl =
+      typeof packageJson.repository === "string"
+        ? packageJson.repository
+        : packageJson.repository.url;
+
+    if (repoUrl) {
+      const match = /github\.com[:/]([^/]+)/.exec(repoUrl);
+      if (match) {
+        githubUsername = match[1];
+      }
+    }
+  }
+  return githubUsername ?? fallback;
 }

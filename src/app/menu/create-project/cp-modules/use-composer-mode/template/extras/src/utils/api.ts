@@ -10,7 +10,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import SuperJSON from "superjson";
 
-import type { AppRouter } from "../server/api/root.js";
+import type { AppRouter } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/server/api/root.js";
 
 export const api = createTRPCReact<AppRouter>();
 

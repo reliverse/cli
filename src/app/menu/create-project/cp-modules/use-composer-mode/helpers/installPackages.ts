@@ -2,10 +2,10 @@ import { execa } from "execa";
 import ora from "ora";
 import pc from "picocolors";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import type { PkgInstallerMap } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
+import type { InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
-import type { PkgInstallerMap } from "../opts.js";
-import type { InstallerOptions } from "../opts.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 type InstallPackagesOptions = InstallerOptions & {
   packages: PkgInstallerMap;

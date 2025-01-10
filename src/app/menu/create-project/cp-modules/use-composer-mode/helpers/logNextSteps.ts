@@ -1,8 +1,8 @@
 import { DEFAULT_APP_NAME } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { type InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
+import { getUserPkgManager } from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
-import { type InstallerOptions } from "../opts.js";
-import { getUserPkgManager } from "../utils/getUserPkgManager.js";
 import { isInsideGitRepo, isRootGitRepo } from "./git.js";
 
 // This logs the next steps that the user should take in order to advance the project

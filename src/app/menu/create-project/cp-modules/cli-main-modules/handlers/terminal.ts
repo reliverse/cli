@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
 
-import { relinka } from "./logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export const handleError = (error: unknown) =>
   error instanceof Error ? error.message : "Unknown error";

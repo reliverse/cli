@@ -5,7 +5,7 @@ import { join } from "pathe";
 
 import type { PromptType, Question } from "~/types.js";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 // TODO: 🐞 Still in development! Please use at own risk!
 

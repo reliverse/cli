@@ -4,7 +4,7 @@ import "~/styles/globals.css";
 
 import React from "react";
 
-import { TRPCReactProvider } from "../../trpc/react.jsx";
+import { TRPCReactProvider } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/trpc/react.jsx";
 
 export const metadata: Metadata = {
   title: "@reliverse/cli",

@@ -8,7 +8,8 @@ import { useState } from "react";
 import React from "react";
 import SuperJSON from "superjson";
 
-import { type AppRouter } from "../server/api/root.js";
+import { type AppRouter } from "~/app/menu/create-project/cp-modules/use-composer-mode/template/extras/src/server/api/root.js";
+
 import { createQueryClient } from "./query-client.js";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;

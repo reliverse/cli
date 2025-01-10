@@ -1,12 +1,12 @@
 import { execSync } from "child_process";
 import https from "https";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
-import { getVersion } from "./getReliverseCliVersion.js";
+import { getCliVersion } from "./getCliVersion.js";
 
 export const renderVersionWarning = (npmVersion: string) => {
-  const currentVersion = getVersion();
+  const currentVersion = getCliVersion();
 
   //   console.log("current", currentVersion);
   //   console.log("npm", npmVersion);

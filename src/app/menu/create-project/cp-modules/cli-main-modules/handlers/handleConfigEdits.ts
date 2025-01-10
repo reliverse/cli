@@ -5,14 +5,15 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { ESLINT_PRESETS } from "../configs/configsPresets.js";
-import { detectConfigFiles } from "../configs/miscellaneousConfigHelpers.js";
+import { ESLINT_PRESETS } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/configsPresets.js";
+import { detectConfigFiles } from "~/utils/configHandler.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+
 import {
   getCurrentDependencies,
   installDependencies,
   uninstallDependencies,
 } from "./dependencies.js";
-import { relinka } from "./logger.js";
 
 export async function handleConfigEditing(cwd: string) {
   const detectedConfigs = await detectConfigFiles(cwd);

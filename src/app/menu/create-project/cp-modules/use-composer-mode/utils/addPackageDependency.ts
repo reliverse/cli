@@ -4,9 +4,9 @@ import fs from "fs-extra";
 import path from "pathe";
 import sortPackageJson from "sort-package-json";
 
-import type { AvailableDependencies } from "../installers/dependencyVersionMap.js";
+import type { AvailableDependencies } from "~/app/menu/create-project/cp-modules/use-composer-mode/installers/dependencyVersionMap.js";
 
-import { dependencyVersionMap } from "../installers/dependencyVersionMap.js";
+import { dependencyVersionMap } from "~/app/menu/create-project/cp-modules/use-composer-mode/installers/dependencyVersionMap.js";
 
 export const addPackageDependency = (opts: {
   dependencies: AvailableDependencies[];

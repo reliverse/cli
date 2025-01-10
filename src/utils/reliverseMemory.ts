@@ -9,7 +9,7 @@ import { MEMORY_FILE } from "~/app/constants.js";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function getReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists

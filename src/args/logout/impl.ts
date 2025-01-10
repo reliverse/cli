@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function deleteMemory() {
   const homeDir = os.homedir();

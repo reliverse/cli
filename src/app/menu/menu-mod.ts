@@ -6,26 +6,23 @@ import {
 import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
+import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import {
   DEFAULT_APP_NAME,
   experimental,
   recommended,
 } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
-import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
-import {
-  type ReliverseConfig,
-  type ReliverseMemory,
-  type TemplateOption,
-} from "~/types.js";
-
 import {
   randomProjectFrameworkTitle,
   randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
-} from "../db/messages.js";
+} from "~/app/db/messages.js";
+import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
+import { type ReliverseMemory, type TemplateOption } from "~/types.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+
 import { createWebProject } from "./create-project/cp-mod.js";
 
 const TEMPLATE_OPTIONS = {
@@ -233,31 +230,25 @@ export async function buildBrandNewThing(
       i18nShouldBeEnabled: true,
       isDev,
       config: config ?? {
-        experimental: {
-          projectDisplayName: extensionConfig.displayName,
-          projectDescription: extensionConfig.description,
-          features: {
-            commands: extensionConfig.features.includes("commands")
-              ? ["*"]
-              : [],
-            webview: extensionConfig.features.includes("webview") ? ["*"] : [],
-            language: extensionConfig.features.includes("language")
-              ? ["*"]
-              : [],
-            themes: extensionConfig.features.includes("themes") ? ["*"] : [],
-            i18n: false,
-            analytics: false,
-            themeMode: "dark-light",
-            authentication: false,
-            api: false,
-            database: false,
-            testing: false,
-            docker: false,
-            ci: false,
-          },
-          projectActivation: extensionConfig.activation,
-          projectAuthor: extensionConfig.publisher,
+        projectDisplayName: extensionConfig.displayName,
+        projectDescription: extensionConfig.description,
+        features: {
+          commands: extensionConfig.features.includes("commands") ? ["*"] : [],
+          webview: extensionConfig.features.includes("webview") ? ["*"] : [],
+          language: extensionConfig.features.includes("language") ? ["*"] : [],
+          themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+          i18n: false,
+          analytics: false,
+          themeMode: "dark-light",
+          authentication: false,
+          api: false,
+          database: false,
+          testing: false,
+          docker: false,
+          ci: false,
         },
+        projectActivation: extensionConfig.activation,
+        projectAuthor: extensionConfig.publisher,
       },
       memory,
       cwd,
@@ -266,7 +257,7 @@ export async function buildBrandNewThing(
   }
 
   // Get projectFramework from config or prompt for web applications
-  let projectFramework = config?.experimental?.projectFramework;
+  let projectFramework = config?.projectFramework;
   if (!projectFramework) {
     const result = await selectPrompt({
       endTitle,
@@ -355,8 +346,8 @@ export async function buildBrandNewThing(
 
     // Get template from config or prompt
     let template: TemplateOption;
-    if (config?.experimental?.projectTemplate) {
-      template = config.experimental.projectTemplate;
+    if (config?.projectTemplate) {
+      template = config.projectTemplate;
     } else {
       const result = await selectPrompt({
         endTitle,
@@ -381,13 +372,11 @@ export async function buildBrandNewThing(
           Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
         ]!,
       mode: "buildBrandNewThing",
-      i18nShouldBeEnabled: config?.experimental?.i18nBehavior === "prompt",
+      i18nShouldBeEnabled: config?.i18nBehavior === "prompt",
       isDev,
       config: config ?? {
-        experimental: {
-          i18nBehavior: "prompt",
-          projectFramework: "nextjs",
-        },
+        i18nBehavior: "prompt",
+        projectFramework: "nextjs",
       },
       memory,
       cwd,

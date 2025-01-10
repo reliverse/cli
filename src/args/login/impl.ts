@@ -15,10 +15,13 @@ import url from "url";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { getReliverseMemory, updateReliverseMemory } from "~/app/app-utils.js";
 import { MEMORY_FILE } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
+import { relinka } from "~/utils/loggerRelinka.js";
+import {
+  getReliverseMemory,
+  updateReliverseMemory,
+} from "~/utils/reliverseMemory.js";
 
 /**
  * Custom error for when a user cancels the process.

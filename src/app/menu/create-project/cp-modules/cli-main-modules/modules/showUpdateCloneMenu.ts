@@ -4,11 +4,10 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { getRepoUrl } from "~/app/constants.js";
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { downloadGitRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadGitRepo.js";
+import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
-
-import { downloadGitRepo } from "../downloads/downloadGitRepo.js";
-import { replaceImportSymbol } from "../handlers/codemods/replaceImportSymbol.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 type UpdateConfig = {
   actions: {

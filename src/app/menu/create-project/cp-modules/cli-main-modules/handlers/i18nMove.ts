@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "pathe";
 
-import { relinka } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/logger.js";
+import { relinka } from "~/utils/loggerRelinka.js";
 
 // Paths that should be ignored when moving files to [locale]
 const IGNORED_PATHS = ["api"];

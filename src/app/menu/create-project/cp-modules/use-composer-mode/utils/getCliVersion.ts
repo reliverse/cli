@@ -5,7 +5,7 @@ import path from "pathe";
 
 import { PKG_ROOT } from "~/app/constants.js";
 
-export const getVersion = () => {
+export const getCliVersion = () => {
   const packageJsonPath = path.join(PKG_ROOT, "package.json");
 
   const packageJsonContent = fs.readJSONSync(packageJsonPath) as PackageJson;
