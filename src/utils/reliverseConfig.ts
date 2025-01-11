@@ -1,30 +1,21 @@
 import { parseJSONC } from "confbox";
-import destr from "destr";
-import { safeDestr } from "destr";
+import destr, { safeDestr } from "destr";
 import { detect } from "detect-package-manager";
 import fs from "fs-extra";
 import path from "pathe";
 import { readPackageJSON, type PackageJson, type TSConfig } from "pkg-types";
 import { z } from "zod";
 
-import type {
-  Behavior,
-  CodeStylePreferences,
-  DeploymentService,
-  ProjectSubcategory,
-  PreferredLibraries,
-  ProjectCategory,
-  ProjectState,
-  ProjectTypeOptions,
-  TemplateOption,
-  PackageManagerName,
-} from "~/types.js";
+import type { DeploymentService, ProjectTypeOptions } from "~/types.js";
 
 import { getBiomeConfig } from "~/utils/configHandler.js";
 
 import { relinka } from "./loggerRelinka.js";
 
-type GenerateReliverseConfigOptions = {
+/* ------------------------------------------------------------------
+ * Types and Interfaces
+ * ------------------------------------------------------------------ */
+export type GenerateReliverseConfigOptions = {
   projectName: string;
   frontendUsername: string;
   deployService: DeploymentService;
@@ -35,7 +26,7 @@ type GenerateReliverseConfigOptions = {
   githubUsername: string;
 };
 
-type ProjectFeatures = {
+export type ProjectFeatures = {
   i18n: boolean;
   analytics: boolean;
   themeMode: "light" | "dark" | "dark-light";
@@ -51,79 +42,133 @@ type ProjectFeatures = {
   themes: string[];
 };
 
-export type ReliverseConfig = {
-  // Do you want autoYes/autoNo below?
-  // Set to true to activate auto-answering.
-  // This is to ensure there is no unexpected behavior.
-  skipPromptsUseAutoBehavior?: boolean | undefined;
+export type ReliverseConfig = z.infer<typeof reliverseConfigSchema>;
 
-  // Generation preferences
-  deployBehavior?: Behavior | undefined;
-  depsBehavior?: Behavior | undefined;
-  gitBehavior?: Behavior | undefined;
-  i18nBehavior?: Behavior | undefined;
-  scriptsBehavior?: Behavior | undefined;
+export const PROJECT_TYPE_FILES = {
+  "": [],
+  library: ["jsr.json", "jsr.jsonc"],
+  nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
+  astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
+  react: ["vite.config.js", "vite.config.ts", "react.config.js"],
+  vue: ["vue.config.js", "vite.config.ts"],
+  svelte: ["svelte.config.js", "svelte.config.ts"],
+} satisfies Record<ProjectTypeOptions, string[]>;
 
-  // Project details
-  projectName?: string | undefined;
-  projectAuthor?: string | undefined;
-  projectDescription?: string | undefined;
-  projectVersion?: string | undefined;
-  projectLicense?: string | undefined;
-  projectRepository?: string | undefined;
-  projectState?: ProjectState | undefined;
-  projectDomain?: string | undefined;
-  projectType?: ProjectTypeOptions | undefined;
-  projectCategory?: ProjectCategory | undefined;
-  projectSubcategory?: ProjectSubcategory | undefined;
-  projectTemplate?: TemplateOption | undefined;
-  projectDeployService?: DeploymentService | undefined;
-  projectActivation?: string | undefined;
-  projectFramework?: string | undefined;
-  projectPackageManager?: PackageManagerName | undefined;
-  projectFrameworkVersion?: string | undefined;
-  projectDisplayName?: string | undefined;
-  nodeVersion?: string | undefined;
-  runtime?: string | undefined;
-  productionBranch?: string | undefined;
-  deployUrl?: string | undefined;
-  monorepo?:
-    | {
-        type: string;
-        packages: string[];
-        sharedPackages: string[];
+/**
+ * Detects the project type based on certain config files
+ * @param cwd Current working directory
+ * @returns A `ProjectTypeOptions` key or `null` if not found
+ */
+export async function detectProjectType(
+  cwd: string,
+): Promise<keyof typeof PROJECT_TYPE_FILES | null> {
+  for (const [type, files] of Object.entries(PROJECT_TYPE_FILES)) {
+    for (const file of files) {
+      if (await fs.pathExists(path.join(cwd, file))) {
+        return type as keyof typeof PROJECT_TYPE_FILES;
       }
-    | undefined;
+    }
+  }
+  return null;
+}
 
-  // Project features
-  features?:
-    | {
-        i18n?: boolean | undefined;
-        analytics?: boolean | undefined;
-        themeMode?: "dark-light" | "dark" | "light" | undefined;
-        authentication?: boolean | undefined;
-        api?: boolean | undefined;
-        database?: boolean | undefined;
-        testing?: boolean | undefined;
-        docker?: boolean | undefined;
-        ci?: boolean | undefined;
-        commands?: string[] | undefined;
-        webview?: string[] | undefined;
-        language?: string[] | undefined;
-        themes?: string[] | undefined;
-      }
-    | undefined;
+/**
+ * Creates a base config with defaults for a given project
+ * @param cwd Current working directory
+ * @param projectName Name of the project
+ * @param projectAuthor Author of the project
+ * @param projectFramework Framework (e.g. nextjs)
+ * @returns A partial or complete `ReliverseConfig`
+ */
+export async function getDefaultReliverseConfig(
+  cwd: string,
+  projectName: string,
+  projectAuthor: string,
+  projectFramework = "nextjs",
+): Promise<ReliverseConfig> {
+  const biomeConfig = await getBiomeConfig(cwd);
+  const detectedPkgManager = await detect();
 
-  // Development preferences
-  preferredLibraries?: PreferredLibraries | undefined;
-  codeStyle?: CodeStylePreferences | undefined;
+  // Read package.json or fallback to default
+  let packageData: PackageJson = { name: projectName, author: projectAuthor };
+  try {
+    packageData = await readPackageJSON();
+  } catch {
+    // Use defaults if no package.json
+  }
 
-  // Dependencies management
-  ignoreDependencies?: string[] | undefined;
-
-  // Custom rules
-  customRules?: Record<string, unknown> | undefined;
-};
+  return {
+    projectName: packageData.name ?? projectName,
+    projectAuthor:
+      typeof packageData.author === "object"
+        ? (packageData.author?.name ?? projectAuthor)
+        : (packageData.author ?? projectAuthor),
+    projectDescription: packageData.description ?? "",
+    projectVersion: packageData.version ?? "0.1.0",
+    projectLicense: packageData.license ?? "MIT",
+    projectRepository:
+      typeof packageData.repository === "string"
+        ? packageData.repository
+        : (packageData.repository?.url ?? undefined),
+    projectFramework,
+    projectPackageManager: detectedPkgManager,
+    features: {
+      i18n: false,
+      analytics: false,
+      themeMode: "dark-light",
+      authentication: false,
+      api: false,
+      database: false,
+      testing: false,
+      docker: false,
+      ci: false,
+      commands: [],
+      webview: [],
+      language: [],
+      themes: [],
+    },
+    preferredLibraries: {},
+    codeStyle: {
+      lineWidth: biomeConfig?.lineWidth ?? 80,
+      indentSize: biomeConfig?.indentWidth ?? 2,
+      indentStyle: "space",
+      quoteMark: "double",
+      semicolons: true,
+      trailingComma: "all",
+      bracketSpacing: true,
+      arrowParens: "always",
+      tabWidth: biomeConfig?.indentWidth ?? 2,
+      jsToTs: false,
+      dontRemoveComments: true,
+      shouldAddComments: true,
+      typeOrInterface: "type",
+      importOrRequire: "import",
+      cjsToEsm: false,
+      modernize: {
+        replaceFs: false,
+        replacePath: false,
+        replaceHttp: false,
+        replaceProcess: false,
+        replaceConsole: false,
+        replaceEvents: false,
+      },
+      importSymbol: "",
+    },
+    monorepo: {
+      type: "none",
+      packages: [],
+      sharedPackages: [],
+    },
+    ignoreDependencies: [],
+    customRules: {},
+    skipPromptsUseAutoBehavior: false,
+    deployBehavior: "prompt",
+    depsBehavior: "prompt",
+    gitBehavior: "prompt",
+    i18nBehavior: "prompt",
+    scriptsBehavior: "prompt",
+  };
+}
 
 export type DetectedProject = {
   name: string;
@@ -137,19 +182,27 @@ export type DetectedProject = {
   hasGit?: boolean;
 };
 
+/* ------------------------------------------------------------------
+ * Constants
+ * ------------------------------------------------------------------ */
 const BACKUP_EXTENSION = ".backup";
 const TEMP_EXTENSION = ".tmp";
 
+/**
+ * Default config for newly created or fallback usage.
+ */
 export const DEFAULT_CONFIG: ReliverseConfig = {
-  // Project details
+  projectName: "",
   projectAuthor: "",
+  projectDescription: "",
+  projectVersion: "0.1.0",
+  projectLicense: "MIT",
+  projectRepository: "",
   projectState: "",
   projectDomain: "",
   projectType: "",
   projectCategory: "",
   projectSubcategory: "",
-
-  // Development preferences
   projectFramework: "nextjs",
   projectPackageManager: "npm",
   preferredLibraries: {
@@ -162,8 +215,13 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
     database: "drizzle",
     api: "trpc",
   },
-
-  // Project features
+  monorepo: {
+    type: "none",
+    packages: [],
+    sharedPackages: [],
+  },
+  ignoreDependencies: [],
+  customRules: {},
   features: {
     i18n: true,
     analytics: false,
@@ -179,8 +237,6 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
     language: [],
     themes: [],
   },
-
-  // Code style preferences
   codeStyle: {
     dontRemoveComments: true,
     shouldAddComments: true,
@@ -207,8 +263,6 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
       replaceEvents: false,
     },
   },
-
-  // Generation preferences
   skipPromptsUseAutoBehavior: false,
   deployBehavior: "prompt",
   depsBehavior: "prompt",
@@ -217,39 +271,42 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   scriptsBehavior: "prompt",
 };
 
-// Feature schema
-const featuresSchema = z.object({
-  i18n: z.boolean().default(true),
-  analytics: z.boolean().default(false),
-  themeMode: z.enum(["light", "dark", "dark-light"]).default("dark-light"),
-  authentication: z.boolean().default(true),
-  api: z.boolean().default(true),
-  database: z.boolean().default(true),
-  testing: z.boolean().default(false),
-  docker: z.boolean().default(false),
-  ci: z.boolean().default(false),
-  commands: z.array(z.string()).default([]),
-  webview: z.array(z.string()).default([]),
-  language: z.array(z.string()).default(["typescript"]),
-  themes: z.array(z.string()).default(["default"]),
-});
+/* ------------------------------------------------------------------
+ * Zod Schemas
+ * ------------------------------------------------------------------ */
+const featuresSchema = z
+  .object({
+    i18n: z.boolean(),
+    analytics: z.boolean(),
+    themeMode: z.enum(["light", "dark", "dark-light"]),
+    authentication: z.boolean(),
+    api: z.boolean(),
+    database: z.boolean(),
+    testing: z.boolean(),
+    docker: z.boolean(),
+    ci: z.boolean(),
+    commands: z.array(z.string()),
+    webview: z.array(z.string()),
+    language: z.array(z.string()),
+    themes: z.array(z.string()),
+  })
+  .required();
 
-// Code style schema
 const codeStyleSchema = z
   .object({
-    lineWidth: z.number().min(1).max(200),
-    indentSize: z.union([z.literal(2), z.literal(4), z.literal(8)]),
+    lineWidth: z.number(),
+    indentSize: z.number(),
     indentStyle: z.enum(["space", "tab"]),
     quoteMark: z.enum(["single", "double"]),
     semicolons: z.boolean(),
     trailingComma: z.enum(["none", "es5", "all"]),
     bracketSpacing: z.boolean(),
-    arrowParens: z.enum(["always", "as-needed", "never"]),
-    tabWidth: z.union([z.literal(2), z.literal(4), z.literal(8)]),
+    arrowParens: z.enum(["always", "avoid"]),
+    tabWidth: z.number(),
     jsToTs: z.boolean(),
     dontRemoveComments: z.boolean(),
     shouldAddComments: z.boolean(),
-    typeOrInterface: z.enum(["type", "interface"]),
+    typeOrInterface: z.enum(["type", "interface", "mixed"]),
     importOrRequire: z.enum(["import", "require", "mixed"]),
     cjsToEsm: z.boolean(),
     modernize: z.object({
@@ -262,32 +319,7 @@ const codeStyleSchema = z
     }),
     importSymbol: z.string(),
   })
-  .default({
-    lineWidth: 80,
-    indentSize: 2,
-    indentStyle: "space",
-    quoteMark: "double",
-    semicolons: true,
-    trailingComma: "all",
-    bracketSpacing: true,
-    arrowParens: "always",
-    tabWidth: 2,
-    jsToTs: false,
-    dontRemoveComments: true,
-    shouldAddComments: true,
-    typeOrInterface: "type",
-    importOrRequire: "import",
-    cjsToEsm: false,
-    modernize: {
-      replaceFs: false,
-      replacePath: false,
-      replaceHttp: false,
-      replaceProcess: false,
-      replaceConsole: false,
-      replaceEvents: false,
-    },
-    importSymbol: "",
-  });
+  .required();
 
 const monorepoSchema = z
   .object({
@@ -295,35 +327,336 @@ const monorepoSchema = z
     packages: z.array(z.string()),
     sharedPackages: z.array(z.string()),
   })
-  .default({
-    type: "none",
-    packages: [],
-    sharedPackages: [],
-  });
+  .required();
 
-export const PROJECT_TYPE_FILES = {
-  "": [],
-  library: ["jsr.json", "jsr.jsonc"],
-  nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
-  astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
-  react: ["vite.config.js", "vite.config.ts", "react.config.js"],
-  vue: ["vue.config.js", "vite.config.ts"],
-  svelte: ["svelte.config.js", "svelte.config.ts"],
-} satisfies Record<ProjectTypeOptions, string[]>;
+export const reliverseConfigSchema = z.object({
+  projectName: z.string().min(1),
+  projectAuthor: z.string().min(1),
+  projectDescription: z.string(),
+  projectVersion: z.string().regex(/^\d+\.\d+\.\d+/),
+  projectLicense: z.string(),
+  projectRepository: z.string().url().optional(),
+  projectDeployService: z
+    .enum(["vercel", "netlify", "railway", "deno", "none"])
+    .optional(),
+  projectDisplayName: z.string().optional(),
+  projectDomain: z.string().url().optional(),
+  projectType: z.string().optional(),
+  projectFramework: z.string(),
+  projectPackageManager: z.enum(["npm", "pnpm", "yarn", "bun"]),
+  projectFrameworkVersion: z.string().optional(),
+  projectState: z.string().optional(),
+  projectCategory: z.string().optional(),
+  projectSubcategory: z.string().optional(),
+  projectTemplate: z
+    .enum([
+      "blefnk/relivator",
+      "blefnk/next-react-ts-src-minimal",
+      "blefnk/all-in-one-nextjs-template",
+      "blefnk/create-t3-app",
+      "blefnk/create-next-app",
+      "blefnk/astro-starlight-template",
+      "blefnk/versator",
+      "reliverse/template-browser-extension",
+      "microsoft/vscode-extension-samples",
+      "microsoft/vscode-extension-template",
+    ])
+    .optional(),
+  projectActivation: z.enum(["auto", "manual"]).optional(),
+  nodeVersion: z.string().optional(),
+  runtime: z.string().optional(),
+  deployUrl: z.string().optional(),
+  features: featuresSchema,
+  preferredLibraries: z.record(z.string()),
+  codeStyle: codeStyleSchema,
+  monorepo: monorepoSchema,
+  ignoreDependencies: z.array(z.string()),
+  customRules: z.record(z.unknown()),
+  skipPromptsUseAutoBehavior: z.boolean(),
+  deployBehavior: z.enum(["prompt", "autoYes", "autoNo"]),
+  depsBehavior: z.enum(["prompt", "autoYes", "autoNo"]),
+  gitBehavior: z.enum(["prompt", "autoYes", "autoNo"]),
+  i18nBehavior: z.enum(["prompt", "autoYes", "autoNo"]),
+  scriptsBehavior: z.enum(["prompt", "autoYes", "autoNo"]),
+  productionBranch: z.string().optional(),
+});
 
-export async function detectProjectType(
-  cwd: string,
-): Promise<keyof typeof PROJECT_TYPE_FILES | null> {
-  for (const [type, files] of Object.entries(PROJECT_TYPE_FILES)) {
-    for (const file of files) {
-      if (await fs.pathExists(path.join(cwd, file))) {
-        return type as keyof typeof PROJECT_TYPE_FILES;
-      }
-    }
+/* ------------------------------------------------------------------
+ * Config Read/Write Utilities
+ * ------------------------------------------------------------------ */
+
+/**
+ * Helper type to hold comment sections for writing .reliverse
+ */
+type CommentSections = Partial<Record<keyof ReliverseConfig, string[]>>;
+
+/**
+ * Injects section comments into the JSON content
+ * @param fileContent The stringified JSON content
+ * @returns The JSON content with injected comments
+ */
+function injectSectionComments(fileContent: string): string {
+  // Minimal comment function
+  const comment = (text: string) => `// ${text}`;
+
+  // Define short comment sections
+  const commentSections: CommentSections = {
+    skipPromptsUseAutoBehavior: [
+      comment("Enable auto-answering for prompts?"),
+      comment("Set to true to skip manual confirmations."),
+    ],
+    features: [comment("Project features")],
+    projectFramework: [comment("Primary tech stack/framework")],
+    codeStyle: [comment("Code style preferences")],
+    ignoreDependencies: [comment("Dependencies to be excluded from checks")],
+    customRules: [comment("Custom rules for Reliverse AI")],
+    deployBehavior: [comment("Behavior for deployment prompts")],
+  };
+
+  // Insert section comments
+  for (const [section, lines] of Object.entries(commentSections)) {
+    if (!lines?.length) continue;
+    const combinedComments = lines
+      .map((ln, index) => (index > 0 ? `  ${ln}` : ln))
+      .join("\n");
+    fileContent = fileContent.replace(
+      new RegExp(`(\\s+)"${section}":`, "g"),
+      `\n\n  ${combinedComments}\n  "${section}":`,
+    );
   }
-  return null;
+
+  // Clean up spacing and ensure trailing newline
+  return fileContent
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/{\n\n/g, "{\n")
+    .replace(/\n\n}/g, "\n}")
+    .trim()
+    .concat("\n");
 }
 
+/**
+ * Safely writes a Reliverse config to disk with backup & atomic operations
+ * @param configPath Target config path (usually `.reliverse`)
+ * @param config ReliverseConfig to write
+ */
+export async function writeReliverseConfig(
+  configPath: string,
+  config: ReliverseConfig,
+): Promise<void> {
+  const backupPath = configPath + BACKUP_EXTENSION;
+  const tempPath = configPath + TEMP_EXTENSION;
+
+  try {
+    // Validate config with Zod
+    const validationResult = reliverseConfigSchema.safeParse(config);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors
+        .map((e) => `${e.path.join(".")}: ${e.message}`)
+        .join(", ");
+      throw new Error(`Invalid config: ${errors}`);
+    }
+
+    // Convert validated data to JSON and inject comments
+    let fileContent = JSON.stringify(validationResult.data, null, 2);
+    fileContent = injectSectionComments(fileContent);
+
+    // Create backup if original file exists
+    if (await fs.pathExists(configPath)) {
+      await fs.copy(configPath, backupPath);
+    }
+
+    // Write to temp, then rename
+    await fs.writeFile(tempPath, fileContent);
+    await fs.rename(tempPath, configPath);
+
+    // Remove backup on success
+    if (await fs.pathExists(backupPath)) {
+      await fs.remove(backupPath);
+    }
+
+    relinka("success-verbose", "Config written successfully");
+  } catch (error) {
+    // In case of error, restore backup
+    if (
+      (await fs.pathExists(backupPath)) &&
+      !(await fs.pathExists(configPath))
+    ) {
+      await fs.copy(backupPath, configPath);
+      relinka("warn", "Restored config from backup after failed write");
+    }
+
+    // Remove temp file
+    if (await fs.pathExists(tempPath)) {
+      await fs.remove(tempPath);
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Reads, validates, and returns the Reliverse config from disk
+ * @param projectName Name of the project
+ * @param configPath Full path to `.reliverse`
+ * @param cwd Current working directory
+ */
+export async function readReliverseConfig(
+  projectName: string,
+  configPath: string,
+  cwd: string,
+): Promise<ReliverseConfig | null> {
+  const backupPath = configPath + BACKUP_EXTENSION;
+
+  try {
+    // If main file exists, try reading
+    if (await fs.pathExists(configPath)) {
+      const content = await fs.readFile(configPath, "utf-8");
+
+      // If empty or just '{}', write defaults
+      if (!content.trim() || content.trim() === "{}") {
+        const defaultCfg = await getDefaultReliverseConfig(
+          cwd,
+          projectName,
+          "user",
+        );
+        await writeReliverseConfig(configPath, defaultCfg);
+        return defaultCfg;
+      }
+
+      const parsed = destr(content);
+      if (!parsed || typeof parsed !== "object") {
+        const defaultCfg = await getDefaultReliverseConfig(
+          cwd,
+          projectName,
+          "user",
+        );
+        await writeReliverseConfig(configPath, defaultCfg);
+        return defaultCfg;
+      }
+
+      const validationResult = reliverseConfigSchema.safeParse(parsed);
+      if (validationResult.success) {
+        // Valid config
+        return validationResult.data;
+      }
+
+      // If errors are specifically about missing fields, do a merge with defaults
+      const hasMissingFields = validationResult.error.errors.some(
+        (e) => e.code === "invalid_type" && e.received === "undefined",
+      );
+
+      if (hasMissingFields) {
+        const defaultCfg = await getDefaultReliverseConfig(
+          cwd,
+          projectName,
+          "user",
+        );
+
+        // Deep merge existing with default
+        const merged = {
+          ...defaultCfg,
+          ...parsed,
+          // Start of Selection
+          features: {
+            ...defaultCfg.features,
+            ...(parsed as ReliverseConfig).features,
+          },
+          codeStyle: {
+            ...defaultCfg.codeStyle,
+            ...(parsed as ReliverseConfig).codeStyle,
+          },
+          preferredLibraries: {
+            ...defaultCfg.preferredLibraries,
+            ...(parsed as ReliverseConfig).preferredLibraries,
+          },
+          customRules: {
+            ...defaultCfg.customRules,
+            ...(parsed as ReliverseConfig).customRules,
+          },
+        } as ReliverseConfig;
+
+        const mergedValidation = reliverseConfigSchema.safeParse(merged);
+        if (mergedValidation.success) {
+          await writeReliverseConfig(configPath, mergedValidation.data);
+          relinka("info", "Merged missing fields into config");
+          return mergedValidation.data;
+        }
+
+        // If still invalid, try backup below
+        relinka("warn", "Merged config is still invalid. Attempting backup...");
+      }
+    }
+
+    // If main file is invalid or missing, try backup
+    if (await fs.pathExists(backupPath)) {
+      const backupContent = await fs.readFile(backupPath, "utf-8");
+      const parsedBackup = destr(backupContent);
+
+      const validationResult = reliverseConfigSchema.safeParse(parsedBackup);
+      if (validationResult.success) {
+        await fs.copy(backupPath, configPath);
+        relinka("info", "Restored config from backup");
+        return validationResult.data;
+      }
+    }
+
+    // If no valid config found, create a default one
+    const defaultConfig = await getDefaultReliverseConfig(
+      cwd,
+      projectName,
+      "user",
+    );
+    await writeReliverseConfig(configPath, defaultConfig);
+    return defaultConfig;
+  } catch (error) {
+    relinka(
+      "error",
+      "Error reading config:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return null;
+  }
+}
+
+/**
+ * Safely updates specific fields in the `.reliverse` config
+ * @param projectName Name of the project
+ * @param configPath Full path to `.reliverse`
+ * @param updates Partial config updates
+ * @param cwd Current working directory
+ */
+export async function updateReliverseConfig(
+  projectName: string,
+  configPath: string,
+  updates: Partial<ReliverseConfig>,
+  cwd: string,
+): Promise<boolean> {
+  try {
+    const current = await readReliverseConfig(projectName, configPath, cwd);
+    if (!current) return false;
+
+    const updated = { ...current, ...updates };
+    await writeReliverseConfig(configPath, updated);
+    return true;
+  } catch (error) {
+    relinka(
+      "error",
+      "Error updating config:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return false;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Project Detection & Configuration Generation
+ * ------------------------------------------------------------------ */
+
+/**
+ * Generates a default config based on a detected project type, if found.
+ * @param cwd Current working directory
+ * @returns A partial ReliverseConfig or null if type can't be detected
+ */
 export async function generateDefaultRulesForProject(
   cwd: string,
 ): Promise<ReliverseConfig | null> {
@@ -346,6 +679,7 @@ export async function generateDefaultRulesForProject(
     );
   }
 
+  // Get base config
   const rules = await getDefaultReliverseConfig(
     cwd,
     (packageJson.name as string) ?? path.basename(cwd),
@@ -353,7 +687,7 @@ export async function generateDefaultRulesForProject(
     projectType,
   );
 
-  // Detect additional features
+  // Detect additional features by scanning filesystem
   const hasI18n = await fs.pathExists(path.join(cwd, "src/app/[locale]"));
   const hasPrisma = await fs.pathExists(path.join(cwd, "prisma/schema.prisma"));
   const hasDrizzle = await fs.pathExists(path.join(cwd, "drizzle.config.ts"));
@@ -362,7 +696,7 @@ export async function generateDefaultRulesForProject(
   );
   const hasClerk = packageJson.dependencies?.["@clerk/nextjs"];
 
-  // Configure features
+  // Update features
   rules.features = {
     ...rules.features,
     i18n: hasI18n,
@@ -380,406 +714,150 @@ export async function generateDefaultRulesForProject(
     themes: ["default"],
   };
 
-  // Configure preferred libraries
+  // Update library prefs
   if (!rules.preferredLibraries) {
     rules.preferredLibraries = {};
   }
 
-  // Set database preference based on project type
   if (projectType === "nextjs") {
-    rules.preferredLibraries.database = "prisma";
+    rules.preferredLibraries["database"] = "prisma";
+    rules.preferredLibraries["authentication"] = "next-auth";
   } else {
-    rules.preferredLibraries.database = "drizzle";
-  }
-
-  // Set auth preference based on project type
-  if (projectType === "nextjs") {
-    rules.preferredLibraries.authentication = "next-auth";
-  } else {
-    rules.preferredLibraries.authentication = "clerk";
+    rules.preferredLibraries["database"] = "drizzle";
+    rules.preferredLibraries["authentication"] = "clerk";
   }
 
   return rules;
 }
 
-export async function getDefaultReliverseConfig(
-  cwd: string,
-  projectName: string,
-  projectAuthor: string,
-  projectFramework = "nextjs",
-): Promise<ReliverseConfig> {
-  const biomeConfig = await getBiomeConfig(cwd);
-  const detectedPkgManager = await detect();
+/**
+ * Creates or merges a Reliverse config in the current workspace
+ * @param projectName Name of the project
+ * @param frontendUsername Author or main dev's username
+ * @param deployService Deployment service (vercel, netlify, etc.)
+ * @param primaryDomain The main domain for the project (if any)
+ * @param projectPath Full path to the project
+ * @param i18nShouldBeEnabled Whether i18n is or should be enabled
+ * @param overwrite Whether to force overwriting the config
+ * @param githubUsername GitHub username for repository defaults
+ */
+export async function generateReliverseConfig({
+  projectName,
+  frontendUsername,
+  deployService,
+  primaryDomain,
+  projectPath,
+  i18nShouldBeEnabled,
+  overwrite = false,
+  githubUsername,
+}: GenerateReliverseConfigOptions): Promise<void> {
+  // Attempt to read package.json
+  const packageJson = await getPackageJson(projectPath);
 
-  // Read package.json
-  let packageData: PackageJson = { name: projectName, author: projectAuthor };
+  // Start with a default config
+  const baseRules = await getDefaultReliverseConfig(
+    projectPath,
+    projectName,
+    frontendUsername,
+    packageJson?.type === "module" ? "nextjs" : "nextjs",
+  );
 
-  try {
-    packageData = await readPackageJSON();
-  } catch {
-    // Use default values if package.json doesn't exist
-  }
+  // Fill in project details
+  baseRules.projectName = projectName;
+  baseRules.projectAuthor = frontendUsername;
+  baseRules.projectDescription =
+    packageJson?.description ?? baseRules.projectDescription;
+  baseRules.projectVersion = packageJson?.version ?? baseRules.projectVersion;
+  baseRules.projectLicense = packageJson?.license ?? baseRules.projectLicense;
+  baseRules.projectRepository = packageJson?.repository
+    ? typeof packageJson.repository === "string"
+      ? packageJson.repository
+      : packageJson.repository.url
+    : `https://github.com/${githubUsername}/${projectName}`;
+  baseRules.projectDeployService = deployService;
+  baseRules.projectDomain = primaryDomain
+    ? `https://${primaryDomain}`
+    : `https://${projectName}.vercel.app`;
 
-  return {
-    // Project details
-    projectName: packageData.name ?? projectName,
-    projectAuthor:
-      typeof packageData.author === "object"
-        ? (packageData.author.name ?? projectAuthor)
-        : (packageData.author ?? projectAuthor),
-    projectDescription: packageData.description ?? "",
-    projectVersion: packageData.version ?? "0.1.0",
-    projectLicense: packageData.license ?? "MIT",
-    projectRepository:
-      (typeof packageData.repository === "string"
-        ? packageData.repository
-        : packageData.repository?.url) ?? "",
+  // Detect features from dependencies and project structure
+  baseRules.features = await detectFeatures(
+    projectPath,
+    packageJson,
+    i18nShouldBeEnabled,
+  );
 
-    // Project features
-    features: {
-      i18n: false,
-      analytics: false,
-      themeMode: "dark-light",
-      authentication: false,
-      api: false,
-      database: false,
-      testing: false,
-      docker: false,
-      ci: false,
-      commands: [],
-      webview: [],
-      language: [],
-      themes: [],
+  // Adjust behaviors
+  baseRules.gitBehavior = "prompt";
+  baseRules.deployBehavior = "prompt";
+  baseRules.depsBehavior = "prompt";
+  baseRules.i18nBehavior = "prompt";
+  baseRules.scriptsBehavior = "prompt";
+  baseRules.skipPromptsUseAutoBehavior = false;
+
+  // Fill/override codeStyle with known defaults
+  baseRules.codeStyle = {
+    ...baseRules.codeStyle,
+    dontRemoveComments: true,
+    shouldAddComments: true,
+    typeOrInterface: "type",
+    importOrRequire: "import",
+    quoteMark: "double",
+    semicolons: true,
+    lineWidth: 80,
+    indentStyle: "space",
+    indentSize: 2,
+    importSymbol: "~",
+    trailingComma: "all",
+    bracketSpacing: true,
+    arrowParens: "always",
+    tabWidth: 2,
+    jsToTs: false,
+    cjsToEsm: false,
+    modernize: {
+      replaceFs: false,
+      replacePath: false,
+      replaceHttp: false,
+      replaceProcess: false,
+      replaceConsole: false,
+      replaceEvents: false,
     },
-
-    // Development preferences
-    projectFramework,
-    projectPackageManager: detectedPkgManager,
-    projectFrameworkVersion: undefined,
-    nodeVersion: undefined,
-    runtime: undefined,
-    monorepo: {
-      type: "none",
-      packages: [],
-      sharedPackages: [],
-    },
-    preferredLibraries: {},
-    codeStyle: {
-      lineWidth: biomeConfig?.lineWidth ?? 80,
-      indentSize: biomeConfig?.indentWidth ?? 2,
-      indentStyle: "space",
-      quoteMark: "double",
-      semicolons: true,
-      trailingComma: "all",
-      bracketSpacing: true,
-      arrowParens: "always",
-      tabWidth: 2,
-      jsToTs: false,
-    },
-
-    // Dependencies management
-    ignoreDependencies: [],
-
-    // Custom rules
-    customRules: {},
-
-    // Generation preferences
-    skipPromptsUseAutoBehavior: false,
-    deployBehavior: "prompt",
-    depsBehavior: "prompt",
-    gitBehavior: "prompt",
-    i18nBehavior: "prompt",
-    scriptsBehavior: "prompt",
   };
-}
 
-export const reliverseConfigSchema: z.ZodType<ReliverseConfig> = z.object({
-  // Project details
-  projectName: z.string().min(1),
-  projectAuthor: z.string().min(1),
-  projectDescription: z.string().default(""),
-  projectVersion: z
-    .string()
-    .regex(/^\d+\.\d+\.\d+/)
-    .default("0.1.0"),
-  projectLicense: z.string().default("MIT"),
-  projectRepository: z.string().url().optional(),
-  projectDeployService: z.enum(["vercel", "netlify", "railway"]).optional(),
-  projectDomain: z.string().url().optional(),
+  // Merge with any existing config if not overwriting
+  const configPath = path.join(projectPath, ".reliverse");
+  let existingContent: ReliverseConfig | null = null;
 
-  // Project features
-  features: featuresSchema.default({}),
-
-  // Development preferences
-  projectFramework: z.string().default("nextjs"),
-  projectPackageManager: z.enum(["npm", "pnpm", "yarn", "bun"]).default("bun"),
-  projectFrameworkVersion: z.string().optional(),
-  nodeVersion: z.string().optional(),
-  runtime: z.string().optional(),
-  monorepo: monorepoSchema,
-  preferredLibraries: z.record(z.string()).default({}),
-  codeStyle: codeStyleSchema,
-
-  // Dependencies management
-  ignoreDependencies: z.array(z.string()).default([]),
-
-  // Custom rules
-  customRules: z.record(z.unknown()).default({}),
-
-  // Generation preferences
-  skipPromptsUseAutoBehavior: z.boolean().default(false),
-  deployBehavior: z.enum(["prompt", "autoYes", "autoNo"]).default("prompt"),
-  depsBehavior: z.enum(["prompt", "autoYes", "autoNo"]).default("prompt"),
-  gitBehavior: z.enum(["prompt", "autoYes", "autoNo"]).default("prompt"),
-  i18nBehavior: z.enum(["prompt", "autoYes", "autoNo"]).default("prompt"),
-  scriptsBehavior: z.enum(["prompt", "autoYes", "autoNo"]).default("prompt"),
-});
-
-// Types for comment sections
-type CommentSections = Partial<Record<keyof ReliverseConfig, string[]>>;
-
-/**
- * Safely writes config to file with backup and atomic operations
- */
-export async function writeReliverseConfig(
-  configPath: string,
-  config: ReliverseConfig,
-): Promise<void> {
-  const backupPath = configPath + BACKUP_EXTENSION;
-  const tempPath = configPath + TEMP_EXTENSION;
-
-  try {
-    // Validate config before writing
-    const validationResult = reliverseConfigSchema.safeParse(config);
-    if (!validationResult.success) {
-      throw new Error(
-        `Invalid config: ${validationResult.error.errors
-          .map((e) => `${e.path.join(".")}: ${e.message}`)
-          .join(", ")}`,
-      );
-    }
-
-    // Helper function to create comment
-    const c = (text: string) => `// ${text}`;
-
-    // Define comment sections with only essential comments
-    const commentSections: CommentSections = {
-      skipPromptsUseAutoBehavior: [
-        c("Do you want autoYes/autoNo below?"),
-        c("Set to true to activate auto-answering."),
-        c("This is to ensure there is no unexpected behavior."),
-      ],
-      features: [c("Project capabilities")],
-      projectFramework: [c("Tech stack of your project")],
-      codeStyle: [c("Code style preferences")],
-      ignoreDependencies: [c("Cleaner codemod will ignore these deps")],
-      customRules: [c("Custom rules for Reliverse AI")],
-      deployBehavior: [c("Prompts behavior (prompt | autoYes | autoNo)")],
-    };
-
-    // Format with 2 spaces indentation
-    let content = JSON.stringify(validationResult.data, null, 2);
-
-    // Add section comments
-    Object.entries(commentSections).forEach(([section, comments]) => {
-      // Add section title with proper spacing
-      content = content.replace(
-        `"${section}":`,
-        `${comments}\n  "${section}":`,
-      );
-
-      const formattedComments = (Array.isArray(comments) ? comments : [])
-        .map(
-          (comment: string, index: number, array: string[]) =>
-            index === array.length - 1
-              ? `    ${comment}` // Last comment
-              : `    ${comment}\n`, // Other comments
-        )
-        .join("");
-      content = content.replace(
-        new RegExp(`(\\s+)"${section}":`, "g"),
-        `\n\n${formattedComments}\n    "${section}":`,
-      );
-    });
-
-    // Clean up multiple empty lines and ensure final newline
-    content = `${content
-      .replace(/\n{3,}/g, "\n\n") // Replace 3 or more newlines with 2
-      .replace(/{\n\n/g, "{\n") // Remove double newline after opening brace
-      .replace(/\n\n}/g, "\n}") // Remove double newline before closing brace
-      .trim()}\n`; // Ensure single newline at end
-
-    // Create backup if file exists
-    if (await fs.pathExists(configPath)) {
-      await fs.copy(configPath, backupPath);
-    }
-
-    // Write to temp file first
-    await fs.writeFile(tempPath, content);
-
-    // Atomically rename temp file to actual file
-    await fs.rename(tempPath, configPath);
-
-    // Remove backup on success
-    if (await fs.pathExists(backupPath)) {
-      await fs.remove(backupPath);
-    }
-
-    relinka("success-verbose", "Config written successfully");
-  } catch (error) {
-    // Restore from backup if write failed
-    if (
-      (await fs.pathExists(backupPath)) &&
-      !(await fs.pathExists(configPath))
-    ) {
-      await fs.copy(backupPath, configPath);
-      relinka("warn", "Restored config from backup after failed write");
-    }
-
-    // Clean up temp file
-    if (await fs.pathExists(tempPath)) {
-      await fs.remove(tempPath);
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Safely reads and validates config from file
- */
-export async function readReliverseConfig(
-  projectName: string,
-  configPath: string,
-  cwd: string,
-): Promise<ReliverseConfig | null> {
-  const backupPath = configPath + BACKUP_EXTENSION;
-
-  try {
-    // Try reading main file
-    if (await fs.pathExists(configPath)) {
+  if (!overwrite && (await fs.pathExists(configPath))) {
+    try {
       const content = await fs.readFile(configPath, "utf-8");
-
-      // Handle empty file or just {}
-      if (!content.trim() || content.trim() === "{}") {
-        const defaultConfig = await getDefaultReliverseConfig(
-          cwd,
-          projectName,
-          "user",
-        );
-        await writeReliverseConfig(configPath, defaultConfig);
-        return defaultConfig;
-      }
-
-      const parsed = destr(content);
-      if (!parsed || typeof parsed !== "object") {
-        const defaultConfig = await getDefaultReliverseConfig(
-          cwd,
-          path.basename(configPath),
-          "user",
-        );
-        await writeReliverseConfig(configPath, defaultConfig);
-        return defaultConfig;
-      }
-
-      // Validate parsed content
-      const validationResult = reliverseConfigSchema.safeParse(parsed);
-      if (validationResult.success) {
-        // If config is valid, return it as is without any merging
-        return validationResult.data;
-      }
-
-      // Only merge if there are missing required fields
-      const missingFields = validationResult.error.errors.some(
-        (e) => e.code === "invalid_type" && e.received === "undefined",
-      );
-
-      if (!missingFields) {
-        // If errors are not about missing fields, return null to trigger backup/default
-        relinka(
-          "warn",
-          `Invalid config format: ${validationResult.error.errors
-            .map((e) => `${e.path.join(".")}: ${e.message}`)
-            .join(", ")}`,
-        );
-        return null;
-      }
-
-      // If we have missing fields, merge with defaults
-      const defaultConfig = await getDefaultReliverseConfig(
-        cwd,
-        path.basename(configPath),
-        "user",
-      );
-
-      // Deep merge existing values with defaults
-      const mergedConfig: ReliverseConfig = {
-        ...defaultConfig,
-        ...(parsed as Partial<ReliverseConfig>),
-        features: {
-          ...defaultConfig?.features,
-          ...(parsed as Partial<ReliverseConfig>)?.features,
-        },
-        codeStyle: {
-          ...defaultConfig?.codeStyle,
-          ...(parsed as Partial<ReliverseConfig>)?.codeStyle,
-        },
-        preferredLibraries: {
-          ...defaultConfig?.preferredLibraries,
-          ...(parsed as Partial<ReliverseConfig>)?.preferredLibraries,
-        },
-        customRules: {
-          ...defaultConfig?.customRules,
-          ...(parsed as Partial<ReliverseConfig>)?.customRules,
-        },
-      };
-
-      // Validate merged config
-      const mergedValidation = reliverseConfigSchema.safeParse(mergedConfig);
-      if (mergedValidation.success) {
-        await writeReliverseConfig(configPath, mergedValidation.data);
-        relinka(
-          "info",
-          "Updated config with missing fields while preserving existing values",
-        );
-        return mergedValidation.data;
-      }
-
-      // If merged config is invalid, warn and try backup
-      relinka(
-        "warn",
-        `Invalid config format: ${validationResult.error.errors
-          .map((e) => `${e.path.join(".")}: ${e.message}`)
-          .join(", ")}`,
-      );
+      existingContent = destr<ReliverseConfig>(content);
+    } catch {
+      // Ignore
     }
+  }
 
-    // Try reading backup if main file is invalid or missing
-    if (await fs.pathExists(backupPath)) {
-      const backupContent = await fs.readFile(backupPath, "utf-8");
-      const parsed = destr(backupContent);
+  const finalConfig = {
+    ...DEFAULT_CONFIG,
+    ...existingContent,
+    ...baseRules,
+  };
 
-      const validationResult = reliverseConfigSchema.safeParse(parsed);
-      if (validationResult.success) {
-        // Restore from backup
-        await fs.copy(backupPath, configPath);
-        relinka("info", "Restored config from backup");
-        return validationResult.data;
-      }
-    }
+  // Finally, write .reliverse
+  await writeReliverseConfig(configPath, finalConfig);
+}
 
-    // If no valid config found, create default
-    const defaultConfig = await getDefaultReliverseConfig(
-      cwd,
-      projectName,
-      "user",
-    );
-    await writeReliverseConfig(configPath, defaultConfig);
-    return defaultConfig;
+/**
+ * Reads package.json safely
+ */
+async function getPackageJson(
+  projectPath: string,
+): Promise<PackageJson | null> {
+  try {
+    return await readPackageJSON(projectPath);
   } catch (error) {
     relinka(
-      "error",
-      "Error reading config:",
+      "warn",
+      "Could not read package.json:",
       error instanceof Error ? error.message : String(error),
     );
     return null;
@@ -787,139 +865,195 @@ export async function readReliverseConfig(
 }
 
 /**
- * Safely updates specific fields in the config
+ * Detect features from dependencies and certain known project files
  */
-export async function updateReliverseConfig(
-  projectName: string,
-  configPath: string,
-  updates: Partial<ReliverseConfig>,
-  cwd: string,
-): Promise<boolean> {
-  try {
-    const currentConfig = await readReliverseConfig(
-      projectName,
-      configPath,
-      cwd,
-    );
-    if (!currentConfig) {
-      return false;
-    }
+async function detectFeatures(
+  projectPath: string,
+  packageJson: PackageJson | null,
+  i18nShouldBeEnabled: boolean,
+): Promise<ProjectFeatures> {
+  const deps: Record<string, string> = {
+    ...(packageJson?.dependencies ?? {}),
+    ...(packageJson?.devDependencies ?? {}),
+  };
 
-    const updatedConfig = {
-      ...currentConfig,
-      ...updates,
-    };
+  const hasNextAuth = "next-auth" in deps;
+  const hasClerk = "@clerk/nextjs" in deps;
+  const hasPrisma = "@prisma/client" in deps;
+  const hasDrizzle = "drizzle-orm" in deps;
+  const hasI18n =
+    "next-intl" in deps || "react-i18next" in deps || i18nShouldBeEnabled;
+  const hasAnalytics =
+    "@vercel/analytics" in deps || "@segment/analytics-next" in deps;
+  const hasDocker = await fs.pathExists(path.join(projectPath, "Dockerfile"));
+  const hasCI =
+    (await fs.pathExists(path.join(projectPath, ".github/workflows"))) ||
+    (await fs.pathExists(path.join(projectPath, ".gitlab-ci.yml")));
+  const hasTesting =
+    "jest" in deps || "vitest" in deps || "@testing-library/react" in deps;
 
-    await writeReliverseConfig(configPath, updatedConfig);
-    return true;
-  } catch (error) {
-    relinka(
-      "error",
-      "Error updating config:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return false;
-  }
-}
-
-const DEFAULT_MONOREPO = {
-  type: "none" as const,
-  packages: [],
-  sharedPackages: [],
-};
-
-async function createReliverseConfig(
-  cwd: string,
-  githubUsername: string,
-): Promise<void> {
-  const defaultRules = await generateDefaultRulesForProject(cwd);
-
-  await generateReliverseConfig({
-    projectName: defaultRules?.projectName ?? path.basename(cwd),
-    frontendUsername: defaultRules?.projectAuthor ?? "user",
-    deployService: "vercel",
-    primaryDomain: defaultRules?.projectDomain ?? "",
-    projectPath: cwd,
-    i18nShouldBeEnabled: defaultRules?.features?.i18n ?? false,
-    githubUsername,
-  });
-
-  relinka(
-    "info",
-    defaultRules
-      ? "Created .reliverse configuration based on detected project settings."
-      : "Created initial .reliverse configuration. Please review and adjust as needed.",
-  );
-}
-
-function mergeWithDefaults(
-  partialConfig: Partial<ReliverseConfig>,
-): ReliverseConfig {
   return {
-    ...DEFAULT_CONFIG,
-    ...partialConfig,
-    codeStyle: {
-      ...DEFAULT_CONFIG.codeStyle,
-      ...(partialConfig.codeStyle ?? {}),
-    },
-    features: {
-      ...DEFAULT_CONFIG.features,
-      ...(partialConfig.features ?? {}),
-    },
-    preferredLibraries: {
-      ...DEFAULT_CONFIG.preferredLibraries,
-      ...(partialConfig.preferredLibraries ?? {}),
-    },
-    monorepo: {
-      type: (partialConfig.monorepo?.type ?? DEFAULT_MONOREPO.type) as
-        | "none"
-        | "turborepo"
-        | "nx"
-        | "pnpm",
-      packages: partialConfig.monorepo?.packages ?? DEFAULT_MONOREPO.packages,
-      sharedPackages:
-        partialConfig.monorepo?.sharedPackages ??
-        DEFAULT_MONOREPO.sharedPackages,
-    },
+    i18n: hasI18n,
+    analytics: hasAnalytics,
+    themeMode: "dark-light",
+    authentication: hasNextAuth || hasClerk,
+    api: true,
+    database: hasPrisma || hasDrizzle,
+    testing: hasTesting,
+    docker: hasDocker,
+    ci: hasCI,
+    commands: [],
+    webview: [],
+    language: ["typescript"],
+    themes: ["default"],
   };
 }
 
+/* ------------------------------------------------------------------
+ * Additional Project Detection
+ * ------------------------------------------------------------------ */
+
+/**
+ * Checks for presence of key files/folders
+ */
+async function checkProjectFiles(projectPath: string): Promise<{
+  hasReliverse: boolean;
+  hasPackageJson: boolean;
+  hasNodeModules: boolean;
+  hasGit: boolean;
+}> {
+  const [hasReliverse, hasPackageJson, hasNodeModules, hasGit] =
+    await Promise.all([
+      fs.pathExists(path.join(projectPath, ".reliverse")),
+      fs.pathExists(path.join(projectPath, "package.json")),
+      fs.pathExists(path.join(projectPath, "node_modules")),
+      fs.pathExists(path.join(projectPath, ".git")),
+    ]);
+
+  return { hasReliverse, hasPackageJson, hasNodeModules, hasGit };
+}
+
+/**
+ * Returns a DetectedProject if `.reliverse` and `package.json` exist
+ */
+export async function detectProject(
+  projectPath: string,
+): Promise<DetectedProject | null> {
+  try {
+    const { hasReliverse, hasPackageJson, hasNodeModules, hasGit } =
+      await checkProjectFiles(projectPath);
+
+    if (!hasReliverse || !hasPackageJson) {
+      return null;
+    }
+
+    const configContent = await fs.readFile(
+      path.join(projectPath, ".reliverse"),
+      "utf-8",
+    );
+    const parsedConfig = parseJSONC(configContent);
+    const config = destr<ReliverseConfig>(parsedConfig);
+
+    return {
+      name: path.basename(projectPath),
+      path: projectPath,
+      config,
+      needsDepsInstall: !hasNodeModules,
+      hasGit,
+    };
+  } catch (error) {
+    relinka(
+      "warn",
+      `Error processing ${projectPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return null;
+  }
+}
+
+/**
+ * Detects all sub-projects (and root) that contain a `.reliverse` file
+ */
+export async function detectProjectsWithReliverse(
+  cwd: string,
+): Promise<DetectedProject[]> {
+  const detected: DetectedProject[] = [];
+
+  // Check root
+  const rootProject = await detectProject(cwd);
+  if (rootProject) {
+    detected.push(rootProject);
+  }
+
+  // Check subdirectories
+  try {
+    const items = await fs.readdir(cwd, { withFileTypes: true });
+    for (const item of items) {
+      if (item.isDirectory()) {
+        const projectPath = path.join(cwd, item.name);
+        const project = await detectProject(projectPath);
+        if (project) {
+          detected.push(project);
+        }
+      }
+    }
+  } catch (error) {
+    relinka(
+      "warn",
+      `Error reading directory ${cwd}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  return detected;
+}
+
+/* ------------------------------------------------------------------
+ * Higher-level Config Verification
+ * ------------------------------------------------------------------ */
+
+/**
+ * Attempts to parse an existing `.reliverse` file as JSONC
+ * and merge with defaults
+ */
 async function parseAndFixConfig(
   projectName: string,
   configPath: string,
   cwd: string,
 ): Promise<ReliverseConfig | null> {
-  const rawConfig = await fs.readFile(configPath, "utf-8");
+  const raw = await fs.readFile(configPath, "utf-8");
 
   try {
-    const parsedConfig = parseJSONC(rawConfig);
-    if (parsedConfig && typeof parsedConfig === "object") {
-      const updatedConfig = mergeWithDefaults(
-        parsedConfig as Partial<ReliverseConfig>,
-      );
+    const parsed = parseJSONC(raw);
+    if (parsed && typeof parsed === "object") {
+      const merged = mergeWithDefaults(parsed as Partial<ReliverseConfig>);
       const success = await updateReliverseConfig(
         projectName,
         configPath,
-        updatedConfig,
+        merged,
         cwd,
       );
-
       if (success) {
         relinka("info", "Fixed .reliverse configuration.");
         return await readReliverseConfig(projectName, configPath, cwd);
       }
     }
-  } catch (parseError) {
+  } catch (error) {
     relinka(
       "warn",
       "Failed to parse .reliverse config:",
-      parseError instanceof Error ? parseError.message : String(parseError),
+      error instanceof Error ? error.message : String(error),
     );
   }
 
   return null;
 }
 
+/**
+ * Removes the invalid `.reliverse` file and regenerates a fresh one
+ */
 async function regenerateConfig(
   projectName: string,
   configPath: string,
@@ -940,9 +1074,12 @@ async function regenerateConfig(
     githubUsername,
   });
 
-  return await readReliverseConfig(projectName, configPath, cwd);
+  return readReliverseConfig(projectName, configPath, cwd);
 }
 
+/**
+ * Verifies or regenerates `.reliverse`, returning a valid config
+ */
 export async function verifyReliverseConfig(
   cwd: string,
   configPath: string,
@@ -950,10 +1087,9 @@ export async function verifyReliverseConfig(
   projectName: string,
 ): Promise<ReliverseConfig | null> {
   try {
-    // Try to read existing config
     let config = await readReliverseConfig(projectName, configPath, cwd);
 
-    // If config is invalid, try to fix it
+    // If config is invalid, try to fix JSONC
     if (!config) {
       config = await parseAndFixConfig(projectName, configPath, cwd);
     }
@@ -983,29 +1119,38 @@ export async function verifyReliverseConfig(
   }
 }
 
-export function getReliverseConfigPath(cwd: string) {
+/**
+ * Returns the path to `.reliverse` in the given directory
+ */
+export function findReliverseConfig(cwd: string) {
   return path.join(cwd, ".reliverse");
 }
 
-export async function getReliverseConfig(
+/**
+ * Creates (or verifies) and returns a `.reliverse` config
+ */
+export async function handleReliverseConfig(
   cwd: string,
   projectName = "project",
   githubUsername = "user",
 ): Promise<ReliverseConfig> {
   try {
-    const configPath = getReliverseConfigPath(cwd);
+    const configPath = findReliverseConfig(cwd);
+
+    // Ensure the file is created at least once
     await createReliverseConfig(cwd, githubUsername);
 
-    const config = await verifyReliverseConfig(
+    // Verify/fix the config if needed
+    const cfg = await verifyReliverseConfig(
       cwd,
       configPath,
       githubUsername,
       projectName,
     );
-    if (!config) {
+    if (!cfg) {
       throw new Error("Failed to create valid .reliverse configuration");
     }
-    return config;
+    return cfg;
   } catch (error) {
     relinka(
       "error",
@@ -1016,17 +1161,253 @@ export async function getReliverseConfig(
   }
 }
 
+/**
+ * Creates a `.reliverse` config file in the current workspace if one doesn't exist
+ */
+async function createReliverseConfig(
+  cwd: string,
+  githubUsername: string,
+): Promise<void> {
+  const defaultRules = await generateDefaultRulesForProject(cwd);
+
+  await generateReliverseConfig({
+    projectName: defaultRules?.projectName ?? path.basename(cwd),
+    frontendUsername: defaultRules?.projectAuthor ?? "user",
+    deployService: "vercel",
+    primaryDomain: defaultRules?.projectDomain ?? "",
+    projectPath: cwd,
+    i18nShouldBeEnabled: defaultRules?.features?.i18n ?? false,
+    githubUsername,
+  });
+
+  relinka(
+    "info",
+    defaultRules
+      ? "Created .reliverse configuration based on detected project settings."
+      : "Created initial .reliverse configuration. Please review and adjust as needed.",
+  );
+}
+
+/* ------------------------------------------------------------------
+ * Merging Logic for Defaults
+ * ------------------------------------------------------------------ */
+
+/**
+ * Safely merges a partial config with the global `DEFAULT_CONFIG`
+ */
+function mergeWithDefaults(partial: Partial<ReliverseConfig>): ReliverseConfig {
+  const merged: ReliverseConfig = {
+    projectName: partial.projectName ?? DEFAULT_CONFIG.projectName ?? "",
+    projectAuthor: partial.projectAuthor ?? DEFAULT_CONFIG.projectAuthor ?? "",
+    projectDescription:
+      partial.projectDescription ?? DEFAULT_CONFIG.projectDescription ?? "",
+    projectVersion:
+      partial.projectVersion ?? DEFAULT_CONFIG.projectVersion ?? "0.1.0",
+    projectLicense:
+      partial.projectLicense ?? DEFAULT_CONFIG.projectLicense ?? "MIT",
+    projectRepository: partial.projectRepository,
+    projectDeployService: partial.projectDeployService,
+    projectDomain: partial.projectDomain,
+    projectType: partial.projectType,
+    projectFramework:
+      partial.projectFramework ?? DEFAULT_CONFIG.projectFramework ?? "nextjs",
+    projectPackageManager:
+      partial.projectPackageManager ??
+      DEFAULT_CONFIG.projectPackageManager ??
+      "npm",
+    projectFrameworkVersion: partial.projectFrameworkVersion,
+    nodeVersion: partial.nodeVersion,
+    runtime: partial.runtime,
+    deployUrl: partial.deployUrl,
+    features: {
+      i18n: partial.features?.i18n ?? DEFAULT_CONFIG.features.i18n ?? false,
+      analytics:
+        partial.features?.analytics ??
+        DEFAULT_CONFIG.features.analytics ??
+        false,
+      themeMode:
+        partial.features?.themeMode ??
+        DEFAULT_CONFIG.features.themeMode ??
+        "dark-light",
+      authentication:
+        partial.features?.authentication ??
+        DEFAULT_CONFIG.features.authentication ??
+        false,
+      api: partial.features?.api ?? DEFAULT_CONFIG.features.api ?? false,
+      database:
+        partial.features?.database ?? DEFAULT_CONFIG.features.database ?? false,
+      testing:
+        partial.features?.testing ?? DEFAULT_CONFIG.features.testing ?? false,
+      docker:
+        partial.features?.docker ?? DEFAULT_CONFIG.features.docker ?? false,
+      ci: partial.features?.ci ?? DEFAULT_CONFIG.features.ci ?? false,
+      commands:
+        partial.features?.commands ?? DEFAULT_CONFIG.features.commands ?? [],
+      webview:
+        partial.features?.webview ?? DEFAULT_CONFIG.features.webview ?? [],
+      language:
+        partial.features?.language ?? DEFAULT_CONFIG.features.language ?? [],
+      themes: partial.features?.themes ?? DEFAULT_CONFIG.features.themes ?? [],
+    },
+    preferredLibraries:
+      partial.preferredLibraries ?? DEFAULT_CONFIG.preferredLibraries ?? {},
+    codeStyle: {
+      lineWidth:
+        partial.codeStyle?.lineWidth ??
+        DEFAULT_CONFIG.codeStyle.lineWidth ??
+        80,
+      indentSize:
+        partial.codeStyle?.indentSize ??
+        DEFAULT_CONFIG.codeStyle.indentSize ??
+        2,
+      indentStyle:
+        partial.codeStyle?.indentStyle ??
+        DEFAULT_CONFIG.codeStyle.indentStyle ??
+        "space",
+      quoteMark:
+        partial.codeStyle?.quoteMark ??
+        DEFAULT_CONFIG.codeStyle.quoteMark ??
+        "double",
+      semicolons:
+        partial.codeStyle?.semicolons ??
+        DEFAULT_CONFIG.codeStyle.semicolons ??
+        true,
+      trailingComma:
+        partial.codeStyle?.trailingComma ??
+        DEFAULT_CONFIG.codeStyle.trailingComma ??
+        "all",
+      bracketSpacing:
+        partial.codeStyle?.bracketSpacing ??
+        DEFAULT_CONFIG.codeStyle.bracketSpacing ??
+        true,
+      arrowParens:
+        partial.codeStyle?.arrowParens ??
+        DEFAULT_CONFIG.codeStyle.arrowParens ??
+        "always",
+      tabWidth:
+        partial.codeStyle?.tabWidth ?? DEFAULT_CONFIG.codeStyle.tabWidth ?? 2,
+      jsToTs:
+        partial.codeStyle?.jsToTs ?? DEFAULT_CONFIG.codeStyle.jsToTs ?? false,
+      dontRemoveComments:
+        partial.codeStyle?.dontRemoveComments ??
+        DEFAULT_CONFIG.codeStyle.dontRemoveComments ??
+        true,
+      shouldAddComments:
+        partial.codeStyle?.shouldAddComments ??
+        DEFAULT_CONFIG.codeStyle.shouldAddComments ??
+        true,
+      typeOrInterface:
+        partial.codeStyle?.typeOrInterface ??
+        DEFAULT_CONFIG.codeStyle.typeOrInterface ??
+        "type",
+      importOrRequire:
+        partial.codeStyle?.importOrRequire ??
+        DEFAULT_CONFIG.codeStyle.importOrRequire ??
+        "import",
+      cjsToEsm:
+        partial.codeStyle?.cjsToEsm ??
+        DEFAULT_CONFIG.codeStyle.cjsToEsm ??
+        false,
+      modernize: {
+        replaceFs:
+          partial.codeStyle?.modernize?.replaceFs ??
+          DEFAULT_CONFIG.codeStyle.modernize.replaceFs ??
+          false,
+        replacePath:
+          partial.codeStyle?.modernize?.replacePath ??
+          DEFAULT_CONFIG.codeStyle.modernize.replacePath ??
+          false,
+        replaceHttp:
+          partial.codeStyle?.modernize?.replaceHttp ??
+          DEFAULT_CONFIG.codeStyle.modernize.replaceHttp ??
+          false,
+        replaceProcess:
+          partial.codeStyle?.modernize?.replaceProcess ??
+          DEFAULT_CONFIG.codeStyle.modernize.replaceProcess ??
+          false,
+        replaceConsole:
+          partial.codeStyle?.modernize?.replaceConsole ??
+          DEFAULT_CONFIG.codeStyle.modernize.replaceConsole ??
+          false,
+        replaceEvents:
+          partial.codeStyle?.modernize?.replaceEvents ??
+          DEFAULT_CONFIG.codeStyle.modernize.replaceEvents ??
+          false,
+      },
+      importSymbol:
+        partial.codeStyle?.importSymbol ??
+        DEFAULT_CONFIG.codeStyle.importSymbol ??
+        "",
+    },
+    monorepo: {
+      type: partial.monorepo?.type ?? DEFAULT_CONFIG.monorepo.type ?? "none",
+      packages:
+        partial.monorepo?.packages ?? DEFAULT_CONFIG.monorepo.packages ?? [],
+      sharedPackages:
+        partial.monorepo?.sharedPackages ??
+        DEFAULT_CONFIG.monorepo.sharedPackages ??
+        [],
+    },
+    ignoreDependencies:
+      partial.ignoreDependencies ?? DEFAULT_CONFIG.ignoreDependencies ?? [],
+    customRules: partial.customRules ?? DEFAULT_CONFIG.customRules ?? {},
+    skipPromptsUseAutoBehavior:
+      partial.skipPromptsUseAutoBehavior ??
+      DEFAULT_CONFIG.skipPromptsUseAutoBehavior ??
+      false,
+    deployBehavior:
+      partial.deployBehavior ?? DEFAULT_CONFIG.deployBehavior ?? "prompt",
+    depsBehavior:
+      partial.depsBehavior ?? DEFAULT_CONFIG.depsBehavior ?? "prompt",
+    gitBehavior: partial.gitBehavior ?? DEFAULT_CONFIG.gitBehavior ?? "prompt",
+    i18nBehavior:
+      partial.i18nBehavior ?? DEFAULT_CONFIG.i18nBehavior ?? "prompt",
+    scriptsBehavior:
+      partial.scriptsBehavior ?? DEFAULT_CONFIG.scriptsBehavior ?? "prompt",
+  };
+  return merged;
+}
+
+/* ------------------------------------------------------------------
+ * Reading Style from Prettier / TypeScript
+ * ------------------------------------------------------------------ */
+
+/**
+ * Reads code style from local config files if present (.prettierrc, tsconfig.json)
+ * and merges them into a partial ReliverseConfig
+ */
 export async function parseCodeStyleFromConfigs(
   cwd: string,
 ): Promise<Partial<ReliverseConfig>> {
-  const codeStyle: any = {};
+  const codeStyle: Record<string, unknown> = {};
 
-  // Try to read Prettier config
-  let prettierConfig: any = {};
+  // Attempt to read .prettierrc
   try {
     const prettierPath = path.join(cwd, ".prettierrc");
     if (await fs.pathExists(prettierPath)) {
-      prettierConfig = safeDestr(await fs.readFile(prettierPath, "utf-8"));
+      const fileContent = await fs.readFile(prettierPath, "utf-8");
+      const prettierConfig =
+        safeDestr<{
+          printWidth?: number;
+          tabWidth?: number;
+          useTabs?: boolean;
+          singleQuote?: boolean;
+          semi?: boolean;
+          trailingComma?: "none" | "es5" | "all";
+          bracketSpacing?: boolean;
+          arrowParens?: "always" | "avoid";
+        }>(fileContent) ?? {};
+
+      codeStyle["lineWidth"] = prettierConfig.printWidth ?? 80;
+      codeStyle["indentSize"] = prettierConfig.tabWidth ?? 2;
+      codeStyle["indentStyle"] = prettierConfig.useTabs ? "tab" : "space";
+      codeStyle["quoteMark"] = prettierConfig.singleQuote ? "single" : "double";
+      codeStyle["semicolons"] = prettierConfig.semi ?? true;
+      codeStyle["trailingComma"] = prettierConfig.trailingComma ?? "all";
+      codeStyle["bracketSpacing"] = prettierConfig.bracketSpacing ?? true;
+      codeStyle["arrowParens"] = prettierConfig.arrowParens ?? "always";
+      codeStyle["tabWidth"] = prettierConfig.tabWidth ?? 2;
+      codeStyle["jsToTs"] = false;
     }
   } catch (error) {
     relinka(
@@ -1036,29 +1417,28 @@ export async function parseCodeStyleFromConfigs(
     );
   }
 
-  // Try to read TypeScript config
+  // Attempt to read tsconfig.json
   try {
     const tsConfigPath = path.join(cwd, "tsconfig.json");
     if (await fs.pathExists(tsConfigPath)) {
-      const tsConfig = safeDestr<TSConfig>(
-        await fs.readFile(tsConfigPath, "utf-8"),
-      );
+      const tsContent = await fs.readFile(tsConfigPath, "utf-8");
+      const tsConfig = safeDestr<TSConfig>(tsContent);
 
       if (tsConfig?.compilerOptions) {
-        const { compilerOptions } = tsConfig;
-
-        // Detect strict mode settings
-        codeStyle.strictMode = {
-          enabled: compilerOptions.strict ?? false,
-          noImplicitAny: compilerOptions.noImplicitAny ?? false,
-          strictNullChecks: compilerOptions.strictNullChecks ?? false,
+        // Check TS strict settings
+        codeStyle["strictMode"] = {
+          enabled: tsConfig.compilerOptions.strict ?? false,
+          noImplicitAny: tsConfig.compilerOptions.noImplicitAny ?? false,
+          strictNullChecks: tsConfig.compilerOptions.strictNullChecks ?? false,
         };
 
-        // Detect module settings
+        // Check module format for import/require
         if (
-          (compilerOptions.module as string)?.toLowerCase().includes("node")
+          (tsConfig.compilerOptions.module as string)
+            ?.toLowerCase()
+            .includes("node")
         ) {
-          codeStyle.importOrRequire = "esm";
+          codeStyle["importOrRequire"] = "esm";
         }
       }
     }
@@ -1069,400 +1449,102 @@ export async function parseCodeStyleFromConfigs(
       error instanceof Error ? error.message : String(error),
     );
   }
-
   return {
-    codeStyle: {
-      lineWidth: prettierConfig?.printWidth ?? 80,
-      indentSize: prettierConfig?.tabWidth ?? 2,
-      indentStyle: prettierConfig?.useTabs ? "tab" : "space",
-      quoteMark: prettierConfig?.singleQuote ? "single" : "double",
-      semicolons: prettierConfig?.semi ?? true,
-      trailingComma: prettierConfig?.trailingComma ?? "all",
-      bracketSpacing: prettierConfig?.bracketSpacing ?? true,
-      arrowParens: prettierConfig?.arrowParens ?? "always",
-      tabWidth: prettierConfig?.tabWidth ?? 2,
-      jsToTs: false,
-    },
+    ...codeStyle,
   };
 }
 
+/**
+ * Revalidates and merges an existing .reliverse with default fields
+ */
 export async function revalidateReliverseJson(cwd: string, rulesPath: string) {
-  // Read file content and continue with the rest of the function...
   const fileContent = await fs.readFile(rulesPath, "utf-8");
-  const parsedContent = fileContent.trim()
+  const parsed = fileContent.trim()
     ? destr<Partial<ReliverseConfig>>(fileContent)
     : {};
 
-  // Get default rules based on project type
+  // If project type is detected, get default rules; else use fallback
   const projectType = await detectProjectType(cwd);
   const defaultRules = projectType
     ? await generateDefaultRulesForProject(cwd)
     : await getDefaultReliverseConfig(
+        cwd,
         path.basename(cwd),
         "user",
-        "nextjs", // fallback default
+        "nextjs", // Fallback
       );
 
   if (defaultRules) {
-    // Parse code style from existing config files
+    // Merge with Prettier/TS config
     const configRules = await parseCodeStyleFromConfigs(cwd);
 
-    // Always merge with defaults to ensure all fields exist
-    const mergedRules = {
-      // Start with user's values
-      ...parsedContent,
-
-      // Only add defaults for missing fields
-      projectName: parsedContent.projectName ?? defaultRules.projectName ?? "",
-      projectAuthor:
-        parsedContent.projectAuthor ?? defaultRules.projectAuthor ?? "",
-      projectDescription:
-        parsedContent.projectDescription ??
-        defaultRules.projectDescription ??
-        "",
-      projectVersion:
-        parsedContent.projectVersion ?? defaultRules.projectVersion ?? "0.1.0",
-      projectLicense:
-        parsedContent.projectLicense ?? defaultRules.projectLicense ?? "MIT",
-      projectRepository:
-        parsedContent.projectRepository ?? defaultRules.projectRepository ?? "",
-
-      // Project features - only merge if missing
+    // Build merged object
+    const merged: ReliverseConfig = {
+      ...defaultRules,
+      ...parsed,
       features: {
         ...defaultRules.features,
-        ...parsedContent.features,
+        ...parsed.features,
       },
-
-      // Development preferences - only set if missing
+      projectName: parsed.projectName ?? defaultRules.projectName ?? "",
+      projectAuthor: parsed.projectAuthor ?? defaultRules.projectAuthor ?? "",
+      projectDescription:
+        parsed.projectDescription ?? defaultRules.projectDescription ?? "",
+      projectVersion:
+        parsed.projectVersion ?? defaultRules.projectVersion ?? "0.1.0",
+      projectLicense:
+        parsed.projectLicense ?? defaultRules.projectLicense ?? "MIT",
+      projectRepository:
+        parsed.projectRepository ?? defaultRules.projectRepository ?? "",
       projectFramework:
-        parsedContent.projectFramework ?? defaultRules.projectFramework,
+        parsed.projectFramework ?? defaultRules.projectFramework,
       projectPackageManager:
-        parsedContent.projectPackageManager ??
-        defaultRules.projectPackageManager,
+        parsed.projectPackageManager ?? defaultRules.projectPackageManager,
       projectFrameworkVersion:
-        parsedContent.projectFrameworkVersion ??
-        defaultRules.projectFrameworkVersion,
-      nodeVersion: parsedContent.nodeVersion ?? defaultRules.nodeVersion,
-      runtime: parsedContent.runtime ?? defaultRules.runtime,
-      monorepo: parsedContent.monorepo ?? defaultRules.monorepo,
-
-      // Merge nested objects only if missing
+        parsed.projectFrameworkVersion ?? defaultRules.projectFrameworkVersion,
+      nodeVersion: parsed.nodeVersion ?? defaultRules.nodeVersion,
+      runtime: parsed.runtime ?? defaultRules.runtime,
+      monorepo: parsed.monorepo ?? defaultRules.monorepo,
       preferredLibraries: {
         ...defaultRules.preferredLibraries,
-        ...parsedContent.preferredLibraries,
+        ...parsed.preferredLibraries,
       },
-      codeStyle: parsedContent.codeStyle
-        ? {
-            ...defaultRules.codeStyle,
-            ...configRules?.codeStyle,
-            ...parsedContent.codeStyle,
-          }
-        : undefined,
-
-      // Generation preferences - only set if missing
+      codeStyle: {
+        ...defaultRules.codeStyle,
+        ...configRules?.codeStyle,
+        ...parsed.codeStyle,
+      },
       skipPromptsUseAutoBehavior:
-        parsedContent.skipPromptsUseAutoBehavior ??
+        parsed.skipPromptsUseAutoBehavior ??
         defaultRules.skipPromptsUseAutoBehavior ??
         false,
       deployBehavior:
-        parsedContent.deployBehavior ?? defaultRules.deployBehavior ?? "prompt",
+        parsed.deployBehavior ?? defaultRules.deployBehavior ?? "prompt",
       depsBehavior:
-        parsedContent.depsBehavior ?? defaultRules.depsBehavior ?? "prompt",
-      gitBehavior:
-        parsedContent.gitBehavior ?? defaultRules.gitBehavior ?? "prompt",
+        parsed.depsBehavior ?? defaultRules.depsBehavior ?? "prompt",
+      gitBehavior: parsed.gitBehavior ?? defaultRules.gitBehavior ?? "prompt",
       i18nBehavior:
-        parsedContent.i18nBehavior ?? defaultRules.i18nBehavior ?? "prompt",
+        parsed.i18nBehavior ?? defaultRules.i18nBehavior ?? "prompt",
       scriptsBehavior:
-        parsedContent.scriptsBehavior ??
-        defaultRules.scriptsBehavior ??
-        "prompt",
-
-      // Dependencies management
+        parsed.scriptsBehavior ?? defaultRules.scriptsBehavior ?? "prompt",
       ignoreDependencies:
-        parsedContent.ignoreDependencies ?? defaultRules.ignoreDependencies,
-
-      // Custom rules
+        parsed.ignoreDependencies ?? defaultRules.ignoreDependencies,
       customRules: {
         ...defaultRules.customRules,
-        ...parsedContent.customRules,
+        ...parsed.customRules,
       },
     };
 
-    // Only write if there were missing fields or different values
-    const currentContent = JSON.stringify(mergedRules);
-    const originalContent = JSON.stringify(parsedContent);
+    // Check if new fields were actually merged
+    const originalJson = JSON.stringify(parsed);
+    const mergedJson = JSON.stringify(merged);
 
-    if (currentContent !== originalContent) {
-      // Check for new fields in the default config
-      const hasNewFields = Object.keys(defaultRules).some((key) => {
-        const typedKey = key as keyof ReliverseConfig;
-        return (
-          !(typedKey in mergedRules) && defaultRules[typedKey] !== undefined
-        );
-      });
-
-      // Check for new fields in the merged config
-      const hasChangedFields = Object.keys(mergedRules).some((key) => {
-        const typedKey = key as keyof ReliverseConfig;
-        return (
-          typedKey in defaultRules &&
-          defaultRules[typedKey] !== mergedRules[typedKey]
-        );
-      });
-
-      if (hasNewFields || hasChangedFields) {
-        await writeReliverseConfig(cwd, mergedRules);
-        relinka(
-          "info",
-          "Updated .reliverse with missing configurations. Please review and adjust as needed.",
-        );
-      }
+    if (originalJson !== mergedJson) {
+      await writeReliverseConfig(rulesPath, merged);
+      relinka(
+        "info",
+        "Updated .reliverse with missing configurations. Please review and adjust as needed.",
+      );
     }
   }
-}
-
-async function getPackageJson(
-  projectPath: string,
-): Promise<PackageJson | null> {
-  try {
-    return await readPackageJSON(projectPath);
-  } catch (error) {
-    relinka(
-      "warn",
-      "Could not read package.json:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return null;
-  }
-}
-
-async function detectFeatures(
-  projectPath: string,
-  packageJson: PackageJson | null,
-  i18nShouldBeEnabled: boolean,
-): Promise<ProjectFeatures> {
-  const deps = {
-    ...(packageJson?.dependencies ?? {}),
-    ...(packageJson?.devDependencies ?? {}),
-  } as Record<string, string>;
-
-  const hasNextAuth = "next-auth" in deps;
-  const hasClerk = "@clerk/nextjs" in deps;
-  const hasPrisma = "@prisma/client" in deps;
-  const hasDrizzle = "drizzle-orm" in deps;
-  const hasI18n =
-    "next-intl" in deps || "react-i18next" in deps || i18nShouldBeEnabled;
-  const hasAnalytics =
-    "@vercel/analytics" in deps || "@segment/analytics-next" in deps;
-  const hasDocker = await fs.pathExists(path.join(projectPath, "Dockerfile"));
-  const hasCI =
-    (await fs.pathExists(path.join(projectPath, ".github/workflows"))) ||
-    (await fs.pathExists(path.join(projectPath, ".gitlab-ci.yml")));
-  const hasTesting =
-    "jest" in deps || "vitest" in deps || "@testing-library/react" in deps;
-
-  return {
-    i18n: hasI18n,
-    analytics: hasAnalytics,
-    themeMode: "dark-light" as const,
-    authentication: hasNextAuth || hasClerk,
-    api: true,
-    database: hasPrisma || hasDrizzle,
-    testing: hasTesting,
-    docker: hasDocker,
-    ci: hasCI,
-    commands: [],
-    webview: [],
-    language: ["typescript"],
-    themes: ["default"],
-  };
-}
-
-export async function generateReliverseConfig({
-  projectName,
-  frontendUsername,
-  deployService,
-  primaryDomain,
-  projectPath,
-  i18nShouldBeEnabled,
-  overwrite = false,
-  githubUsername,
-}: GenerateReliverseConfigOptions): Promise<void> {
-  // Read and process package.json
-  const packageJson = await getPackageJson(projectPath);
-
-  // Get base rules with detected project info
-  const rules = await getDefaultReliverseConfig(
-    projectName,
-    frontendUsername,
-    packageJson?.type === "module" ? "nextjs" : "nextjs",
-  );
-
-  // Configure project details with package.json data when available
-  rules.projectName = projectName;
-  rules.projectAuthor = frontendUsername;
-  rules.projectDescription =
-    packageJson?.description ?? rules.projectDescription;
-  rules.projectVersion = packageJson?.version ?? rules.projectVersion;
-  rules.projectLicense = packageJson?.license ?? rules.projectLicense;
-  rules.projectRepository = packageJson?.repository
-    ? typeof packageJson.repository === "string"
-      ? packageJson.repository
-      : packageJson.repository.url
-    : `https://github.com/${githubUsername}/${projectName}`;
-  rules.projectDeployService = deployService;
-  rules.projectDomain = primaryDomain
-    ? `https://${primaryDomain}`
-    : `https://${projectName}.vercel.app`;
-
-  // Configure features based on detected capabilities
-  rules.features = await detectFeatures(
-    projectPath,
-    packageJson,
-    i18nShouldBeEnabled,
-  );
-
-  // Configure behavior preferences
-  rules.gitBehavior = "prompt";
-  rules.deployBehavior = "prompt";
-  rules.depsBehavior = "prompt";
-  rules.i18nBehavior = "prompt";
-  rules.scriptsBehavior = "prompt";
-  rules.skipPromptsUseAutoBehavior = false;
-
-  // Configure code style preferences
-  rules.codeStyle = {
-    ...rules.codeStyle,
-    dontRemoveComments: true,
-    shouldAddComments: true,
-    typeOrInterface: "type",
-    importOrRequire: "import",
-    quoteMark: "double",
-    semicolons: true,
-    lineWidth: 80,
-    indentStyle: "space",
-    indentSize: 2,
-    importSymbol: "~",
-    trailingComma: "all",
-    bracketSpacing: true,
-    arrowParens: "always",
-    tabWidth: 2,
-    jsToTs: false,
-    cjsToEsm: false,
-    modernize: {
-      replaceFs: false,
-      replacePath: false,
-      replaceHttp: false,
-      replaceProcess: false,
-      replaceConsole: false,
-      replaceEvents: false,
-    },
-  };
-
-  // Write config file
-  const configPath = path.join(projectPath, ".reliverse");
-
-  // Read existing content if any
-  let existingContent: ReliverseConfig | null = null;
-  if (!overwrite && (await fs.pathExists(configPath))) {
-    try {
-      const content = await fs.readFile(configPath, "utf-8");
-      existingContent = destr<ReliverseConfig>(content);
-    } catch {
-      // Ignore read errors
-    }
-  }
-
-  // Merge with existing content if any
-  const configContent = {
-    ...DEFAULT_CONFIG,
-    ...existingContent,
-    ...rules,
-  };
-
-  await writeReliverseConfig(projectPath, configContent);
-}
-
-async function checkProjectFiles(projectPath: string): Promise<{
-  hasReliverse: boolean;
-  hasPackageJson: boolean;
-  hasNodeModules: boolean;
-  hasGit: boolean;
-}> {
-  const [hasReliverse, hasPackageJson, hasNodeModules, hasGit] =
-    await Promise.all([
-      fs.pathExists(path.join(projectPath, ".reliverse")),
-      fs.pathExists(path.join(projectPath, "package.json")),
-      fs.pathExists(path.join(projectPath, "node_modules")),
-      fs.pathExists(path.join(projectPath, ".git")),
-    ]);
-
-  return { hasReliverse, hasPackageJson, hasNodeModules, hasGit };
-}
-
-export async function detectProject(
-  projectPath: string,
-): Promise<DetectedProject | null> {
-  try {
-    const { hasReliverse, hasPackageJson, hasNodeModules, hasGit } =
-      await checkProjectFiles(projectPath);
-
-    if (!hasReliverse || !hasPackageJson) {
-      return null;
-    }
-
-    const configContent = await fs.readFile(
-      path.join(projectPath, ".reliverse"),
-      "utf-8",
-    );
-    const parsedConfig = parseJSONC(configContent);
-    const config = destr<ReliverseConfig>(parsedConfig);
-
-    return {
-      name: path.basename(projectPath),
-      path: projectPath,
-      config,
-      needsDepsInstall: !hasNodeModules,
-      hasGit,
-    };
-  } catch (error) {
-    relinka(
-      "warn",
-      `Error processing ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    return null;
-  }
-}
-
-export async function detectProjectsWithReliverse(
-  cwd: string,
-): Promise<DetectedProject[]> {
-  const detectedProjects: DetectedProject[] = [];
-
-  // First check the root directory
-  const rootProject = await detectProject(cwd);
-  if (rootProject) {
-    detectedProjects.push(rootProject);
-  }
-
-  // Then check subdirectories
-  try {
-    const items = await fs.readdir(cwd, { withFileTypes: true });
-    for (const item of items) {
-      if (item.isDirectory()) {
-        const projectPath = path.join(cwd, item.name);
-        const project = await detectProject(projectPath);
-        if (project) {
-          detectedProjects.push(project);
-        }
-      }
-    }
-  } catch (error) {
-    relinka(
-      "warn",
-      `Error reading directory ${cwd}: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-
-  return detectedProjects;
 }

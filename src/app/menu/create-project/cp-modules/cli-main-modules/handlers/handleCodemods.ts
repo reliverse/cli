@@ -25,7 +25,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   const availableCodemods = [];
 
   // Push: Tailwind v3 to v4 conversion codemod
-  if (rules.preferredLibraries?.styling === "tailwind") {
+  if (rules.preferredLibraries?.["styling"] === "tailwind") {
     availableCodemods.push({
       label: "Convert Tailwind CSS v3 to v4",
       value: "tailwind-v4",

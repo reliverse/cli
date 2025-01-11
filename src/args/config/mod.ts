@@ -2,13 +2,13 @@ import { defineCommand } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { getCurrentWorkingDirectory } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { relinka } from "~/utils/loggerRelinka.js";
 import {
   DEFAULT_CONFIG,
   getDefaultReliverseConfig,
   type ReliverseConfig,
 } from "~/utils/reliverseConfig.js";
+import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
 
 export default defineCommand({
   meta: {
@@ -117,49 +117,11 @@ export default defineCommand({
         },
 
         codeStyle: {
-          lineWidth: 80,
-          cjsToEsm: true,
-          importSymbol: "import",
-          indentSize: 2,
-          indentStyle: "space",
-          dontRemoveComments: false,
-          shouldAddComments: true,
-          typeOrInterface: "type",
-          importOrRequire: "import",
-          quoteMark: "double",
-          semicolons: true,
-          trailingComma: "all",
-          bracketSpacing: true,
-          arrowParens: "always",
-          tabWidth: 2,
-          jsToTs: false,
-          modernize: {
-            replaceFs: true,
-            replacePath: true,
-            replaceHttp: true,
-            replaceProcess: true,
-            replaceConsole: true,
-            replaceEvents: true,
-            ...rules.codeStyle?.modernize,
-          },
           ...rules.codeStyle,
         },
 
         // Project features
         features: {
-          i18n: false,
-          analytics: false,
-          themeMode: "dark-light",
-          authentication: false,
-          api: false,
-          database: false,
-          testing: false,
-          docker: false,
-          ci: false,
-          commands: [],
-          webview: [],
-          language: [],
-          themes: [],
           ...rules.features,
         },
 
@@ -205,7 +167,12 @@ export default defineCommand({
       process.exit(1);
     }
 
-    const config: ReliverseConfig = args.defaults ? DEFAULT_CONFIG : {};
+    const config: ReliverseConfig = {
+      ...DEFAULT_CONFIG,
+      ...(args.defaults
+        ? {}
+        : { projectName: "my-app", projectAuthor: "user" }),
+    };
 
     try {
       await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");

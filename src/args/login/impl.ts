@@ -19,7 +19,7 @@ import { MEMORY_FILE } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 import { relinka } from "~/utils/loggerRelinka.js";
 import {
-  getReliverseMemory,
+  handleReliverseMemory,
   updateReliverseMemory,
 } from "~/utils/reliverseMemory.js";
 
@@ -268,7 +268,7 @@ export async function authCheck(
     await auth({ isDev, useLocalhost });
 
     // Re-check authentication after auth flow
-    const updatedMemory = await getReliverseMemory();
+    const updatedMemory = await handleReliverseMemory();
 
     const authSuccess =
       updatedMemory.code &&

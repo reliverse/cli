@@ -3,7 +3,7 @@ import { defineCommand } from "@reliverse/prompts";
 import { useLocalhost } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 import { relinka } from "~/utils/loggerRelinka.js";
-import { getReliverseMemory } from "~/utils/reliverseMemory.js";
+import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { auth } from "./impl.js";
 
@@ -23,7 +23,7 @@ export default defineCommand({
     const isDev = args.dev;
 
     // Check for existing keys in SQLite
-    const memory = await getReliverseMemory();
+    const memory = await handleReliverseMemory();
     const isAuthenticated = memory.code && memory.key;
 
     if (isAuthenticated) {

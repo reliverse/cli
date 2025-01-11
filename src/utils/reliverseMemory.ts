@@ -11,7 +11,7 @@ import { encrypt, decrypt } from "~/app/db/config.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
 import { relinka } from "~/utils/loggerRelinka.js";
 
-export async function getReliverseMemory(): Promise<ReliverseMemory> {
+export async function handleReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists
   const homeDir = os.homedir();
   const memoryFile = path.join(homeDir, MEMORY_FILE);

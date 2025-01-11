@@ -7,9 +7,9 @@ import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { cd } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { relinka } from "~/utils/loggerRelinka.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
+import { cd } from "~/utils/terminalHelpers.js";
 
 import { createOctokitInstance } from "./octokit-instance.js";
 import { cloneToTempAndCopyFiles, setupGitRemote } from "./utils-git-github.js";

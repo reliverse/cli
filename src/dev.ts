@@ -5,15 +5,11 @@ import path from "pathe";
 import type { ReliverseMemory, TemplateOption } from "~/types.js";
 
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
-import {
-  cd,
-  pwd,
-  rm,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/terminal.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
 import { relinka } from "~/utils/loggerRelinka.js";
+import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 import type { ReliverseConfig } from "./utils/reliverseConfig.js";
 

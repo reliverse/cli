@@ -44,17 +44,9 @@
     "url": "https://github.com/reliverse/cli/issues",
     "email": "blefnk@gmail.com"
   },
-  "files": [
-    "package.json",
-    "README.md",
-    "LICENSE.md",
-    "dist-npm"
-  ],
+  "files": ["package.json", "README.md", "LICENSE.md", "dist-npm"],
   "homepage": "https://github.com/reliverse/cli",
-  "keywords": [
-    "cli",
-    "reliverse"
-  ],
+  "keywords": ["cli", "reliverse"],
   "license": "MIT",
   "dependencies": {
     "@clack/core": "^0.4.0",

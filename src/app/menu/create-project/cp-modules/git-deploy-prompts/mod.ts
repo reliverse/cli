@@ -7,7 +7,7 @@ import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { relinka } from "~/utils/loggerRelinka.js";
-import { getReliverseMemory } from "~/utils/reliverseMemory.js";
+import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGit } from "./git.js";
@@ -131,7 +131,7 @@ export async function handleGithubRepo(
   }
 
   // Read the memory again to get the new GitHub token
-  const updatedMemory = await getReliverseMemory();
+  const updatedMemory = await handleReliverseMemory();
 
   if (!updatedMemory?.githubKey) {
     relinka("error", "GitHub token still not found after setup");

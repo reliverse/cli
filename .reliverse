@@ -1,0 +1,80 @@
+{
+  "projectName": "@reliverse/cli",
+  "projectAuthor": "blefnk",
+  "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
+  "projectVersion": "1.4.20",
+  "projectLicense": "MIT",
+  "projectRepository": "git+https://github.com/reliverse/cli.git",
+
+  // Primary tech stack/framework
+  "projectFramework": "nextjs",
+  "projectPackageManager": "bun",
+
+  // Project features
+  "features": {
+    "i18n": false,
+    "analytics": false,
+    "themeMode": "dark-light",
+    "authentication": false,
+    "api": false,
+    "database": false,
+    "testing": false,
+    "docker": false,
+    "ci": false,
+    "commands": [],
+    "webview": [],
+    "language": [],
+    "themes": []
+  },
+  "preferredLibraries": {},
+
+  // Code style preferences
+  "codeStyle": {
+    "lineWidth": 80,
+    "indentSize": 2,
+    "indentStyle": "space",
+    "quoteMark": "double",
+    "semicolons": true,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "tabWidth": 2,
+    "jsToTs": false,
+    "dontRemoveComments": true,
+    "shouldAddComments": true,
+    "typeOrInterface": "type",
+    "importOrRequire": "import",
+    "cjsToEsm": false,
+    "modernize": {
+      "replaceFs": false,
+      "replacePath": false,
+      "replaceHttp": false,
+      "replaceProcess": false,
+      "replaceConsole": false,
+      "replaceEvents": false
+    },
+    "importSymbol": ""
+  },
+  "monorepo": {
+    "type": "none",
+    "packages": [],
+    "sharedPackages": []
+  },
+
+  // Dependencies to be excluded from checks
+  "ignoreDependencies": [],
+
+  // Custom rules for Reliverse AI
+  "customRules": {},
+
+  // Enable auto-answering for prompts?
+  // Set to true to skip manual confirmations.
+  "skipPromptsUseAutoBehavior": false,
+
+  // Behavior for deployment prompts
+  "deployBehavior": "prompt",
+  "depsBehavior": "prompt",
+  "gitBehavior": "prompt",
+  "i18nBehavior": "prompt",
+  "scriptsBehavior": "prompt"
+}

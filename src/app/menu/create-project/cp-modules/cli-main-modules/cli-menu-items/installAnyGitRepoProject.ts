@@ -130,10 +130,7 @@ export async function installAnyGitRepo(
     mode: "installAnyGitRepo",
     i18nShouldBeEnabled: true,
     isDev,
-    config: {
-      i18nBehavior: "prompt",
-      projectFramework: "nextjs",
-    },
+    config,
     memory,
     cwd,
   });
