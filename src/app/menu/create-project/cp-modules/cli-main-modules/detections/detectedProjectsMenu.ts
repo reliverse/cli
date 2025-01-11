@@ -486,7 +486,7 @@ export async function showDetectedProjectsMenu(
   } else if (action === "drizzle-schema") {
     await manageDrizzleSchema(selectedProject.path, false);
   } else if (action === "cleanup") {
-    await handleCleanup(cwd, selectedProject.path, selectedProject.name);
+    await handleCleanup(cwd, selectedProject.path);
   } else if (action === "edit-config") {
     await handleConfigEditing(selectedProject.path);
   }

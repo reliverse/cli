@@ -17,11 +17,7 @@ const defaultIgnoredDeps: string[] = [
   // TODO: We should add here any default dependencies that should always be ignored
 ];
 
-export async function handleCleanup(
-  cwd: string,
-  configPath: string,
-  projectName: string,
-) {
+export async function handleCleanup(cwd: string, configPath: string) {
   const ignoredDeps = new Set<string>(defaultIgnoredDeps);
 
   // Try to read Knip config for ignoreDependencies
@@ -45,7 +41,7 @@ export async function handleCleanup(
 
   // Read ignoreDependencies from .reliverse if exists
   try {
-    const rules = await readReliverseConfig(projectName, configPath, cwd);
+    const rules = await readReliverseConfig(configPath);
     if (rules?.ignoreDependencies) {
       rules.ignoreDependencies.forEach((dep) => ignoredDeps.add(dep));
     }

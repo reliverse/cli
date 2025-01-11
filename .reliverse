@@ -5,28 +5,47 @@
   "projectVersion": "1.4.20",
   "projectLicense": "MIT",
   "projectRepository": "git+https://github.com/reliverse/cli.git",
+  "projectDomain": "https://@reliverse/cli.vercel.app",
+  "projectDeployService": "vercel",
+  "projectType": "",
 
   // Primary tech stack/framework
   "projectFramework": "nextjs",
   "projectPackageManager": "bun",
+  "projectState": "",
+  "projectCategory": "",
+  "projectSubcategory": "",
 
   // Project features
   "features": {
     "i18n": false,
     "analytics": false,
     "themeMode": "dark-light",
-    "authentication": false,
-    "api": false,
-    "database": false,
-    "testing": false,
+    "authentication": true,
+    "api": true,
+    "database": true,
+    "testing": true,
     "docker": false,
     "ci": false,
     "commands": [],
     "webview": [],
-    "language": [],
-    "themes": []
+    "language": [
+      "typescript"
+    ],
+    "themes": [
+      "default"
+    ]
   },
-  "preferredLibraries": {},
+  "preferredLibraries": {
+    "stateManagement": "zustand",
+    "formManagement": "react-hook-form",
+    "styling": "tailwind",
+    "uiComponents": "shadcn-ui",
+    "testing": "bun",
+    "authentication": "clerk",
+    "database": "drizzle",
+    "api": "trpc"
+  },
 
   // Code style preferences
   "codeStyle": {
@@ -53,7 +72,7 @@
       "replaceConsole": false,
       "replaceEvents": false
     },
-    "importSymbol": ""
+    "importSymbol": "~"
   },
   "monorepo": {
     "type": "none",
