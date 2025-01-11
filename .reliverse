@@ -5,16 +5,36 @@
   "projectVersion": "1.4.20",
   "projectLicense": "MIT",
   "projectRepository": "git+https://github.com/reliverse/cli.git",
+  "projectState": "",
   "projectDomain": "https://@reliverse/cli.vercel.app",
-  "projectDeployService": "vercel",
   "projectType": "",
+  "projectCategory": "",
+  "projectSubcategory": "",
 
   // Primary tech stack/framework
   "projectFramework": "nextjs",
   "projectPackageManager": "bun",
-  "projectState": "",
-  "projectCategory": "",
-  "projectSubcategory": "",
+  "preferredLibraries": {
+    "stateManagement": "zustand",
+    "formManagement": "react-hook-form",
+    "styling": "tailwind",
+    "uiComponents": "shadcn-ui",
+    "testing": "bun",
+    "authentication": "clerk",
+    "database": "drizzle",
+    "api": "trpc"
+  },
+  "monorepo": {
+    "type": "none",
+    "packages": [],
+    "sharedPackages": []
+  },
+
+  // Dependencies to be excluded from checks
+  "ignoreDependencies": [],
+
+  // Custom rules for Reliverse AI
+  "customRules": {},
 
   // Project features
   "features": {
@@ -29,40 +49,27 @@
     "ci": false,
     "commands": [],
     "webview": [],
-    "language": [
-      "typescript"
-    ],
-    "themes": [
-      "default"
-    ]
-  },
-  "preferredLibraries": {
-    "stateManagement": "zustand",
-    "formManagement": "react-hook-form",
-    "styling": "tailwind",
-    "uiComponents": "shadcn-ui",
-    "testing": "bun",
-    "authentication": "clerk",
-    "database": "drizzle",
-    "api": "trpc"
+    "language": ["typescript"],
+    "themes": ["default"]
   },
 
   // Code style preferences
   "codeStyle": {
-    "lineWidth": 80,
-    "indentSize": 2,
-    "indentStyle": "space",
+    "dontRemoveComments": true,
+    "shouldAddComments": true,
+    "typeOrInterface": "type",
+    "importOrRequire": "import",
     "quoteMark": "double",
     "semicolons": true,
+    "lineWidth": 80,
+    "indentStyle": "space",
+    "indentSize": 2,
+    "importSymbol": "~",
     "trailingComma": "all",
     "bracketSpacing": true,
     "arrowParens": "always",
     "tabWidth": 2,
     "jsToTs": false,
-    "dontRemoveComments": true,
-    "shouldAddComments": true,
-    "typeOrInterface": "type",
-    "importOrRequire": "import",
     "cjsToEsm": false,
     "modernize": {
       "replaceFs": false,
@@ -71,20 +78,8 @@
       "replaceProcess": false,
       "replaceConsole": false,
       "replaceEvents": false
-    },
-    "importSymbol": "~"
+    }
   },
-  "monorepo": {
-    "type": "none",
-    "packages": [],
-    "sharedPackages": []
-  },
-
-  // Dependencies to be excluded from checks
-  "ignoreDependencies": [],
-
-  // Custom rules for Reliverse AI
-  "customRules": {},
 
   // Enable auto-answering for prompts?
   // Set to true to skip manual confirmations.
@@ -95,5 +90,6 @@
   "depsBehavior": "prompt",
   "gitBehavior": "prompt",
   "i18nBehavior": "prompt",
-  "scriptsBehavior": "prompt"
+  "scriptsBehavior": "prompt",
+  "projectDeployService": "vercel"
 }

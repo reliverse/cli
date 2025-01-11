@@ -7,7 +7,7 @@ import { relinka } from "~/utils/loggerRelinka.js";
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.20",
+    version: "1.4.21",
     description: "https://docs.reliverse.org",
   },
   subCommands: {
