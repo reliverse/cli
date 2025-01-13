@@ -1,8 +1,8 @@
 import { inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { relinka } from "~/utils/loggerRelinka.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 export async function askGithubName(

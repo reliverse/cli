@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
+import dotenv from "dotenv";
 
-import { relinka } from "~/utils/loggerRelinka.js";
+dotenv.config();
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.21",
+    version: "1.4.22",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

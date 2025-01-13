@@ -1,9 +1,8 @@
 import type { Vercel } from "@vercel/sdk";
 
 import { confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 

@@ -1,10 +1,10 @@
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { type ConfigPaths } from "~/types.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const ESLINT_DEFAULT_CONFIG = `// @ts-check
 

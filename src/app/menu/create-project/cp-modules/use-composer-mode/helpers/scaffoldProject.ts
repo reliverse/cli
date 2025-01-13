@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import ora from "ora";
@@ -8,7 +9,6 @@ import pc from "picocolors";
 import type { InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
 import { PKG_ROOT } from "~/app/constants.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 /**
  * Renames all -tsx.txt files back to .tsx in the specified directory and its subdirectories.

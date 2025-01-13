@@ -1,3 +1,4 @@
+.env
 .venv/
 dist-jsr/
 dist-npm/

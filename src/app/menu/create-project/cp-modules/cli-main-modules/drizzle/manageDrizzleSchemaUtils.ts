@@ -1,4 +1,5 @@
 import { selectPrompt, confirmPrompt, inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -6,7 +7,6 @@ import type { ColumnType, DatabaseProvider, TableSchema } from "~/types.js";
 
 import { installIntegration } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrations.js";
 import { INTEGRATION_CONFIGS } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrationsIntegrConfig.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { COLUMN_TYPES } from "./manageDrizzleConstants.js";
 

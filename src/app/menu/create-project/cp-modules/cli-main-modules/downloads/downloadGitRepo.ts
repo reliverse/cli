@@ -1,9 +1,8 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka, throwError } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
-
-import { relinka, throwError } from "~/utils/loggerRelinka.js";
 
 export async function downloadGitRepo(
   name: string,
@@ -109,6 +108,5 @@ export async function downloadGitRepo(
     }
   } catch (error) {
     throwError(error);
-    return undefined;
   }
 }

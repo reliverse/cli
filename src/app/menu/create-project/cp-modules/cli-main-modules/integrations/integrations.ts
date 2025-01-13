@@ -1,10 +1,9 @@
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { IntegrationConfig, RemovalConfig } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 enum PackageManager {
   Bun = "bun",

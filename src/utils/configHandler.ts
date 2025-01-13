@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";
 import path from "pathe";
@@ -8,8 +9,6 @@ import type {
   BiomeConfigResult,
   ConfigFile,
 } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export const CONFIG_FILES: ConfigFile[] = [
   {

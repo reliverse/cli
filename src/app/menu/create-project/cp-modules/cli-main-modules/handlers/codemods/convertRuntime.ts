@@ -1,11 +1,10 @@
 import type { TSConfig } from "pkg-types";
 
+import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const RUNTIME_REPLACEMENTS = {
   bun: {

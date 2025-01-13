@@ -1,10 +1,9 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
 import type { ModernReplacement } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const MODERN_REPLACEMENTS: ModernReplacement[] = [
   // File System

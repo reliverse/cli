@@ -1,9 +1,10 @@
-import { msg, multiselectPrompt } from "@reliverse/prompts";
+import { multiselectPrompt } from "@reliverse/prompts";
+import { msg } from "@reliverse/relinka";
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import pc from "picocolors";
 
 import { checkScriptExists } from "~/app/menu/create-project/cp-impl.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export type ScriptStatus = {
   dbPush: boolean;

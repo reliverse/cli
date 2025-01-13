@@ -1,13 +1,14 @@
 import type { ParsedUrlQuery } from "querystring";
 
 import { spinnerTaskPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
 import { setTimeout } from "node:timers";
 import open from "open";
-import os from "os";
 import "dotenv/config";
+import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 import { isWindows } from "std-env";
@@ -17,7 +18,6 @@ import type { ReliverseMemory } from "~/types.js";
 
 import { MEMORY_FILE } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 import {
   handleReliverseMemory,
   updateReliverseMemory,

@@ -1,9 +1,9 @@
 import { inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { relinka } from "~/utils/loggerRelinka.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 const DEFAULT_NAME = "johnny911";

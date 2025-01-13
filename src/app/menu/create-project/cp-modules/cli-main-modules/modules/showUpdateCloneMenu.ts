@@ -1,4 +1,5 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
@@ -7,7 +8,6 @@ import { getRepoUrl } from "~/app/constants.js";
 import { downloadGitRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadGitRepo.js";
 import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 type UpdateConfig = {
   actions: {

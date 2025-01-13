@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import os from "os";
@@ -9,7 +10,6 @@ import { MEMORY_FILE } from "~/app/constants.js";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function handleReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists

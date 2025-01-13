@@ -1,6 +1,5 @@
 import { defineCommand } from "@reliverse/prompts";
-
-import { relinka } from "~/utils/loggerRelinka.js";
+import { relinka } from "@reliverse/relinka";
 
 export default defineCommand({
   meta: {

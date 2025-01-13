@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import {
   createHash,
   createCipheriv,
@@ -7,8 +8,6 @@ import {
 import { eq } from "drizzle-orm";
 
 import type { ConfigKey } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { db } from "./client.js";
 import { configKeysTable } from "./schema.js";

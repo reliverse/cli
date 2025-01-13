@@ -1,10 +1,9 @@
 import { createClient } from "@libsql/client/node";
+import { relinka } from "@reliverse/relinka";
 import { drizzle } from "drizzle-orm/libsql/node";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 // Use .reliverse directory in user's home directory
 const homeDir = os.homedir();

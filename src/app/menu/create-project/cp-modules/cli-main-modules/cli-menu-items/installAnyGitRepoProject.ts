@@ -1,12 +1,12 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 
 import type { ReliverseMemory, TemplateOption } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import { createWebProject } from "~/app/menu/create-project/cp-mod.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
-import { buildBrandNewThing } from "~/app/menu/menu-mod.js";
-import { relinka } from "~/utils/loggerRelinka.js";
+import { showNewProjectMenu } from "~/app/menu/menu-mod.js";
 
 export async function installAnyGitRepo(
   cwd: string,
@@ -121,7 +121,7 @@ export async function installAnyGitRepo(
     repoToInstall === "blefnk/relivator" ||
     repoToInstall === "blefnk/next-react-ts-src-minimal"
   ) {
-    return buildBrandNewThing(cwd, isDev, memory, config);
+    return showNewProjectMenu(cwd, isDev, memory, config);
   }
 
   await createWebProject({

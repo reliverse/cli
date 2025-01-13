@@ -1,12 +1,12 @@
 import { multiselectPrompt } from "@reliverse/prompts";
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { KnipConfig } from "~/types.js";
 
-import { relinka } from "~/utils/loggerRelinka.js";
 import { readReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import { removeComments } from "./codemods/removeComments.js";

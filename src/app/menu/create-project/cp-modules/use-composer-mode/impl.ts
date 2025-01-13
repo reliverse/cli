@@ -1,8 +1,8 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import { CREATE_RELIVERSE_APP } from "~/app/constants.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   defaultOptions,

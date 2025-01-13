@@ -1,10 +1,9 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { DeploymentService, ReliverseMemory } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { createVercelDeployment } from "./vercel/vercel-mod.js";
 

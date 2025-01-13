@@ -1,9 +1,8 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { MonorepoType } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const MONOREPO_CONFIGS = {
   turborepo: {

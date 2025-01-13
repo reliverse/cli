@@ -1,7 +1,6 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 // Paths that should be ignored when moving files to [locale]
 const IGNORED_PATHS = ["api"];

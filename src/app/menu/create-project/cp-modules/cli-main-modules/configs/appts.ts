@@ -1,6 +1,7 @@
 import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import {
   loadFile as loadFileUsingMagicast,
@@ -13,7 +14,6 @@ import pc from "picocolors";
 import type { ApptsConfig } from "~/types.js";
 
 import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function configureAppts({ apptsConfig }: ApptsConfig) {
   const apptsConfigPath = join(apptsConfig, "app.ts");

@@ -44,9 +44,10 @@
     "addons/**/*.ts",
     "reset.d.ts",
     "build.publish.ts",
-    "publish.ts",
+    "build.pub.ts",
     "drizzle.config.ts",
-    "eslint.config.js"
+    "eslint.config.js",
+    "publish.ts"
   ],
   "exclude": ["node_modules", "dist-jsr", "dist-npm"]
 }

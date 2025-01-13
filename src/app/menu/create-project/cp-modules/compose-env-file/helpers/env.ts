@@ -1,4 +1,5 @@
 import { inputPrompt, multiselectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import open from "open";
@@ -7,7 +8,6 @@ import path from "pathe";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { userDataTable } from "~/app/db/schema.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import type { KeyVars } from "./keys.js";
 

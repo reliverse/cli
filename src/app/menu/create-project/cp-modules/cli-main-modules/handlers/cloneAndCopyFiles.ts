@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
@@ -6,7 +7,6 @@ import type { CloneError } from "~/types.js";
 import type { CopyError } from "~/types.js";
 
 import { FILE_CONFLICTS } from "~/app/constants.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 // Function to clone and copy files from the repository
 export async function cloneAndCopyFiles(

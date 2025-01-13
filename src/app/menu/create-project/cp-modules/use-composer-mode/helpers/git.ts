@@ -1,12 +1,11 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/relinka";
 import { execSync } from "child_process";
 import { execa } from "execa";
 import fs from "fs-extra";
 import ora from "ora";
 import path from "pathe";
 import pc from "picocolors";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const isGitInstalled = (dir: string): boolean => {
   try {

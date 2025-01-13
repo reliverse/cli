@@ -4,11 +4,13 @@ import {
   multiselectPrompt,
   confirmPrompt,
 } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
+import fs from "fs-extra";
 import { installDependencies } from "nypm";
+import path from "pathe";
 import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/types.js";
-import type { DetectedProject } from "~/utils/reliverseConfig.js";
 
 import { experimental } from "~/app/constants.js";
 import { checkScriptExists } from "~/app/menu/create-project/cp-impl.js";
@@ -44,9 +46,12 @@ import {
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
-import { relinka } from "~/utils/loggerRelinka.js";
+import {
+  detectProjectsWithReliverse,
+  type DetectedProject,
+} from "~/utils/reliverseConfig.js";
 
-export async function showDetectedProjectsMenu(
+export async function handleOpenProjectMenu(
   projects: DetectedProject[],
   isDev: boolean,
   memory: ReliverseMemory,
@@ -63,12 +68,12 @@ export async function showDetectedProjectsMenu(
       label: `- ${project.name}`,
       value: project.path,
       ...(project.needsDepsInstall
-        ? { hint: pc.dim("no deps found, enter to install") }
+        ? { hint: pc.dim("no deps found, <enter> to install") }
         : project.hasGit && project.gitStatus
           ? {
               hint: pc.dim(
-                `${project.gitStatus.uncommittedChanges ?? 0} uncommitted changes, ${
-                  project.gitStatus.unpushedCommits ?? 0
+                `${project.gitStatus?.uncommittedChanges ?? 0} uncommitted changes, ${
+                  project.gitStatus?.unpushedCommits ?? 0
                 } unpushed commits`,
               ),
             }
@@ -489,5 +494,17 @@ export async function showDetectedProjectsMenu(
     await handleCleanup(cwd, selectedProject.path);
   } else if (action === "edit-config") {
     await handleConfigEditing(selectedProject.path);
+  }
+}
+
+export async function showOpenProjectMenu(
+  cwd: string,
+  isDev: boolean,
+  memory: ReliverseMemory,
+) {
+  const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
+  if (await fs.pathExists(searchPath)) {
+    const detectedProjects = await detectProjectsWithReliverse(searchPath);
+    await handleOpenProjectMenu(detectedProjects, isDev, memory, cwd);
   }
 }

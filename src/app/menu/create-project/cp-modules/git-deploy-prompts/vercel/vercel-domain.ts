@@ -1,9 +1,8 @@
+import { relinka } from "@reliverse/relinka";
 import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
 import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains.js";
 
 import type { ReliverseMemory } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { createVercelCoreInstance } from "./vercel-instance.js";
 

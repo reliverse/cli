@@ -1,7 +1,6 @@
+import { relinka } from "@reliverse/relinka";
 import { execSync } from "child_process";
 import https from "https";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { getCliVersion } from "./getCliVersion.js";
 

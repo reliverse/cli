@@ -1,4 +1,5 @@
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 
 import type { IntegrationCategory, IntegrationOptions } from "~/types.js";
 
@@ -8,7 +9,6 @@ import {
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrations.js";
 import { INTEGRATION_CONFIGS } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrationsIntegrConfig.js";
 import { REMOVAL_CONFIGS } from "~/app/menu/create-project/cp-modules/cli-main-modules/integrations/integrationsRemovalConfig.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function handleIntegrations(cwd: string, isDev: boolean) {
   const integrationOptions: IntegrationOptions = {

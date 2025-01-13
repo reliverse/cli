@@ -1,13 +1,12 @@
 // 👉 usage example: `bun pub --bump=1.2.3`
 
+import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import { execaCommand } from "execa";
 import fs from "fs-extra";
 import { globby } from "globby";
 import mri from "mri";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 function showHelp() {
   relinka(

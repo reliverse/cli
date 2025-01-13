@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import ora, { type Ora } from "ora";
 import pc from "picocolors";
@@ -6,7 +7,6 @@ import {
   getUserPkgManager,
   type PackageManager,
 } from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const execWithSpinner = async (
   projectDir: string,

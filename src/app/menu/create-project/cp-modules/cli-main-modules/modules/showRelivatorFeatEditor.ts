@@ -1,6 +1,5 @@
 import { selectPrompt } from "@reliverse/prompts";
-
-import { relinka } from "~/utils/loggerRelinka.js";
+import { relinka } from "@reliverse/relinka";
 
 export async function showRelivatorFeatEditor() {
   relinka("info", "Relivator feature editor");

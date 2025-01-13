@@ -1,9 +1,8 @@
 import { selectPrompt, inputPrompt, confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import fs from "fs-extra";
 import open from "open";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   ensureExampleExists,

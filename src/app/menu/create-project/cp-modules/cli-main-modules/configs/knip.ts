@@ -1,11 +1,11 @@
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { type KnipConfig, type ConfigPaths } from "~/types.js";
 import { addConfigMetadata } from "~/utils/configHandler.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const KNIP_DEFAULT_CONFIG: KnipConfig = addConfigMetadata({
   $schema: "https://unpkg.com/knip@latest/schema.json",

@@ -1,6 +1,7 @@
 import type { Static, TSchema } from "@sinclair/typebox";
 import type { PackageJson } from "pkg-types";
 
+import { relinka } from "@reliverse/relinka";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
@@ -14,10 +15,8 @@ import type { DeploymentService, ProjectTypeOptions } from "~/types.js";
 
 import { getBiomeConfig } from "~/utils/configHandler.js";
 
-import { relinka } from "./loggerRelinka.js";
-
 /* ------------------------------------------------------------------
- * Types and Interfaces
+ * TypeScript Types
  * ------------------------------------------------------------------ */
 
 /**
@@ -25,7 +24,7 @@ import { relinka } from "./loggerRelinka.js";
  */
 export type GenerateReliverseConfigOptions = {
   projectName: string;
-  frontendUsername: string;
+  uiUsername: string;
   deployService: DeploymentService;
   primaryDomain: string;
   projectPath: string;
@@ -1039,7 +1038,7 @@ export async function detectFeatures(
  */
 export async function generateReliverseConfig({
   projectName,
-  frontendUsername,
+  uiUsername,
   deployService,
   primaryDomain,
   projectPath,
@@ -1053,13 +1052,13 @@ export async function generateReliverseConfig({
   const baseRules = await getDefaultReliverseConfig(
     projectPath,
     projectName,
-    frontendUsername,
+    uiUsername,
     packageJson?.type === "module" ? "nextjs" : "nextjs",
   );
 
   // Override with user-provided details
   baseRules.projectName = projectName;
-  baseRules.projectAuthor = frontendUsername;
+  baseRules.projectAuthor = uiUsername;
   baseRules.projectDescription =
     packageJson?.description ?? baseRules.projectDescription;
   baseRules.projectVersion = packageJson?.version ?? baseRules.projectVersion;
@@ -1155,7 +1154,7 @@ async function createReliverseConfig(
 
   await generateReliverseConfig({
     projectName: finalProjectName,
-    frontendUsername: finalAuthorName,
+    uiUsername: finalAuthorName,
     deployService: "vercel",
     primaryDomain: finalDomain,
     projectPath: cwd,

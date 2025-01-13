@@ -8,6 +8,7 @@ import {
   nextStepsPrompt,
   inputPrompt,
 } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
@@ -32,7 +33,6 @@ import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export type PackageJson = {
   name?: string;
@@ -44,7 +44,7 @@ export type PackageJson = {
 export type CreateWebProjectOptions = {
   webProjectTemplate: TemplateOption;
   message: string;
-  mode: "buildBrandNewThing" | "installAnyGitRepo";
+  mode: "showNewProjectMenu" | "installAnyGitRepo";
   i18nShouldBeEnabled: boolean;
   isDev: boolean;
   config: ReliverseConfig;
@@ -53,7 +53,7 @@ export type CreateWebProjectOptions = {
 };
 
 export type ProjectConfig = {
-  frontendUsername: string;
+  uiUsername: string;
   projectName: string;
   primaryDomain: string;
 };
@@ -63,7 +63,7 @@ export async function initializeProjectConfig(
   config: ReliverseConfig,
   shouldUseDataFromConfig: boolean,
 ): Promise<ProjectConfig> {
-  const frontendUsername =
+  const uiUsername =
     shouldUseDataFromConfig && config?.projectAuthor
       ? config.projectAuthor
       : ((await askUserName(memory)) ?? "");
@@ -78,7 +78,7 @@ export async function initializeProjectConfig(
       ? config.projectDomain
       : `${projectName}.vercel.app`;
 
-  return { frontendUsername, projectName, primaryDomain };
+  return { uiUsername, projectName, primaryDomain };
 }
 
 export async function replaceTemplateStrings(
@@ -99,7 +99,7 @@ export async function replaceTemplateStrings(
 
       const replacements: Record<string, string> = {
         [`${oldProjectName}.com`]: config.primaryDomain,
-        [author]: config.frontendUsername,
+        [author]: config.uiUsername,
         [oldProjectName]: config.projectName,
         ["relivator.com"]: config.primaryDomain,
       };
@@ -287,7 +287,7 @@ export async function handleDeployment(params: {
 export async function showSuccessAndNextSteps(
   projectPath: string,
   webProjectTemplate: TemplateOption,
-  frontendUsername: string,
+  uiUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -327,7 +327,7 @@ export async function showSuccessAndNextSteps(
   await handleNextActions(
     finalProjectPath,
     vscodeInstalled,
-    frontendUsername,
+    uiUsername,
     isDeployed,
     primaryDomain,
     allDomains,
@@ -337,7 +337,7 @@ export async function showSuccessAndNextSteps(
 export async function handleNextActions(
   projectPath: string,
   vscodeInstalled: boolean,
-  frontendUsername: string,
+  uiUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -383,7 +383,7 @@ export async function handleNextActions(
 
   relinka(
     "info",
-    `👋 I'll have some more features coming soon! ${frontendUsername ? `See you soon, ${frontendUsername}!` : ""}`,
+    `👋 I'll have some more features coming soon! ${uiUsername ? `See you soon, ${uiUsername}!` : ""}`,
   );
 
   relinka(

@@ -1,11 +1,10 @@
 import { getRootDirname } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt, passwordPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { join } from "pathe";
 
 import type { PromptType, Question } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 // TODO: 🐞 Still in development! Please use at own risk!
 

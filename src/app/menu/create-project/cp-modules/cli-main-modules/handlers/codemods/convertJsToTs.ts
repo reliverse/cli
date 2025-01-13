@@ -1,7 +1,6 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 function generateTypeDefinitions(content: string): string {
   let result = content;

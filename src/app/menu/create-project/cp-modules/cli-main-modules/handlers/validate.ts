@@ -1,4 +1,4 @@
-import { relinka } from "~/utils/loggerRelinka.js";
+import { relinka } from "@reliverse/relinka";
 
 function handlePromptCancellation(input: unknown, exitMessage: string): void {
   if (typeof input === "symbol" && String(input) === "Symbol(clack:cancel)") {

@@ -1,9 +1,8 @@
 // 👉 usage example: `bun pub --bump=1.2.3`
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const main = defineCommand({
   meta: {

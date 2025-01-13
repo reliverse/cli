@@ -1,3 +1,4 @@
+import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
@@ -5,7 +6,6 @@ import path from "pathe";
 import type { ShadcnConfig, Theme } from "~/types.js";
 
 import { pmx } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectPackageManager.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const COMPONENT_DEPENDENCIES: Record<string, string[]> = {
   "alert-dialog": ["button"],

@@ -322,17 +322,6 @@ export type CopyError = {
   fileName?: string;
 } & Error;
 
-export type MessageKind = "log" | "info" | "warn" | "error" | "success";
-export type VerboseKind = `${MessageKind}-verbose`;
-export type AllKinds = MessageKind | VerboseKind;
-export type MessageConfig = {
-  type: "M_INFO" | "M_ERROR";
-  titleColor?: "retroGradient" | "viceGradient" | "yellowBright";
-  titleTypography?: "bold";
-  contentColor?: "dim";
-  contentTypography?: "italic";
-};
-
 export type PromptType = "confirm" | "input" | "password";
 
 export type Question = {

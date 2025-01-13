@@ -1,10 +1,9 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
 
 import type { TailwindThemeVariable } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   DEFAULT_THEME_VARIABLES,

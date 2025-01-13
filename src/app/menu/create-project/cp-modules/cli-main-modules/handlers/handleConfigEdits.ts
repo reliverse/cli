@@ -1,13 +1,13 @@
 import type { TSConfig } from "pkg-types";
 
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { ESLINT_PRESETS } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/configsPresets.js";
 import { detectConfigFiles } from "~/utils/configHandler.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   getCurrentDependencies,

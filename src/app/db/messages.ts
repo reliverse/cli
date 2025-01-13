@@ -65,3 +65,17 @@ export const randomWebsiteDetailsTitle = [
 // export const randomEndMessage = [
 // "https://docs.reliverse.org/reliverse/cli",
 // ];
+
+export function getWelcomeTitle(username: string) {
+  return `🤖 ${
+    username && username !== ""
+      ? randomWelcomeMessages(username)[
+          Math.floor(Math.random() * randomWelcomeMessages(username).length)
+        ]
+      : ""
+  } ${
+    randomReliverseMenuTitle[
+      Math.floor(Math.random() * randomReliverseMenuTitle.length)
+    ]
+  }`;
+}

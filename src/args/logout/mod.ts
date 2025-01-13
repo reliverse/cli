@@ -1,14 +1,8 @@
-import {
-  confirmPrompt,
-  defineCommand,
-  deleteLastLine,
-  msg,
-} from "@reliverse/prompts";
+import { confirmPrompt, defineCommand } from "@reliverse/prompts";
+import { deleteLastLine, msg, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { deleteMemory } from "./impl.js";
 

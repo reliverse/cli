@@ -5,6 +5,7 @@ import type {
 } from "@vercel/sdk/models/getprojectsop";
 
 import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -12,7 +13,6 @@ import type { ReliverseMemory } from "~/types.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { withRateLimit } from "./vercel-api.js";

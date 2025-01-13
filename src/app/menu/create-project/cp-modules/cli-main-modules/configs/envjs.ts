@@ -1,10 +1,10 @@
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { type ConfigPaths } from "~/types.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const ENV_DEFAULT_CONFIG = `import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";

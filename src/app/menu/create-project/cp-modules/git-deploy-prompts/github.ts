@@ -2,12 +2,12 @@ import type { Octokit } from "@octokit/rest";
 
 import { RequestError } from "@octokit/request-error";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
 
-import { relinka } from "~/utils/loggerRelinka.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 import { cd } from "~/utils/terminalHelpers.js";
 

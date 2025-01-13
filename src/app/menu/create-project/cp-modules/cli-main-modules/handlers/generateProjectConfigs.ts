@@ -1,11 +1,11 @@
 import { spinnerTaskPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { CONFIG_CATEGORIES } from "~/app/constants.js";
 import { type DeploymentService, type VSCodeSettings } from "~/types.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 import { generateReliverseConfig } from "~/utils/reliverseConfig.js";
 
 async function generateBiomeConfig(
@@ -115,7 +115,7 @@ async function generateConfigFiles(
   projectPath: string,
   overwrite: boolean,
   projectName: string,
-  frontendUsername: string,
+  uiUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
@@ -142,7 +142,7 @@ async function generateConfigFiles(
           ".reliverse": async () =>
             generateReliverseConfig({
               projectName,
-              frontendUsername,
+              uiUsername,
               deployService,
               primaryDomain,
               projectPath,
@@ -174,7 +174,7 @@ async function generateConfigFiles(
 export async function generateProjectConfigs(
   projectPath: string,
   projectName: string,
-  frontendUsername: string,
+  uiUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
@@ -204,7 +204,7 @@ export async function generateProjectConfigs(
         projectPath,
         false,
         projectName,
-        frontendUsername,
+        uiUsername,
         deployService,
         primaryDomain,
         i18nShouldBeEnabled,
@@ -216,7 +216,7 @@ export async function generateProjectConfigs(
         projectPath,
         true,
         projectName,
-        frontendUsername,
+        uiUsername,
         deployService,
         primaryDomain,
         i18nShouldBeEnabled,

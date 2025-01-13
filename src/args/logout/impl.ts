@@ -1,8 +1,7 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function deleteMemory() {
   const homeDir = os.homedir();

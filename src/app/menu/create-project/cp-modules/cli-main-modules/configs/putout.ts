@@ -1,11 +1,11 @@
 import { fileExists, removeFile } from "@reliverse/fs";
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import { type PutoutConfig, type ConfigPaths } from "~/types.js";
 import { addConfigMetadata } from "~/utils/configHandler.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 const PUTOUT_DEFAULT_CONFIG: PutoutConfig = addConfigMetadata({
   rules: {

@@ -1,3 +1,5 @@
+import { relinka } from "@reliverse/relinka";
+
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import {
@@ -5,7 +7,6 @@ import {
   updateProjectConfig,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import {
   initializeProjectConfig,
@@ -41,7 +42,7 @@ export async function createWebProject({
     shouldUseDataFromConfig,
   );
   const {
-    frontendUsername,
+    uiUsername,
     projectName,
     primaryDomain: initialDomain,
   } = projectConfig;
@@ -68,7 +69,7 @@ export async function createWebProject({
   // Replace template strings
   await replaceTemplateStrings(projectPath, webProjectTemplate, {
     primaryDomain: initialDomain,
-    frontendUsername,
+    uiUsername,
     projectName,
   });
 
@@ -90,11 +91,11 @@ export async function createWebProject({
   await generateProjectConfigs(
     projectPath,
     projectName,
-    frontendUsername,
+    uiUsername,
     "vercel",
     initialDomain,
     defaultI18nShouldBeEnabled,
-    frontendUsername,
+    uiUsername,
   );
 
   // Handle deployment
@@ -125,7 +126,7 @@ export async function createWebProject({
   await showSuccessAndNextSteps(
     projectPath,
     webProjectTemplate,
-    frontendUsername,
+    uiUsername,
     isDeployed,
     primaryDomain,
     allDomains,

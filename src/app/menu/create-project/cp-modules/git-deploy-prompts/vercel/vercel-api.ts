@@ -1,6 +1,6 @@
 import type { Vercel } from "@vercel/sdk";
 
-import { relinka } from "~/utils/loggerRelinka.js";
+import { relinka } from "@reliverse/relinka";
 
 import type { EnvVar, VercelEnvResponse } from "./vercel-types.js";
 

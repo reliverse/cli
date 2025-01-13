@@ -3,6 +3,7 @@ import {
   inputPrompt,
   multiselectPrompt,
 } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
@@ -21,7 +22,6 @@ import {
 } from "~/app/db/messages.js";
 import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
 import { type ReliverseMemory, type TemplateOption } from "~/types.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 import { createWebProject } from "./create-project/cp-mod.js";
 
@@ -146,7 +146,7 @@ async function configureVSCodeExtension() {
   return extensionConfig;
 }
 
-export async function buildBrandNewThing(
+export async function showNewProjectMenu(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
@@ -226,7 +226,7 @@ export async function buildBrandNewThing(
         "coming-soon"
       >,
       message: initialMessage,
-      mode: "buildBrandNewThing",
+      mode: "showNewProjectMenu",
       i18nShouldBeEnabled: true,
       isDev,
       config: config ?? {
@@ -371,7 +371,7 @@ export async function buildBrandNewThing(
         randomWebsiteDetailsTitle[
           Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
         ]!,
-      mode: "buildBrandNewThing",
+      mode: "showNewProjectMenu",
       i18nShouldBeEnabled: config?.i18nBehavior === "prompt",
       isDev,
       config: config ?? {

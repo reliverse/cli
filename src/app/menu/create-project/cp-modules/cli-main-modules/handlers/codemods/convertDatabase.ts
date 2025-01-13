@@ -1,9 +1,8 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { PrismaField, PrismaModel } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 function parsePrismaSchema(content: string): PrismaModel[] {
   const models: PrismaModel[] = [];

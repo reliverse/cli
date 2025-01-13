@@ -1,8 +1,7 @@
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function getProjectMenuOptions(
   cwd: string,

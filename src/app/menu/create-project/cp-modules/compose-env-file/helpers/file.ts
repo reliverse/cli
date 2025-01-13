@@ -1,6 +1,5 @@
+import { relinka } from "@reliverse/relinka";
 import { ofetch } from "ofetch";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export async function fetchEnvExampleContent(
   urlResource: string,

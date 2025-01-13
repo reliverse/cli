@@ -13,14 +13,12 @@ export default defineCommand({
     name: "cli",
     description: "Runs the @reliverse/cli",
   },
-
   args: {
     dev: {
       type: "boolean",
       description: "Runs the CLI in dev mode",
     },
   },
-
   run: async ({ args }) => {
     const isDev = args.dev;
     const cwd = getCurrentWorkingDirectory();

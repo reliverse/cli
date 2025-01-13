@@ -1,4 +1,5 @@
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -9,7 +10,6 @@ import {
   removeFile,
   renameFile,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/fileUtils.js";
-import { relinka } from "~/utils/loggerRelinka.js";
 
 export const resolveProjectConflicts = async (projectPath: string) => {
   // Ask user if they want to decide what to do with each file conflict

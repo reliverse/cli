@@ -1,6 +1,7 @@
 import type { PackageJson } from "pkg-types";
 
 import { confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { createTarGzip } from "nanotar";
 import { homedir } from "os";
@@ -8,8 +9,6 @@ import path from "pathe";
 import { simpleGit } from "simple-git";
 
 import type { ReliverseMemory } from "~/types.js";
-
-import { relinka } from "~/utils/loggerRelinka.js";
 
 type FileInput = {
   name: string;
