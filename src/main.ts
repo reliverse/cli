@@ -9,7 +9,7 @@ dotenv.config();
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.22",
+    version: "1.4.23",
     description: "https://docs.reliverse.org",
   },
   subCommands: {

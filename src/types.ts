@@ -1,6 +1,11 @@
 export type Behavior = "prompt" | "autoYes" | "autoNo";
 
-export type ConfigKey = "code" | "key" | "githubKey" | "vercelKey";
+export type ConfigKey =
+  | "code"
+  | "key"
+  | "githubKey"
+  | "vercelKey"
+  | "openaiKey";
 
 export type UserDataKeys =
   | "name"
@@ -13,6 +18,7 @@ export type ReliverseMemory = {
   key: string;
   githubKey?: string;
   vercelKey?: string;
+  openaiKey?: string;
   name?: string;
   email?: string;
   githubUsername?: string;

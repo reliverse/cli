@@ -63,6 +63,7 @@ export async function handleReliverseMemory(): Promise<ReliverseMemory> {
       key: configData["key"] ?? "",
       githubKey: configData["githubKey"] ?? "",
       vercelKey: configData["vercelKey"] ?? "",
+      openaiKey: configData["openaiKey"] ?? "",
       // Non-encrypted data
       name: userData["name"] ?? "",
       email: userData["email"] ?? "",
@@ -80,6 +81,7 @@ export async function handleReliverseMemory(): Promise<ReliverseMemory> {
       key: "",
       githubKey: "",
       vercelKey: "",
+      openaiKey: "",
       name: "",
       email: "",
       githubUsername: "",
@@ -95,7 +97,7 @@ export async function updateReliverseMemory(
     // Split updates into encrypted and non-encrypted data
     const configUpdates = Object.entries(data)
       .filter(([key]) =>
-        ["code", "key", "githubKey", "vercelKey"].includes(key),
+        ["code", "key", "githubKey", "vercelKey", "openaiKey"].includes(key),
       )
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
@@ -127,7 +129,7 @@ export async function updateReliverseMemory(
     // Delete entries that are explicitly set to null
     const keysToDelete = Object.entries(data)
       .filter(([key]) =>
-        ["code", "key", "githubKey", "vercelKey"].includes(key),
+        ["code", "key", "githubKey", "vercelKey", "openaiKey"].includes(key),
       )
       .filter(([_, value]) => value === null)
       .map(([key]) => key as ConfigKey);

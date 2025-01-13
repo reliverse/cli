@@ -110,10 +110,6 @@ export async function showDevToolsMenu(
       cwd,
     );
   } else if (option === "ai-chat-test") {
-    if (process.env["OPENAI_API_KEY"]) {
-      await aiChatHandler();
-    } else {
-      relinka("error", "OPENAI_API_KEY is not set in .env file");
-    }
+    await aiChatHandler(memory);
   }
 }

@@ -1,4 +1,5 @@
 import { inputPrompt } from "@reliverse/prompts";
+import pc from "picocolors";
 import { generate } from "random-words";
 
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
@@ -10,7 +11,7 @@ export async function askProjectName(): Promise<string> {
     title: "How should I name your app?",
     content:
       "This name will be used to create the project directory and throughout the project.",
-    hint: "Press <Enter> to use the default value.",
+    hint: pc.dim("Press <Enter> to use the default value."),
     defaultValue: placeholder,
     placeholder: `I've just generated a random name for you: ${placeholder}`,
   });
