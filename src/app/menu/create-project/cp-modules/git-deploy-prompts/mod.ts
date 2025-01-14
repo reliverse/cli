@@ -4,7 +4,7 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
 import type { DeploymentService, ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
@@ -98,6 +98,7 @@ export async function handleGithubRepo(
   memory: ReliverseMemory,
   projectName: string,
   projectPath: string,
+  shouldMaskSecretInput: boolean,
 ): Promise<{
   success: boolean;
   octokit?: InstanceType<typeof Octokit>;
@@ -121,6 +122,7 @@ export async function handleGithubRepo(
     memory,
     projectName,
     projectPath,
+    shouldMaskSecretInput,
   );
   if (!repoCreated) {
     relinka(
@@ -174,6 +176,7 @@ export async function promptGitDeploy({
   isDev,
   memory,
   cwd,
+  shouldMaskSecretInput,
 }: {
   projectName: string;
   config: ReliverseConfig;
@@ -185,6 +188,7 @@ export async function promptGitDeploy({
   isDev: boolean;
   memory: ReliverseMemory;
   cwd: string;
+  shouldMaskSecretInput: boolean;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -262,6 +266,7 @@ export async function promptGitDeploy({
           memory,
           projectName,
           projectPath,
+          shouldMaskSecretInput,
         );
         if (githubData.success) {
           break;
@@ -515,6 +520,7 @@ export async function promptGitDeploy({
               projectPath,
               primaryDomain,
               memory,
+              shouldMaskSecretInput,
             );
             if (deployResult.deployService !== "none") {
               relinka(

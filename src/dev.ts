@@ -3,15 +3,15 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseMemory, TemplateOption } from "~/types.js";
+import type { ReliverseMemory } from "~/types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
-
-import type { ReliverseConfig } from "./utils/reliverseConfig.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/constants.js";
 import { aiChatHandler } from "./utils/aiChatHandler.js";
@@ -48,7 +48,18 @@ async function downloadTemplateOption(
   await cd(projectPath);
   pwd();
 
-  await composeEnvFile(projectPath, FALLBACK_ENV_EXAMPLE_URL);
+  const shouldMaskSecretInput = await confirmPrompt({
+    title:
+      "Do you want to mask secret inputs (e.g., GitHub token) in the next steps?",
+    content:
+      "Regardless of your choice, your data will be securely stored on your device.",
+  });
+
+  await composeEnvFile(
+    projectPath,
+    FALLBACK_ENV_EXAMPLE_URL,
+    shouldMaskSecretInput,
+  );
 
   const { deployService } = await promptGitDeploy({
     projectName,
@@ -61,6 +72,7 @@ async function downloadTemplateOption(
     isDev: true,
     memory,
     cwd,
+    shouldMaskSecretInput: false,
   });
 
   if (deployService === "none") {

@@ -2,6 +2,8 @@ import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
 
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 export type MainMenuChoice =
@@ -19,12 +21,14 @@ type MainMenuOption = {
 export async function getMainMenuOptions(
   cwd: string,
   isDev: boolean,
+  reli: ReliverseConfig[],
 ): Promise<MainMenuOption[]> {
   // 1) Start with the base options
   const options: MainMenuOption[] = [
     {
       label: pc.bold("✨ Create a brand new project"),
       value: "create",
+      hint: reli.length > 0 ? pc.dim("multi-config mode") : "",
     },
   ];
 
@@ -32,6 +36,8 @@ export async function getMainMenuOptions(
   if (isDev) {
     options.push({
       label: "🧰 Open developer tools",
+      hint:
+        reli.length > 0 ? pc.dim(`detected ${reli.length} reli configs`) : "",
       value: "isDevTools",
     });
   }

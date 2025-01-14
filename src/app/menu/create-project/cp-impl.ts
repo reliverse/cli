@@ -2,8 +2,6 @@ import {
   confirmPrompt,
   selectPrompt,
   spinnerTaskPrompt,
-} from "@reliverse/prompts";
-import {
   multiselectPrompt,
   nextStepsPrompt,
   inputPrompt,
@@ -17,13 +15,9 @@ import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 
-import type {
-  Behavior,
-  DeploymentService,
-  ReliverseMemory,
-  TemplateOption,
-} from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+import type { Behavior, DeploymentService, ReliverseMemory } from "~/types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/extractRepoInfo.js";
@@ -33,7 +27,11 @@ import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
+import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
 
+/**
+ * For parsing and updating package.json
+ */
 export type PackageJson = {
   name?: string;
   scripts?: Record<string, string>;
@@ -41,46 +39,58 @@ export type PackageJson = {
   devDependencies?: Record<string, string>;
 };
 
+/**
+ * The core create-web-project options
+ */
 export type CreateWebProjectOptions = {
   webProjectTemplate: TemplateOption;
   message: string;
   mode: "showNewProjectMenu" | "installAnyGitRepo";
-  i18nShouldBeEnabled: boolean;
   isDev: boolean;
   config: ReliverseConfig;
   memory: ReliverseMemory;
   cwd: string;
 };
 
+/**
+ * Minimally required project config after initialization
+ */
 export type ProjectConfig = {
   uiUsername: string;
   projectName: string;
   primaryDomain: string;
 };
 
+/**
+ * Asks or auto-fills project details (username, projectName, domain).
+ */
 export async function initializeProjectConfig(
   memory: ReliverseMemory,
   config: ReliverseConfig,
-  shouldUseDataFromConfig: boolean,
+  skipPrompts: boolean,
 ): Promise<ProjectConfig> {
+  // If skipPrompts is true & we have config, we auto-fill
   const uiUsername =
-    shouldUseDataFromConfig && config?.projectAuthor
+    skipPrompts && config?.projectAuthor
       ? config.projectAuthor
       : ((await askUserName(memory)) ?? "");
 
   const projectName =
-    shouldUseDataFromConfig && config?.projectTemplate
+    skipPrompts && config?.projectTemplate
       ? path.basename(config.projectTemplate)
       : ((await askProjectName()) ?? "");
 
   const primaryDomain =
-    shouldUseDataFromConfig && config?.projectDomain
+    skipPrompts && config?.projectDomain
       ? config.projectDomain
       : `${projectName}.vercel.app`;
 
   return { uiUsername, projectName, primaryDomain };
 }
 
+/**
+ * Replaces occurrences of certain placeholders with real user values.
+ */
 export async function replaceTemplateStrings(
   projectPath: string,
   webProjectTemplate: TemplateOption,
@@ -90,18 +100,19 @@ export async function replaceTemplateStrings(
     spinnerSolution: "ora",
     initialMessage: "Editing some texts in the initialized files...",
     successMessage: "✅ I edited some texts in the initialized files for you.",
-    errorMessage:
-      "❌ I've failed to edit some texts in the initialized files...",
+    errorMessage: "❌ I've failed to edit some texts...",
     async action(updateMessage: (message: string) => void) {
       const { author, projectName: oldProjectName } =
         extractRepoInfo(webProjectTemplate);
-      updateMessage("Some magic is happening... This may take a while...");
+      updateMessage(
+        "Some magic is happening... This may take a little while...",
+      );
 
       const replacements: Record<string, string> = {
         [`${oldProjectName}.com`]: config.primaryDomain,
         [author]: config.uiUsername,
         [oldProjectName]: config.projectName,
-        ["relivator.com"]: config.primaryDomain,
+        ["relivator.com"]: config.primaryDomain, // temp extra
       };
 
       const validReplacements = Object.fromEntries(
@@ -123,46 +134,62 @@ export async function replaceTemplateStrings(
   });
 }
 
+/**
+ * Sets up i18n if `i18nShouldBeEnabledAutomatically` is true,
+ * otherwise prompts the user.
+ */
 export async function setupI18nSupport(
   projectPath: string,
-  config: ReliverseConfig,
-  shouldUseDataFromConfig: boolean,
+  skipPrompts: boolean,
+  i18nShouldBeEnabledAutomatically: boolean,
 ) {
-  const i18nShouldBeEnabled =
-    shouldUseDataFromConfig && config?.features?.i18n !== undefined
-      ? config.features.i18n
-      : await confirmPrompt({
-          title:
-            "Do you want to enable i18n (internationalization) for this project?",
-          displayInstructions: true,
-          content: "Option `N` here may not work currently. Please be patient.",
-        });
+  let i18nShouldBeEnabled = false;
+  if (i18nShouldBeEnabledAutomatically) {
+    // We skip the prompt entirely
+    await setupI18nFiles(projectPath);
+    return;
+  }
 
+  // If we aren't auto-enabling, we prompt unless skipPrompts is also true
+  if (!skipPrompts) {
+    i18nShouldBeEnabled = await confirmPrompt({
+      title: "Do you want to enable i18n (internationalization)?",
+      displayInstructions: true,
+      content: "Option `N` here may not work currently. Please be patient.",
+    });
+  }
+
+  // Check if i18n folder already exists
   const i18nFolderExists = await fs.pathExists(
     path.join(projectPath, "src/app/[locale]"),
   );
-
   if (i18nFolderExists) {
     relinka("info-verbose", "i18n is already enabled. No changes needed.");
     return;
   }
 
+  // If user said yes (or if skipPrompts was true but they want i18n anyway)
   if (i18nShouldBeEnabled) {
     await setupI18nFiles(projectPath);
   }
 }
 
+/**
+ * Installs dependencies and checks for optional DB push scripts.
+ */
 export async function handleDependencies(
   projectPath: string,
   config: ReliverseConfig,
 ) {
   const depsBehavior: Behavior = config?.depsBehavior ?? "prompt";
 
+  // Decide if we install deps
   const shouldInstallDeps = await determineShouldInstallDeps(depsBehavior);
   let shouldRunDbPush = false;
 
   if (shouldInstallDeps) {
     await installDependencies({ cwd: projectPath });
+    // Optionally check if there's a db push script
     const scriptStatus = await promptPackageJsonScripts(
       projectPath,
       shouldRunDbPush,
@@ -174,6 +201,9 @@ export async function handleDependencies(
   return { shouldInstallDeps, shouldRunDbPush };
 }
 
+/**
+ * Decides whether to install deps based on config or user prompt.
+ */
 export async function determineShouldInstallDeps(
   depsBehavior: Behavior,
 ): Promise<boolean> {
@@ -185,30 +215,24 @@ export async function determineShouldInstallDeps(
     default:
       return await confirmPrompt({
         title:
-          "Would you like me to install dependencies for you? It's highly recommended, but may take some time.",
+          "Would you like me to install dependencies for you? It's recommended, but may take time.",
         content: "This allows me to run scripts provided by the template.",
       });
   }
 }
 
-function getDefaultProjectPath(): string {
-  const platform = os.platform();
-  if (platform === "win32") {
-    return "C:\\B\\S";
-  } else {
-    return path.join(os.homedir(), "Projects");
-  }
-}
-
+/**
+ * Moves the project from a test runtime to a user-specified location (dev mode).
+ */
 async function moveProjectFromTestRuntime(
   projectName: string,
   sourceDir: string,
 ): Promise<string | null> {
   try {
     const shouldUseProject = await confirmPrompt({
-      title: `The project was bootstrapped using dev mode. Do you plan to use this project? ${pc.redBright("[🚨 Experimental]")}`,
+      title: `Project was bootstrapped in dev mode. Move to permanent location? ${pc.redBright("[🚨 Experimental]")}`,
       content:
-        "If yes, I'll try to move it from the test-runtime directory to a permanent location.",
+        "If yes, I'll move it from the test-runtime directory to a location you choose.",
       defaultValue: false,
     });
 
@@ -217,53 +241,63 @@ async function moveProjectFromTestRuntime(
     }
 
     const defaultPath = getDefaultProjectPath();
-    const projectPath = await inputPrompt({
+    const targetDir = await inputPrompt({
       title: "Where would you like to move the project?",
-      content: "Enter the path where you want to move the project:",
-      placeholder: `Press <Enter> to use the default path: ${defaultPath}`,
+      content: "Enter a path:",
+      placeholder: `Press <Enter> to use default path: ${defaultPath}`,
       defaultValue: defaultPath,
     });
 
     // Ensure target directory exists
-    await fs.ensureDir(projectPath);
+    await fs.ensureDir(targetDir);
 
     // Check if a directory with the same name exists
     let finalProjectName = projectName;
-    const originalTargetPath = path.join(projectPath, projectName);
-    let targetPath = originalTargetPath;
+    let finalPath = path.join(targetDir, projectName);
     let counter = 1;
 
-    while (await fs.pathExists(targetPath)) {
+    while (await fs.pathExists(finalPath)) {
       const newName = await inputPrompt({
-        title: `Directory ${finalProjectName} already exists at ${projectPath}`,
-        content: "Please enter a new name for the project directory",
+        title: `Directory '${finalProjectName}' already exists at ${targetDir}`,
+        content: "Enter a new name for the project directory:",
         defaultValue: `${projectName}-${counter}`,
         validate: (value: string) => {
-          if (!/^[a-zA-Z0-9-_]+$/.test(value))
+          if (!/^[a-zA-Z0-9-_]+$/.test(value)) {
             return "Invalid directory name format";
+          }
           return true;
         },
       });
 
       finalProjectName = newName;
-      targetPath = path.join(projectPath, finalProjectName);
+      finalPath = path.join(targetDir, finalProjectName);
       counter++;
     }
 
-    // Move the project
-    await fs.move(sourceDir, targetPath);
-    relinka("success", `Project moved to ${targetPath}`);
-    return targetPath;
+    // Move it
+    await fs.move(sourceDir, finalPath);
+    relinka("success", `Project moved to ${finalPath}`);
+    return finalPath;
   } catch (error) {
-    relinka(
-      "error",
-      "Failed to move project:",
-      error instanceof Error ? error.message : String(error),
-    );
+    relinka("error", "Failed to move project:", String(error));
     return null;
   }
 }
 
+/**
+ * Gets a default project path based on OS
+ */
+function getDefaultProjectPath(): string {
+  const platform = os.platform();
+  if (platform === "win32") {
+    return "C:\\B\\S";
+  }
+  return path.join(os.homedir(), "Projects");
+}
+
+/**
+ * Handles final deployment steps via the `promptGitDeploy` flow.
+ */
 export async function handleDeployment(params: {
   projectName: string;
   config: ReliverseConfig;
@@ -275,6 +309,7 @@ export async function handleDeployment(params: {
   isDev: boolean;
   memory: ReliverseMemory;
   cwd: string;
+  shouldMaskSecretInput: boolean;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -284,6 +319,9 @@ export async function handleDeployment(params: {
   return await promptGitDeploy(params);
 }
 
+/**
+ * Shows success info, next steps, and handles final user actions (like opening in IDE).
+ */
 export async function showSuccessAndNextSteps(
   projectPath: string,
   webProjectTemplate: TemplateOption,
@@ -295,6 +333,7 @@ export async function showSuccessAndNextSteps(
 ) {
   let finalProjectPath = projectPath;
 
+  // If dev mode, offer to move the project
   if (isDev) {
     const newPath = await moveProjectFromTestRuntime(
       path.basename(projectPath),
@@ -307,17 +346,17 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `🎉 ${webProjectTemplate} was successfully installed to ${finalProjectPath}.`,
+    `🎉 ${webProjectTemplate} was installed at ${finalProjectPath}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
 
   await nextStepsPrompt({
-    title: "🤘 Project created successfully! Next steps to get started:",
+    title: "🤘 Project created successfully! Next steps:",
     titleColor: "cyanBright",
     content: [
       `- If you have VSCode installed, run: code ${finalProjectPath}`,
-      `- You can open the project in your terminal: cd ${finalProjectPath}`,
+      `- Or open in your terminal: cd ${finalProjectPath}`,
       "- Install dependencies manually if needed: bun i OR pnpm i",
       "- Apply linting and formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
@@ -332,8 +371,24 @@ export async function showSuccessAndNextSteps(
     primaryDomain,
     allDomains,
   );
+
+  relinka(
+    "info",
+    `👋 I'll have more features coming soon! ${
+      uiUsername ? `See you soon, ${uiUsername}!` : ""
+    }`,
+  );
+
+  relinka(
+    "success",
+    "✨ One more thing (experimental):",
+    "👉 Launch `reliverse cli` in your new project to add/remove features.",
+  );
 }
 
+/**
+ * Lets the user select further actions to take, such as opening IDE or docs.
+ */
 export async function handleNextActions(
   projectPath: string,
   vscodeInstalled: boolean,
@@ -383,16 +438,13 @@ export async function handleNextActions(
 
   relinka(
     "info",
-    `👋 I'll have some more features coming soon! ${uiUsername ? `See you soon, ${uiUsername}!` : ""}`,
-  );
-
-  relinka(
-    "success",
-    "✨ One more thing to try (experimental):",
-    "👉 Launch `reliverse cli` in your new project to add/remove features.",
+    uiUsername ? `See you soon, ${uiUsername}!` : "Done for now!",
   );
 }
 
+/**
+ * Handles each requested action from the next-steps prompt.
+ */
 export async function handleNextAction(
   action: string,
   projectPath: string,
@@ -414,9 +466,9 @@ export async function handleNextAction(
         } catch (error) {
           relinka(
             "error",
-            "Error opening project in your IDE:",
+            "Error opening project in IDE:",
             error instanceof Error ? error.message : String(error),
-            `Try to open the project manually with command like: code ${projectPath}`,
+            `Try opening manually: code ${projectPath}`,
           );
         }
         break;
@@ -450,59 +502,20 @@ export async function handleNextAction(
         break;
       }
       case "docs": {
+        relinka("info", "Opening Reliverse documentation...");
         await open("https://docs.reliverse.org");
         break;
       }
+      default:
+        break;
     }
   } catch (error) {
-    relinka("error", `Error handling action ${action}:`, String(error));
+    relinka("error", `Error handling action '${action}':`, String(error));
   }
 }
 
 /**
- * Checks if a specific script exists in package.json
- */
-export async function checkScriptExists(
-  projectPath: string,
-  scriptName: string,
-): Promise<boolean> {
-  try {
-    const packageJson = await readPackageJson(projectPath);
-    return !!packageJson?.scripts?.[scriptName];
-  } catch (error: unknown) {
-    relinka(
-      "error",
-      `Error checking for script ${scriptName}:`,
-      error instanceof Error ? error.message : String(error),
-    );
-    return false;
-  }
-}
-
-/**
- * Reads and parses package.json file
- */
-export async function readPackageJson(
-  projectPath: string,
-): Promise<PackageJson | null> {
-  const packageJsonPath = path.join(projectPath, "package.json");
-  try {
-    if (await fs.pathExists(packageJsonPath)) {
-      return await fs.readJson(packageJsonPath);
-    }
-    return null;
-  } catch (error: unknown) {
-    relinka(
-      "error",
-      "Error reading package.json:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return null;
-  }
-}
-
-/**
- * Checks if specific dependencies exist in package.json
+ * Checks if specific dependencies exist
  */
 export async function checkDependenciesExist(
   projectPath: string,
@@ -518,24 +531,19 @@ export async function checkDependenciesExist(
       ...packageJson.dependencies,
       ...packageJson.devDependencies,
     };
-
     const missing = dependencies.filter((dep) => !allDeps[dep]);
     return {
       exists: missing.length === 0,
       missing,
     };
   } catch (error: unknown) {
-    relinka(
-      "error",
-      "Error checking dependencies:",
-      error instanceof Error ? error.message : String(error),
-    );
+    relinka("error", "Error checking dependencies:", String(error));
     return { exists: false, missing: dependencies };
   }
 }
 
 /**
- * Validates project directory structure
+ * Validates certain directories exist
  */
 export async function validateProjectStructure(
   projectPath: string,
@@ -554,17 +562,13 @@ export async function validateProjectStructure(
       missing,
     };
   } catch (error: unknown) {
-    relinka(
-      "error",
-      "Error validating project structure:",
-      error instanceof Error ? error.message : String(error),
-    );
+    relinka("error", "Error validating project structure:", String(error));
     return { isValid: false, missing: requiredPaths };
   }
 }
 
 /**
- * Updates package.json with new values
+ * Updates package.json fields
  */
 export async function updatePackageJson(
   projectPath: string,
@@ -580,11 +584,7 @@ export async function updatePackageJson(
     await fs.writeJson(packageJsonPath, updatedPackageJson, { spaces: 2 });
     return true;
   } catch (error: unknown) {
-    relinka(
-      "error",
-      "Error updating package.json:",
-      error instanceof Error ? error.message : String(error),
-    );
+    relinka("error", "Error updating package.json:", String(error));
     return false;
   }
 }

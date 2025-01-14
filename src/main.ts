@@ -9,7 +9,7 @@ dotenv.config();
 const main = defineCommand({
   meta: {
     name: "reliverse",
-    version: "1.4.23",
+    version: "1.4.27",
     description: "https://docs.reliverse.org",
   },
   subCommands: {
@@ -20,6 +20,7 @@ const main = defineCommand({
     config: () => import("~/args/config/mod.js").then((r) => r.default),
     memory: () => import("~/args/memory/mod.js").then((r) => r.default),
     studio: () => import("~/args/studio/mod.js").then((r) => r.default),
+    update: () => import("~/args/update/mod.js").then((r) => r.default),
   },
 });
 

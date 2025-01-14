@@ -13,7 +13,6 @@ import pc from "picocolors";
 import type { ReliverseMemory } from "~/types.js";
 
 import { experimental } from "~/app/constants.js";
-import { checkScriptExists } from "~/app/menu/create-project/cp-impl.js";
 import { manageDrizzleSchema } from "~/app/menu/create-project/cp-modules/cli-main-modules/drizzle/manageDrizzleSchema.js";
 import {
   convertDatabaseProvider,
@@ -46,6 +45,7 @@ import {
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
+import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
 import {
   detectProjectsWithReliverse,
   type DetectedProject,
@@ -56,6 +56,7 @@ export async function handleOpenProjectMenu(
   isDev: boolean,
   memory: ReliverseMemory,
   cwd: string,
+  shouldMaskSecretInput: boolean,
 ): Promise<void> {
   let selectedProject: DetectedProject | undefined;
 
@@ -305,6 +306,7 @@ export async function handleOpenProjectMenu(
         memory,
         selectedProject.name,
         selectedProject.path,
+        shouldMaskSecretInput,
       );
       if (success) {
         relinka("success", "GitHub repository created successfully");
@@ -328,6 +330,7 @@ export async function handleOpenProjectMenu(
         selectedProject.path,
         "",
         memory,
+        shouldMaskSecretInput,
       );
 
       if (deployService !== "none") {
@@ -501,10 +504,17 @@ export async function showOpenProjectMenu(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
+  shouldMaskSecretInput: boolean,
 ) {
   const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
   if (await fs.pathExists(searchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(searchPath);
-    await handleOpenProjectMenu(detectedProjects, isDev, memory, cwd);
+    await handleOpenProjectMenu(
+      detectedProjects,
+      isDev,
+      memory,
+      cwd,
+      shouldMaskSecretInput,
+    );
   }
 }

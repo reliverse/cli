@@ -20,6 +20,7 @@ import {
 export async function composeEnvFile(
   projectDir: string,
   fallbackEnvExampleURL: string,
+  shouldMaskSecretInput: boolean,
 ): Promise<void> {
   try {
     const results = await Promise.all([
@@ -98,7 +99,11 @@ export async function composeEnvFile(
               "info",
               "Some values are still missing in the copied .env file.",
             );
-            await promptAndSetMissingValues(remainingMissingKeys, envPath);
+            await promptAndSetMissingValues(
+              remainingMissingKeys,
+              envPath,
+              shouldMaskSecretInput,
+            );
           }
         }
         break;
@@ -115,16 +120,28 @@ export async function composeEnvFile(
               "info",
               "Some values are still missing in the copied .env file.",
             );
-            await promptAndSetMissingValues(remainingMissingKeys, envPath);
+            await promptAndSetMissingValues(
+              remainingMissingKeys,
+              envPath,
+              shouldMaskSecretInput,
+            );
           }
         } else {
           relinka("info", "Falling back to auto mode...");
-          await promptAndSetMissingValues(missingKeys, envPath);
+          await promptAndSetMissingValues(
+            missingKeys,
+            envPath,
+            shouldMaskSecretInput,
+          );
         }
         break;
 
       default: // "auto"
-        await promptAndSetMissingValues(missingKeys, envPath);
+        await promptAndSetMissingValues(
+          missingKeys,
+          envPath,
+          shouldMaskSecretInput,
+        );
         break;
     }
 

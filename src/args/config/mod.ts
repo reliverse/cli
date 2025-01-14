@@ -3,13 +3,13 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+
 import {
   DEFAULT_CONFIG,
   getDefaultReliverseConfig,
-  type ReliverseConfig,
 } from "~/utils/reliverseConfig.js";
 import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
-
 export default defineCommand({
   meta: {
     name: "config",
@@ -44,7 +44,7 @@ export default defineCommand({
       );
       // Create a config that includes both rules and legacy config fields
       const config: ReliverseConfig = {
-        // Project details
+        // General project information
         projectName: rules.projectName ?? "my-app",
         projectAuthor: rules.projectAuthor ?? "user",
         projectDescription: rules.projectDescription ?? "",
@@ -52,13 +52,15 @@ export default defineCommand({
         projectLicense: rules.projectLicense ?? "MIT",
         projectRepository: rules.projectRepository ?? "",
         projectActivation: rules.projectActivation ?? "auto",
-        projectCategory: rules.projectCategory ?? "website",
+        projectCategory: rules.projectCategory ?? "webapp",
         projectType: rules.projectType ?? "library",
         projectDeployService: rules.projectDeployService ?? "vercel",
         projectDisplayName: rules.projectDisplayName ?? "",
         projectDomain: rules.projectDomain ?? "",
         projectState: rules.projectState ?? "creating",
         projectSubcategory: rules.projectSubcategory ?? "e-commerce",
+
+        // Primary tech stack/framework
         projectTemplate: rules.projectTemplate ?? "blefnk/relivator",
         projectFramework: rules.projectFramework ?? "nextjs",
         projectFrameworkVersion: rules.projectFrameworkVersion ?? "latest",

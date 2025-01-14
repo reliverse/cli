@@ -156,18 +156,6 @@ export type MonorepoType =
   | "bun-workspaces"
   | "pnpm-workspaces";
 
-export type TemplateOption =
-  | "blefnk/relivator"
-  | "blefnk/next-react-ts-src-minimal"
-  | "blefnk/all-in-one-nextjs-template"
-  | "blefnk/create-t3-app"
-  | "blefnk/create-next-app"
-  | "blefnk/astro-starlight-template"
-  | "blefnk/versator"
-  | "reliverse/template-browser-extension"
-  | "microsoft/vscode-extension-samples"
-  | "microsoft/vscode-extension-template";
-
 export type ProjectTypeOptions =
   | ""
   | "library"

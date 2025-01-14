@@ -1,15 +1,17 @@
 {
-  "projectName": "@reliverse/cli",
-  "projectAuthor": "blefnk",
+  // General project information
+  "projectName": "cli",
+  "projectAuthor": "reliverse",
   "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  "projectVersion": "1.4.20",
+  "projectVersion": "1.4.26",
   "projectLicense": "MIT",
-  "projectRepository": "git+https://github.com/reliverse/cli.git",
+  "projectRepository": "https://github.com/reliverse/cli",
   "projectState": "",
-  "projectDomain": "https://@reliverse/cli.vercel.app",
+  "projectDomain": "https://docs.reliverse.com",
   "projectType": "",
-  "projectCategory": "",
+  "projectCategory": "cli",
   "projectSubcategory": "",
+  "projectTemplate": "blefnk/relivator",
 
   // Primary tech stack/framework
   "projectFramework": "nextjs",
@@ -30,7 +32,7 @@
     "sharedPackages": []
   },
 
-  // Dependencies to be excluded from checks
+  // Dependencies to exclude from checks
   "ignoreDependencies": [],
 
   // Custom rules for Reliverse AI
@@ -38,7 +40,7 @@
 
   // Project features
   "features": {
-    "i18n": false,
+    "i18n": true,
     "analytics": false,
     "themeMode": "dark-light",
     "authentication": true,
@@ -49,12 +51,8 @@
     "ci": false,
     "commands": [],
     "webview": [],
-    "language": [
-      "typescript"
-    ],
-    "themes": [
-      "default"
-    ]
+    "language": ["typescript"],
+    "themes": ["default"]
   },
 
   // Code style preferences
@@ -90,6 +88,7 @@
   "skipPromptsUseAutoBehavior": false,
 
   // Behavior for deployment prompts
+  // prompt | autoYes | autoNo
   "deployBehavior": "prompt",
   "depsBehavior": "prompt",
   "gitBehavior": "prompt",

@@ -7,60 +7,44 @@ import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
-import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
-import {
-  DEFAULT_APP_NAME,
-  experimental,
-  recommended,
-} from "~/app/constants.js";
+import { DEFAULT_APP_NAME, experimental } from "~/app/constants.js";
 import {
   randomProjectFrameworkTitle,
-  randomInitialMessage,
   randomWebsiteCategoryTitle,
   randomWebsiteDetailsTitle,
+  getRandomMessage,
 } from "~/app/db/messages.js";
 import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
-import { type ReliverseMemory, type TemplateOption } from "~/types.js";
+import { type ReliverseMemory } from "~/types.js";
+import {
+  TEMP_BROWSER_TEMPLATE_OPTIONS,
+  TEMP_VSCODE_TEMPLATE_OPTIONS,
+  TEMP_WEBAPP_TEMPLATE_OPTIONS,
+  type TemplateOption,
+} from "~/utils/projectTemplate.js";
 
 import { createWebProject } from "./create-project/cp-mod.js";
 
-const TEMPLATE_OPTIONS = {
-  "blefnk/relivator": {
-    label: `Relivator ${recommended}`,
-    value: "blefnk/relivator",
-    hint: pc.dim("Full-featured e-commerce template with auth, payments, etc."),
-  },
-  "blefnk/next-react-ts-src-minimal": {
-    label: `Next.js Only ${experimental}`,
-    value: "blefnk/next-react-ts-src-minimal",
-    hint: pc.dim("Essentials only: minimal Next.js with TypeScript template"),
-  },
-} as const satisfies Partial<
-  Record<TemplateOption, { label: string; value: TemplateOption; hint: string }>
->;
-
-type VSCodeTemplateOption =
+/**
+ * Possible template options for VS Code extensions
+ */
+export type VSCodeTemplateOption =
   | "microsoft/vscode-extension-samples"
   | "microsoft/vscode-extension-template"
   | "coming-soon";
 
-const VSCODE_TEMPLATE_OPTIONS = {
-  "microsoft/vscode-extension-samples": {
-    label: "VS Code Extension Sample",
-    value: "microsoft/vscode-extension-samples",
-    hint: pc.dim("Official VS Code extension samples"),
-  },
-  "microsoft/vscode-extension-template": {
-    label: "VS Code Extension Template",
-    value: "microsoft/vscode-extension-template",
-    hint: pc.dim("Basic VS Code extension template"),
-  },
-} as const satisfies Record<
-  Exclude<VSCodeTemplateOption, "coming-soon">,
-  { label: string; value: VSCodeTemplateOption; hint: string }
->;
+/**
+ * Possible template options for browser extensions
+ */
+export type BrowserTemplateOption =
+  | "reliverse/template-browser-extension"
+  | "coming-soon";
 
+/**
+ * Asks the user for extension config via prompts
+ */
 async function configureVSCodeExtension() {
   const extensionConfig = {
     displayName: await inputPrompt({
@@ -146,193 +130,314 @@ async function configureVSCodeExtension() {
   return extensionConfig;
 }
 
+/**
+ * Main entry point to show user a new project menu
+ */
 export async function showNewProjectMenu(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
   config: ReliverseConfig,
+  reli: ReliverseConfig[],
 ): Promise<void> {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org";
-  const initialMessage =
-    randomInitialMessage[
-      Math.floor(Math.random() * randomInitialMessage.length)
-    ]!;
+  const useMultiConfig = reli.length > 0;
 
-  await selectPrompt({
-    endTitle,
-    title: initialMessage,
-    options: [
-      {
-        label: "Development",
-        value: "development",
-        hint: pc.dim("apps, sites, plugins, etc"),
-      },
-      {
-        label: "...",
-        hint: pc.dim("coming soon"),
-        value: "coming-soon",
-        disabled: true,
-      },
-    ],
-  });
-
-  // Get project type
-  const projectType = await selectPrompt({
-    endTitle,
-    title: "What kind of project would you like to create?",
-    options: [
-      {
-        label: "Web Application",
-        value: "web",
-        hint: pc.dim("Create a web application with Next.js"),
-      },
-      {
-        label: "VS Code Extension",
-        value: "vscode",
-        hint: pc.dim("Create a VS Code extension"),
-      },
-      { separator: true },
-      {
-        label: pc.italic(
-          pc.dim("More types of projects and frameworks coming soon 🦾"),
-        ),
-        value: "coming-soon",
-        disabled: true,
-      },
-    ],
-  });
-
-  if (projectType === "vscode") {
-    const template = (await selectPrompt({
+  if (useMultiConfig) {
+    relinka(
+      "info",
+      "[🚨 Experimental] Continuing with the multi-config mode (currently only web projects are supported)...",
+    );
+    await optionCreateWebProject(
+      cwd,
+      isDev,
+      memory,
+      config,
       endTitle,
-      title: "Which VS Code extension template would you like to use?",
+      true,
+      reli,
+    );
+  } else {
+    // Display the menu to let the user pick a project type
+    const projectType = await selectPrompt({
+      endTitle,
+      title: getRandomMessage("initial"),
       options: [
-        ...Object.values(VSCODE_TEMPLATE_OPTIONS),
+        {
+          label: "Web Application",
+          value: "web",
+          hint: pc.dim("Create a web application with Next.js"),
+        },
+        {
+          label: "VS Code Extension",
+          value: "vscode",
+          hint: experimental,
+        },
+        {
+          label: "Browser Extension",
+          value: "browser",
+          hint: experimental,
+        },
         { separator: true },
         {
-          label: pc.italic(pc.dim("More templates coming soon")),
-          value: "coming-soon",
-          disabled: true,
-        },
-      ],
-    })) as VSCodeTemplateOption;
-
-    const extensionConfig = await configureVSCodeExtension();
-
-    await createWebProject({
-      webProjectTemplate: template as Exclude<
-        VSCodeTemplateOption,
-        "coming-soon"
-      >,
-      message: initialMessage,
-      mode: "showNewProjectMenu",
-      i18nShouldBeEnabled: true,
-      isDev,
-      config: config ?? {
-        projectDisplayName: extensionConfig.displayName,
-        projectDescription: extensionConfig.description,
-        features: {
-          commands: extensionConfig.features.includes("commands") ? ["*"] : [],
-          webview: extensionConfig.features.includes("webview") ? ["*"] : [],
-          language: extensionConfig.features.includes("language") ? ["*"] : [],
-          themes: extensionConfig.features.includes("themes") ? ["*"] : [],
-          i18n: false,
-          analytics: false,
-          themeMode: "dark-light",
-          authentication: false,
-          api: false,
-          database: false,
-          testing: false,
-          docker: false,
-          ci: false,
-        },
-        projectActivation: extensionConfig.activation,
-        projectAuthor: extensionConfig.publisher,
-      },
-      memory,
-      cwd,
-    });
-    return;
-  }
-
-  // Get projectFramework from config or prompt for web applications
-  let projectFramework = config?.projectFramework;
-  if (!projectFramework) {
-    const result = await selectPrompt({
-      endTitle,
-      title:
-        randomProjectFrameworkTitle[
-          Math.floor(Math.random() * randomProjectFrameworkTitle.length)
-        ]!,
-      options: [
-        {
-          label: "Next.js",
-          value: "nextjs",
-          hint: pc.dim("recommended for most projects"),
-        },
-        {
-          label: "...",
-          hint: pc.dim("coming soon"),
+          label: pc.italic(
+            pc.dim("More types of projects and frameworks coming soon 🦾"),
+          ),
           value: "coming-soon",
           disabled: true,
         },
       ],
     });
-    if (result !== "nextjs") {
-      relinka("error", "Invalid projectFramework selected");
-      return;
+
+    if (projectType === "vscode") {
+      await optionCreateVSCodeExtension(cwd, isDev, memory, config, endTitle);
+    } else if (projectType === "browser") {
+      await optionCreateBrowserExtension(cwd, isDev, memory, config, endTitle);
+    } else {
+      // Default = "web"
+      await optionCreateWebProject(
+        cwd,
+        isDev,
+        memory,
+        config,
+        endTitle,
+        false,
+        reli,
+      );
     }
-    projectFramework = result;
   }
+}
 
-  // Should cli continue with recommended or offline mode?
-  const shouldContinueWithRecommended = await selectPrompt({
+async function optionCreateVSCodeExtension(
+  cwd: string,
+  isDev: boolean,
+  memory: ReliverseMemory,
+  config: ReliverseConfig,
+  endTitle: string,
+) {
+  const template = (await selectPrompt({
     endTitle,
-    title: "Should I continue with advanced or simple mode?",
+    title: "Which VS Code extension template would you like to use?",
     options: [
+      ...Object.values(TEMP_VSCODE_TEMPLATE_OPTIONS),
+      { separator: true },
       {
-        label: pc.bold(pc.greenBright("Advanced")),
-        value: "recommended",
-        hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
-      },
-      {
-        label: pc.dim(pc.red("Simple")),
-        value: "offline",
-        hint: pc.red("🚨 experimental, offline"),
+        label: pc.italic(pc.dim("More templates coming soon")),
+        value: "coming-soon",
+        disabled: true,
       },
     ],
-  });
+  })) as VSCodeTemplateOption;
 
-  if (shouldContinueWithRecommended === "offline") {
-    const cliResults: CliResults = {
-      appName: DEFAULT_APP_NAME,
-      packages: [],
-      flags: {
-        noGit: false,
-        noInstall: false,
-        default: false,
-        importAlias: "",
-        framework: true,
-        CI: false,
-        tailwind: false,
-        trpc: false,
-        prisma: false,
-        drizzle: false,
-        nextAuth: false,
-        dbProvider: "postgres",
+  const extensionConfig = await configureVSCodeExtension();
+
+  // Use or override fields in `config` for extension info
+  await createWebProject({
+    webProjectTemplate: template as Exclude<
+      VSCodeTemplateOption,
+      "coming-soon"
+    >,
+    message: getRandomMessage("category"),
+    mode: "showNewProjectMenu",
+    isDev,
+    config: {
+      ...config,
+      projectDisplayName: extensionConfig.displayName,
+      projectDescription: extensionConfig.description,
+      features: {
+        commands: extensionConfig.features.includes("commands") ? ["*"] : [],
+        webview: extensionConfig.features.includes("webview") ? ["*"] : [],
+        language: extensionConfig.features.includes("language") ? ["*"] : [],
+        themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+        i18n: true,
+        analytics: false,
+        themeMode: "dark-light",
+        authentication: false,
+        api: false,
+        database: false,
+        testing: false,
+        docker: false,
+        ci: false,
       },
-      databaseProvider: "postgres",
-    };
-    await showComposerMode(cliResults);
-    return;
+      projectActivation:
+        extensionConfig.activation === "startup" ? "auto" : "manual",
+      projectAuthor: extensionConfig.publisher,
+    } as ReliverseConfig,
+    memory,
+    cwd,
+  });
+}
+
+async function optionCreateBrowserExtension(
+  cwd: string,
+  isDev: boolean,
+  memory: ReliverseMemory,
+  config: ReliverseConfig,
+  endTitle: string,
+) {
+  const template = (await selectPrompt({
+    endTitle,
+    title: "Which browser extension template would you like to use?",
+    options: [
+      ...Object.values(TEMP_BROWSER_TEMPLATE_OPTIONS),
+      { separator: true },
+      {
+        label: pc.italic(pc.dim("More templates coming soon")),
+        value: "coming-soon",
+        disabled: true,
+      },
+    ],
+  })) as BrowserTemplateOption;
+
+  const extensionConfig = await configureVSCodeExtension(); // (Reuses the same prompting logic for now)
+
+  await createWebProject({
+    webProjectTemplate: template as Exclude<
+      BrowserTemplateOption,
+      "coming-soon"
+    >,
+    message: getRandomMessage("category"),
+    mode: "showNewProjectMenu",
+    isDev,
+    config: {
+      ...config,
+      projectDisplayName: extensionConfig.displayName,
+      projectDescription: extensionConfig.description,
+      features: {
+        commands: extensionConfig.features.includes("commands") ? ["*"] : [],
+        webview: extensionConfig.features.includes("webview") ? ["*"] : [],
+        language: extensionConfig.features.includes("language") ? ["*"] : [],
+        themes: extensionConfig.features.includes("themes") ? ["*"] : [],
+        i18n: true,
+        analytics: false,
+        themeMode: "dark-light",
+        authentication: false,
+        api: false,
+        database: false,
+        testing: false,
+        docker: false,
+        ci: false,
+      },
+      projectActivation:
+        extensionConfig.activation === "startup" ? "auto" : "manual",
+      projectAuthor: extensionConfig.publisher,
+    } as ReliverseConfig,
+    memory,
+    cwd,
+  });
+}
+
+/**
+ * Orchestrates the creation of a Web project.
+ * If `shouldUseMultiConfig` is true, we loop through `reli` array.
+ */
+async function optionCreateWebProject(
+  cwd: string,
+  isDev: boolean,
+  memory: ReliverseMemory,
+  config: ReliverseConfig,
+  endTitle: string,
+  shouldUseMultiConfig: boolean,
+  reli: ReliverseConfig[],
+): Promise<void> {
+  if (shouldUseMultiConfig) {
+    for (const multiConfig of reli) {
+      // If there is no projectTemplate, skip
+      if (!multiConfig.projectTemplate) {
+        relinka("warn", "Skipping a config with no projectTemplate defined.");
+        continue;
+      }
+      await createWebProject({
+        webProjectTemplate: multiConfig.projectTemplate,
+        message: "Setting up project...",
+        isDev,
+        config: multiConfig,
+        memory,
+        cwd,
+        mode: "showNewProjectMenu",
+      });
+    }
   } else {
+    // Single config: prompt for projectFramework if not set
+    let projectFramework = config?.projectFramework;
+    if (!projectFramework) {
+      const result = await selectPrompt({
+        endTitle,
+        title:
+          randomProjectFrameworkTitle[
+            Math.floor(Math.random() * randomProjectFrameworkTitle.length)
+          ] ?? "What project framework best fits your project?",
+        options: [
+          {
+            label: "Next.js",
+            value: "nextjs",
+            hint: pc.dim("recommended for most projects"),
+          },
+          {
+            label: "...",
+            hint: pc.dim("coming soon"),
+            value: "coming-soon",
+            disabled: true,
+          },
+        ],
+      });
+      if (result !== "nextjs") {
+        relinka("error", "Invalid projectFramework selected");
+        return;
+      }
+      projectFramework = result;
+    }
+
+    // Let user pick "advanced" vs. "simple" (offline) approach
+    const shouldContinueWithRecommended = await selectPrompt({
+      endTitle,
+      title: "Should I continue with advanced or simple mode?",
+      options: [
+        {
+          label: pc.bold(pc.greenBright("Advanced")),
+          value: "recommended",
+          hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
+        },
+        {
+          label: pc.dim(pc.red("Simple")),
+          value: "offline",
+          hint: pc.red("🚨 experimental, offline"),
+        },
+      ],
+    });
+
+    if (shouldContinueWithRecommended === "offline") {
+      const cliResults: CliResults = {
+        appName: DEFAULT_APP_NAME,
+        packages: [],
+        flags: {
+          noGit: false,
+          noInstall: false,
+          default: false,
+          importAlias: "",
+          framework: true,
+          CI: false,
+          tailwind: false,
+          trpc: false,
+          prisma: false,
+          drizzle: false,
+          nextAuth: false,
+          dbProvider: "postgres",
+        },
+        databaseProvider: "postgres",
+      };
+      await showComposerMode(cliResults);
+      return;
+    }
+
+    // Prompt for website category
     await selectPrompt({
       endTitle,
       title:
         randomWebsiteCategoryTitle[
           Math.floor(Math.random() * randomWebsiteCategoryTitle.length)
-        ]!,
+        ] ?? "What category fits your website's focus?",
       options: [
         { label: "E-commerce", value: "e-commerce" },
         {
@@ -344,7 +449,7 @@ export async function showNewProjectMenu(
       ],
     });
 
-    // Get template from config or prompt
+    // If user’s config has a template, use it; else ask
     let template: TemplateOption;
     if (config?.projectTemplate) {
       template = config.projectTemplate;
@@ -353,7 +458,7 @@ export async function showNewProjectMenu(
         endTitle,
         title: "Which template would you like to use?",
         options: [
-          ...Object.values(TEMPLATE_OPTIONS),
+          ...Object.values(TEMP_WEBAPP_TEMPLATE_OPTIONS),
           { separator: true },
           {
             label: pc.italic(pc.dim("More templates coming soon")),
@@ -365,19 +470,16 @@ export async function showNewProjectMenu(
       template = result as TemplateOption;
     }
 
+    // Finally, create the web project
     await createWebProject({
       webProjectTemplate: template,
       message:
         randomWebsiteDetailsTitle[
           Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
-        ]!,
+        ] ?? "Setting up project...",
       mode: "showNewProjectMenu",
-      i18nShouldBeEnabled: config?.i18nBehavior === "prompt",
       isDev,
-      config: config ?? {
-        i18nBehavior: "prompt",
-        projectFramework: "nextjs",
-      },
+      config,
       memory,
       cwd,
     });

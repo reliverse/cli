@@ -27,25 +27,18 @@ export const randomInitialMessage = [
   "Let's embark on a creative journey and build something completely new! Afterward, it's all yours to refine. What category best describes your project?",
 ];
 
-export const randomDevProjectTypeTitle = [
-  "Fantastic choice! Let's dive deeper. Which subcategory captures the essence of your project?",
+export const randomProjectCategoryTitle = [
+  "Fantastic choice! Let's dive deeper. Which category captures the essence of your project?",
   "Great direction! Now, let's pinpoint your focus. What type of project are you envisioning?",
   "Perfect step! To fine-tune your setup, could you clarify the specific type of development you have in mind?",
   "Excellent path! Let’s narrow it down further. Which of these categories aligns best with your vision?",
 ];
 
-export const randomWebsiteSubcategoryTitle = [
-  "Let's refine your vision. What kind of website are you looking to build?",
-  "Great decision! Now, let's specify further. What type of website do you have in mind?",
-  "Excellent start! To equip you properly, could you tell me more about the type of website you're aiming for?",
-  "Perfect! Let's get more granular. Which category best describes your intended website?",
-];
-
 export const randomProjectFrameworkTitle = [
   "projectFramework time! Which foundation would you like to build upon?",
-  "Great progress! Let's refine your stack. Which projectFramework best fits your project?",
-  "Excellent choice! To set you up right, which projectFramework are you considering?",
-  "Perfect! Let's zero in on your projectFramework preference. Which option resonates most with your plan?",
+  "Great progress! Let's refine your stack. Which project framework best fits your project?",
+  "Excellent choice! To set you up right, which project framework are you considering?",
+  "Perfect! Let's zero in on your project framework preference. Which option resonates most with your plan?",
 ];
 
 export const randomWebsiteCategoryTitle = [
@@ -65,6 +58,24 @@ export const randomWebsiteDetailsTitle = [
 // export const randomEndMessage = [
 // "https://docs.reliverse.org/reliverse/cli",
 // ];
+
+export function getRandomMessage(kind: "initial" | "category") {
+  if (kind === "initial") {
+    return (
+      randomInitialMessage[
+        Math.floor(Math.random() * randomInitialMessage.length)
+      ] ?? "What category best describes your project?"
+    );
+  }
+  if (kind === "category") {
+    return (
+      randomProjectCategoryTitle[
+        Math.floor(Math.random() * randomProjectCategoryTitle.length)
+      ] ?? "What category best describes your project?"
+    );
+  }
+  return "";
+}
 
 export function getWelcomeTitle(username: string) {
   return `🤖 ${

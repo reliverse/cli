@@ -32,7 +32,7 @@
     }
   },
   "files.associations": {
-    ".reliverse": "jsonc"
+    "*.reliverse": "jsonc"
   },
   "typescript.enablePromptUseWorkspaceTsdk": true
 }

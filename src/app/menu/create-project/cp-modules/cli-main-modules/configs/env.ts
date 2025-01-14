@@ -1,5 +1,5 @@
 import { getRootDirname } from "@reliverse/fs";
-import { confirmPrompt, inputPrompt, passwordPrompt } from "@reliverse/prompts";
+import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { join } from "pathe";
@@ -27,9 +27,9 @@ function createPrompt(
   if (type === "input") {
     return inputPrompt(options as { defaultValue?: string; title: string });
   } else if (type === "password") {
-    return passwordPrompt(
-      options as { defaultValue?: string; title: string },
-    ) as Promise<string>;
+    return inputPrompt(
+      options as { defaultValue?: string; title: string; mode: "password" },
+    );
   } else {
     return confirmPrompt({
       defaultValue: options.defaultValue as boolean,

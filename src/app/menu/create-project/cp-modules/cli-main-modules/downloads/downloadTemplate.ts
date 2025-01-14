@@ -1,6 +1,6 @@
 import { spinnerTaskPrompt } from "@reliverse/prompts";
 
-import type { TemplateOption } from "~/types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
 
 import { downloadGitRepo } from "./downloadGitRepo.js";
 

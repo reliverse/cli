@@ -4,7 +4,7 @@ import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import pc from "picocolors";
 
-import { checkScriptExists } from "~/app/menu/create-project/cp-impl.js";
+import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
 
 export type ScriptStatus = {
   dbPush: boolean;

@@ -144,6 +144,7 @@ export async function createGithubRepository(
   memory: ReliverseMemory,
   projectName: string,
   projectPath: string,
+  shouldMaskSecretInput: boolean,
 ): Promise<boolean> {
   const finalDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
@@ -221,6 +222,7 @@ export async function createGithubRepository(
           finalDir,
           isDev,
           cwd,
+          shouldMaskSecretInput,
         );
       } else if (choice === "commit" || choice === "skip") {
         // Use authenticated URL with token as username
@@ -277,6 +279,7 @@ export async function createGithubRepository(
       finalDir,
       isDev,
       cwd,
+      shouldMaskSecretInput,
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {

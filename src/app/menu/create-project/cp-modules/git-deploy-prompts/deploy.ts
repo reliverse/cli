@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { DeploymentService, ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { createVercelDeployment } from "./vercel/vercel-mod.js";
 
@@ -41,6 +41,7 @@ export async function deployProject(
   projectPath: string,
   primaryDomain: string,
   memory: ReliverseMemory,
+  shouldMaskSecretInput: boolean,
 ): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -76,6 +77,7 @@ export async function deployProject(
       projectPath,
       primaryDomain,
       memory,
+      shouldMaskSecretInput,
     );
 
     if (success) {

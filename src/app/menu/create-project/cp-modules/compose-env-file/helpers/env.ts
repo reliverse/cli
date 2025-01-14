@@ -42,6 +42,7 @@ export async function getRequiredEnvKeys(
 export async function promptAndSetMissingValues(
   missingKeys: string[],
   envPath: string,
+  shouldMaskSecretInput: boolean,
 ): Promise<void> {
   relinka("info-verbose", `Missing values: ${missingKeys.join(", ")}`);
   const envContent = await fs.readFile(envPath, "utf8");
@@ -122,6 +123,7 @@ export async function promptAndSetMissingValues(
         const value = await inputPrompt({
           title: `Enter value for ${keyConfig.key}:`,
           placeholder: "Paste your value here...",
+          mode: shouldMaskSecretInput ? "password" : "plain",
           validate: (value: string): string | boolean => {
             if (!value?.trim()) {
               return "This value is required";

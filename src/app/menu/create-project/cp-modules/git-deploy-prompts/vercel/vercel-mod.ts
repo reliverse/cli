@@ -36,7 +36,7 @@ type VercelFramework = GetProjectsFramework;
 /**
  * Saves token to memory and persists it
  */
-async function saveToken(
+async function saveVercelToken(
   token: string,
   memory: ReliverseMemory,
 ): Promise<void> {
@@ -268,6 +268,7 @@ export async function createVercelDeployment(
   projectPath: string,
   domain: string,
   memory: ReliverseMemory,
+  shouldMaskSecretInput: boolean,
 ): Promise<boolean> {
   try {
     // 1. First ensure we have a valid token
@@ -276,6 +277,7 @@ export async function createVercelDeployment(
         title:
           "Please enter your Vercel personal access token.\n(It will be securely stored on your machine):",
         content: "Create one at https://vercel.com/account/settings/tokens",
+        mode: shouldMaskSecretInput ? "password" : "plain",
         validate: (value: string) => {
           if (!value?.trim()) return "Token is required";
           return true;
@@ -287,7 +289,7 @@ export async function createVercelDeployment(
         return false;
       }
 
-      await saveToken(token, memory);
+      await saveVercelToken(token, memory);
       memory.vercelKey = token;
     }
 

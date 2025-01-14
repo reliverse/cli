@@ -1,18 +1,23 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import type { ReliverseMemory, TemplateOption } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseConfig.js";
+import type { ReliverseMemory } from "~/types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { createWebProject } from "~/app/menu/create-project/cp-mod.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 import { showNewProjectMenu } from "~/app/menu/menu-mod.js";
 
+/**
+ * @deprecated TODO: Integrate function logic into the main one
+ */
 export async function installAnyGitRepo(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
   config: ReliverseConfig,
+  reli: ReliverseConfig[],
 ) {
   relinka(
     "info",
@@ -121,14 +126,13 @@ export async function installAnyGitRepo(
     repoToInstall === "blefnk/relivator" ||
     repoToInstall === "blefnk/next-react-ts-src-minimal"
   ) {
-    return showNewProjectMenu(cwd, isDev, memory, config);
+    return showNewProjectMenu(cwd, isDev, memory, config, reli);
   }
 
   await createWebProject({
     webProjectTemplate: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
     mode: "installAnyGitRepo",
-    i18nShouldBeEnabled: true,
     isDev,
     config,
     memory,
