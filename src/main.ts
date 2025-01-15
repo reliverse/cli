@@ -2,9 +2,6 @@
 
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const main = defineCommand({
   meta: {

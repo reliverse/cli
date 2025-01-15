@@ -13,7 +13,8 @@ import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
 export default defineCommand({
   meta: {
     name: "config",
-    description: "Generate configuration files in the current directory",
+    description:
+      "[deprecated 🚨] Generate configuration files in the current directory",
     hidden: true,
   },
   args: {
@@ -52,16 +53,16 @@ export default defineCommand({
         projectLicense: rules.projectLicense ?? "MIT",
         projectRepository: rules.projectRepository ?? "",
         projectActivation: rules.projectActivation ?? "auto",
-        projectCategory: rules.projectCategory ?? "webapp",
+        projectCategory: rules.projectCategory ?? "unknown",
         projectType: rules.projectType ?? "library",
         projectDeployService: rules.projectDeployService ?? "vercel",
-        projectDisplayName: rules.projectDisplayName ?? "",
-        projectDomain: rules.projectDomain ?? "",
+        projectDisplayName: rules.projectDisplayName ?? "my-app",
+        projectDomain: rules.projectDomain ?? "example.com",
         projectState: rules.projectState ?? "creating",
         projectSubcategory: rules.projectSubcategory ?? "e-commerce",
 
         // Primary tech stack/framework
-        projectTemplate: rules.projectTemplate ?? "blefnk/relivator",
+        projectTemplate: rules.projectTemplate ?? "unknown",
         projectFramework: rules.projectFramework ?? "nextjs",
         projectFrameworkVersion: rules.projectFrameworkVersion ?? "latest",
         projectPackageManager: rules.projectPackageManager ?? "bun",

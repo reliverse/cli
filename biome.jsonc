@@ -16,7 +16,7 @@
       "node_modules/",
       "dist-jsr/",
       "dist-npm/",
-      "tests-runtime/"
+      "test-runtime/"
     ],
     "indentStyle": "space",
     "attributePosition": "auto",
@@ -35,7 +35,7 @@
       "node_modules/",
       "dist-jsr/",
       "dist-npm/",
-      "tests-runtime/"
+      "test-runtime/"
     ],
     "rules": {
       "recommended": true,

@@ -34,21 +34,27 @@ export async function createWebProject({
   config,
   memory,
   cwd,
+  isMultiConfig,
 }: CreateWebProjectOptions): Promise<void> {
   relinka("info", message);
 
-  // Switch for skipping all prompts
+  // -------------------------------------------------
+  // 1) Determine whether to skip all CLI prompts
+  // -------------------------------------------------
   const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
 
   // If the user wants i18n fully auto-enabled, check `features.i18n` + `i18nBehavior`
   const i18nShouldBeEnabledAutomatically =
     config?.features?.i18n && skipPrompts && config.i18nBehavior === "autoYes";
 
-  // 1) Initialize project config (ask or auto-populate)
+  // -------------------------------------------------
+  // 2) Initialize project configuration (prompt or auto)
+  // -------------------------------------------------
   const projectConfig = await initializeProjectConfig(
     memory,
     config,
     skipPrompts,
+    isMultiConfig,
   );
   const {
     uiUsername,
@@ -58,15 +64,19 @@ export async function createWebProject({
 
   let projectPath = "";
 
-  // 2) Identify the chosen template
+  // -------------------------------------------------
+  // 3) Identify chosen template
+  // -------------------------------------------------
   const template = TEMPLATES.find((t) => t.id === webProjectTemplate);
   if (!template) {
     throw new Error(
-      `Template ${webProjectTemplate} not found in templates list`,
+      `Template '${webProjectTemplate}' not found in templates list.`,
     );
   }
 
-  // 3) Check for a local copy
+  // -------------------------------------------------
+  // 4) Check for local template copy
+  // -------------------------------------------------
   const localTemplatePath = path.join(
     os.homedir(),
     ".reliverse",
@@ -81,10 +91,10 @@ export async function createWebProject({
       useLocalTemplate = true;
       relinka("info", "Using local template copy (auto).");
     } else {
-      // Prompt user
+      // Prompt the user
       useLocalTemplate = await confirmPrompt({
         title: "Local copy found. Use it?",
-        content: "N will download the fresh version.",
+        content: "If no, I'll download a fresh version.",
         defaultValue: true,
       });
     }
@@ -96,12 +106,14 @@ export async function createWebProject({
     }
   }
 
-  // 4) If we aren’t using local, we download a fresh copy
+  // -------------------------------------------------
+  // 5) Download template if no local copy used
+  // -------------------------------------------------
   if (!projectPath) {
     try {
       relinka(
         "info",
-        `Now I'm downloading the ${webProjectTemplate} template...`,
+        `Now I'm downloading the '${webProjectTemplate}' template...`,
       );
       projectPath = await downloadTemplate({
         webProjectTemplate,
@@ -115,60 +127,72 @@ export async function createWebProject({
     }
   }
 
-  // 5) Optionally save template to device
+  // -------------------------------------------------
+  // 6) Optionally save template to device
+  // -------------------------------------------------
   let shouldSaveTemplate = false;
-  if (skipPrompts) {
-    shouldSaveTemplate = false; // auto default
-  } else {
+  if (!skipPrompts) {
     shouldSaveTemplate = await confirmPrompt({
       title: "Save a copy of the template to your device?",
       defaultValue: false,
     });
   }
+  // If skipPrompts => remain false
   if (shouldSaveTemplate) {
     await saveTemplateToDevice(template, projectPath);
   }
 
-  // 6) Replace placeholders in the template
+  // -------------------------------------------------
+  // 7) Replace placeholders in the template
+  // -------------------------------------------------
   await replaceTemplateStrings(projectPath, webProjectTemplate, {
     primaryDomain: initialDomain,
     uiUsername,
     projectName,
   });
 
-  // 7) Setup i18n (either fully automatic or prompt-based)
+  // -------------------------------------------------
+  // 8) Setup i18n (auto or prompt-based)
+  // -------------------------------------------------
   await setupI18nSupport(
     projectPath,
     skipPrompts,
     i18nShouldBeEnabledAutomatically,
   );
 
-  // 8) Ask about masking secrets
+  // -------------------------------------------------
+  // 9) Ask about masking secrets
+  // -------------------------------------------------
   let shouldMaskSecretInput = false;
   if (skipPrompts) {
-    shouldMaskSecretInput = false;
     relinka("info", "Auto-mode: Not masking secret inputs by default.");
   } else {
     shouldMaskSecretInput = await confirmPrompt({
       title: "Do you want to mask secret inputs?",
-      content: "Your data will be stored securely either way.",
+      content: "Regardless, your data will be stored securely.",
     });
   }
 
-  // 9) Compose .env files
+  // -------------------------------------------------
+  // 10) Compose .env files
+  // -------------------------------------------------
   await composeEnvFile(
     projectPath,
     FALLBACK_ENV_EXAMPLE_URL,
     shouldMaskSecretInput,
   );
 
-  // 10) Install dependencies
+  // -------------------------------------------------
+  // 11) Handle dependencies (install or not?)
+  // -------------------------------------------------
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     projectPath,
     config,
   );
 
-  // 11) Generate initial .reliverse config or update
+  // -------------------------------------------------
+  // 12) Generate or update .reliverse config
+  // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
     projectName,
@@ -179,7 +203,9 @@ export async function createWebProject({
     uiUsername,
   );
 
-  // 12) Handle deployment flow
+  // -------------------------------------------------
+  // 13) Deployment flow
+  // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
     await handleDeployment({
       projectName,
@@ -193,9 +219,11 @@ export async function createWebProject({
       memory,
       cwd,
       shouldMaskSecretInput,
+      skipPrompts,
+      isMultiConfig,
     });
 
-  // 13) If user changed domain or deploy service, update .reliverse again
+  // If the user changed domain or deploy service, update .reliverse again
   if (deployService !== "vercel" || primaryDomain !== initialDomain) {
     await updateProjectConfig(projectPath, "reliverse", {
       deployService,
@@ -203,7 +231,9 @@ export async function createWebProject({
     });
   }
 
-  // 14) Finally, show success & next steps
+  // -------------------------------------------------
+  // 14) Final success & next steps
+  // -------------------------------------------------
   await showSuccessAndNextSteps(
     projectPath,
     webProjectTemplate,

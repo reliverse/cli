@@ -137,5 +137,6 @@ export async function installAnyGitRepo(
     config,
     memory,
     cwd,
+    isMultiConfig: false,
   });
 }

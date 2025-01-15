@@ -33,7 +33,7 @@
       "publish.ts",
       "reset.d.ts",
       "src/**",
-      "tests-runtime/",
+      "test-runtime/",
       "tsconfig.json",
       "typestat.json",
       "vitest.config.ts"

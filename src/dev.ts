@@ -10,20 +10,20 @@ import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
-import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
+import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/constants.js";
 import { aiChatHandler } from "./utils/aiChatHandler.js";
 
-async function rmTestsRuntime(cwd: string) {
-  const testsRuntimePath = path.join(cwd, "tests-runtime");
-  if (await fs.pathExists(testsRuntimePath)) {
-    const shouldRemoveTestsRuntime = await confirmPrompt({
-      title: "Are you sure you want to remove the tests-runtime folder?",
+async function rmTestRuntime(cwd: string) {
+  const TestRuntimePath = path.join(cwd, "test-runtime");
+  if (await fs.pathExists(TestRuntimePath)) {
+    const shouldRemoveTestRuntime = await confirmPrompt({
+      title: "Are you sure you want to remove the test-runtime folder?",
     });
-    if (shouldRemoveTestsRuntime) {
-      await rm(testsRuntimePath);
+    if (shouldRemoveTestRuntime) {
+      await rm(TestRuntimePath);
     }
   }
 }
@@ -73,6 +73,8 @@ async function downloadTemplateOption(
     memory,
     cwd,
     shouldMaskSecretInput: false,
+    skipPrompts: false,
+    isMultiConfig: false,
   });
 
   if (deployService === "none") {
@@ -88,18 +90,18 @@ export async function showDevToolsMenu(
   config: ReliverseConfig,
   memory: ReliverseMemory,
 ) {
-  const testsRuntimePath = path.join(cwd, "tests-runtime");
-  const testsRuntimeExists = await fs.pathExists(testsRuntimePath);
+  const TestRuntimePath = path.join(cwd, "test-runtime");
+  const TestRuntimeExists = await fs.pathExists(TestRuntimePath);
 
   const option = await selectPrompt({
     title: "Dev tools menu",
     options: [
-      ...(testsRuntimeExists
-        ? [{ label: "remove tests-runtime dir", value: "rm-tests-runtime" }]
+      ...(TestRuntimeExists
+        ? [{ label: "remove test-runtime dir", value: "rm-test-runtime" }]
         : []),
       {
         label:
-          "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
+          "downloadTemplate + cd test-runtime + composeEnvFile + promptGitDeploy",
         value: "download-template",
       },
       {
@@ -111,8 +113,8 @@ export async function showDevToolsMenu(
     ],
   });
 
-  if (option === "rm-tests-runtime") {
-    await rmTestsRuntime(cwd);
+  if (option === "rm-test-runtime") {
+    await rmTestRuntime(cwd);
   } else if (option === "download-template") {
     await downloadTemplateOption(
       "blefnk/relivator",

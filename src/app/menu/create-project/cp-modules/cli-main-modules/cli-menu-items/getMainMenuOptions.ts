@@ -50,7 +50,7 @@ export async function getMainMenuOptions(
   });
 
   // 4) Detect .reliverse projects
-  const dotReliverseSearchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
+  const dotReliverseSearchPath = isDev ? path.join(cwd, "test-runtime") : cwd;
 
   if (await fs.pathExists(dotReliverseSearchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(

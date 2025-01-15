@@ -11,9 +11,9 @@ export async function downloadGitRepo(
   cwd: string,
 ): Promise<string | undefined> {
   try {
-    // Create target directory based on provided testsRuntimePath or default location
+    // Create target directory based on provided TestRuntimePath or default location
     const projectPath = isDev
-      ? path.join(cwd, "tests-runtime", name)
+      ? path.join(cwd, "test-runtime", name)
       : path.join(cwd, name);
 
     relinka("info-verbose", `Installing template in: ${projectPath}`);

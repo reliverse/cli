@@ -506,7 +506,7 @@ export async function showOpenProjectMenu(
   memory: ReliverseMemory,
   shouldMaskSecretInput: boolean,
 ) {
-  const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
+  const searchPath = isDev ? path.join(cwd, "test-runtime") : cwd;
   if (await fs.pathExists(searchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(searchPath);
     await handleOpenProjectMenu(

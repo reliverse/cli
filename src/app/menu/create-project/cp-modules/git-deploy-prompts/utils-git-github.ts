@@ -25,7 +25,7 @@ export async function isGitRepo(
   projectPath: string,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {
@@ -225,7 +225,7 @@ export async function setupGitRemote(
   remoteName = "origin",
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {

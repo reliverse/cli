@@ -27,7 +27,7 @@ export async function initGit(
   projectName: string,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {
@@ -147,7 +147,7 @@ export async function createGithubRepository(
   shouldMaskSecretInput: boolean,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {
@@ -306,7 +306,7 @@ export async function createGitCommit(
   message: string,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {
@@ -349,7 +349,7 @@ export async function pushGitCommits(
   projectPath: string,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "tests-runtime", projectName)
+    ? path.join(cwd, "test-runtime", projectName)
     : projectPath;
 
   try {

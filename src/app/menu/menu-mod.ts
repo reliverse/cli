@@ -45,8 +45,8 @@ export type BrowserTemplateOption =
 /**
  * Asks the user for extension config via prompts
  */
-async function configureVSCodeExtension() {
-  const extensionConfig = {
+export async function configureBrowserExtension() {
+  const browserExtensionConfig = {
     displayName: await inputPrompt({
       title: "What's the display name of your extension?",
       defaultValue: "My Extension",
@@ -127,7 +127,95 @@ async function configureVSCodeExtension() {
     }),
   };
 
-  return extensionConfig;
+  return browserExtensionConfig;
+}
+
+/**
+ * Asks the user for extension config via prompts
+ */
+export async function configureVSCodeExtension() {
+  const vscodeExtensionConfig = {
+    displayName: await inputPrompt({
+      title: "What's the display name of your extension?",
+      defaultValue: "My Extension",
+      validate: (value: string): string | boolean => {
+        if (!value?.trim()) {
+          return "Display name is required";
+        }
+        return true;
+      },
+    }),
+    description: await inputPrompt({
+      title: "Provide a short description of your extension",
+      defaultValue: "A VS Code extension",
+      validate: (value: string): string | boolean => {
+        if (!value?.trim()) {
+          return "Description is required";
+        }
+        return true;
+      },
+    }),
+    features: await multiselectPrompt({
+      title: "What kind of features will your extension include?",
+      options: [
+        {
+          label: "Commands",
+          value: "commands",
+          hint: pc.dim("Add custom commands to VS Code"),
+        },
+        {
+          label: "WebView",
+          value: "webview",
+          hint: pc.dim("Create custom UI panels"),
+        },
+        {
+          label: "Language Support",
+          value: "language",
+          hint: pc.dim("Add support for a programming language"),
+        },
+        {
+          label: "Themes",
+          value: "themes",
+          hint: pc.dim("Create custom color themes"),
+        },
+      ],
+    }),
+    activation: await selectPrompt({
+      title: "When should your extension activate?",
+      options: [
+        {
+          label: "On Command",
+          value: "onCommand",
+          hint: pc.dim("Activate when a specific command is run"),
+        },
+        {
+          label: "On Language",
+          value: "onLanguage",
+          hint: pc.dim("Activate for specific file types"),
+        },
+        {
+          label: "On Startup",
+          value: "startup",
+          hint: pc.dim("Activate when VS Code starts"),
+        },
+      ],
+    }),
+    publisher: await inputPrompt({
+      title: "What's your VS Code marketplace publisher ID?",
+      content: "Create one at https://marketplace.visualstudio.com/manage",
+      validate: (value: string): string | boolean => {
+        if (!value?.trim()) {
+          return "Publisher ID is required";
+        }
+        if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/i.test(value)) {
+          return "Invalid publisher ID format";
+        }
+        return true;
+      },
+    }),
+  };
+
+  return vscodeExtensionConfig;
 }
 
 /**
@@ -142,9 +230,9 @@ export async function showNewProjectMenu(
 ): Promise<void> {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org";
-  const useMultiConfig = reli.length > 0;
+  const isMultiConfig = reli.length > 0;
 
-  if (useMultiConfig) {
+  if (isMultiConfig) {
     relinka(
       "info",
       "[🚨 Experimental] Continuing with the multi-config mode (currently only web projects are supported)...",
@@ -179,6 +267,11 @@ export async function showNewProjectMenu(
           value: "browser",
           hint: experimental,
         },
+        {
+          label: "CLI Project",
+          value: "cli",
+          hint: experimental,
+        },
         { separator: true },
         {
           label: pc.italic(
@@ -191,9 +284,23 @@ export async function showNewProjectMenu(
     });
 
     if (projectType === "vscode") {
-      await optionCreateVSCodeExtension(cwd, isDev, memory, config, endTitle);
+      await optionCreateVSCodeExtension(
+        cwd,
+        isDev,
+        memory,
+        config,
+        endTitle,
+        isMultiConfig,
+      );
     } else if (projectType === "browser") {
-      await optionCreateBrowserExtension(cwd, isDev, memory, config, endTitle);
+      await optionCreateBrowserExtension(
+        cwd,
+        isDev,
+        memory,
+        config,
+        endTitle,
+        isMultiConfig,
+      );
     } else {
       // Default = "web"
       await optionCreateWebProject(
@@ -215,6 +322,7 @@ async function optionCreateVSCodeExtension(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   endTitle: string,
+  isMultiConfig: boolean,
 ) {
   const template = (await selectPrompt({
     endTitle,
@@ -230,43 +338,25 @@ async function optionCreateVSCodeExtension(
     ],
   })) as VSCodeTemplateOption;
 
-  const extensionConfig = await configureVSCodeExtension();
+  const vscodeExtensionConfig = await configureVSCodeExtension();
 
-  // Use or override fields in `config` for extension info
-  await createWebProject({
-    webProjectTemplate: template as Exclude<
-      VSCodeTemplateOption,
-      "coming-soon"
-    >,
-    message: getRandomMessage("category"),
-    mode: "showNewProjectMenu",
-    isDev,
-    config: {
-      ...config,
-      projectDisplayName: extensionConfig.displayName,
-      projectDescription: extensionConfig.description,
-      features: {
-        commands: extensionConfig.features.includes("commands") ? ["*"] : [],
-        webview: extensionConfig.features.includes("webview") ? ["*"] : [],
-        language: extensionConfig.features.includes("language") ? ["*"] : [],
-        themes: extensionConfig.features.includes("themes") ? ["*"] : [],
-        i18n: true,
-        analytics: false,
-        themeMode: "dark-light",
-        authentication: false,
-        api: false,
-        database: false,
-        testing: false,
-        docker: false,
-        ci: false,
-      },
-      projectActivation:
-        extensionConfig.activation === "startup" ? "auto" : "manual",
-      projectAuthor: extensionConfig.publisher,
-    } as ReliverseConfig,
-    memory,
-    cwd,
-  });
+  if (vscodeExtensionConfig) {
+    await createWebProject({
+      webProjectTemplate: template as Exclude<
+        VSCodeTemplateOption,
+        "coming-soon"
+      >,
+      message: getRandomMessage("category"),
+      mode: "showNewProjectMenu",
+      isDev,
+      config,
+      memory,
+      cwd,
+      isMultiConfig,
+    });
+  } else {
+    relinka("error", "No VS Code extension config provided");
+  }
 }
 
 async function optionCreateBrowserExtension(
@@ -275,6 +365,7 @@ async function optionCreateBrowserExtension(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   endTitle: string,
+  isMultiConfig: boolean,
 ) {
   const template = (await selectPrompt({
     endTitle,
@@ -290,47 +381,30 @@ async function optionCreateBrowserExtension(
     ],
   })) as BrowserTemplateOption;
 
-  const extensionConfig = await configureVSCodeExtension(); // (Reuses the same prompting logic for now)
+  const browserExtensionConfig = await configureBrowserExtension();
 
-  await createWebProject({
-    webProjectTemplate: template as Exclude<
-      BrowserTemplateOption,
-      "coming-soon"
-    >,
-    message: getRandomMessage("category"),
-    mode: "showNewProjectMenu",
-    isDev,
-    config: {
-      ...config,
-      projectDisplayName: extensionConfig.displayName,
-      projectDescription: extensionConfig.description,
-      features: {
-        commands: extensionConfig.features.includes("commands") ? ["*"] : [],
-        webview: extensionConfig.features.includes("webview") ? ["*"] : [],
-        language: extensionConfig.features.includes("language") ? ["*"] : [],
-        themes: extensionConfig.features.includes("themes") ? ["*"] : [],
-        i18n: true,
-        analytics: false,
-        themeMode: "dark-light",
-        authentication: false,
-        api: false,
-        database: false,
-        testing: false,
-        docker: false,
-        ci: false,
-      },
-      projectActivation:
-        extensionConfig.activation === "startup" ? "auto" : "manual",
-      projectAuthor: extensionConfig.publisher,
-    } as ReliverseConfig,
-    memory,
-    cwd,
-  });
+  if (browserExtensionConfig) {
+    await createWebProject({
+      webProjectTemplate: template as Exclude<
+        BrowserTemplateOption,
+        "coming-soon"
+      >,
+      message: getRandomMessage("category"),
+      mode: "showNewProjectMenu",
+      isDev,
+      config,
+      memory,
+      cwd,
+      isMultiConfig,
+    });
+  } else {
+    relinka("error", "No browser extension config provided");
+  }
 }
 
 /**
  * Orchestrates the creation of a Web project.
- * If `shouldUseMultiConfig` is true, we loop through `reli` array.
+ * If `isMultiConfig` is true, we loop through `reli` array.
  */
 async function optionCreateWebProject(
   cwd: string,
@@ -338,10 +412,10 @@ async function optionCreateWebProject(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   endTitle: string,
-  shouldUseMultiConfig: boolean,
+  isMultiConfig: boolean,
   reli: ReliverseConfig[],
 ): Promise<void> {
-  if (shouldUseMultiConfig) {
+  if (isMultiConfig) {
     for (const multiConfig of reli) {
       // If there is no projectTemplate, skip
       if (!multiConfig.projectTemplate) {
@@ -356,6 +430,7 @@ async function optionCreateWebProject(
         memory,
         cwd,
         mode: "showNewProjectMenu",
+        isMultiConfig,
       });
     }
   } else {
@@ -449,10 +524,10 @@ async function optionCreateWebProject(
       ],
     });
 
-    // If user’s config has a template, use it; else ask
+    // If user's config has a template, use it; else ask
     let template: TemplateOption;
-    if (config?.projectTemplate) {
-      template = config.projectTemplate;
+    if (config.projectTemplate !== "unknown") {
+      template = config.projectTemplate as TemplateOption;
     } else {
       const result = await selectPrompt({
         endTitle,
@@ -482,6 +557,11 @@ async function optionCreateWebProject(
       config,
       memory,
       cwd,
+      isMultiConfig,
     });
   }
+}
+
+export function configureCliProject() {
+  relinka("info", "Coming soon...");
 }

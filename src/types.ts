@@ -176,8 +176,6 @@ export type ProjectCategory =
 
 export type ProjectSubcategory = "" | "e-commerce" | "tool";
 
-export type ProjectState = "" | "creating" | "created";
-
 export type PackageManagerName = "npm" | "yarn" | "pnpm" | "bun" | "deno";
 
 // Return type explicitly first

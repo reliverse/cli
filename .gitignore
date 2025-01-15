@@ -9,4 +9,4 @@ node_modules/
 addons/premium/
 addons/**/premium/
 internal-docs/
-tests-runtime/
+test-runtime/

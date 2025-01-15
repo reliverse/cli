@@ -90,12 +90,19 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   projectVersion: "0.1.0",
   projectLicense: "MIT",
   projectRepository: "",
-  projectState: "",
+  projectState: "creating",
   projectDomain: "",
   projectType: "",
-  projectCategory: "webapp",
+  projectCategory: "unknown",
   projectSubcategory: "",
-  projectTemplate: "blefnk/relivator",
+  projectTemplate: "unknown",
+  projectDisplayName: "",
+  projectFrameworkVersion: "",
+  projectActivation: "manual",
+  nodeVersion: "",
+  runtime: "",
+  deployUrl: "",
+  productionBranch: "main",
 
   // Primary tech stack/framework
   projectFramework: "nextjs",
@@ -256,11 +263,19 @@ export function fixLineByLine(
   const properties = (schema as any).properties as Record<string, TSchema>;
   const result: Record<string, unknown> = { ...((defaultConfig as any) ?? {}) };
   const changedKeys: string[] = [];
+  const missingKeys: string[] = [];
 
   for (const propName of Object.keys(properties)) {
     const subSchema = properties[propName]!;
     const userValue = (userConfig as any)[propName];
     const defaultValue = (defaultConfig as any)[propName];
+
+    // Track missing fields and inject defaults
+    if (userValue === undefined && !(propName in userConfig)) {
+      missingKeys.push(propName);
+      result[propName] = defaultValue;
+      continue;
+    }
 
     const isValidStructure = Value.Check(
       createSinglePropertySchema(propName, subSchema),
@@ -289,10 +304,18 @@ export function fixLineByLine(
         defaultValue,
       );
       result[propName] = validatedValue;
-      if (validatedValue !== originalValue) {
+      if (originalValue !== undefined && validatedValue !== originalValue) {
         changedKeys.push(propName);
       }
     }
+  }
+
+  if (missingKeys.length > 0) {
+    relinka(
+      "info-verbose",
+      "Missing fields injected from default config:",
+      missingKeys.join(", "),
+    );
   }
 
   return { fixedConfig: result, changedKeys };
@@ -349,6 +372,13 @@ function injectSectionComments(fileContent: string): string {
  * ------------------------------------------------------------------ */
 const BACKUP_EXTENSION = ".backup";
 const TEMP_EXTENSION = ".tmp";
+
+/**
+ * Cleans GitHub repository URLs by removing git+ prefix and .git suffix
+ */
+export function cleanGitHubUrl(url: string): string {
+  return url.replace(/^git\+/, "").replace(/\.git$/, "");
+}
 
 /* ------------------------------------------------------------------
  * Config Read/Write (TypeBox)
@@ -508,7 +538,7 @@ async function parseAndFixConfig(
 
         relinka(
           "info",
-          "Fixed .reliverse configuration lines via parseAndFix (line-by-line).",
+          "Fixed .reliverse configuration lines. Detected/default values were set.",
           `Invalid paths were: ${originalInvalidPaths.join(", ") || "(none)"}; `,
           `Changed keys: ${changedKeys.join(", ") || "(none)"}`,
         );
@@ -865,8 +895,8 @@ export async function generateReliverseConfig({
   baseRules.projectLicense = packageJson?.license ?? baseRules.projectLicense;
   baseRules.projectRepository = packageJson?.repository
     ? typeof packageJson.repository === "string"
-      ? packageJson.repository
-      : packageJson.repository.url
+      ? cleanGitHubUrl(packageJson.repository)
+      : cleanGitHubUrl(packageJson.repository.url)
     : `https://github.com/${githubUsername}/${projectName}`;
 
   baseRules.projectDeployService = deployService;

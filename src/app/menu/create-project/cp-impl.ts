@@ -26,7 +26,7 @@ import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/c
 import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/replaceStringsInFiles.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
-import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/mod.js";
+import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
 
 /**
@@ -50,10 +50,11 @@ export type CreateWebProjectOptions = {
   config: ReliverseConfig;
   memory: ReliverseMemory;
   cwd: string;
+  isMultiConfig: boolean;
 };
 
 /**
- * Minimally required project config after initialization
+ * Minimal object describing essential project info after initialization
  */
 export type ProjectConfig = {
   uiUsername: string;
@@ -68,18 +69,32 @@ export async function initializeProjectConfig(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   skipPrompts: boolean,
+  isMultiConfig = false,
 ): Promise<ProjectConfig> {
-  // If skipPrompts is true & we have config, we auto-fill
+  // 1. Determine user (author)
   const uiUsername =
     skipPrompts && config?.projectAuthor
       ? config.projectAuthor
       : ((await askUserName(memory)) ?? "");
 
-  const projectName =
-    skipPrompts && config?.projectTemplate
-      ? path.basename(config.projectTemplate)
-      : ((await askProjectName()) ?? "");
+  // 2. Determine project name
+  let projectName: string;
+  if (skipPrompts) {
+    // If multi-config mode and config has a projectName, use that
+    if (isMultiConfig && config?.projectName) {
+      projectName = config.projectName;
+    } else if (config?.projectTemplate) {
+      projectName = path.basename(config.projectTemplate);
+    } else {
+      // Fallback: prompt user anyway
+      projectName = (await askProjectName()) ?? "my-app";
+    }
+  } else {
+    // Normal prompt flow
+    projectName = (await askProjectName()) ?? "my-app";
+  }
 
+  // 3. Determine domain
   const primaryDomain =
     skipPrompts && config?.projectDomain
       ? config.projectDomain
@@ -89,7 +104,7 @@ export async function initializeProjectConfig(
 }
 
 /**
- * Replaces occurrences of certain placeholders with real user values.
+ * Replaces placeholders in the downloaded template with user-specified values.
  */
 export async function replaceTemplateStrings(
   projectPath: string,
@@ -98,23 +113,23 @@ export async function replaceTemplateStrings(
 ) {
   await spinnerTaskPrompt({
     spinnerSolution: "ora",
-    initialMessage: "Editing some texts in the initialized files...",
-    successMessage: "✅ I edited some texts in the initialized files for you.",
-    errorMessage: "❌ I've failed to edit some texts...",
-    async action(updateMessage: (message: string) => void) {
+    initialMessage: "Editing texts in the initialized files...",
+    successMessage: "✅ Finished editing texts in the initialized files.",
+    errorMessage: "❌ Failed to edit some texts...",
+    async action(updateMessage: (msg: string) => void) {
       const { author, projectName: oldProjectName } =
         extractRepoInfo(webProjectTemplate);
-      updateMessage(
-        "Some magic is happening... This may take a little while...",
-      );
+      updateMessage("Some magic is happening... Please wait...");
 
+      // Potential replacements
       const replacements: Record<string, string> = {
         [`${oldProjectName}.com`]: config.primaryDomain,
         [author]: config.uiUsername,
         [oldProjectName]: config.projectName,
-        ["relivator.com"]: config.primaryDomain, // temp extra
+        ["relivator.com"]: config.primaryDomain,
       };
 
+      // Filter out empty or identical
       const validReplacements = Object.fromEntries(
         Object.entries(replacements).filter(
           ([key, value]) => key && value && key !== value,
@@ -136,26 +151,24 @@ export async function replaceTemplateStrings(
 
 /**
  * Sets up i18n if `i18nShouldBeEnabledAutomatically` is true,
- * otherwise prompts the user.
+ * else prompts user unless skipPrompts is on.
  */
 export async function setupI18nSupport(
   projectPath: string,
   skipPrompts: boolean,
   i18nShouldBeEnabledAutomatically: boolean,
 ) {
-  let i18nShouldBeEnabled = false;
   if (i18nShouldBeEnabledAutomatically) {
-    // We skip the prompt entirely
     await setupI18nFiles(projectPath);
     return;
   }
 
-  // If we aren't auto-enabling, we prompt unless skipPrompts is also true
+  let i18nShouldBeEnabled = false;
   if (!skipPrompts) {
     i18nShouldBeEnabled = await confirmPrompt({
       title: "Do you want to enable i18n (internationalization)?",
       displayInstructions: true,
-      content: "Option `N` here may not work currently. Please be patient.",
+      content: "If `N`, i18n folder won't be created.",
     });
   }
 
@@ -168,28 +181,26 @@ export async function setupI18nSupport(
     return;
   }
 
-  // If user said yes (or if skipPrompts was true but they want i18n anyway)
   if (i18nShouldBeEnabled) {
     await setupI18nFiles(projectPath);
   }
 }
 
 /**
- * Installs dependencies and checks for optional DB push scripts.
+ * Installs dependencies and checks optional DB push script.
  */
 export async function handleDependencies(
   projectPath: string,
   config: ReliverseConfig,
 ) {
   const depsBehavior: Behavior = config?.depsBehavior ?? "prompt";
-
-  // Decide if we install deps
   const shouldInstallDeps = await determineShouldInstallDeps(depsBehavior);
-  let shouldRunDbPush = false;
 
+  let shouldRunDbPush = false;
   if (shouldInstallDeps) {
     await installDependencies({ cwd: projectPath });
-    // Optionally check if there's a db push script
+
+    // Check if there's a db push script
     const scriptStatus = await promptPackageJsonScripts(
       projectPath,
       shouldRunDbPush,
@@ -202,7 +213,7 @@ export async function handleDependencies(
 }
 
 /**
- * Decides whether to install deps based on config or user prompt.
+ * Decides whether to install deps based on config or user input.
  */
 export async function determineShouldInstallDeps(
   depsBehavior: Behavior,
@@ -212,17 +223,17 @@ export async function determineShouldInstallDeps(
       return true;
     case "autoNo":
       return false;
-    default:
+    default: {
       return await confirmPrompt({
-        title:
-          "Would you like me to install dependencies for you? It's recommended, but may take time.",
+        title: "Install dependencies now? Recommended, but may take time.",
         content: "This allows me to run scripts provided by the template.",
       });
+    }
   }
 }
 
 /**
- * Moves the project from a test runtime to a user-specified location (dev mode).
+ * Moves the project from a test runtime directory to a user-specified location.
  */
 async function moveProjectFromTestRuntime(
   projectName: string,
@@ -230,9 +241,11 @@ async function moveProjectFromTestRuntime(
 ): Promise<string | null> {
   try {
     const shouldUseProject = await confirmPrompt({
-      title: `Project was bootstrapped in dev mode. Move to permanent location? ${pc.redBright("[🚨 Experimental]")}`,
+      title: `Project bootstrapped in dev mode. Move to a permanent location? ${pc.redBright(
+        "[🚨 Experimental]",
+      )}`,
       content:
-        "If yes, I'll move it from the test-runtime directory to a location you choose.",
+        "If yes, I'll move it from the test-runtime directory to a new location you specify.",
       defaultValue: false,
     });
 
@@ -242,13 +255,13 @@ async function moveProjectFromTestRuntime(
 
     const defaultPath = getDefaultProjectPath();
     const targetDir = await inputPrompt({
-      title: "Where would you like to move the project?",
-      content: "Enter a path:",
-      placeholder: `Press <Enter> to use default path: ${defaultPath}`,
+      title: "Where should I move the project?",
+      content: "Enter a desired path:",
+      placeholder: `Press <Enter> to use default: ${defaultPath}`,
       defaultValue: defaultPath,
     });
 
-    // Ensure target directory exists
+    // Ensure the directory exists
     await fs.ensureDir(targetDir);
 
     // Check if a directory with the same name exists
@@ -261,12 +274,10 @@ async function moveProjectFromTestRuntime(
         title: `Directory '${finalProjectName}' already exists at ${targetDir}`,
         content: "Enter a new name for the project directory:",
         defaultValue: `${projectName}-${counter}`,
-        validate: (value: string) => {
-          if (!/^[a-zA-Z0-9-_]+$/.test(value)) {
-            return "Invalid directory name format";
-          }
-          return true;
-        },
+        validate: (value: string) =>
+          /^[a-zA-Z0-9-_]+$/.test(value)
+            ? true
+            : "Invalid directory name format",
       });
 
       finalProjectName = newName;
@@ -274,7 +285,6 @@ async function moveProjectFromTestRuntime(
       counter++;
     }
 
-    // Move it
     await fs.move(sourceDir, finalPath);
     relinka("success", `Project moved to ${finalPath}`);
     return finalPath;
@@ -285,18 +295,17 @@ async function moveProjectFromTestRuntime(
 }
 
 /**
- * Gets a default project path based on OS
+ * Chooses a default path based on OS for test -> permanent move.
  */
 function getDefaultProjectPath(): string {
   const platform = os.platform();
-  if (platform === "win32") {
-    return "C:\\B\\S";
-  }
-  return path.join(os.homedir(), "Projects");
+  return platform === "win32"
+    ? "C:\\B\\S"
+    : path.join(os.homedir(), "Projects");
 }
 
 /**
- * Handles final deployment steps via the `promptGitDeploy` flow.
+ * Orchestrates final deployment steps with `promptGitDeploy`.
  */
 export async function handleDeployment(params: {
   projectName: string;
@@ -310,6 +319,8 @@ export async function handleDeployment(params: {
   memory: ReliverseMemory;
   cwd: string;
   shouldMaskSecretInput: boolean;
+  skipPrompts: boolean;
+  isMultiConfig: boolean;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -320,7 +331,7 @@ export async function handleDeployment(params: {
 }
 
 /**
- * Shows success info, next steps, and handles final user actions (like opening in IDE).
+ * Shows success info, next steps, and handles final user actions (e.g., open in IDE).
  */
 export async function showSuccessAndNextSteps(
   projectPath: string,
@@ -333,7 +344,7 @@ export async function showSuccessAndNextSteps(
 ) {
   let finalProjectPath = projectPath;
 
-  // If dev mode, offer to move the project
+  // If dev mode, offer to move from test-runtime
   if (isDev) {
     const newPath = await moveProjectFromTestRuntime(
       path.basename(projectPath),
@@ -346,7 +357,7 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `🎉 ${webProjectTemplate} was installed at ${finalProjectPath}.`,
+    `🎉 '${webProjectTemplate}' was installed at ${finalProjectPath}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
@@ -355,10 +366,10 @@ export async function showSuccessAndNextSteps(
     title: "🤘 Project created successfully! Next steps:",
     titleColor: "cyanBright",
     content: [
-      `- If you have VSCode installed, run: code ${finalProjectPath}`,
-      `- Or open in your terminal: cd ${finalProjectPath}`,
+      `- To open in VSCode: code ${finalProjectPath}`,
+      `- Or in terminal: cd ${finalProjectPath}`,
       "- Install dependencies manually if needed: bun i OR pnpm i",
-      "- Apply linting and formatting: bun check OR pnpm check",
+      "- Apply linting & formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
     ],
   });
@@ -374,20 +385,20 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `👋 I'll have more features coming soon! ${
-      uiUsername ? `See you soon, ${uiUsername}!` : ""
-    }`,
+    uiUsername
+      ? `👋 More features soon! See you, ${uiUsername}!`
+      : "👋 All done for now!",
   );
 
   relinka(
     "success",
     "✨ One more thing (experimental):",
-    "👉 Launch `reliverse cli` in your new project to add/remove features.",
+    "👉 `reliverse cli` in your new project to add/remove features.",
   );
 }
 
 /**
- * Lets the user select further actions to take, such as opening IDE or docs.
+ * Lets the user select further actions: open in IDE, docs, etc.
  */
 export async function handleNextActions(
   projectPath: string,
@@ -435,7 +446,6 @@ export async function handleNextActions(
   for (const action of nextActions) {
     await handleNextAction(action, projectPath, primaryDomain, allDomains);
   }
-
   relinka(
     "info",
     uiUsername ? `See you soon, ${uiUsername}!` : "Done for now!",
@@ -443,7 +453,7 @@ export async function handleNextActions(
 }
 
 /**
- * Handles each requested action from the next-steps prompt.
+ * Handles user-chosen actions: open IDE, open docs, etc.
  */
 export async function handleNextAction(
   action: string,
@@ -458,8 +468,8 @@ export async function handleNextAction(
         relinka(
           "info",
           vscodeInstalled
-            ? "Opening the project in VSCode-based IDE..."
-            : "Trying to open the project in your default IDE...",
+            ? "Opening project in VSCode-based IDE..."
+            : "Trying to open project in default IDE...",
         );
         try {
           await execa("code", [projectPath]);
@@ -468,12 +478,13 @@ export async function handleNextAction(
             "error",
             "Error opening project in IDE:",
             error instanceof Error ? error.message : String(error),
-            `Try opening manually: code ${projectPath}`,
+            `Try manually: code ${projectPath}`,
           );
         }
         break;
       }
       case "deployed": {
+        // If multiple domains, let user pick
         if (allDomains && allDomains.length > 1) {
           const selectedDomain = await selectPrompt({
             title: "Select domain to open:",
@@ -507,6 +518,7 @@ export async function handleNextAction(
         break;
       }
       default:
+        // No-op
         break;
     }
   } catch (error) {
@@ -515,7 +527,7 @@ export async function handleNextAction(
 }
 
 /**
- * Checks if specific dependencies exist
+ * Checks if a project has certain dependencies
  */
 export async function checkDependenciesExist(
   projectPath: string,
@@ -532,10 +544,7 @@ export async function checkDependenciesExist(
       ...packageJson.devDependencies,
     };
     const missing = dependencies.filter((dep) => !allDeps[dep]);
-    return {
-      exists: missing.length === 0,
-      missing,
-    };
+    return { exists: missing.length === 0, missing };
   } catch (error: unknown) {
     relinka("error", "Error checking dependencies:", String(error));
     return { exists: false, missing: dependencies };
@@ -543,23 +552,23 @@ export async function checkDependenciesExist(
 }
 
 /**
- * Validates certain directories exist
+ * Validates that certain directories exist in the project
  */
 export async function validateProjectStructure(
   projectPath: string,
   requiredPaths: string[] = ["src", "public"],
 ): Promise<{ isValid: boolean; missing: string[] }> {
   try {
-    const missing = [];
+    const missingDirs: string[] = [];
     for (const dirPath of requiredPaths) {
       const fullPath = path.join(projectPath, dirPath);
       if (!(await fs.pathExists(fullPath))) {
-        missing.push(dirPath);
+        missingDirs.push(dirPath);
       }
     }
     return {
-      isValid: missing.length === 0,
-      missing,
+      isValid: missingDirs.length === 0,
+      missing: missingDirs,
     };
   } catch (error: unknown) {
     relinka("error", "Error validating project structure:", String(error));
@@ -578,10 +587,10 @@ export async function updatePackageJson(
     const packageJson = await readPackageJson(projectPath);
     if (!packageJson) return false;
 
-    const updatedPackageJson = { ...packageJson, ...updates };
+    const updated = { ...packageJson, ...updates };
     const packageJsonPath = path.join(projectPath, "package.json");
 
-    await fs.writeJson(packageJsonPath, updatedPackageJson, { spaces: 2 });
+    await fs.writeJson(packageJsonPath, updated, { spaces: 2 });
     return true;
   } catch (error: unknown) {
     relinka("error", "Error updating package.json:", String(error));

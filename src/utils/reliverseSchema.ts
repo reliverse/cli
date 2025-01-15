@@ -100,17 +100,22 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("bun"),
   ]),
   projectFrameworkVersion: Type.Optional(Type.String()),
-  projectState: Type.Optional(Type.String()),
+  projectState: Type.Optional(
+    Type.Union([Type.Literal("creating"), Type.Literal("created")]),
+  ),
   projectCategory: Type.Optional(
     Type.Union([
       Type.Literal("webapp"),
       Type.Literal("vscode"),
       Type.Literal("browser"),
+      Type.Literal("cli"),
+      Type.Literal("unknown"),
     ]),
   ),
   projectSubcategory: Type.Optional(Type.String()),
   projectTemplate: Type.Optional(
     Type.Union([
+      Type.Literal("unknown"),
       Type.Literal("blefnk/relivator"),
       Type.Literal("blefnk/next-react-ts-src-minimal"),
       Type.Literal("blefnk/all-in-one-nextjs-template"),
@@ -121,6 +126,7 @@ export const reliverseConfigSchema = Type.Object({
       Type.Literal("reliverse/template-browser-extension"),
       Type.Literal("microsoft/vscode-extension-samples"),
       Type.Literal("microsoft/vscode-extension-template"),
+      Type.Literal("reliverse/cli-starter-template"),
     ]),
   ),
   projectActivation: Type.Optional(

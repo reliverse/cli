@@ -201,3 +201,24 @@ export function renderEndLineInput() {
   console.log(pc.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
   console.log();
 }
+
+/**
+ * Checks if the current working directory is empty.
+ * Ignores certain paths like .reliverse, node_modules, .git, package.json, and reli.
+ * This means the directory will be considered "empty" even if it contains any of the ignored files/directories.
+ */
+export async function isCwdEmpty(cwd: string) {
+  const IGNORED_PATHS = [
+    ".git",
+    ".reliverse",
+    "node_modules",
+    "package.json",
+    "reli",
+  ];
+
+  const files = await fs.readdir(cwd);
+  const significantFiles = files.filter(
+    (file) => !IGNORED_PATHS.includes(file),
+  );
+  return significantFiles.length === 0;
+}
