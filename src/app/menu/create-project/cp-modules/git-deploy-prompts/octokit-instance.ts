@@ -1,8 +1,10 @@
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import { Octokit } from "@octokit/rest";
 
+import { cliVersion } from "~/app/constants.js";
+
 export const OctokitWithRest = Octokit.plugin(restEndpointMethods);
-export const octokitUserAgent = "reliverse-cli/1.4.27";
+export const octokitUserAgent = `reliverse/${cliVersion}`;
 
 // https://github.com/octokit/octokit.js/#readme
 export function createOctokitInstance(

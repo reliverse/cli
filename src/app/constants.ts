@@ -2,15 +2,21 @@ import path from "pathe";
 import pc from "picocolors";
 import { fileURLToPath } from "url";
 
+export const cliVersion = "1.4.28";
+export const cliName = "@reliverse/cli";
+
 export const useLocalhost = false;
 export const isVerboseEnabled = false;
+
+export const FAKE_PREFIX = "fake___";
 
 export const recommended = pc.green("🚀 Recommended");
 export const experimental = pc.red("🚨 Experimental");
 
 export const UNKNOWN_VALUE = "unknown";
 export const DEFAULT_DOMAIN = "https://example.com";
-export const RELIVERSE_SCHEMA = "https://reliverse.org/schema.json";
+export const RELIVERSE_SCHEMA_DEV = "./schema.json";
+export const RELIVERSE_SCHEMA_URL = "https://reliverse.org/schema.json";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,8 +1,8 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { deleteLastLine, relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -36,6 +36,11 @@ export async function askUserName(
   // Update memory only if the provided name differs from what was stored
   if (!hasPreviousName || finalName !== previousName) {
     await updateReliverseMemory({ name: finalName });
+  }
+
+  // If the user leaves the input empty, deleteLastLine()
+  if (finalName === "") {
+    deleteLastLine();
   }
 
   relinka(

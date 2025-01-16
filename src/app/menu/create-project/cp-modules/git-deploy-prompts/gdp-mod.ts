@@ -1,16 +1,18 @@
 import type { Octokit } from "@octokit/rest";
 
-import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import type { DeploymentService, ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { DeploymentService } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { decide } from "~/utils/decideHelper.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { deployProject } from "./deploy.js";
-import { createGithubRepository, initGit } from "./git.js";
+import { createGithubRepository, initGitDir } from "./git.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
 import { createOctokitInstance } from "./octokit-instance.js";
@@ -19,11 +21,6 @@ import {
   isProjectDeployed,
   createVercelDeployment,
 } from "./vercel/vercel-mod.js";
-
-/**
- * A string literal union for either 'gitBehavior' or 'deployBehavior'
- */
-type DecisionKey = "gitBehavior" | "deployBehavior";
 
 /**
  * Collects details from a GitHub setup attempt.
@@ -35,53 +32,6 @@ type GithubSetupResult = {
 };
 
 /**
- * This function handles the final "yes/no" decision, taking into account:
- * - The config's behavior key (autoYes, autoNo, prompt)
- * - Whether skipPrompts is true
- */
-export async function decide(
-  config: ReliverseConfig,
-  behaviorKey: DecisionKey,
-  title: string,
-  content: string | undefined,
-  defaultValue: boolean,
-  skipPrompts: boolean,
-): Promise<boolean> {
-  try {
-    let behavior = config?.[behaviorKey] ?? "prompt";
-
-    // If skipPrompts is true AND the config is set to "prompt",
-    // we override that behavior to "autoYes" so no user input is needed.
-    if (skipPrompts && behavior === "prompt") {
-      behavior = "autoYes";
-    }
-
-    switch (behavior) {
-      case "autoYes":
-        relinka("info-verbose", `Auto-answering YES to: "${title}"`);
-        return true;
-      case "autoNo":
-        relinka("info-verbose", `Auto-answering NO to: "${title}"`);
-        return false;
-      // default is "prompt":
-      default:
-        return await confirmPrompt({
-          title,
-          content: content ?? "",
-          defaultValue,
-        });
-    }
-  } catch (error) {
-    relinka(
-      "error",
-      "Failed to get decision:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return defaultValue;
-  }
-}
-
-/**
  * Initializes a local Git repository.
  */
 export async function handleGitInit(
@@ -90,7 +40,13 @@ export async function handleGitInit(
   projectName: string,
   projectPath: string,
 ): Promise<boolean> {
-  const gitInitialized = await initGit(cwd, isDev, projectName, projectPath);
+  const gitInitialized = await initGitDir({
+    cwd,
+    isDev,
+    projectName,
+    projectPath,
+    allowReInit: true,
+  });
   if (!gitInitialized) {
     relinka("error", "Failed to initialize git. Stopping git/deploy process.");
     return false;
@@ -109,21 +65,20 @@ export async function handleGithubRepo(
   projectName: string,
   projectPath: string,
   shouldMaskSecretInput: boolean,
-  skipPrompts: boolean,
 ): Promise<GithubSetupResult> {
   if (!memory) {
     relinka("error", "Failed to read reliverse memory");
     return { success: false };
   }
 
-  const githubUsername = await askGithubName(memory);
-  if (!githubUsername) {
+  const username = await askGithubName(memory);
+  if (!username) {
     relinka("error", "Could not determine GitHub username");
     return { success: false };
   }
 
   // Even if token is not found, we proceed. createGithubRepo() will prompt for a token if needed.
-  const repoCreated = await createGithubRepository(
+  const repoCreated = await createGithubRepository({
     cwd,
     isDev,
     memory,
@@ -131,8 +86,8 @@ export async function handleGithubRepo(
     projectName,
     projectPath,
     shouldMaskSecretInput,
-    skipPrompts,
-  );
+    githubUsername: username,
+  });
   if (!repoCreated) {
     relinka(
       "error",
@@ -151,7 +106,7 @@ export async function handleGithubRepo(
 
   const octokit = createOctokitInstance(updatedMemory.githubKey);
 
-  return { success: true, octokit, username: githubUsername };
+  return { success: true, octokit, username };
 }
 
 /**
@@ -292,7 +247,6 @@ export async function promptGitDeploy({
           projectName,
           projectPath,
           shouldMaskSecretInput,
-          skipPrompts,
         );
         if (githubData.success) {
           break; // success => break out of loop
@@ -461,7 +415,7 @@ export async function promptGitDeploy({
     if (skipGitHub) {
       relinka(
         "success",
-        "Git initialized locally! You can set up GitHub & deployment later. 🎉",
+        "Git initialized locally! You can set up GitHub & deployment later. Just run `reliverse cli` inside of your project folder to do it.",
       );
       return {
         deployService: "none",

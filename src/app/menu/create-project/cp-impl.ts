@@ -15,9 +15,10 @@ import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 
-import type { Behavior, DeploymentService, ReliverseMemory } from "~/types.js";
+import type { Behavior, DeploymentService } from "~/types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/extractRepoInfo.js";
@@ -59,7 +60,7 @@ async function ensureUniqueProjectName(
 ): Promise<string> {
   let projectName = initialName;
   let targetPath = isDev
-    ? path.join(cwd, "test-runtime", projectName)
+    ? path.join(cwd, "tests-runtime", projectName)
     : path.join(cwd, projectName);
 
   let index = 1;
@@ -83,7 +84,7 @@ async function ensureUniqueProjectName(
       });
     }
     targetPath = isDev
-      ? path.join(cwd, "test-runtime", projectName)
+      ? path.join(cwd, "tests-runtime", projectName)
       : path.join(cwd, projectName);
   }
 
@@ -281,7 +282,7 @@ export async function determineShouldInstallDeps(
 /**
  * Moves the project from a test runtime directory to a user-specified location.
  */
-async function moveProjectFromTestRuntime(
+async function moveProjectFromTestsRuntime(
   projectName: string,
   sourceDir: string,
 ): Promise<string | null> {
@@ -291,7 +292,7 @@ async function moveProjectFromTestRuntime(
         "[🚨 Experimental]",
       )}`,
       content:
-        "If yes, I'll move it from the test-runtime directory to a new location you specify.",
+        "If yes, I'll move it from the tests-runtime directory to a new location you specify.",
       defaultValue: false,
     });
 
@@ -389,9 +390,9 @@ export async function showSuccessAndNextSteps(
 ) {
   let finalProjectPath = projectPath;
 
-  // If dev mode, offer to move from test-runtime
+  // If dev mode, offer to move from tests-runtime
   if (isDev) {
-    const newPath = await moveProjectFromTestRuntime(
+    const newPath = await moveProjectFromTestsRuntime(
       path.basename(projectPath),
       projectPath,
     );

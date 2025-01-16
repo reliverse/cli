@@ -1,34 +1,5 @@
 export type Behavior = "prompt" | "autoYes" | "autoNo";
 
-export type ConfigKey =
-  | "code"
-  | "key"
-  | "githubKey"
-  | "vercelKey"
-  | "openaiKey";
-
-export type UserDataKeys =
-  | "name"
-  | "email"
-  | "githubUsername"
-  | "vercelUsername"
-  | "vercelTeamId"
-  | "vercelTeamSlug";
-
-export type ReliverseMemory = {
-  code: string;
-  key: string;
-  githubKey?: string;
-  vercelKey?: string;
-  openaiKey?: string;
-  name?: string;
-  email?: string;
-  githubUsername?: string;
-  vercelUsername?: string;
-  vercelTeamId?: string;
-  vercelTeamSlug?: string;
-};
-
 export type DatabasePostgresProvider = "neon" | "railway";
 
 export type DatabaseProvider = "postgres" | "sqlite" | "mysql";

@@ -7,16 +7,18 @@ import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
-import type { ReliverseMemory } from "~/types.js";
 import type {
+  ProjectArchitecture,
   ProjectCategory,
   ProjectSubcategory,
   ReliverseConfig,
-} from "~/utils/reliverseSchema.js";
+} from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
   DEFAULT_APP_NAME,
   experimental,
+  recommended,
   UNKNOWN_VALUE,
 } from "~/app/constants.js";
 import {
@@ -27,8 +29,9 @@ import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-compo
 import {
   TEMP_BROWSER_TEMPLATE_OPTIONS,
   TEMP_VSCODE_TEMPLATE_OPTIONS,
-  TEMP_WEBSITE_TEMPLATE_OPTIONS,
+  TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS,
   type TemplateOption,
+  TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS,
 } from "~/utils/projectTemplate.js";
 
 import { createWebProject } from "./create-project/cp-mod.js";
@@ -39,14 +42,14 @@ import { createWebProject } from "./create-project/cp-mod.js";
 export type VSCodeTemplateOption =
   | "microsoft/vscode-extension-samples"
   | "microsoft/vscode-extension-template"
-  | "coming-soon";
+  | "unknown";
 
 /**
  * Possible template options for browser extensions
  */
 export type BrowserTemplateOption =
   | "reliverse/template-browser-extension"
-  | "coming-soon";
+  | "unknown";
 
 /**
  * Asks the user for extension config via prompts
@@ -238,6 +241,7 @@ export async function showNewProjectMenu(
     "📚 Check the docs to learn more: https://docs.reliverse.org";
 
   const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
+  console.log("skipPrompts", skipPrompts);
   const isMultiConfig = reli.length > 0;
 
   if (isMultiConfig) {
@@ -346,7 +350,7 @@ async function optionCreateVSCodeExtension(
       { separator: true },
       {
         label: pc.italic(pc.dim("More templates coming soon")),
-        value: "coming-soon",
+        value: "unknown",
         disabled: true,
       },
     ],
@@ -356,10 +360,7 @@ async function optionCreateVSCodeExtension(
 
   if (vscodeExtensionConfig) {
     await createWebProject({
-      webProjectTemplate: template as Exclude<
-        VSCodeTemplateOption,
-        "coming-soon"
-      >,
+      webProjectTemplate: template as Exclude<VSCodeTemplateOption, "unknown">,
       message: getRandomMessage("category"),
       mode: "showNewProjectMenu",
       isDev,
@@ -389,7 +390,7 @@ async function optionCreateBrowserExtension(
       { separator: true },
       {
         label: pc.italic(pc.dim("More templates coming soon")),
-        value: "coming-soon",
+        value: "unknown",
         disabled: true,
       },
     ],
@@ -399,10 +400,7 @@ async function optionCreateBrowserExtension(
 
   if (browserExtensionConfig) {
     await createWebProject({
-      webProjectTemplate: template as Exclude<
-        BrowserTemplateOption,
-        "coming-soon"
-      >,
+      webProjectTemplate: template as Exclude<BrowserTemplateOption, "unknown">,
       message: getRandomMessage("category"),
       mode: "showNewProjectMenu",
       isDev,
@@ -432,14 +430,37 @@ async function optionCreateWebProject(
 ): Promise<void> {
   if (isMultiConfig) {
     for (const multiConfig of reli) {
-      // If there is no projectTemplate, skip
-      if (!multiConfig.projectTemplate) {
-        relinka("warn", "Skipping a config with no projectTemplate defined.");
-        continue;
+      let template = multiConfig.projectTemplate;
+      if (template === "unknown") {
+        let architecture = multiConfig.projectArchitecture;
+        if (architecture === "unknown") {
+          architecture = await selectPrompt<ProjectArchitecture>({
+            endTitle,
+            title: "Which architecture would you prefer?",
+            options: [
+              {
+                label: `${pc.bold("Fullstack")} ${recommended}`,
+                value: "fullstack",
+              },
+              {
+                label: `${pc.dim("Separated frontend and backend")} ${experimental}`,
+                value: "separated",
+              },
+            ],
+          });
+        }
+        template = (await selectPrompt({
+          endTitle,
+          title: "Which template would you like to use?",
+          options:
+            architecture === "fullstack"
+              ? Object.values(TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS)
+              : Object.values(TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS),
+        })) as TemplateOption;
       }
       await createWebProject({
-        webProjectTemplate: multiConfig.projectTemplate,
-        message: "Setting up project...",
+        webProjectTemplate: template,
+        message: "Setting up a brand new web app project...",
         isDev,
         config: multiConfig,
         memory,
@@ -467,7 +488,7 @@ async function optionCreateWebProject(
           {
             label: "...",
             hint: pc.dim("coming soon"),
-            value: "coming-soon",
+            value: "unknown",
             disabled: true,
           },
         ],
@@ -548,18 +569,30 @@ async function optionCreateWebProject(
     if (config.projectTemplate !== UNKNOWN_VALUE) {
       template = config.projectTemplate as TemplateOption;
     } else {
+      let architecture = config.projectArchitecture;
+      if (architecture === "unknown") {
+        architecture = await selectPrompt<ProjectArchitecture>({
+          endTitle,
+          title: "Which architecture would you prefer?",
+          options: [
+            {
+              label: `${pc.bold("Fullstack")} ${recommended}`,
+              value: "fullstack",
+            },
+            {
+              label: `${pc.dim("Separated frontend and backend")} ${experimental}`,
+              value: "separated",
+            },
+          ],
+        });
+      }
       const result = await selectPrompt({
         endTitle,
         title: "Which template would you like to use?",
-        options: [
-          ...Object.values(TEMP_WEBSITE_TEMPLATE_OPTIONS),
-          { separator: true },
-          {
-            label: pc.italic(pc.dim("More templates coming soon")),
-            value: "coming-soon",
-            disabled: true,
-          },
-        ],
+        options:
+          architecture === "fullstack"
+            ? Object.values(TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS)
+            : Object.values(TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS),
       });
       template = result as TemplateOption;
     }

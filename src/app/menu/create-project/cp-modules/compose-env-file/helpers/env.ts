@@ -3,7 +3,8 @@ import { relinka } from "@reliverse/relinka";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import open from "open";
-import path from "pathe";
+
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
@@ -43,10 +44,14 @@ export async function promptAndSetMissingValues(
   missingKeys: string[],
   envPath: string,
   shouldMaskSecretInput: boolean,
+  config: ReliverseConfig,
 ): Promise<void> {
   relinka("info-verbose", `Missing values: ${missingKeys.join(", ")}`);
   const envContent = await fs.readFile(envPath, "utf8");
   const envLines = envContent.split("\n");
+
+  const shouldOpenBrowser = config.envComposerOpenBrowser;
+  const keysWithDefaultValues: string[] = [];
 
   // Auto-fill defaults first
   for (const key of missingKeys) {
@@ -69,13 +74,13 @@ export async function promptAndSetMissingValues(
         envLines.push(newLine);
       }
 
-      relinka(
-        "info-verbose",
-        `Automatically saved default value for ${keyConfig.key}`,
-      );
+      if (!keyConfig.hidden) {
+        keysWithDefaultValues.push(keyConfig.key);
+      }
     }
   }
 
+  // Write the updated env file with default values
   await fs.writeFile(envPath, envLines.join("\n"));
 
   // Only prompt for keys without defaults
@@ -88,7 +93,15 @@ export async function promptAndSetMissingValues(
   });
 
   if (filteredKeys.length === 0) {
-    relinka("info-verbose", "No missing keys require user input.");
+    if (keysWithDefaultValues.length > 0) {
+      relinka(
+        "info",
+        "Some keys are set to default values. Edit them manually if needed:",
+      );
+      relinka("info", keysWithDefaultValues.join(", "));
+    } else {
+      relinka("info-verbose", "No missing keys require user input.");
+    }
     return;
   }
 
@@ -115,7 +128,9 @@ export async function promptAndSetMissingValues(
 
     if (service.dashboardUrl) {
       relinka("info-verbose", `Opening ${service.name} dashboard...`);
-      await open(service.dashboardUrl);
+      if (shouldOpenBrowser) {
+        await open(service.dashboardUrl);
+      }
     }
 
     for (const keyConfig of service.keys) {
@@ -135,7 +150,7 @@ export async function promptAndSetMissingValues(
             contentColor: "yellowBright",
           }),
           ...(service.dashboardUrl && {
-            hint: `Opening ${service.dashboardUrl} website...`,
+            hint: `Visit ${service.dashboardUrl} to get your key`,
           }),
         });
 
@@ -159,33 +174,12 @@ export async function promptAndSetMissingValues(
     }
   }
 
-  relinka(
-    "info",
-    "Some keys are set to default values. Edit them manually if needed.",
-  );
-
-  const envExampleContent = await fs.readFile(
-    path.join(path.dirname(envPath), ".env.example"),
-    "utf8",
-  );
-  const envExampleKeys = envExampleContent
-    .split("\n")
-    .filter((line) => line.trim() && !line.startsWith("#"))
-    .map((line) => line.split("=")[0]?.trim())
-    .filter((key): key is string => key !== undefined);
-
-  const defaultValueKeys = Object.values(KNOWN_SERVICES)
-    .flatMap((svc) => svc.keys)
-    .filter(
-      (k) => k.defaultValue && envExampleKeys.includes(k.key) && !k.hidden,
-    )
-    .map((k) => k.key);
-
-  if (defaultValueKeys.length > 0) {
+  if (keysWithDefaultValues.length > 0) {
     relinka(
       "info",
-      `These keys are set to default values: ${defaultValueKeys.join(", ")}`,
+      "Some keys are set to default values. Edit them manually if needed:",
     );
+    relinka("info", keysWithDefaultValues.join(", "));
   }
 }
 

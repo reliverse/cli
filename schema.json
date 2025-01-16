@@ -76,6 +76,7 @@
       "enum": [
         "unknown",
         "blefnk/relivator",
+        "blefnk/relivator-docker-template",
         "blefnk/next-react-ts-src-minimal",
         "blefnk/all-in-one-nextjs-template",
         "blefnk/create-t3-app",
@@ -326,6 +327,9 @@
         "^(.*)$": {}
       }
     },
+    "envComposerOpenBrowser": {
+      "type": "boolean"
+    },
     "skipPromptsUseAutoBehavior": {
       "type": "boolean"
     },
@@ -355,6 +359,10 @@
     "repoPrivacy": {
       "type": "string",
       "enum": ["unknown", "public", "private"]
+    },
+    "projectArchitecture": {
+      "type": "string",
+      "enum": ["unknown", "fullstack", "separated"]
     }
   },
   "required": [
@@ -364,18 +372,36 @@
     "projectDescription",
     "projectVersion",
     "projectLicense",
+    "projectRepository",
+    "projectDomain",
+    "projectDeployService",
+    "projectDisplayName",
     "projectPackageManager",
+    "projectFrameworkVersion",
+    "projectState",
+    "projectCategory",
+    "projectSubcategory",
+    "projectFramework",
+    "projectTemplate",
+    "projectActivation",
+    "nodeVersion",
+    "runtime",
+    "deployUrl",
     "features",
     "preferredLibraries",
     "codeStyle",
     "monorepo",
     "ignoreDependencies",
     "customRules",
+    "envComposerOpenBrowser",
     "skipPromptsUseAutoBehavior",
     "deployBehavior",
     "depsBehavior",
     "gitBehavior",
     "i18nBehavior",
-    "scriptsBehavior"
+    "scriptsBehavior",
+    "productionBranch",
+    "repoPrivacy",
+    "projectArchitecture"
   ]
 }

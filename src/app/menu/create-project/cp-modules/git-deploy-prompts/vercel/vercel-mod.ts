@@ -14,7 +14,7 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";

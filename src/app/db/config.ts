@@ -7,7 +7,7 @@ import {
 } from "crypto";
 import { eq } from "drizzle-orm";
 
-import type { ConfigKey } from "~/types.js";
+import type { EncryptedDataMemory } from "~/utils/schemaMemory.js";
 
 import { db } from "./client.js";
 import { configKeysTable } from "./schema.js";
@@ -71,7 +71,9 @@ export function decrypt(text: string): string {
   }
 }
 
-export async function getConfigValue(key: ConfigKey): Promise<string | null> {
+export async function getConfigValue(
+  key: EncryptedDataMemory,
+): Promise<string | null> {
   try {
     const result = await db
       .select()
@@ -100,7 +102,7 @@ export async function getConfigValue(key: ConfigKey): Promise<string | null> {
 }
 
 export async function setConfigValue(
-  key: ConfigKey,
+  key: EncryptedDataMemory,
   value: string,
 ): Promise<void> {
   try {
@@ -127,7 +129,9 @@ export async function setConfigValue(
   }
 }
 
-export async function deleteMemoryValue(key: ConfigKey): Promise<void> {
+export async function deleteMemoryValue(
+  key: EncryptedDataMemory,
+): Promise<void> {
   try {
     await db.delete(configKeysTable).where(eq(configKeysTable.key, key));
   } catch (error) {

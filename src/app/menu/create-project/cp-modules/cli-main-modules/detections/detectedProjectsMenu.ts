@@ -10,8 +10,8 @@ import { installDependencies } from "nypm";
 import path from "pathe";
 import pc from "picocolors";
 
-import type { ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental } from "~/app/constants.js";
 import { manageDrizzleSchema } from "~/app/menu/create-project/cp-modules/cli-main-modules/drizzle/manageDrizzleSchema.js";
@@ -38,10 +38,10 @@ import {
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/deploy.js";
 import {
-  createGitCommit,
   pushGitCommits,
-  initGit,
+  initGitDir,
   createGithubRepository,
+  createCommit,
 } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
@@ -61,8 +61,6 @@ export async function handleOpenProjectMenu(
   config: ReliverseConfig,
 ): Promise<void> {
   let selectedProject: DetectedProject | undefined;
-
-  const skipPrompts = false;
 
   // If only one project is detected, use it directly
   if (projects.length === 1) {
@@ -257,12 +255,13 @@ export async function handleOpenProjectMenu(
     });
 
     if (gitAction === "init") {
-      const success = await initGit(
+      const success = await initGitDir({
         cwd,
         isDev,
-        selectedProject.path,
-        selectedProject.name,
-      );
+        projectPath: selectedProject.path,
+        projectName: selectedProject.name,
+        allowReInit: true,
+      });
       if (success) {
         relinka("success", "Git repository initialized successfully");
         selectedProject.hasGit = true;
@@ -273,13 +272,13 @@ export async function handleOpenProjectMenu(
       });
 
       if (message) {
-        const success = await createGitCommit(
+        const success = await createCommit({
           cwd,
           isDev,
-          selectedProject.name,
-          selectedProject.path,
+          projectPath: selectedProject.path,
+          projectName: selectedProject.name,
           message,
-        );
+        });
 
         if (success) {
           relinka("success", "Commit created successfully");
@@ -291,12 +290,12 @@ export async function handleOpenProjectMenu(
         }
       }
     } else if (gitAction === "push") {
-      const success = await pushGitCommits(
+      const success = await pushGitCommits({
         cwd,
         isDev,
-        selectedProject.name,
-        selectedProject.path,
-      );
+        projectName: selectedProject.name,
+        projectPath: selectedProject.path,
+      });
       if (success) {
         relinka("success", "Commits pushed successfully");
         if (selectedProject.gitStatus) {
@@ -304,16 +303,21 @@ export async function handleOpenProjectMenu(
         }
       }
     } else if (gitAction === "github") {
-      const success = await createGithubRepository(
+      const username = await askGithubName(memory);
+      if (!username) {
+        throw new Error("Could not determine GitHub username");
+      }
+
+      const success = await createGithubRepository({
         cwd,
         isDev,
         memory,
         config,
-        selectedProject.name,
-        selectedProject.path,
+        projectName: selectedProject.name,
+        projectPath: selectedProject.path,
         shouldMaskSecretInput,
-        skipPrompts,
-      );
+        githubUsername: username,
+      });
       if (success) {
         relinka("success", "GitHub repository created successfully");
       }
@@ -519,7 +523,7 @@ export async function showOpenProjectMenu(
     );
   }
 
-  const searchPath = isDev ? path.join(cwd, "test-runtime") : cwd;
+  const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
   if (await fs.pathExists(searchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(searchPath);
     await handleOpenProjectMenu(

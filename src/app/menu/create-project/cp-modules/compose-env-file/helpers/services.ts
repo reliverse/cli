@@ -1,3 +1,5 @@
+import { FAKE_PREFIX } from "~/app/constants.js";
+
 import type { ServiceKey } from "./keys.js";
 
 import { KeyVars } from "./keys.js";
@@ -74,13 +76,19 @@ export const KNOWN_SERVICES: Record<string, KnownService> = {
         key: KeyVars.STRIPE_WEBHOOK_SECRET,
         instruction:
           "Your Stripe webhook signing secret starting with 'whsec_'",
-        defaultValue: "whsec_1234567890",
+        defaultValue: `${FAKE_PREFIX}whsec_${generateSecureString({
+          charset: "alphanumeric",
+          purpose: "stripe-webhook",
+        })}`,
       },
       {
         key: KeyVars.STRIPE_PRO_MONTHLY_PRICE_ID,
         instruction:
           "The price ID for your monthly pro plan starting with 'price_'",
-        defaultValue: "price_1234567890",
+        defaultValue: `${FAKE_PREFIX}price_${generateSecureString({
+          charset: "alphanumeric",
+          purpose: "stripe-price",
+        })}`,
       },
     ],
     dashboardUrl: "https://dashboard.stripe.com/test/apikeys",

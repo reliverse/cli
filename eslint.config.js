@@ -13,7 +13,7 @@ import tseslint from "typescript-eslint";
 /** @type {import("typescript-eslint").Config} */
 const config = tseslint.config(
   {
-    ignores: ["**/.git/", "**/{node_modules,dist-jsr,dist-npm,test-runtime}/"],
+    ignores: ["**/.git/", "**/{node_modules,dist-jsr,dist-npm,tests-runtime}/"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,

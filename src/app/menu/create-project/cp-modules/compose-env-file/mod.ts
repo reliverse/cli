@@ -4,6 +4,8 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import open from "open";
 
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+
 import {
   ensureExampleExists,
   ensureEnvExists,
@@ -22,6 +24,7 @@ export async function composeEnvFile(
   fallbackEnvExampleURL: string,
   shouldMaskSecretInput: boolean,
   skipPrompts: boolean,
+  config: ReliverseConfig,
 ): Promise<void> {
   try {
     const results = await Promise.all([
@@ -64,6 +67,7 @@ export async function composeEnvFile(
             remainingMissingKeys,
             envPath,
             shouldMaskSecretInput,
+            config,
           );
         }
         return;
@@ -96,90 +100,89 @@ export async function composeEnvFile(
       options,
     });
 
-    switch (response) {
-      case "manual":
-        relinka("info-verbose", "Opening .env for manual editing...");
-        await execa("code", [envPath]);
-        break;
+    if (response === "manual") {
+      relinka("info-verbose", "Opening .env for manual editing...");
+      await execa("code", [envPath]);
+    } else if (response === "existing") {
+      const existingPath = await inputPrompt({
+        title:
+          "Please provide the path to your existing .env file or directory:",
+        placeholder:
+          process.platform === "win32"
+            ? `Enter the path (e.g. "C:\\Users\\name\\project\\.env" or "C:\\Users\\name\\project")`
+            : `Enter the path (e.g. "/home/user/project/.env" or "/home/user/project")`,
+        content:
+          "You can provide either the .env file path or the directory containing it.\nHint: Drag-n-drop the file or directory into the terminal to insert the path.",
+        contentColor: "yellowBright",
+      });
 
-      case "existing":
-        const existingPath = await inputPrompt({
-          title:
-            "Please provide the path to your existing .env file or directory:",
-          placeholder:
-            process.platform === "win32"
-              ? `Enter the path (e.g. "C:\\Users\\name\\project\\.env" or "C:\\Users\\name\\project")`
-              : `Enter the path (e.g. "/home/user/project/.env" or "/home/user/project")`,
-          content:
-            "You can provide either the .env file path or the directory containing it.\nHint: Drag-n-drop the file or directory into the terminal to insert the path.",
-          contentColor: "yellowBright",
-        });
-
-        if (await copyFromExisting(projectDir, existingPath)) {
-          await saveLastEnvFilePath(existingPath);
-          const remainingMissingKeys = await getMissingKeys(projectDir);
-          if (remainingMissingKeys.length > 0) {
-            relinka(
-              "info",
-              "Some values are still missing in the copied .env file.",
-            );
-            await promptAndSetMissingValues(
-              remainingMissingKeys,
-              envPath,
-              shouldMaskSecretInput,
-            );
-          }
-        }
-        break;
-
-      case "latest":
-        if (lastEnvPath && (await copyFromExisting(projectDir, lastEnvPath))) {
+      if (await copyFromExisting(projectDir, existingPath)) {
+        await saveLastEnvFilePath(existingPath);
+        const remainingMissingKeys = await getMissingKeys(projectDir);
+        if (remainingMissingKeys.length > 0) {
           relinka(
-            "success",
-            "Environment variables copied from the last used file",
+            "info",
+            "Some values are still missing in the copied .env file.",
           );
-          const remainingMissingKeys = await getMissingKeys(projectDir);
-          if (remainingMissingKeys.length > 0) {
-            relinka(
-              "info",
-              "Some values are still missing in the copied .env file.",
-            );
-            await promptAndSetMissingValues(
-              remainingMissingKeys,
-              envPath,
-              shouldMaskSecretInput,
-            );
-          }
-        } else {
-          relinka("info", "Falling back to auto mode...");
           await promptAndSetMissingValues(
-            missingKeys,
+            remainingMissingKeys,
             envPath,
             shouldMaskSecretInput,
+            config,
           );
         }
-        break;
-
-      default: // "auto"
+      }
+    } else if (response === "latest") {
+      if (lastEnvPath && (await copyFromExisting(projectDir, lastEnvPath))) {
+        relinka(
+          "success",
+          "Environment variables copied from the last used file",
+        );
+        const remainingMissingKeys = await getMissingKeys(projectDir);
+        if (remainingMissingKeys.length > 0) {
+          relinka(
+            "info",
+            "Some values are still missing in the copied .env file.",
+          );
+          await promptAndSetMissingValues(
+            remainingMissingKeys,
+            envPath,
+            shouldMaskSecretInput,
+            config,
+          );
+        }
+      } else {
+        relinka("info", "Falling back to auto mode...");
         await promptAndSetMissingValues(
           missingKeys,
           envPath,
           shouldMaskSecretInput,
+          config,
         );
-        break;
+      }
+    } else {
+      // default: "auto"
+      await promptAndSetMissingValues(
+        missingKeys,
+        envPath,
+        shouldMaskSecretInput,
+        config,
+      );
     }
 
-    // Offer to open documentation
-    const shouldOpenDocs = await confirmPrompt({
-      title:
-        "You can always check the Reliverse Docs to learn more about env variables. Open it now?",
-      titleColor: "blueBright",
-      defaultValue: false,
-    });
+    if (!skipPrompts) {
+      // Offer to open documentation
+      const shouldOpenDocs = await confirmPrompt({
+        title:
+          "You can always check the Reliverse Docs to learn more about env variables. Open it now?",
+        titleColor: "blueBright",
+        defaultValue: false,
+      });
 
-    if (shouldOpenDocs) {
-      relinka("info-verbose", "Opening https://docs.reliverse.org/env...");
-      await open("https://docs.reliverse.org/env");
+      if (shouldOpenDocs) {
+        relinka("info-verbose", "Opening https://docs.reliverse.org/env...");
+        await open("https://docs.reliverse.org/env");
+      }
     }
   } catch (err) {
     relinka("error", "Failed to compose env file:", getErrorMessage(err));

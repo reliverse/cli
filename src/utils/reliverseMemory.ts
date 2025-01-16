@@ -4,12 +4,16 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import type { ConfigKey, ReliverseMemory, UserDataKeys } from "~/types.js";
-
 import { MEMORY_FILE } from "~/app/constants.js";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
+
+import type {
+  EncryptedDataMemory,
+  ReliverseMemory,
+  UserDataMemory,
+} from "./schemaMemory.js";
 
 export async function handleReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists
@@ -103,7 +107,7 @@ export async function updateReliverseMemory(
       )
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
-        key: key as ConfigKey,
+        key: key as EncryptedDataMemory,
         value: encrypt(
           typeof value === "object"
             ? JSON.stringify(value)
@@ -125,7 +129,7 @@ export async function updateReliverseMemory(
       )
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
-        key: key as UserDataKeys,
+        key: key as UserDataMemory,
         value:
           typeof value === "object"
             ? JSON.stringify(value)
@@ -140,7 +144,7 @@ export async function updateReliverseMemory(
         ["code", "key", "githubKey", "vercelKey", "openaiKey"].includes(key),
       )
       .filter(([_, value]) => value === null)
-      .map(([key]) => key as ConfigKey);
+      .map(([key]) => key as EncryptedDataMemory);
 
     // Delete null entries from config_keys
     for (const key of keysToDelete) {

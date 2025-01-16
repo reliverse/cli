@@ -1,7 +1,7 @@
 import { inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -33,7 +33,7 @@ export async function askGithubName(
       },
     });
 
-    if (ghUsername !== "" && ghUsername !== memory.githubUsername) {
+    if (ghUsername !== "") {
       await updateReliverseMemory({
         githubUsername: ghUsername,
       });

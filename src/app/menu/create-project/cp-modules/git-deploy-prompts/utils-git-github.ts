@@ -1,31 +1,23 @@
 import type { PackageJson } from "pkg-types";
 
-import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import { createTarGzip } from "nanotar";
-import { homedir } from "os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseMemory } from "~/types.js";
-
-type FileInput = {
-  name: string;
-  data?: Buffer;
-};
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 /**
  * Checks if the given directory is a git repository
  */
-export async function isGitRepo(
+export async function isDirHasGit(
   cwd: string,
   isDev: boolean,
   projectName: string,
   projectPath: string,
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "test-runtime", projectName)
+    ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
@@ -59,161 +51,6 @@ export async function isGitRepo(
 }
 
 /**
- * Clones a repository to a temporary directory and copies specified files
- */
-export async function cloneAndCopyFiles(
-  repoUrl: string,
-  projectPath: string,
-): Promise<boolean> {
-  const tempDir = path.join(
-    homedir(),
-    ".reliverse",
-    "temp",
-    Date.now().toString(),
-  );
-  try {
-    // Create temp directory
-    await fs.ensureDir(tempDir);
-
-    // Clone repository to temp directory
-    const git = simpleGit();
-    await git.clone(repoUrl, tempDir);
-
-    const shouldArchive = await confirmPrompt({
-      title:
-        "Would you like to create an archive of the existing repository content?",
-      content:
-        "In the future, you will be able to run `reliverse cli` to use merge operations on the project's old and new content. The term `cluster` is used as the name for the old content.",
-      defaultValue: true,
-    });
-
-    if (shouldArchive) {
-      // Create archive of tempDir content
-      const fileInputs: FileInput[] = [];
-      const tempFiles = await fs.readdir(tempDir);
-
-      for (const file of tempFiles) {
-        if (file !== ".git") {
-          const filePath = path.join(tempDir, file);
-          const stats = await fs.stat(filePath);
-
-          if (stats.isFile()) {
-            const data = await fs.readFile(filePath);
-            fileInputs.push({
-              name: file,
-              data: Buffer.isBuffer(data) ? data : Buffer.from(data),
-            });
-          } else if (stats.isDirectory()) {
-            // Handle directories recursively
-            const dirFiles = (await fs.readdir(filePath, {
-              recursive: true,
-            })) as string[];
-            for (const dirFile of dirFiles) {
-              const fullPath = path.join(tempDir, file, dirFile);
-              if ((await fs.stat(fullPath)).isFile()) {
-                const data = await fs.readFile(fullPath);
-                fileInputs.push({
-                  name: `${file}/${dirFile}`,
-                  data: Buffer.isBuffer(data) ? data : Buffer.from(data),
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Create archive if we have files to archive
-      if (fileInputs.length > 0) {
-        const archiveName = "cluster.tar.gz";
-        const archivePath = path.join(projectPath, archiveName);
-        const tarData = await createTarGzip(fileInputs);
-        await fs.writeFile(archivePath, Buffer.from(tarData));
-        relinka(
-          "info",
-          `Created archive of repository content at ${archiveName}`,
-        );
-      }
-    }
-
-    // Copy .git directory
-    const gitDir = path.join(tempDir, ".git");
-    if (await fs.pathExists(gitDir)) {
-      // Remove existing .git directory if it exists
-      const targetGitDir = path.join(projectPath, ".git");
-      if (await fs.pathExists(targetGitDir)) {
-        await fs.remove(targetGitDir);
-        relinka("info", "Removed existing .git directory");
-      }
-      await fs.copy(gitDir, path.join(projectPath, ".git"), {
-        preserveTimestamps: true,
-        dereference: false,
-        errorOnExist: false,
-      });
-      // Set hidden attribute on Windows
-      if (process.platform === "win32") {
-        const { exec } = await import("child_process");
-        exec(`attrib +h "${path.join(projectPath, ".git")}"`, (error) => {
-          if (error) {
-            relinka("warn", "Could not set hidden attribute on .git folder");
-          }
-        });
-      }
-      relinka("info", "Copied .git folder from existing repository");
-    } else {
-      throw new Error("Required .git folder not found");
-    }
-
-    // Copy specific files
-    const filesToCopy = [
-      { name: "README.md", required: false },
-      { alternatives: ["LICENSE", "LICENSE.md"], required: false },
-    ];
-
-    for (const file of filesToCopy) {
-      if (file.name) {
-        const sourcePath = path.join(tempDir, file.name);
-        if (await fs.pathExists(sourcePath)) {
-          await fs.copy(sourcePath, path.join(projectPath, file.name));
-          relinka("info", `Copied ${file.name} from existing repository`);
-        }
-      } else if (file.alternatives) {
-        for (const name of file.alternatives) {
-          const filePath = path.join(tempDir, name);
-          if (await fs.pathExists(filePath)) {
-            await fs.copy(filePath, path.join(projectPath, name));
-            relinka("info", `Copied ${name} from existing repository`);
-            break;
-          }
-        }
-      }
-    }
-
-    return true;
-  } catch (error) {
-    relinka(
-      "error",
-      "Failed to clone repository:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return false;
-  } finally {
-    // Cleanup temp directory
-    try {
-      await fs.remove(tempDir);
-    } catch (error) {
-      relinka("warn", "Failed to cleanup temporary directory:", String(error));
-    }
-  }
-}
-
-export async function cloneToTempAndCopyFiles(
-  repoUrl: string,
-  projectPath: string,
-): Promise<boolean> {
-  return await cloneAndCopyFiles(repoUrl, projectPath);
-}
-
-/**
  * Sets up a remote for an existing local git repository and pushes the initial commit
  */
 export async function setupGitRemote(
@@ -225,7 +62,7 @@ export async function setupGitRemote(
   remoteName = "origin",
 ): Promise<boolean> {
   const finalDir = isDev
-    ? path.join(cwd, "test-runtime", projectName)
+    ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
@@ -235,7 +72,7 @@ export async function setupGitRemote(
       return false;
     }
 
-    if (!(await isGitRepo(cwd, isDev, projectName, projectPath))) {
+    if (!(await isDirHasGit(cwd, isDev, projectName, projectPath))) {
       relinka(
         "error",
         "Not a git repository, git should be initialized before setupGitRemote. Something went wrong. Please notify developers.",

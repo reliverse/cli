@@ -1,6 +1,6 @@
 import { inputPrompt } from "@reliverse/prompts";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 

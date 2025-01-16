@@ -1,6 +1,6 @@
 {
-  "name": "cli",
-  "version": "1.4.27",
+  "name": "@reliverse/cli",
+  "version": "1.4.28",
   "author": "reliverse",
   "type": "module",
   "description": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
@@ -80,7 +80,6 @@
     "magic-regexp": "^0.8.0",
     "nanoid": "^5.0.9",
     "nanotar": "^0.1.1",
-    "next-intl": "^3.26.3",
     "node-emoji": "^2.2.0",
     "nypm": "^0.4.1",
     "octokit": "^4.1.0",

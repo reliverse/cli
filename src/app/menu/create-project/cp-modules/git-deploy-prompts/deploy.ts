@@ -2,8 +2,9 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
-import type { DeploymentService, ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { DeploymentService } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { createVercelDeployment } from "./vercel/vercel-mod.js";
 

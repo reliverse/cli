@@ -1,7 +1,7 @@
 import { defineCommand } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import { generateSchemaFile } from "~/utils/reliverseSchema.js";
+import { generateSchemaFile } from "~/utils/schemaConfig.js";
 
 export default defineCommand({
   meta: {

@@ -2,7 +2,11 @@ import { Type, type Static } from "@sinclair/typebox";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { RELIVERSE_SCHEMA, UNKNOWN_VALUE } from "~/app/constants.js";
+import {
+  RELIVERSE_SCHEMA_DEV,
+  RELIVERSE_SCHEMA_URL,
+  UNKNOWN_VALUE,
+} from "~/app/constants.js";
 
 const featuresSchema = Type.Object({
   i18n: Type.Boolean(),
@@ -78,100 +82,87 @@ const monorepoSchema = Type.Object({
 export const reliverseConfigSchema = Type.Object({
   // Reliverse config schema
   $schema: Type.Union([
-    Type.Literal(RELIVERSE_SCHEMA),
-    Type.Literal("./schema.json"),
+    Type.Literal(RELIVERSE_SCHEMA_URL),
+    Type.Literal(RELIVERSE_SCHEMA_DEV),
   ]),
 
   // General project information
-  projectName: Type.String({ minLength: 1 }),
-  projectAuthor: Type.String({ minLength: 1 }),
+  projectName: Type.Union([
+    // Type.Literal(UNKNOWN_VALUE),
+    Type.String({ minLength: 1 }),
+  ]),
+  projectAuthor: Type.Union([
+    // Type.Literal(UNKNOWN_VALUE),
+    Type.String({ minLength: 1 }),
+  ]),
   projectDescription: Type.String(),
   projectVersion: Type.String(),
   projectLicense: Type.String(),
-  projectRepository: Type.Optional(Type.String()),
-  projectDomain: Type.Optional(Type.String()),
-
-  projectDeployService: Type.Optional(
-    Type.Union([
-      Type.Literal("vercel"),
-      Type.Literal("netlify"),
-      Type.Literal("railway"),
-      Type.Literal("deno"),
-      Type.Literal("none"),
-    ]),
-  ),
-
-  projectDisplayName: Type.Optional(Type.String()),
+  projectRepository: Type.String(),
+  projectDomain: Type.String(),
+  projectDeployService: Type.Union([
+    Type.Literal("vercel"),
+    Type.Literal("netlify"),
+    Type.Literal("railway"),
+    Type.Literal("deno"),
+    Type.Literal("none"),
+  ]),
+  projectDisplayName: Type.String(),
   projectPackageManager: Type.Union([
     Type.Literal("npm"),
     Type.Literal("pnpm"),
     Type.Literal("yarn"),
     Type.Literal("bun"),
   ]),
-  projectFrameworkVersion: Type.Optional(Type.String()),
-  projectState: Type.Optional(
-    Type.Union([Type.Literal("creating"), Type.Literal("created")]),
-  ),
-  projectCategory: Type.Optional(
-    Type.Union([
-      Type.Literal(UNKNOWN_VALUE),
-      Type.Literal("website"),
-      Type.Literal("vscode"),
-      Type.Literal("browser"),
-      Type.Literal("cli"),
-      Type.Literal("library"),
-    ]),
-  ),
-  projectSubcategory: Type.Optional(
-    Type.Union([
-      Type.Literal(UNKNOWN_VALUE),
-      Type.Literal("e-commerce"),
-      Type.Literal("tool"),
-    ]),
-  ),
-  projectFramework: Type.Optional(
-    Type.Union([
-      Type.Literal(UNKNOWN_VALUE),
-
-      // web app frameworks
-      Type.Literal("nextjs"),
-      Type.Literal("vite"),
-      Type.Literal("svelte"),
-      Type.Literal("vue"),
-      Type.Literal("astro"),
-
-      // library frameworks
-      Type.Literal("npm-jsr"),
-
-      // browser extension frameworks
-      Type.Literal("wxt"),
-
-      // vscode extension frameworks
-      Type.Literal("vscode"),
-    ]),
-  ),
-  projectTemplate: Type.Optional(
-    Type.Union([
-      Type.Literal(UNKNOWN_VALUE),
-      Type.Literal("blefnk/relivator"),
-      Type.Literal("blefnk/next-react-ts-src-minimal"),
-      Type.Literal("blefnk/all-in-one-nextjs-template"),
-      Type.Literal("blefnk/create-t3-app"),
-      Type.Literal("blefnk/create-next-app"),
-      Type.Literal("blefnk/astro-starlight-template"),
-      Type.Literal("blefnk/versator"),
-      Type.Literal("reliverse/template-browser-extension"),
-      Type.Literal("microsoft/vscode-extension-samples"),
-      Type.Literal("microsoft/vscode-extension-template"),
-      Type.Literal("reliverse/cli-starter-template"),
-    ]),
-  ),
-  projectActivation: Type.Optional(
-    Type.Union([Type.Literal("auto"), Type.Literal("manual")]),
-  ),
-  nodeVersion: Type.Optional(Type.String()),
-  runtime: Type.Optional(Type.String()),
-  deployUrl: Type.Optional(Type.String()),
+  projectFrameworkVersion: Type.String(),
+  projectState: Type.Union([Type.Literal("creating"), Type.Literal("created")]),
+  projectCategory: Type.Union([
+    Type.Literal(UNKNOWN_VALUE),
+    Type.Literal("website"),
+    Type.Literal("vscode"),
+    Type.Literal("browser"),
+    Type.Literal("cli"),
+    Type.Literal("library"),
+  ]),
+  projectSubcategory: Type.Union([
+    Type.Literal(UNKNOWN_VALUE),
+    Type.Literal("e-commerce"),
+    Type.Literal("tool"),
+  ]),
+  projectFramework: Type.Union([
+    Type.Literal(UNKNOWN_VALUE),
+    // web app frameworks
+    Type.Literal("nextjs"),
+    Type.Literal("vite"),
+    Type.Literal("svelte"),
+    Type.Literal("vue"),
+    Type.Literal("astro"),
+    // library frameworks
+    Type.Literal("npm-jsr"),
+    // browser extension frameworks
+    Type.Literal("wxt"),
+    // vscode extension frameworks
+    Type.Literal("vscode"),
+  ]),
+  projectTemplate: Type.Union([
+    Type.Literal(UNKNOWN_VALUE),
+    Type.Literal("blefnk/relivator"),
+    Type.Literal("blefnk/relivator-docker-template"),
+    Type.Literal("blefnk/next-react-ts-src-minimal"),
+    Type.Literal("blefnk/all-in-one-nextjs-template"),
+    Type.Literal("blefnk/create-t3-app"),
+    Type.Literal("blefnk/create-next-app"),
+    Type.Literal("blefnk/astro-starlight-template"),
+    Type.Literal("blefnk/versator"),
+    Type.Literal("reliverse/template-browser-extension"),
+    Type.Literal("microsoft/vscode-extension-samples"),
+    Type.Literal("microsoft/vscode-extension-template"),
+    Type.Literal("reliverse/cli-starter-template"),
+  ]),
+  projectActivation: Type.Union([Type.Literal("auto"), Type.Literal("manual")]),
+  nodeVersion: Type.String(),
+  runtime: Type.String(),
+  deployUrl: Type.String(),
 
   features: featuresSchema,
   preferredLibraries: Type.Record(Type.String(), Type.String()),
@@ -179,6 +170,8 @@ export const reliverseConfigSchema = Type.Object({
   monorepo: monorepoSchema,
   ignoreDependencies: Type.Array(Type.String()),
   customRules: Type.Record(Type.String(), Type.Unknown()),
+
+  envComposerOpenBrowser: Type.Boolean(),
 
   skipPromptsUseAutoBehavior: Type.Boolean(),
   deployBehavior: Type.Union([
@@ -207,14 +200,17 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("autoNo"),
   ]),
 
-  productionBranch: Type.Optional(Type.String()),
-  repoPrivacy: Type.Optional(
-    Type.Union([
-      Type.Literal("unknown"),
-      Type.Literal("public"),
-      Type.Literal("private"),
-    ]),
-  ),
+  productionBranch: Type.String(),
+  repoPrivacy: Type.Union([
+    Type.Literal("unknown"),
+    Type.Literal("public"),
+    Type.Literal("private"),
+  ]),
+  projectArchitecture: Type.Union([
+    Type.Literal("unknown"),
+    Type.Literal("fullstack"),
+    Type.Literal("separated"),
+  ]),
 });
 
 export type ReliverseConfig = Static<typeof reliverseConfigSchema>;
@@ -234,18 +230,10 @@ export type ProjectFramework = Exclude<
   undefined
 >;
 
-export type ReliverseMemory = {
-  code: string;
-  key: string;
-  githubKey: string;
-  vercelKey: string;
-  openaiKey: string;
-  name: string;
-  email: string;
-  githubUsername: string;
-  vercelUsername: string;
-  vercelTeamId: string;
-};
+export type ProjectArchitecture = Exclude<
+  ReliverseConfig["projectArchitecture"],
+  undefined
+>;
 
 /**
  * Converts a TypeBox schema to a JSON Schema

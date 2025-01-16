@@ -6,14 +6,16 @@ import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
+import { cliName } from "~/app/constants.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 import { cd } from "~/utils/terminalHelpers.js";
 
+import { initGitDir } from "./git.js";
 import { createOctokitInstance } from "./octokit-instance.js";
-import { cloneToTempAndCopyFiles, setupGitRemote } from "./utils-git-github.js";
+import { setupGitRemote } from "./utils-git-github.js";
 
 export async function checkGithubRepoOwnership(
   octokit: Octokit,
@@ -139,7 +141,7 @@ export async function commitLocalChanges({
   repo,
   directory,
   changedFiles,
-  message = "Update by @reliverse/cli",
+  message = `Update by ${cliName}`,
   branch = "main",
 }: {
   octokit: InstanceType<typeof Octokit>;
@@ -324,7 +326,6 @@ export async function createGithubRepo(
   cwd: string,
   shouldMaskSecretInput: boolean,
   config: ReliverseConfig,
-  skipPrompts: boolean,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
@@ -340,35 +341,21 @@ export async function createGithubRepo(
       await getAvailableGithubRepoName(octokit, repoOwner, repoName);
     repoName = finalRepoName;
 
-    const isPrivate = false;
-
     if (repoExists) {
-      relinka("info", `Using existing repository ${repoOwner}/${repoName}`);
-
-      try {
-        // Clone repo to temp dir and copy files
-        const repoUrl = `https://oauth2:${memory.githubKey}@github.com/${repoOwner}/${repoName}.git`;
-        const success = await cloneToTempAndCopyFiles(repoUrl, projectPath);
-
-        if (!success) {
-          throw new Error("Failed to retrieve repository data");
-        }
-
-        relinka("success", "Retrieved repository data");
-        return true;
-      } catch (error) {
-        relinka(
-          "error",
-          "Failed to set up existing repository:",
-          error instanceof Error ? error.message : String(error),
-        );
-        return false;
-      }
+      relinka("info", `Using existing repository: ${repoOwner}/${repoName}`);
+      // await handleExistingRepoContent(memory, repoOwner, repoName, projectPath);
     } else {
       // New repository
+      await initGitDir({
+        cwd,
+        isDev,
+        projectPath,
+        projectName: repoName,
+        allowReInit: true,
+      });
       deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
       let privacyAction = config.repoPrivacy;
-      if (privacyAction === "unknown" && skipPrompts) {
+      if (privacyAction === "unknown") {
         const selectedPrivacyAction = await selectPrompt({
           title: "Choose repository privacy setting",
           defaultValue: "public",
@@ -393,8 +380,8 @@ export async function createGithubRepo(
       try {
         await octokit.rest.repos.createForAuthenticatedUser({
           name: repoName,
-          description: `Created with @reliverse/cli - ${new Date().toISOString()}`,
-          private: isPrivate,
+          description: `Created with ${cliName} - ${new Date().toISOString()}`,
+          private: privacyAction === "private",
           auto_init: false,
           has_issues: true,
           has_projects: true,

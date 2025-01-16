@@ -7,7 +7,7 @@
     "pnpm-lock.yaml",
     "dist-jsr",
     "dist-npm",
-    "test-runtime"
+    "tests-runtime"
   ],
   "words": [
     "alacritty",

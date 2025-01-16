@@ -14,7 +14,7 @@ import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { MEMORY_FILE } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
@@ -46,7 +46,7 @@ export async function auth({
 
   await spinnerTaskPrompt({
     initialMessage: "Waiting for user confirmation...",
-    successMessage: "Login cancelled. See you next time 👋",
+    successMessage: "https://docs.reliverse.org",
     errorMessage: "Authentication failed!",
     spinnerSolution: "ora",
     spinnerType: "arc",
@@ -112,10 +112,12 @@ export async function auth({
               void new Promise((r) => setTimeout(r, 2000)).then(() => {
                 res.writeHead(200);
                 res.end();
+                server.close();
                 reject(
                   new UserCancellationError("Login process cancelled by user."),
                 );
               });
+              return;
             } else {
               relinka(
                 "info-verbose",
@@ -213,6 +215,10 @@ export async function auth({
           `Authentication data received: ${JSON.stringify(authData)}`,
         );
 
+        if (authData["cancelled"]) {
+          throw new UserCancellationError("Login process cancelled by user.");
+        }
+
         await updateReliverseMemory(authData);
         server.close(() => {
           relinka(
@@ -231,7 +237,7 @@ export async function auth({
         clearTimeout(authTimeout);
         if (error instanceof UserCancellationError) {
           // User cancelled scenario: let's end gracefully
-          updateMessage("Authentication cancelled by the user.");
+          updateMessage("Login cancelled. See you next time 👋");
           server.close(() => {
             relinka(
               "info-verbose",

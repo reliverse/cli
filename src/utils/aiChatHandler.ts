@@ -7,7 +7,7 @@ import { streamText } from "ai";
 import dotenv from "dotenv";
 import pc from "picocolors";
 
-import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { updateReliverseMemory } from "./reliverseMemory.js";
 

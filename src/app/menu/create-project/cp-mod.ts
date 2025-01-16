@@ -1,11 +1,11 @@
-import { confirmPrompt } from "@reliverse/prompts";
+import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
 
-import type { ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import {
@@ -17,6 +17,8 @@ import {
   TEMPLATES,
   saveTemplateToDevice,
   type TemplateOption,
+  getTemplateInfo,
+  type Template,
 } from "~/utils/projectTemplate.js";
 
 import {
@@ -28,6 +30,21 @@ import {
   showSuccessAndNextSteps,
 } from "./cp-impl.js";
 import { downloadTemplate } from "./cp-modules/cli-main-modules/downloads/downloadTemplate.js";
+
+type UnghRepoResponse = {
+  repo?: {
+    pushedAt: string;
+  };
+};
+
+async function checkTemplateVersion(template: Template) {
+  const [owner, repo] = template.id.split("/");
+  if (!owner || !repo) return null;
+
+  const response = await fetch(`https://ungh.cc/repos/${owner}/${repo}`);
+  const data = (await response.json()) as UnghRepoResponse;
+  return data.repo?.pushedAt ?? null;
+}
 
 /**
  * Creates a new web project from a template.
@@ -87,18 +104,50 @@ export async function createWebProject({
   const localTemplatePath = path.join(
     os.homedir(),
     ".reliverse",
+    "templates",
     template.author,
     template.name,
   );
 
   let useLocalTemplate = false;
   if (await fs.pathExists(localTemplatePath)) {
+    // Get local template info
+    const localInfo = await getTemplateInfo(template.id);
+    const currentPushedAt = await checkTemplateVersion(template);
+
     if (skipPrompts) {
       // Auto skip => use local copy
       useLocalTemplate = true;
       relinka("info", "Using local template copy (auto).");
+    } else if (localInfo && currentPushedAt) {
+      const localDate = new Date(localInfo.github.pushedAt);
+      const currentDate = new Date(currentPushedAt);
+
+      if (currentDate > localDate) {
+        // Current version is newer
+        const choice = await selectPrompt({
+          title: "A newer version of the template is available",
+          options: [
+            {
+              label: "Download latest version",
+              value: "download",
+              hint: `Last updated ${currentDate.toLocaleDateString()}`,
+            },
+            {
+              label: "Use local copy",
+              value: "local",
+              hint: `Downloaded ${localDate.toLocaleDateString()}`,
+            },
+          ],
+        });
+        useLocalTemplate = choice === "local";
+      } else {
+        // Local version is up to date, use it automatically
+        useLocalTemplate = true;
+        relinka("info", "Using local template copy (up to date)...");
+      }
     } else {
-      // Prompt the user
+      // Fallback to simple prompt if version check fails
       useLocalTemplate = await confirmPrompt({
         title: "Local copy found. Use it?",
         content: "If no, I'll download a fresh version.",
@@ -108,10 +157,9 @@ export async function createWebProject({
 
     if (useLocalTemplate) {
       projectPath = isDev
-        ? path.join(cwd, "test-runtime", projectName)
+        ? path.join(cwd, "tests-runtime", projectName)
         : path.join(cwd, projectName);
       await fs.copy(localTemplatePath, projectPath);
-      relinka("info", "Using local template copy...");
     }
   }
 
@@ -139,14 +187,16 @@ export async function createWebProject({
   // -------------------------------------------------
   // 5) Optionally save template to device
   // -------------------------------------------------
-  let shouldSaveTemplate = false;
-  if (!skipPrompts) {
+  let shouldSaveTemplate = !useLocalTemplate;
+  if (!skipPrompts && !useLocalTemplate) {
     shouldSaveTemplate = await confirmPrompt({
       title: "Save a copy of the template to your device?",
-      defaultValue: false,
+      content:
+        "This is useful if you have limited internet data or plan to reuse the template soon.",
+      defaultValue: true,
     });
   }
-  // If skipPrompts => remain false
+  // If skipPrompts => remain true (but only if not using local copy)
   if (shouldSaveTemplate) {
     await saveTemplateToDevice(template, projectPath);
   }
@@ -168,9 +218,9 @@ export async function createWebProject({
   // -------------------------------------------------
   // 8) Ask about masking secrets
   // -------------------------------------------------
-  let shouldMaskSecretInput = false;
+  let shouldMaskSecretInput = true;
   if (skipPrompts) {
-    relinka("info", "Auto-mode: Not masking secret inputs by default.");
+    relinka("info", "Auto-mode: Masking secret inputs by default.");
   } else {
     shouldMaskSecretInput = await confirmPrompt({
       title: "Do you want to mask secret inputs?",
@@ -186,6 +236,7 @@ export async function createWebProject({
     FALLBACK_ENV_EXAMPLE_URL,
     shouldMaskSecretInput,
     skipPrompts,
+    config,
   );
 
   // -------------------------------------------------
@@ -207,6 +258,7 @@ export async function createWebProject({
     initialDomain,
     config?.features?.i18n || false,
     uiUsername,
+    isDev,
   );
 
   // -------------------------------------------------

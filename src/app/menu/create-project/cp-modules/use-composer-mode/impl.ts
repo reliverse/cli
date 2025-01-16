@@ -169,7 +169,7 @@ export async function runComposerMode(
       },
     };
   } catch (err) {
-    // If the user is not calling @reliverse/cli from an interactive terminal, inquirer will throw an IsTTYError
+    // If the user is not calling reliverse cli from an interactive terminal, we will throw an IsTTYError
     // If this happens, we catch the error, tell the user what has happened, and then continue to run the program with a default Reliverse app
     if (err instanceof IsTTYError) {
       relinka(

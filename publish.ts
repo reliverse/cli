@@ -7,6 +7,8 @@ import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 
+import { cliName } from "~/app/constants.js";
+
 const main = defineCommand({
   meta: {
     name: "pub",
@@ -60,6 +62,6 @@ const main = defineCommand({
 await runMain(main).catch((error: unknown) =>
   errorHandler(
     error instanceof Error ? error : new Error(String(error)),
-    "If this issue is related to @reliverse/cli itself, please\n│  report the details at https://github.com/reliverse/cli",
+    `If this issue is related to ${cliName} itself, please\n│  report the details at https://github.com/reliverse/cli`,
   ),
 );

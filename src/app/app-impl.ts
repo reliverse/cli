@@ -1,8 +1,8 @@
 import { selectPrompt } from "@reliverse/prompts";
 import { deleteLastLines, relinka } from "@reliverse/relinka";
 
-import type { ReliverseMemory } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import {

@@ -10,6 +10,7 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
+import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 
 // Mock the prompts
 const mockSelectPrompt = mock(selectPrompt);
@@ -44,11 +45,13 @@ describe("composeEnvFile", () => {
   const ENV_PATH = path.join(TEST_DIR, ".env");
   const ENV_EXAMPLE_PATH = path.join(TEST_DIR, ".env.example");
   let envContent: string[] = [];
+  let config: Awaited<ReturnType<typeof getReliverseConfig>>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     mock.restore();
     envContent = [];
+    config = await getReliverseConfig();
 
     // Setup default mock implementations
     const fsModule = fs as unknown as MockFsModule;
@@ -77,7 +80,7 @@ describe("composeEnvFile", () => {
     test("should handle plain value", async () => {
       mockInputPrompt.mockImplementation(() => Promise.resolve("simple-value"));
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="simple-value"'),
@@ -89,7 +92,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("value=with=equals"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="value=with=equals"'),
@@ -101,7 +104,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("'quoted-value'"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="quoted-value"'),
@@ -113,7 +116,7 @@ describe("composeEnvFile", () => {
         Promise.resolve('"quoted-value"'),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="quoted-value"'),
@@ -125,7 +128,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("postgresql://user:pass@host:5432/db?sslmode=require"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
@@ -139,7 +142,7 @@ describe("composeEnvFile", () => {
         Promise.resolve('DATABASE_URL="some-value"'),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="some-value"'),
@@ -149,7 +152,7 @@ describe("composeEnvFile", () => {
     test("should handle empty or whitespace value", async () => {
       mockInputPrompt.mockImplementation(() => Promise.resolve("   "));
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).not.toHaveBeenCalled();
     });
 
@@ -158,7 +161,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("value with spaces"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="value with spaces"'),
@@ -170,7 +173,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("special!@#$%^&*()_+-=[]{}|;:,.<>?"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining(
@@ -184,7 +187,7 @@ describe("composeEnvFile", () => {
         Promise.resolve("line1\nline2\nline3"),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="line1\nline2\nline3"'),
@@ -199,7 +202,7 @@ describe("composeEnvFile", () => {
         Promise.resolve(false),
       );
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fsModule.default.copy).toHaveBeenCalledWith(
         ENV_EXAMPLE_PATH,
         ENV_PATH,
@@ -210,7 +213,7 @@ describe("composeEnvFile", () => {
       envContent = ['DATABASE_URL="old-value"'];
       mockInputPrompt.mockImplementation(() => Promise.resolve("new-value"));
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('DATABASE_URL="new-value"'),
@@ -221,7 +224,7 @@ describe("composeEnvFile", () => {
       envContent = ['SOME_OTHER_KEY="some-value"'];
       mockInputPrompt.mockImplementation(() => Promise.resolve("new-value"));
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       // @ts-expect-error TODO: fix ts
       const calls = fs.writeFile.mock.calls;
       const lastCall = calls[calls.length - 1];
@@ -238,7 +241,7 @@ describe("composeEnvFile", () => {
         .mockImplementationOnce(() => Promise.resolve("clerk-key"))
         .mockImplementationOnce(() => Promise.resolve("clerk-secret"));
 
-      await composeEnvFile(TEST_DIR, "", false, false);
+      await composeEnvFile(TEST_DIR, "", false, false, config);
       // @ts-expect-error TODO: fix ts
       const calls = fs.writeFile.mock.calls;
       const lastCall = calls[calls.length - 1];

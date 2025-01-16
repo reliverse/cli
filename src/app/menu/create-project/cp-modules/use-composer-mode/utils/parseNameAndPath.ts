@@ -24,7 +24,7 @@ export const parseNameAndPath = (rawInput: string) => {
 
   let appName = paths[paths.length - 1]!;
 
-  // If the user ran `reliverse`, `npx @reliverse/cli .` or similar, the appName should be the current directory
+  // If the user ran `reliverse cli` or similar, the appName should be the current directory
   if (appName === ".") {
     const parsedCwd = pathModule.resolve(process.cwd());
     appName = pathModule.basename(parsedCwd);

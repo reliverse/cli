@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
 
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
@@ -50,7 +50,7 @@ export async function getMainMenuOptions(
   });
 
   // 4) Detect .reliverse projects
-  const dotReliverseSearchPath = isDev ? path.join(cwd, "test-runtime") : cwd;
+  const dotReliverseSearchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
 
   if (await fs.pathExists(dotReliverseSearchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(

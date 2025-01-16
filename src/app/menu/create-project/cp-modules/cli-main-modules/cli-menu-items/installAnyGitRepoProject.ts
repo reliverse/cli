@@ -1,9 +1,9 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
-import type { ReliverseMemory } from "~/types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { createWebProject } from "~/app/menu/create-project/cp-mod.js";
 import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";

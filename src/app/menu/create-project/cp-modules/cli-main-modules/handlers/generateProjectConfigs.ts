@@ -120,6 +120,7 @@ async function generateConfigFiles(
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
   githubUsername: string,
+  isDev: boolean,
   filesToGenerate: string[] = [],
 ): Promise<void> {
   await spinnerTaskPrompt({
@@ -147,8 +148,9 @@ async function generateConfigFiles(
               primaryDomain,
               projectPath,
               i18nShouldBeEnabled,
-              overwrite,
               githubUsername,
+              overwrite,
+              isDev,
             }),
           "biome.json": () => generateBiomeConfig(projectPath, overwrite),
           "settings.json": () => generateVSCodeSettings(projectPath, overwrite),
@@ -179,6 +181,7 @@ export async function generateProjectConfigs(
   primaryDomain: string,
   i18nShouldBeEnabled: boolean,
   githubUsername: string,
+  isDev: boolean,
 ): Promise<void> {
   try {
     // Check which files exist
@@ -209,6 +212,7 @@ export async function generateProjectConfigs(
         primaryDomain,
         i18nShouldBeEnabled,
         githubUsername,
+        isDev,
       );
     } else {
       // No existing files, generate everything
@@ -221,6 +225,7 @@ export async function generateProjectConfigs(
         primaryDomain,
         i18nShouldBeEnabled,
         githubUsername,
+        isDev,
       );
     }
   } catch (error) {
