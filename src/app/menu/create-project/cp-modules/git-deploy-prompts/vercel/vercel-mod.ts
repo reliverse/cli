@@ -1,10 +1,15 @@
 import type { Vercel } from "@vercel/sdk";
+import type { VercelCore } from "@vercel/sdk/core.js";
 import type {
   GetProjectsFramework,
   GetProjectsTarget1,
 } from "@vercel/sdk/models/getprojectsop";
 
-import { inputPrompt, spinnerTaskPrompt } from "@reliverse/prompts";
+import {
+  inputPrompt,
+  selectPrompt,
+  spinnerTaskPrompt,
+} from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
@@ -23,7 +28,11 @@ import {
   getConfigurationOptions,
 } from "./vercel-config.js";
 import { createDeployment } from "./vercel-deploy.js";
-import { createVercelInstance } from "./vercel-instance.js";
+import {
+  createVercelCoreInstance,
+  createVercelInstance,
+} from "./vercel-instance.js";
+import { getVercelTeams, type VercelTeam, verifyTeam } from "./vercel-team.js";
 
 export type InlinedFile = {
   file: string;
@@ -39,9 +48,67 @@ type VercelFramework = GetProjectsFramework;
 async function saveVercelToken(
   token: string,
   memory: ReliverseMemory,
+  vercelCore: VercelCore,
 ): Promise<void> {
   memory.vercelKey = token;
-  await updateReliverseMemory(memory);
+
+  const teams = await getVercelTeams(vercelCore);
+
+  if (teams && teams.length > 0) {
+    let selectedTeam: VercelTeam;
+    if (teams.length === 1 && teams[0]) {
+      selectedTeam = teams[0];
+      relinka(
+        "info",
+        `Auto-selected Vercel team with slug: ${selectedTeam.slug}`,
+      );
+    } else {
+      const teamChoice = await selectPrompt<string>({
+        title: "Select a Vercel team:",
+        options: teams.map((team) => ({
+          value: team.id,
+          label: team.name,
+          hint: team.slug,
+        })),
+      });
+      selectedTeam = teams.find((team) => team.id === teamChoice)!;
+    }
+
+    // Verify team details before saving
+    const isTeamValid = await verifyTeam(
+      vercelCore,
+      selectedTeam.id,
+      selectedTeam.slug,
+    );
+
+    // If team is valid, save it to memory
+    if (isTeamValid) {
+      await updateReliverseMemory({
+        ...memory,
+        vercelTeamId: selectedTeam.id,
+        vercelTeamSlug: selectedTeam.slug,
+      });
+
+      // If team is not valid, save an empty team to memory
+    } else {
+      relinka(
+        "error",
+        "Failed to verify Vercel team details. Vercel team will not be saved.",
+      );
+      await updateReliverseMemory({
+        ...memory,
+        vercelTeamId: "",
+        vercelTeamSlug: "",
+      });
+    }
+  } else {
+    await updateReliverseMemory({
+      ...memory,
+      vercelTeamId: "",
+      vercelTeamSlug: "",
+    });
+  }
+
   relinka("success", "Vercel token saved successfully!");
 }
 
@@ -120,17 +187,45 @@ async function getEnvVars(projectPath: string): Promise<
 export async function isProjectDeployed(
   projectName: string,
   memory: ReliverseMemory,
-): Promise<boolean> {
+): Promise<{
+  isDeployed: boolean;
+  githubUsername?: string | undefined;
+  vercelTeamSlug?: string | undefined;
+}> {
   try {
     if (!memory?.githubKey) {
       relinka("error-verbose", "GitHub token not found in Reliverse's memory");
-      return false;
+      return { isDeployed: false };
     }
 
     const githubUsername = await askGithubName(memory);
     if (!githubUsername) {
       relinka("error", "Could not determine GitHub username");
-      return false;
+      return { isDeployed: false };
+    }
+
+    // Get Vercel team slug if token exists
+    let vercelTeamSlug: string | undefined;
+    if (memory.vercelKey) {
+      try {
+        const vercel = createVercelCoreInstance(memory.vercelKey);
+        if (memory.vercelTeamId && memory.vercelTeamSlug) {
+          const isTeamValid = await verifyTeam(
+            vercel,
+            memory.vercelTeamId,
+            memory.vercelTeamSlug,
+          );
+          if (isTeamValid) {
+            vercelTeamSlug = memory.vercelTeamSlug;
+          }
+        }
+      } catch (err) {
+        relinka(
+          "warn",
+          "Could not verify Vercel team:",
+          err instanceof Error ? err.message : String(err),
+        );
+      }
     }
 
     const octokit = createOctokitInstance(memory.githubKey);
@@ -140,38 +235,28 @@ export async function isProjectDeployed(
       const { data: deployments } = await octokit.rest.repos.listDeployments({
         owner: githubUsername,
         repo: projectName,
-        environment: "Production",
       });
 
-      // Look for Vercel deployments
-      const vercelDeployments = deployments.filter((deployment) => {
-        // Vercel deployments typically have a vercel.app URL in the payload
-        const payload = deployment.payload as { url?: string } | null;
-        return (
-          (payload?.url?.includes("vercel.app") ?? false) ||
-          (deployment.description?.includes("Vercel") ?? false) ||
-          deployment.creator?.login === "vercel[bot]"
-        );
-      });
-
-      return vercelDeployments.length > 0;
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("Not Found")) {
-        return false;
-      }
-      throw error;
+      return {
+        isDeployed: deployments.length > 0,
+        githubUsername,
+        vercelTeamSlug,
+      };
+    } catch (err) {
+      relinka(
+        "error-verbose",
+        "Failed to check deployments:",
+        err instanceof Error ? err.message : String(err),
+      );
+      return { isDeployed: false, githubUsername, vercelTeamSlug };
     }
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("Bad credentials")) {
-      relinka("error", "Invalid GitHub token");
-      return false;
-    }
+  } catch (err) {
     relinka(
-      "error",
-      "Error checking deployment status:",
-      error instanceof Error ? error.message : String(error),
+      "error-verbose",
+      "Failed to check if project is deployed:",
+      err instanceof Error ? err.message : String(err),
     );
-    return false;
+    return { isDeployed: false };
   }
 }
 
@@ -269,6 +354,7 @@ export async function createVercelDeployment(
   domain: string,
   memory: ReliverseMemory,
   shouldMaskSecretInput: boolean,
+  existingGithubUsername?: string,
 ): Promise<boolean> {
   try {
     // 1. First ensure we have a valid token
@@ -289,7 +375,8 @@ export async function createVercelDeployment(
         return false;
       }
 
-      await saveVercelToken(token, memory);
+      const vercel = createVercelCoreInstance(token);
+      await saveVercelToken(token, memory, vercel);
       memory.vercelKey = token;
     }
 
@@ -298,9 +385,9 @@ export async function createVercelDeployment(
 
     // 3. Now check for existing deployment
     relinka("info", "Checking for existing deployment...");
-    const isDeployed = await isProjectDeployed(projectName, memory);
+    const { isDeployed } = await isProjectDeployed(projectName, memory);
     if (isDeployed) {
-      relinka("info", "Project is already deployed to Vercel");
+      relinka("info", `Project ${projectName} is already deployed to Vercel`);
     } else {
       relinka(
         "info",
@@ -390,7 +477,8 @@ export async function createVercelDeployment(
         }
 
         // 5. Deployment Phase
-        const githubUsername = await askGithubName(memory);
+        const githubUsername =
+          existingGithubUsername ?? (await askGithubName(memory));
         if (!githubUsername) {
           throw new Error("Could not determine GitHub username");
         }

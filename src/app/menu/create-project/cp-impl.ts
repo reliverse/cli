@@ -40,20 +40,6 @@ export type PackageJson = {
 };
 
 /**
- * The core create-web-project options
- */
-export type CreateWebProjectOptions = {
-  webProjectTemplate: TemplateOption;
-  message: string;
-  mode: "showNewProjectMenu" | "installAnyGitRepo";
-  isDev: boolean;
-  config: ReliverseConfig;
-  memory: ReliverseMemory;
-  cwd: string;
-  isMultiConfig: boolean;
-};
-
-/**
  * Minimal object describing essential project info after initialization
  */
 export type ProjectConfig = {
@@ -63,13 +49,56 @@ export type ProjectConfig = {
 };
 
 /**
+ * Ensures a unique project name by prompting for a new one if the target directory exists.
+ */
+async function ensureUniqueProjectName(
+  initialName: string,
+  isDev: boolean,
+  cwd: string,
+  skipPrompts: boolean,
+): Promise<string> {
+  let projectName = initialName;
+  let targetPath = isDev
+    ? path.join(cwd, "test-runtime", projectName)
+    : path.join(cwd, projectName);
+
+  let index = 1;
+  while (await fs.pathExists(targetPath)) {
+    if (skipPrompts) {
+      // In auto mode, append an incrementing index to make it unique
+      projectName = `${initialName}-${index}`;
+      index++;
+    } else {
+      // Prompt for a new name
+      projectName = await inputPrompt({
+        title: `Project directory '${projectName}' already exists. Please choose a different name:`,
+        defaultValue: `${projectName}-${index}`,
+        validate: (value) => {
+          if (!value) return "Project name cannot be empty";
+          if (!/^[a-z0-9-_]+$/i.test(value)) {
+            return "Project name can only contain letters, numbers, hyphens, and underscores";
+          }
+          return true;
+        },
+      });
+    }
+    targetPath = isDev
+      ? path.join(cwd, "test-runtime", projectName)
+      : path.join(cwd, projectName);
+  }
+
+  return projectName;
+}
+
+/**
  * Asks or auto-fills project details (username, projectName, domain).
  */
 export async function initializeProjectConfig(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   skipPrompts: boolean,
-  isMultiConfig = false,
+  isDev: boolean,
+  cwd: string,
 ): Promise<ProjectConfig> {
   // 1. Determine user (author)
   const uiUsername =
@@ -80,8 +109,9 @@ export async function initializeProjectConfig(
   // 2. Determine project name
   let projectName: string;
   if (skipPrompts) {
-    // If multi-config mode and config has a projectName, use that
-    if (isMultiConfig && config?.projectName) {
+    // Use config's project name if available, regardless of isMultiConfig
+    // This ensures we respect the config's project name in both single and multi-config modes
+    if (config?.projectName) {
       projectName = config.projectName;
     } else if (config?.projectTemplate) {
       projectName = path.basename(config.projectTemplate);
@@ -93,6 +123,14 @@ export async function initializeProjectConfig(
     // Normal prompt flow
     projectName = (await askProjectName()) ?? "my-app";
   }
+
+  // Ensure the project name is unique
+  projectName = await ensureUniqueProjectName(
+    projectName,
+    isDev,
+    cwd,
+    skipPrompts,
+  );
 
   // 3. Determine domain
   const primaryDomain =
@@ -150,38 +188,46 @@ export async function replaceTemplateStrings(
 }
 
 /**
- * Sets up i18n if `i18nShouldBeEnabledAutomatically` is true,
- * else prompts user unless skipPrompts is on.
+ * Sets up i18n if needed and not already present.
+ * Uses config.i18nBehavior to determine automatic behavior.
  */
 export async function setupI18nSupport(
   projectPath: string,
   skipPrompts: boolean,
-  i18nShouldBeEnabledAutomatically: boolean,
+  config: ReliverseConfig,
 ) {
-  if (i18nShouldBeEnabledAutomatically) {
-    await setupI18nFiles(projectPath);
+  // Check if i18n folder already exists
+  const i18nFolderExists =
+    (await fs.pathExists(path.join(projectPath, "src/app/[locale]"))) ||
+    (await fs.pathExists(path.join(projectPath, "src/app/[lang]")));
+
+  if (i18nFolderExists) {
+    relinka(
+      "info-verbose",
+      "i18n is already enabled in the template. No changes needed.",
+    );
     return;
   }
 
-  let i18nShouldBeEnabled = false;
-  if (!skipPrompts) {
-    i18nShouldBeEnabled = await confirmPrompt({
+  // Determine if i18n should be enabled based on behavior setting
+  const i18nBehavior = config?.i18nBehavior ?? "prompt";
+  let shouldEnableI18n = false;
+
+  if (skipPrompts || i18nBehavior !== "prompt") {
+    // Use automatic behavior if skipping prompts or behavior is set
+    shouldEnableI18n = i18nBehavior === "autoYes";
+  } else {
+    // If prompting is allowed, ask user
+    shouldEnableI18n = await confirmPrompt({
       title: "Do you want to enable i18n (internationalization)?",
       displayInstructions: true,
       content: "If `N`, i18n folder won't be created.",
+      defaultValue: false,
     });
   }
 
-  // Check if i18n folder already exists
-  const i18nFolderExists = await fs.pathExists(
-    path.join(projectPath, "src/app/[locale]"),
-  );
-  if (i18nFolderExists) {
-    relinka("info-verbose", "i18n is already enabled. No changes needed.");
-    return;
-  }
-
-  if (i18nShouldBeEnabled) {
+  // Only proceed with setup if i18n should be enabled
+  if (shouldEnableI18n) {
     await setupI18nFiles(projectPath);
   }
 }
@@ -320,7 +366,6 @@ export async function handleDeployment(params: {
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
-  isMultiConfig: boolean;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;

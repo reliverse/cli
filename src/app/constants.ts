@@ -8,6 +8,10 @@ export const isVerboseEnabled = false;
 export const recommended = pc.green("🚀 Recommended");
 export const experimental = pc.red("🚨 Experimental");
 
+export const UNKNOWN_VALUE = "unknown";
+export const DEFAULT_DOMAIN = "https://example.com";
+export const RELIVERSE_SCHEMA = "https://reliverse.org/schema.json";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const PKG_ROOT = path.resolve(__dirname, "../../../..");

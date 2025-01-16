@@ -21,6 +21,7 @@ export async function composeEnvFile(
   projectDir: string,
   fallbackEnvExampleURL: string,
   shouldMaskSecretInput: boolean,
+  skipPrompts: boolean,
 ): Promise<void> {
   try {
     const results = await Promise.all([
@@ -44,6 +45,31 @@ export async function composeEnvFile(
     }
 
     const lastEnvPath = await getLastEnvFilePath();
+    const envPath = getEnvPath(projectDir);
+
+    // In auto mode, use last env path if it exists and is valid
+    if (skipPrompts && lastEnvPath && (await fs.pathExists(lastEnvPath))) {
+      if (await copyFromExisting(projectDir, lastEnvPath)) {
+        relinka(
+          "success",
+          "Environment variables copied from the last used file",
+        );
+        const remainingMissingKeys = await getMissingKeys(projectDir);
+        if (remainingMissingKeys.length > 0) {
+          relinka(
+            "info",
+            "Some values are still missing in the copied .env file.",
+          );
+          await promptAndSetMissingValues(
+            remainingMissingKeys,
+            envPath,
+            shouldMaskSecretInput,
+          );
+        }
+        return;
+      }
+    }
+
     const options = [
       ...(lastEnvPath && (await fs.pathExists(lastEnvPath))
         ? [
@@ -69,8 +95,6 @@ export async function composeEnvFile(
         "✨ Everything is saved only in your .env file and will not be shared anywhere.",
       options,
     });
-
-    const envPath = getEnvPath(projectDir);
 
     switch (response) {
       case "manual":

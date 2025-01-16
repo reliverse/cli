@@ -2,11 +2,12 @@ import type { Octokit } from "@octokit/rest";
 
 import { RequestError } from "@octokit/request-error";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 import { cd } from "~/utils/terminalHelpers.js";
@@ -322,6 +323,8 @@ export async function createGithubRepo(
   isDev: boolean,
   cwd: string,
   shouldMaskSecretInput: boolean,
+  config: ReliverseConfig,
+  skipPrompts: boolean,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
@@ -331,12 +334,13 @@ export async function createGithubRepo(
     await cd(projectPath);
 
     // 2. Get an available repository name and check its status
+    deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
     relinka("info", "Checking repository status...");
     const { name: finalRepoName, exists: repoExists } =
       await getAvailableGithubRepoName(octokit, repoOwner, repoName);
     repoName = finalRepoName;
 
-    let isPrivate = false;
+    const isPrivate = false;
 
     if (repoExists) {
       relinka("info", `Using existing repository ${repoOwner}/${repoName}`);
@@ -362,23 +366,27 @@ export async function createGithubRepo(
       }
     } else {
       // New repository
-      const privacyAction = await selectPrompt({
-        title: "Choose repository privacy setting",
-        defaultValue: "public",
-        options: [
-          {
-            label: "Public repository",
-            value: "public",
-            hint: "Anyone can see the repository (recommended for open source)",
-          },
-          {
-            label: "Private repository",
-            value: "private",
-            hint: "Only you and collaborators can see the repository",
-          },
-        ],
-      });
-      isPrivate = privacyAction === "public";
+      deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
+      let privacyAction = config.repoPrivacy;
+      if (privacyAction === "unknown" && skipPrompts) {
+        const selectedPrivacyAction = await selectPrompt({
+          title: "Choose repository privacy setting",
+          defaultValue: "public",
+          options: [
+            {
+              label: "Public repository",
+              value: "public",
+              hint: "Anyone can see the repository (recommended for open source)",
+            },
+            {
+              label: "Private repository",
+              value: "private",
+              hint: "Only you and collaborators can see the repository",
+            },
+          ],
+        });
+        privacyAction = selectedPrivacyAction;
+      }
 
       // Create the repository
       relinka("info", `Creating repository ${repoOwner}/${repoName}...`);

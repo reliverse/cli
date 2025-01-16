@@ -69,6 +69,7 @@ export async function handleReliverseMemory(): Promise<ReliverseMemory> {
       email: userData["email"] ?? "",
       githubUsername: userData["githubUsername"] ?? "",
       vercelUsername: userData["vercelUsername"] ?? "",
+      vercelTeamId: userData["vercelTeamId"] ?? "",
     };
   } catch (error) {
     relinka(
@@ -86,6 +87,7 @@ export async function handleReliverseMemory(): Promise<ReliverseMemory> {
       email: "",
       githubUsername: "",
       vercelUsername: "",
+      vercelTeamId: "",
     };
   }
 }
@@ -113,7 +115,13 @@ export async function updateReliverseMemory(
 
     const userDataUpdates = Object.entries(data)
       .filter(([key]) =>
-        ["name", "email", "githubUsername", "vercelUsername"].includes(key),
+        [
+          "name",
+          "email",
+          "githubUsername",
+          "vercelUsername",
+          "vercelTeamId",
+        ].includes(key),
       )
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({

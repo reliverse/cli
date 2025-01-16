@@ -11,6 +11,7 @@ import path from "pathe";
 import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { experimental } from "~/app/constants.js";
 import { manageDrizzleSchema } from "~/app/menu/create-project/cp-modules/cli-main-modules/drizzle/manageDrizzleSchema.js";
@@ -57,8 +58,11 @@ export async function handleOpenProjectMenu(
   memory: ReliverseMemory,
   cwd: string,
   shouldMaskSecretInput: boolean,
+  config: ReliverseConfig,
 ): Promise<void> {
   let selectedProject: DetectedProject | undefined;
+
+  const skipPrompts = false;
 
   // If only one project is detected, use it directly
   if (projects.length === 1) {
@@ -304,9 +308,11 @@ export async function handleOpenProjectMenu(
         cwd,
         isDev,
         memory,
+        config,
         selectedProject.name,
         selectedProject.path,
         shouldMaskSecretInput,
+        skipPrompts,
       );
       if (success) {
         relinka("success", "GitHub repository created successfully");
@@ -504,8 +510,15 @@ export async function showOpenProjectMenu(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
-  shouldMaskSecretInput: boolean,
+  config: ReliverseConfig,
+  reli: ReliverseConfig[],
 ) {
+  if (reli.length >= 0) {
+    throw new Error(
+      "Please run `reliverse cli` without `reli` folder to open the projects menu.",
+    );
+  }
+
   const searchPath = isDev ? path.join(cwd, "test-runtime") : cwd;
   if (await fs.pathExists(searchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(searchPath);
@@ -514,7 +527,8 @@ export async function showOpenProjectMenu(
       isDev,
       memory,
       cwd,
-      shouldMaskSecretInput,
+      true,
+      config,
     );
   }
 }

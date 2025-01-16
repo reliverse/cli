@@ -1,8 +1,6 @@
 import { Vercel } from "@vercel/sdk";
 import { VercelCore } from "@vercel/sdk/core.js";
 
-// TODO: understand what is better to use: Vercel or VercelCore
-
 // https://github.com/vercel/sdk?tab=readme-ov-file#authentication
 export function createVercelInstance(vercelKey: string): Vercel {
   return new Vercel({

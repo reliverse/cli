@@ -1,0 +1,381 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reliverse Configuration Schema",
+  "description": "Schema for .reliverse configuration files",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "enum": ["https://reliverse.org/schema.json", "./schema.json"]
+    },
+    "projectName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectAuthor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectDescription": {
+      "type": "string"
+    },
+    "projectVersion": {
+      "type": "string"
+    },
+    "projectLicense": {
+      "type": "string"
+    },
+    "projectRepository": {
+      "type": "string"
+    },
+    "projectDomain": {
+      "type": "string"
+    },
+    "projectDeployService": {
+      "type": "string",
+      "enum": ["vercel", "netlify", "railway", "deno", "none"]
+    },
+    "projectDisplayName": {
+      "type": "string"
+    },
+    "projectPackageManager": {
+      "type": "string",
+      "enum": ["npm", "pnpm", "yarn", "bun"]
+    },
+    "projectFrameworkVersion": {
+      "type": "string"
+    },
+    "projectState": {
+      "type": "string",
+      "enum": ["creating", "created"]
+    },
+    "projectCategory": {
+      "type": "string",
+      "enum": ["unknown", "website", "vscode", "browser", "cli", "library"]
+    },
+    "projectSubcategory": {
+      "type": "string",
+      "enum": ["unknown", "e-commerce", "tool"]
+    },
+    "projectFramework": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "nextjs",
+        "vite",
+        "svelte",
+        "vue",
+        "astro",
+        "npm-jsr",
+        "wxt",
+        "vscode"
+      ]
+    },
+    "projectTemplate": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "blefnk/relivator",
+        "blefnk/next-react-ts-src-minimal",
+        "blefnk/all-in-one-nextjs-template",
+        "blefnk/create-t3-app",
+        "blefnk/create-next-app",
+        "blefnk/astro-starlight-template",
+        "blefnk/versator",
+        "reliverse/template-browser-extension",
+        "microsoft/vscode-extension-samples",
+        "microsoft/vscode-extension-template",
+        "reliverse/cli-starter-template"
+      ]
+    },
+    "projectActivation": {
+      "type": "string",
+      "enum": ["auto", "manual"]
+    },
+    "nodeVersion": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "string"
+    },
+    "deployUrl": {
+      "type": "string"
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "i18n": {
+          "type": "boolean"
+        },
+        "analytics": {
+          "type": "boolean"
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["light", "dark", "dark-light"]
+        },
+        "authentication": {
+          "type": "boolean"
+        },
+        "api": {
+          "type": "boolean"
+        },
+        "database": {
+          "type": "boolean"
+        },
+        "testing": {
+          "type": "boolean"
+        },
+        "docker": {
+          "type": "boolean"
+        },
+        "ci": {
+          "type": "boolean"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "webview": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "language": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "i18n",
+        "analytics",
+        "themeMode",
+        "authentication",
+        "api",
+        "database",
+        "testing",
+        "docker",
+        "ci",
+        "commands",
+        "webview",
+        "language",
+        "themes"
+      ]
+    },
+    "preferredLibraries": {
+      "type": "object",
+      "properties": {},
+      "patternProperties": {
+        "^(.*)$": {
+          "type": "string"
+        }
+      }
+    },
+    "codeStyle": {
+      "type": "object",
+      "properties": {
+        "lineWidth": {
+          "type": "number"
+        },
+        "indentSize": {
+          "type": "number"
+        },
+        "indentStyle": {
+          "type": "string",
+          "enum": ["space", "tab"]
+        },
+        "quoteMark": {
+          "type": "string",
+          "enum": ["single", "double"]
+        },
+        "semicolons": {
+          "type": "boolean"
+        },
+        "trailingComma": {
+          "type": "string",
+          "enum": ["none", "es5", "all"]
+        },
+        "bracketSpacing": {
+          "type": "boolean"
+        },
+        "arrowParens": {
+          "type": "string",
+          "enum": ["always", "avoid"]
+        },
+        "tabWidth": {
+          "type": "number"
+        },
+        "jsToTs": {
+          "type": "boolean"
+        },
+        "dontRemoveComments": {
+          "type": "boolean"
+        },
+        "shouldAddComments": {
+          "type": "boolean"
+        },
+        "typeOrInterface": {
+          "type": "string",
+          "enum": ["type", "interface", "mixed"]
+        },
+        "importOrRequire": {
+          "type": "string",
+          "enum": ["import", "require", "mixed"]
+        },
+        "cjsToEsm": {
+          "type": "boolean"
+        },
+        "modernize": {
+          "type": "object",
+          "properties": {
+            "replaceFs": {
+              "type": "boolean"
+            },
+            "replacePath": {
+              "type": "boolean"
+            },
+            "replaceHttp": {
+              "type": "boolean"
+            },
+            "replaceProcess": {
+              "type": "boolean"
+            },
+            "replaceConsole": {
+              "type": "boolean"
+            },
+            "replaceEvents": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "replaceFs",
+            "replacePath",
+            "replaceHttp",
+            "replaceProcess",
+            "replaceConsole",
+            "replaceEvents"
+          ]
+        },
+        "importSymbol": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "lineWidth",
+        "indentSize",
+        "indentStyle",
+        "quoteMark",
+        "semicolons",
+        "trailingComma",
+        "bracketSpacing",
+        "arrowParens",
+        "tabWidth",
+        "jsToTs",
+        "dontRemoveComments",
+        "shouldAddComments",
+        "typeOrInterface",
+        "importOrRequire",
+        "cjsToEsm",
+        "modernize",
+        "importSymbol"
+      ]
+    },
+    "monorepo": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "turborepo", "nx", "pnpm", "bun"]
+        },
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sharedPackages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["type", "packages", "sharedPackages"]
+    },
+    "ignoreDependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customRules": {
+      "type": "object",
+      "properties": {},
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "skipPromptsUseAutoBehavior": {
+      "type": "boolean"
+    },
+    "deployBehavior": {
+      "type": "string",
+      "enum": ["prompt", "autoYes", "autoNo"]
+    },
+    "depsBehavior": {
+      "type": "string",
+      "enum": ["prompt", "autoYes", "autoNo"]
+    },
+    "gitBehavior": {
+      "type": "string",
+      "enum": ["prompt", "autoYes", "autoNo"]
+    },
+    "i18nBehavior": {
+      "type": "string",
+      "enum": ["prompt", "autoYes", "autoNo"]
+    },
+    "scriptsBehavior": {
+      "type": "string",
+      "enum": ["prompt", "autoYes", "autoNo"]
+    },
+    "productionBranch": {
+      "type": "string"
+    },
+    "repoPrivacy": {
+      "type": "string",
+      "enum": ["unknown", "public", "private"]
+    }
+  },
+  "required": [
+    "$schema",
+    "projectName",
+    "projectAuthor",
+    "projectDescription",
+    "projectVersion",
+    "projectLicense",
+    "projectPackageManager",
+    "features",
+    "preferredLibraries",
+    "codeStyle",
+    "monorepo",
+    "ignoreDependencies",
+    "customRules",
+    "skipPromptsUseAutoBehavior",
+    "deployBehavior",
+    "depsBehavior",
+    "gitBehavior",
+    "i18nBehavior",
+    "scriptsBehavior"
+  ]
+}

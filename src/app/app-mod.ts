@@ -1,6 +1,6 @@
 import { defineCommand } from "@reliverse/prompts";
 
-import { authCheck } from "~/args/login/impl.js";
+import { authCheck } from "~/args/login/login-impl.js";
 import { handleReliverseConfig } from "~/utils/reliverseConfig.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";

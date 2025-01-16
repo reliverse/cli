@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import { deleteMemory } from "./impl.js";
+import { deleteMemory } from "./logout-impl.js";
 
 const isConfigExists = async () => {
   const homeDir = os.homedir();

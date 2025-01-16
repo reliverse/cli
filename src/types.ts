@@ -11,7 +11,9 @@ export type UserDataKeys =
   | "name"
   | "email"
   | "githubUsername"
-  | "vercelUsername";
+  | "vercelUsername"
+  | "vercelTeamId"
+  | "vercelTeamSlug";
 
 export type ReliverseMemory = {
   code: string;
@@ -23,6 +25,8 @@ export type ReliverseMemory = {
   email?: string;
   githubUsername?: string;
   vercelUsername?: string;
+  vercelTeamId?: string;
+  vercelTeamSlug?: string;
 };
 
 export type DatabasePostgresProvider = "neon" | "railway";
@@ -155,26 +159,6 @@ export type MonorepoType =
   | "moonrepo"
   | "bun-workspaces"
   | "pnpm-workspaces";
-
-export type ProjectTypeOptions =
-  | ""
-  | "library"
-  | "nextjs"
-  | "astro"
-  | "react"
-  | "vue"
-  | "svelte";
-
-export type ProjectCategory =
-  | ""
-  | "website"
-  | "mobile"
-  | "desktop"
-  | "crossplatform"
-  | "extension"
-  | "cli";
-
-export type ProjectSubcategory = "" | "e-commerce" | "tool";
 
 export type PackageManagerName = "npm" | "yarn" | "pnpm" | "bun" | "deno";
 

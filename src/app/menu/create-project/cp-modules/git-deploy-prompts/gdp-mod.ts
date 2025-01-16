@@ -15,7 +15,10 @@ import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
 import { createOctokitInstance } from "./octokit-instance.js";
 import { getVercelProjectDomain } from "./vercel/vercel-domain.js";
-import { isProjectDeployed } from "./vercel/vercel-mod.js";
+import {
+  isProjectDeployed,
+  createVercelDeployment,
+} from "./vercel/vercel-mod.js";
 
 /**
  * A string literal union for either 'gitBehavior' or 'deployBehavior'
@@ -102,9 +105,11 @@ export async function handleGithubRepo(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
+  config: ReliverseConfig,
   projectName: string,
   projectPath: string,
   shouldMaskSecretInput: boolean,
+  skipPrompts: boolean,
 ): Promise<GithubSetupResult> {
   if (!memory) {
     relinka("error", "Failed to read reliverse memory");
@@ -122,9 +127,11 @@ export async function handleGithubRepo(
     cwd,
     isDev,
     memory,
+    config,
     projectName,
     projectPath,
     shouldMaskSecretInput,
+    skipPrompts,
   );
   if (!repoCreated) {
     relinka(
@@ -153,25 +160,27 @@ export async function handleGithubRepo(
 async function checkVercelDeployment(
   projectName: string,
   memory: ReliverseMemory,
-): Promise<boolean> {
+): Promise<{
+  isDeployed: boolean;
+  githubUsername?: string | undefined;
+  vercelUsername?: string | undefined;
+}> {
   try {
-    return await isProjectDeployed(projectName, memory);
+    const result = await isProjectDeployed(projectName, memory);
+    return result;
   } catch (error) {
-    // If we can't check deployments, assume none exist
     relinka(
-      "info-verbose",
-      "Could not check Vercel deployments (assuming none):",
+      "error",
+      "Failed to check Vercel deployment:",
       error instanceof Error ? error.message : String(error),
     );
-    return false;
+    return { isDeployed: false };
   }
 }
 
 /**
  * Orchestrates the entire flow for initializing git, creating a GitHub repo, and deploying.
- *
  * - If `skipPrompts === true`, we won't prompt for user confirmations (i.e., treat "prompt" as "autoYes").
- * - If `isMultiConfig === true`, we also assume a fully automated flow (so we basically do the same as skipPrompts).
  */
 export async function promptGitDeploy({
   projectName,
@@ -186,7 +195,6 @@ export async function promptGitDeploy({
   cwd,
   shouldMaskSecretInput,
   skipPrompts,
-  isMultiConfig,
 }: {
   projectName: string;
   config: ReliverseConfig;
@@ -200,7 +208,6 @@ export async function promptGitDeploy({
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
-  isMultiConfig: boolean;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -210,12 +217,8 @@ export async function promptGitDeploy({
   let allDomains: string[] = [];
 
   try {
-    // If isMultiConfig, also force skipPrompts to true
-    const finalSkipPrompts = skipPrompts || isMultiConfig;
-
     // -------------------------------------------------
     // 1) Ask user about creating/using a GitHub repo
-    //    (or skip if finalSkipPrompts => autoYes)
     // -------------------------------------------------
     const shouldCreateRepo = await decide(
       config,
@@ -227,7 +230,7 @@ export async function promptGitDeploy({
         "- Deploy to services like Vercel\n" +
         "- Track changes with git automatically",
       true,
-      finalSkipPrompts,
+      skipPrompts,
     );
 
     if (!shouldCreateRepo) {
@@ -238,7 +241,7 @@ export async function promptGitDeploy({
         "Do you want to initialize git locally? (recommended)",
         "This allows you to track changes, create commits, and work with branches.",
         true,
-        finalSkipPrompts,
+        skipPrompts,
       );
 
       if (!shouldInitGitLocally) {
@@ -285,16 +288,18 @@ export async function promptGitDeploy({
           cwd,
           isDev,
           memory,
+          config,
           projectName,
           projectPath,
           shouldMaskSecretInput,
+          skipPrompts,
         );
         if (githubData.success) {
           break; // success => break out of loop
         }
 
         githubRetryCount++;
-        if (githubRetryCount < 3 && !finalSkipPrompts) {
+        if (githubRetryCount < 3 && !skipPrompts) {
           // Only show this "retry/skip/close" prompt if we're NOT skipping prompts
           const userAction = await selectPrompt({
             title: "GitHub setup failed. What would you like to do?",
@@ -344,7 +349,7 @@ export async function promptGitDeploy({
               allDomains,
             };
           }
-        } else if (finalSkipPrompts) {
+        } else if (skipPrompts) {
           // If we're skipping prompts, break after first failure
           break;
         }
@@ -355,7 +360,7 @@ export async function promptGitDeploy({
           error instanceof Error ? error.message : String(error),
         );
         githubRetryCount++;
-        if (githubRetryCount < 3 && !finalSkipPrompts) {
+        if (githubRetryCount < 3 && !skipPrompts) {
           // Show "retry/skip/close" if not skipping
           const userAction = await selectPrompt({
             title: "GitHub setup failed. How do you want to proceed?",
@@ -404,14 +409,14 @@ export async function promptGitDeploy({
               allDomains,
             };
           }
-        } else if (finalSkipPrompts) {
+        } else if (skipPrompts) {
           // If skipping prompts, just break out
           break;
         }
       }
     }
 
-    if (githubRetryCount === 3 && !skipGitHub && !finalSkipPrompts) {
+    if (githubRetryCount === 3 && !skipGitHub && !skipPrompts) {
       // If user used all attempts and we are not skipping prompts
       const userAction = await selectPrompt({
         title: "GitHub setup failed after 3 attempts. Next steps?",
@@ -486,7 +491,8 @@ export async function promptGitDeploy({
     let alreadyDeployed = false;
     try {
       // Check if there's an existing Vercel deployment
-      alreadyDeployed = await checkVercelDeployment(projectName, memory);
+      const { isDeployed } = await checkVercelDeployment(projectName, memory);
+      alreadyDeployed = isDeployed;
     } catch (vercelError) {
       // If we can't check, we assume false
       relinka(
@@ -518,7 +524,7 @@ export async function promptGitDeploy({
       "Do you want to deploy this project?",
       "This will:\n- Set up deployment configuration\n- Configure environment variables\n- Deploy to your chosen platform",
       true,
-      finalSkipPrompts,
+      skipPrompts,
     );
 
     if (!shouldDeployProject) {
@@ -552,7 +558,7 @@ export async function promptGitDeploy({
     // If not previously deployed, prompt user for domain
     if (!alreadyDeployed) {
       // If skipPrompts => supply a default domain or read from config
-      if (finalSkipPrompts && config.projectDomain) {
+      if (skipPrompts && config.projectDomain) {
         primaryDomain = config.projectDomain.replace(/^https?:\/\//, "");
       } else {
         primaryDomain = await promptForDomain(projectName);
@@ -562,6 +568,39 @@ export async function promptGitDeploy({
       const domainResult = await getVercelProjectDomain(projectName, memory);
       primaryDomain = domainResult.primary;
       allDomains = domainResult.domains;
+    }
+
+    // Check if project is already deployed to Vercel
+    const { isDeployed: isVercelDeployed, githubUsername } =
+      await checkVercelDeployment(projectName, memory);
+
+    if (isVercelDeployed) {
+      relinka("info", `Project ${projectName} is already deployed to Vercel`);
+      return {
+        deployService: "vercel",
+        primaryDomain,
+        isDeployed: true,
+        allDomains: [primaryDomain],
+      };
+    }
+
+    // Deploy to Vercel
+    const vercelDeployed = await createVercelDeployment(
+      projectName,
+      projectPath,
+      primaryDomain,
+      memory,
+      shouldMaskSecretInput,
+      githubUsername,
+    );
+
+    if (vercelDeployed) {
+      return {
+        deployService: "vercel",
+        primaryDomain,
+        isDeployed: true,
+        allDomains: [primaryDomain],
+      };
     }
 
     // Attempt deployment up to 3 times
@@ -584,14 +623,14 @@ export async function promptGitDeploy({
           return deployResult;
         }
         deployRetryCount++;
-        if (deployRetryCount < 3 && !finalSkipPrompts) {
+        if (deployRetryCount < 3 && !skipPrompts) {
           const shouldRetryDeploy = await decide(
             config,
             "deployBehavior",
             "Deployment failed. Retry?",
             "Might help if the error was temporary",
             true,
-            finalSkipPrompts,
+            skipPrompts,
           );
           if (!shouldRetryDeploy) break;
         } else {
@@ -605,14 +644,14 @@ export async function promptGitDeploy({
           error instanceof Error ? error.message : String(error),
         );
         deployRetryCount++;
-        if (deployRetryCount < 3 && !finalSkipPrompts) {
+        if (deployRetryCount < 3 && !skipPrompts) {
           const shouldRetryDeploy = await decide(
             config,
             "deployBehavior",
             "Retry deployment?",
             "Might help if the error was temporary",
             true,
-            finalSkipPrompts,
+            skipPrompts,
           );
           if (!shouldRetryDeploy) break;
         } else {

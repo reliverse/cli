@@ -2,15 +2,48 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
+/**
+ * Checks if i18n is already set up in the project
+ */
+async function isI18nAlreadySetup(projectPath: string): Promise<boolean> {
+  const checkPaths = [
+    "src/app/[locale]",
+    "src/app/[lang]",
+    "src/i18n",
+    "src/locales",
+    "src/translations",
+    "src/config/i18n.ts",
+    "src/utils/i18n.ts",
+  ];
+
+  for (const checkPath of checkPaths) {
+    if (await fs.pathExists(path.join(projectPath, checkPath))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function setupI18nFiles(projectPath: string): Promise<void> {
   try {
+    // Check if i18n is already set up
+    if (await isI18nAlreadySetup(projectPath)) {
+      relinka(
+        "info",
+        "i18n is already set up in this project, skipping setup.",
+      );
+      return;
+    }
+
     // Ensure target directory exists
     await fs.ensureDir(projectPath);
 
     // Generate i18n layout file
     const layoutPath = path.join(projectPath, "src/app/layout.tsx");
-    await fs.ensureDir(path.dirname(layoutPath));
-    const layoutContent = `
+    if (!(await fs.pathExists(layoutPath))) {
+      await fs.ensureDir(path.dirname(layoutPath));
+      const layoutContent = `
 import { dir } from "i18next";
 import { languages } from "~/config/i18n";
 import { type Metadata } from "next";
@@ -39,12 +72,14 @@ export default function RootLayout({
 export function generateStaticParams() {
   return languages.map((lang) => ({ lang }));
 }`;
-    await fs.writeFile(layoutPath, layoutContent);
-    relinka("success", "Generated i18n layout file");
+      await fs.writeFile(layoutPath, layoutContent);
+      relinka("success", "Generated i18n layout file");
+    }
 
     // Generate i18n page file
     const pagePath = path.join(projectPath, "src/app/page.tsx");
-    const pageContent = `
+    if (!(await fs.pathExists(pagePath))) {
+      const pageContent = `
 import { useTranslation } from "~/utils/i18n";
 
 export default async function Home() {
@@ -56,13 +91,15 @@ export default async function Home() {
     </main>
   );
 }`;
-    await fs.writeFile(pagePath, pageContent);
-    relinka("success", "Generated i18n page file");
+      await fs.writeFile(pagePath, pageContent);
+      relinka("success", "Generated i18n page file");
+    }
 
     // Generate i18n config
     const i18nConfigPath = path.join(projectPath, "src/config/i18n.ts");
-    await fs.ensureDir(path.dirname(i18nConfigPath));
-    const i18nConfigContent = `
+    if (!(await fs.pathExists(i18nConfigPath))) {
+      await fs.ensureDir(path.dirname(i18nConfigPath));
+      const i18nConfigContent = `
 export const languages = ["en", "es", "fr"];
 export const defaultLanguage = "en";
 
@@ -71,8 +108,9 @@ export const languageNames = {
   es: "Español",
   fr: "Français",
 } as const;`;
-    await fs.writeFile(i18nConfigPath, i18nConfigContent);
-    relinka("success", "Generated i18n configuration");
+      await fs.writeFile(i18nConfigPath, i18nConfigContent);
+      relinka("success", "Generated i18n configuration");
+    }
 
     relinka("success", "Internationalization was successfully integrated.");
   } catch (error) {

@@ -7,21 +7,27 @@ import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
-import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+import type { ReliverseMemory } from "~/types.js";
+import type {
+  ProjectCategory,
+  ProjectSubcategory,
+  ReliverseConfig,
+} from "~/utils/reliverseSchema.js";
 
-import { DEFAULT_APP_NAME, experimental } from "~/app/constants.js";
+import {
+  DEFAULT_APP_NAME,
+  experimental,
+  UNKNOWN_VALUE,
+} from "~/app/constants.js";
 import {
   randomProjectFrameworkTitle,
-  randomWebsiteCategoryTitle,
-  randomWebsiteDetailsTitle,
   getRandomMessage,
 } from "~/app/db/messages.js";
 import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
-import { type ReliverseMemory } from "~/types.js";
 import {
   TEMP_BROWSER_TEMPLATE_OPTIONS,
   TEMP_VSCODE_TEMPLATE_OPTIONS,
-  TEMP_WEBAPP_TEMPLATE_OPTIONS,
+  TEMP_WEBSITE_TEMPLATE_OPTIONS,
   type TemplateOption,
 } from "~/utils/projectTemplate.js";
 
@@ -230,6 +236,8 @@ export async function showNewProjectMenu(
 ): Promise<void> {
   const endTitle =
     "📚 Check the docs to learn more: https://docs.reliverse.org";
+
+  const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
   const isMultiConfig = reli.length > 0;
 
   if (isMultiConfig) {
@@ -245,61 +253,66 @@ export async function showNewProjectMenu(
       endTitle,
       true,
       reli,
+      skipPrompts,
     );
   } else {
-    // Display the menu to let the user pick a project type
-    const projectType = await selectPrompt({
-      endTitle,
-      title: getRandomMessage("initial"),
-      options: [
-        {
-          label: "Web Application",
-          value: "web",
-          hint: pc.dim("Create a web application with Next.js"),
-        },
-        {
-          label: "VS Code Extension",
-          value: "vscode",
-          hint: experimental,
-        },
-        {
-          label: "Browser Extension",
-          value: "browser",
-          hint: experimental,
-        },
-        {
-          label: "CLI Project",
-          value: "cli",
-          hint: experimental,
-        },
-        { separator: true },
-        {
-          label: pc.italic(
-            pc.dim("More types of projects and frameworks coming soon 🦾"),
-          ),
-          value: "coming-soon",
-          disabled: true,
-        },
-      ],
-    });
+    let projectCategory = config.projectCategory;
+    if (projectCategory === UNKNOWN_VALUE) {
+      // Display the menu to let the user pick a project type
+      const selectedType = await selectPrompt<ProjectCategory>({
+        endTitle,
+        title: getRandomMessage("initial"),
+        options: [
+          {
+            label: "Web Application",
+            value: "website",
+            hint: pc.dim("Create a website with Next.js"),
+          },
+          {
+            label: "VS Code Extension",
+            value: "vscode",
+            hint: experimental,
+          },
+          {
+            label: "Browser Extension",
+            value: "browser",
+            hint: experimental,
+          },
+          {
+            label: "CLI Project",
+            value: "cli",
+            hint: experimental,
+          },
+          { separator: true },
+          {
+            label: pc.italic(
+              pc.dim("More types of projects and frameworks coming soon 🦾"),
+            ),
+            value: UNKNOWN_VALUE,
+            disabled: true,
+          },
+        ],
+      });
+      projectCategory = selectedType;
+    }
 
-    if (projectType === "vscode") {
+    if (projectCategory === "vscode") {
       await optionCreateVSCodeExtension(
         cwd,
         isDev,
         memory,
         config,
         endTitle,
-        isMultiConfig,
+        skipPrompts,
       );
-    } else if (projectType === "browser") {
+    } else if (projectCategory === "browser") {
       await optionCreateBrowserExtension(
         cwd,
         isDev,
         memory,
         config,
         endTitle,
-        isMultiConfig,
+        skipPrompts,
       );
     } else {
       // Default = "web"
@@ -311,6 +324,7 @@ export async function showNewProjectMenu(
         endTitle,
         false,
         reli,
+        skipPrompts,
       );
     }
   }
@@ -322,7 +336,7 @@ async function optionCreateVSCodeExtension(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   endTitle: string,
-  isMultiConfig: boolean,
+  skipPrompts: boolean,
 ) {
   const template = (await selectPrompt({
     endTitle,
@@ -352,7 +366,7 @@ async function optionCreateVSCodeExtension(
       config,
       memory,
       cwd,
-      isMultiConfig,
+      skipPrompts,
     });
   } else {
     relinka("error", "No VS Code extension config provided");
@@ -365,7 +379,7 @@ async function optionCreateBrowserExtension(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   endTitle: string,
-  isMultiConfig: boolean,
+  skipPrompts: boolean,
 ) {
   const template = (await selectPrompt({
     endTitle,
@@ -395,7 +409,7 @@ async function optionCreateBrowserExtension(
       config,
       memory,
       cwd,
-      isMultiConfig,
+      skipPrompts,
     });
   } else {
     relinka("error", "No browser extension config provided");
@@ -414,6 +428,7 @@ async function optionCreateWebProject(
   endTitle: string,
   isMultiConfig: boolean,
   reli: ReliverseConfig[],
+  skipPrompts: boolean,
 ): Promise<void> {
   if (isMultiConfig) {
     for (const multiConfig of reli) {
@@ -430,7 +445,7 @@ async function optionCreateWebProject(
         memory,
         cwd,
         mode: "showNewProjectMenu",
-        isMultiConfig,
+        skipPrompts,
       });
     }
   } else {
@@ -464,23 +479,26 @@ async function optionCreateWebProject(
       projectFramework = result;
     }
 
-    // Let user pick "advanced" vs. "simple" (offline) approach
-    const shouldContinueWithRecommended = await selectPrompt({
-      endTitle,
-      title: "Should I continue with advanced or simple mode?",
-      options: [
-        {
-          label: pc.bold(pc.greenBright("Advanced")),
-          value: "recommended",
-          hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
-        },
-        {
-          label: pc.dim(pc.red("Simple")),
-          value: "offline",
-          hint: pc.red("🚨 experimental, offline"),
-        },
-      ],
-    });
+    let shouldContinueWithRecommended = "recommended";
+    if (!skipPrompts) {
+      // Let user pick "advanced" vs. "simple" (offline) approach
+      shouldContinueWithRecommended = await selectPrompt({
+        endTitle,
+        title: "Should I continue with advanced or simple mode?",
+        options: [
+          {
+            label: pc.bold(pc.greenBright("Advanced")),
+            value: "recommended",
+            hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
+          },
+          {
+            label: pc.dim(pc.red("Simple")),
+            value: "offline",
+            hint: pc.red("🚨 experimental, offline"),
+          },
+        ],
+      });
+    }
 
     if (shouldContinueWithRecommended === "offline") {
       const cliResults: CliResults = {
@@ -506,34 +524,35 @@ async function optionCreateWebProject(
       return;
     }
 
-    // Prompt for website category
-    await selectPrompt({
-      endTitle,
-      title:
-        randomWebsiteCategoryTitle[
-          Math.floor(Math.random() * randomWebsiteCategoryTitle.length)
-        ] ?? "What category fits your website's focus?",
-      options: [
-        { label: "E-commerce", value: "e-commerce" },
-        {
-          label: "...",
-          hint: pc.dim("coming soon"),
-          value: "coming-soon",
-          disabled: true,
-        },
-      ],
-    });
+    // Prompt for website subcategory
+    let websiteSubcategory = config?.projectSubcategory;
+    if (websiteSubcategory === UNKNOWN_VALUE) {
+      const selectedSubcategory = await selectPrompt<ProjectSubcategory>({
+        endTitle,
+        title: getRandomMessage("subcategory"),
+        options: [
+          { label: "E-commerce", value: "e-commerce" },
+          {
+            label: "...",
+            hint: pc.dim("coming soon"),
+            value: UNKNOWN_VALUE,
+            disabled: true,
+          },
+        ],
+      });
+      websiteSubcategory = selectedSubcategory;
+    }
 
     // If user's config has a template, use it; else ask
     let template: TemplateOption;
-    if (config.projectTemplate !== "unknown") {
+    if (config.projectTemplate !== UNKNOWN_VALUE) {
       template = config.projectTemplate as TemplateOption;
     } else {
       const result = await selectPrompt({
         endTitle,
         title: "Which template would you like to use?",
         options: [
-          ...Object.values(TEMP_WEBAPP_TEMPLATE_OPTIONS),
+          ...Object.values(TEMP_WEBSITE_TEMPLATE_OPTIONS),
           { separator: true },
           {
             label: pc.italic(pc.dim("More templates coming soon")),
@@ -548,16 +567,15 @@ async function optionCreateWebProject(
     // Finally, create the web project
     await createWebProject({
       webProjectTemplate: template,
-      message:
-        randomWebsiteDetailsTitle[
-          Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
-        ] ?? "Setting up project...",
+      message: skipPrompts
+        ? "Setting up project..."
+        : getRandomMessage("details"),
       mode: "showNewProjectMenu",
       isDev,
       config,
       memory,
       cwd,
-      isMultiConfig,
+      skipPrompts,
     });
   }
 }

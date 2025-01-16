@@ -5,7 +5,7 @@ import { useLocalhost } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
-import { auth } from "./impl.js";
+import { auth } from "./login-impl.js";
 
 export default defineCommand({
   meta: {

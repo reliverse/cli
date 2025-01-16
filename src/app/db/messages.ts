@@ -41,11 +41,11 @@ export const randomProjectFrameworkTitle = [
   "Perfect! Let's zero in on your project framework preference. Which option resonates most with your plan?",
 ];
 
-export const randomWebsiteCategoryTitle = [
-  "Let's hone in on your site's purpose. Which category best describes it?",
-  "Good call! Now let's narrow it down further. What category fits your website's focus?",
-  "Excellent choice! To equip you well, which website category are we aiming for?",
-  "Perfect! Time to be specific. Which category aligns most closely with your website vision?",
+export const randomWebsiteSubcategoryTitle = [
+  "Let's hone in on your site's purpose. Which sub-category best describes it?",
+  "Good call! Now let's narrow it down further. What sub-category fits your website's focus?",
+  "Excellent choice! To equip you well, which website sub-category are we aiming for?",
+  "Perfect! Time to be specific. Which sub-category aligns most closely with your website vision?",
 ];
 
 export const randomWebsiteDetailsTitle = [
@@ -54,28 +54,6 @@ export const randomWebsiteDetailsTitle = [
   "Excellent! To set you up with the right finishing touches, could you provide more specific details about yourself and your app?",
   "Perfect! Let’s get more personal. Which details can you share so I can refine your website to truly match your vision?",
 ];
-
-// export const randomEndMessage = [
-// "https://docs.reliverse.org/reliverse/cli",
-// ];
-
-export function getRandomMessage(kind: "initial" | "category") {
-  if (kind === "initial") {
-    return (
-      randomInitialMessage[
-        Math.floor(Math.random() * randomInitialMessage.length)
-      ] ?? "What category best describes your project?"
-    );
-  }
-  if (kind === "category") {
-    return (
-      randomProjectCategoryTitle[
-        Math.floor(Math.random() * randomProjectCategoryTitle.length)
-      ] ?? "What category best describes your project?"
-    );
-  }
-  return "";
-}
 
 export function getWelcomeTitle(username: string) {
   return `🤖 ${
@@ -90,3 +68,41 @@ export function getWelcomeTitle(username: string) {
     ]
   }`;
 }
+
+export function getRandomMessage(
+  kind: "initial" | "category" | "subcategory" | "details",
+) {
+  if (kind === "initial") {
+    return (
+      randomInitialMessage[
+        Math.floor(Math.random() * randomInitialMessage.length)
+      ] ?? ""
+    );
+  }
+  if (kind === "category") {
+    return (
+      randomProjectCategoryTitle[
+        Math.floor(Math.random() * randomProjectCategoryTitle.length)
+      ] ?? ""
+    );
+  }
+  if (kind === "subcategory") {
+    return (
+      randomWebsiteSubcategoryTitle[
+        Math.floor(Math.random() * randomWebsiteSubcategoryTitle.length)
+      ] ?? ""
+    );
+  }
+  if (kind === "details") {
+    return (
+      randomWebsiteDetailsTitle[
+        Math.floor(Math.random() * randomWebsiteDetailsTitle.length)
+      ] ?? ""
+    );
+  }
+  return "";
+}
+
+// export const randomEndMessage = [
+// "https://docs.reliverse.org/reliverse/cli",
+// ];

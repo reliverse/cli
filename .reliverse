@@ -1,4 +1,6 @@
 {
+  "$schema": "./schema.json",
+
   // General project information
   "projectName": "cli",
   "projectAuthor": "reliverse",
@@ -7,21 +9,21 @@
   "projectLicense": "MIT",
   "projectRepository": "https://github.com/reliverse/cli",
   "projectState": "creating",
-  "projectDomain": "https://docs.reliverse.com",
-  "projectType": "",
+  "projectDomain": "https://example.com",
   "projectCategory": "unknown",
-  "projectSubcategory": "",
+  "projectSubcategory": "unknown",
   "projectTemplate": "unknown",
-  "projectDisplayName": "",
-  "projectFrameworkVersion": "",
+  "projectDisplayName": "unknown",
+  "projectFrameworkVersion": "unknown",
   "projectActivation": "manual",
-  "nodeVersion": "",
-  "runtime": "",
-  "deployUrl": "",
+  "nodeVersion": "unknown",
+  "runtime": "unknown",
+  "deployUrl": "unknown",
   "productionBranch": "main",
+  "repoPrivacy": "unknown",
 
   // Primary tech stack/framework
-  "projectFramework": "nextjs",
+  "projectFramework": "npm-jsr",
   "projectPackageManager": "bun",
   "preferredLibraries": {
     "stateManagement": "zustand",
@@ -90,16 +92,17 @@
     }
   },
 
-  // Enable auto-answering for prompts?
+  // Want to enable auto-answering for prompts?
   // Set to true to skip manual confirmations.
-  "skipPromptsUseAutoBehavior": true,
+  // Remember to set also the project* fields.
+  "skipPromptsUseAutoBehavior": false,
 
-  // Behavior for deployment prompts
+  // Specific prompts behavior
   // prompt | autoYes | autoNo
-  "deployBehavior": "autoYes",
-  "depsBehavior": "autoYes",
-  "gitBehavior": "autoYes",
-  "i18nBehavior": "autoYes",
-  "scriptsBehavior": "autoYes",
+  "deployBehavior": "prompt",
+  "depsBehavior": "prompt",
+  "gitBehavior": "prompt",
+  "i18nBehavior": "prompt",
+  "scriptsBehavior": "prompt",
   "projectDeployService": "vercel"
 }

@@ -36,49 +36,49 @@ export const TEMPLATES: Template[] = [
     author: "blefnk",
     name: "relivator",
     description: "Full-featured e-commerce template with auth, payments, etc.",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/next-react-ts-src-minimal",
     author: "blefnk",
     name: "next-react-ts-src-minimal",
     description: "Essentials only: minimal Next.js with TypeScript template",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/all-in-one-nextjs-template",
     author: "blefnk",
     name: "all-in-one-nextjs-template",
     description: "Comprehensive Next.js template with multiple features",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/create-t3-app",
     author: "blefnk",
     name: "create-t3-app",
     description: "Type-safe Next.js template with tRPC, Prisma, and Tailwind",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/create-next-app",
     author: "blefnk",
     name: "create-next-app",
     description: "Basic Next.js starter template",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/astro-starlight-template",
     author: "blefnk",
     name: "astro-starlight-template",
     description: "Documentation site template using Astro and Starlight",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "blefnk/versator",
     author: "blefnk",
     name: "versator",
     description: "Versatile Next.js template for various use cases",
-    category: "webapp",
+    category: "website",
   },
   {
     id: "microsoft/vscode-extension-samples",
@@ -124,7 +124,7 @@ export async function saveTemplateToDevice(
   }
 }
 
-export const TEMP_WEBAPP_TEMPLATE_OPTIONS = {
+export const TEMP_WEBSITE_TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
     label: `Relivator ${recommended}`,
     value: "blefnk/relivator",

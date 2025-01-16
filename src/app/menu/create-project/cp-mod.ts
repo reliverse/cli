@@ -4,19 +4,25 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 
+import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
+
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import {
   generateProjectConfigs,
   updateProjectConfig,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
-import { TEMPLATES, saveTemplateToDevice } from "~/utils/projectTemplate.js";
+import {
+  TEMPLATES,
+  saveTemplateToDevice,
+  type TemplateOption,
+} from "~/utils/projectTemplate.js";
 
 import {
   initializeProjectConfig,
   setupI18nSupport,
   replaceTemplateStrings,
-  type CreateWebProjectOptions,
   handleDeployment,
   handleDependencies,
   showSuccessAndNextSteps,
@@ -34,27 +40,28 @@ export async function createWebProject({
   config,
   memory,
   cwd,
-  isMultiConfig,
-}: CreateWebProjectOptions): Promise<void> {
+  skipPrompts,
+}: {
+  webProjectTemplate: TemplateOption;
+  message: string;
+  mode: "showNewProjectMenu" | "installAnyGitRepo";
+  isDev: boolean;
+  config: ReliverseConfig;
+  memory: ReliverseMemory;
+  cwd: string;
+  skipPrompts: boolean;
+}): Promise<void> {
   relinka("info", message);
 
   // -------------------------------------------------
-  // 1) Determine whether to skip all CLI prompts
-  // -------------------------------------------------
-  const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
-
-  // If the user wants i18n fully auto-enabled, check `features.i18n` + `i18nBehavior`
-  const i18nShouldBeEnabledAutomatically =
-    config?.features?.i18n && skipPrompts && config.i18nBehavior === "autoYes";
-
-  // -------------------------------------------------
-  // 2) Initialize project configuration (prompt or auto)
+  // 1) Initialize project configuration (prompt or auto)
   // -------------------------------------------------
   const projectConfig = await initializeProjectConfig(
     memory,
     config,
     skipPrompts,
-    isMultiConfig,
+    isDev,
+    cwd,
   );
   const {
     uiUsername,
@@ -65,7 +72,7 @@ export async function createWebProject({
   let projectPath = "";
 
   // -------------------------------------------------
-  // 3) Identify chosen template
+  // 2) Identify chosen template
   // -------------------------------------------------
   const template = TEMPLATES.find((t) => t.id === webProjectTemplate);
   if (!template) {
@@ -75,7 +82,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 4) Check for local template copy
+  // 3) Check for local template copy
   // -------------------------------------------------
   const localTemplatePath = path.join(
     os.homedir(),
@@ -100,14 +107,16 @@ export async function createWebProject({
     }
 
     if (useLocalTemplate) {
-      projectPath = path.join(cwd, projectName);
+      projectPath = isDev
+        ? path.join(cwd, "test-runtime", projectName)
+        : path.join(cwd, projectName);
       await fs.copy(localTemplatePath, projectPath);
       relinka("info", "Using local template copy...");
     }
   }
 
   // -------------------------------------------------
-  // 5) Download template if no local copy used
+  // 4) Download template if no local copy used
   // -------------------------------------------------
   if (!projectPath) {
     try {
@@ -128,7 +137,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 6) Optionally save template to device
+  // 5) Optionally save template to device
   // -------------------------------------------------
   let shouldSaveTemplate = false;
   if (!skipPrompts) {
@@ -143,7 +152,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 7) Replace placeholders in the template
+  // 6) Replace placeholders in the template
   // -------------------------------------------------
   await replaceTemplateStrings(projectPath, webProjectTemplate, {
     primaryDomain: initialDomain,
@@ -152,16 +161,12 @@ export async function createWebProject({
   });
 
   // -------------------------------------------------
-  // 8) Setup i18n (auto or prompt-based)
+  // 7) Setup i18n (auto or prompt-based)
   // -------------------------------------------------
-  await setupI18nSupport(
-    projectPath,
-    skipPrompts,
-    i18nShouldBeEnabledAutomatically,
-  );
+  await setupI18nSupport(projectPath, skipPrompts, config);
 
   // -------------------------------------------------
-  // 9) Ask about masking secrets
+  // 8) Ask about masking secrets
   // -------------------------------------------------
   let shouldMaskSecretInput = false;
   if (skipPrompts) {
@@ -174,16 +179,17 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 10) Compose .env files
+  // 9) Compose .env files
   // -------------------------------------------------
   await composeEnvFile(
     projectPath,
     FALLBACK_ENV_EXAMPLE_URL,
     shouldMaskSecretInput,
+    skipPrompts,
   );
 
   // -------------------------------------------------
-  // 11) Handle dependencies (install or not?)
+  // 10) Handle dependencies (install or not?)
   // -------------------------------------------------
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     projectPath,
@@ -191,7 +197,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 12) Generate or update .reliverse config
+  // 11) Generate or update .reliverse config
   // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
@@ -199,12 +205,12 @@ export async function createWebProject({
     uiUsername,
     "vercel",
     initialDomain,
-    i18nShouldBeEnabledAutomatically || false,
+    config?.features?.i18n || false,
     uiUsername,
   );
 
   // -------------------------------------------------
-  // 13) Deployment flow
+  // 12) Deployment flow
   // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
     await handleDeployment({
@@ -220,7 +226,6 @@ export async function createWebProject({
       cwd,
       shouldMaskSecretInput,
       skipPrompts,
-      isMultiConfig,
     });
 
   // If the user changed domain or deploy service, update .reliverse again
@@ -232,7 +237,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 14) Final success & next steps
+  // 13) Final success & next steps
   // -------------------------------------------------
   await showSuccessAndNextSteps(
     projectPath,

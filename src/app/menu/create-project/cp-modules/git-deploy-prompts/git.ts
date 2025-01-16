@@ -8,6 +8,7 @@ import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
 import type { ReliverseMemory } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/reliverseSchema.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { cd, pwd } from "~/utils/terminalHelpers.js";
@@ -142,9 +143,11 @@ export async function createGithubRepository(
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
+  config: ReliverseConfig,
   projectName: string,
   projectPath: string,
   shouldMaskSecretInput: boolean,
+  skipPrompts: boolean,
 ): Promise<boolean> {
   const finalDir = isDev
     ? path.join(cwd, "test-runtime", projectName)
@@ -223,6 +226,8 @@ export async function createGithubRepository(
           isDev,
           cwd,
           shouldMaskSecretInput,
+          config,
+          skipPrompts,
         );
       } else if (choice === "commit" || choice === "skip") {
         // Use authenticated URL with token as username
@@ -280,6 +285,8 @@ export async function createGithubRepository(
       isDev,
       cwd,
       shouldMaskSecretInput,
+      config,
+      skipPrompts,
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {

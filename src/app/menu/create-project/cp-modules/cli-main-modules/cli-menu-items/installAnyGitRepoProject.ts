@@ -24,6 +24,8 @@ export async function installAnyGitRepo(
     "At the moment, the current mode is optimized for installing any package.json-based projects from GitHub. Support for other types of projects and git providers will be added in the future.",
   );
 
+  const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
+
   const projectCategory = await selectPrompt({
     title: "Choose an installation category:",
     options: [
@@ -137,6 +139,6 @@ export async function installAnyGitRepo(
     config,
     memory,
     cwd,
-    isMultiConfig: false,
+    skipPrompts,
   });
 }

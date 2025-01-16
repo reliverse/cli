@@ -34,6 +34,7 @@ async function downloadTemplateOption(
   memory: ReliverseMemory,
   isDev: boolean,
   cwd: string,
+  skipPrompts: boolean,
 ) {
   const projectName = await askProjectName();
   const primaryDomain = `${projectName}.vercel.app`;
@@ -59,6 +60,7 @@ async function downloadTemplateOption(
     projectPath,
     FALLBACK_ENV_EXAMPLE_URL,
     shouldMaskSecretInput,
+    skipPrompts,
   );
 
   const { deployService } = await promptGitDeploy({
@@ -74,7 +76,6 @@ async function downloadTemplateOption(
     cwd,
     shouldMaskSecretInput: false,
     skipPrompts: false,
-    isMultiConfig: false,
   });
 
   if (deployService === "none") {
@@ -92,6 +93,7 @@ export async function showDevToolsMenu(
 ) {
   const TestRuntimePath = path.join(cwd, "test-runtime");
   const TestRuntimeExists = await fs.pathExists(TestRuntimePath);
+  const skipPrompts = config.skipPromptsUseAutoBehavior;
 
   const option = await selectPrompt({
     title: "Dev tools menu",
@@ -122,6 +124,7 @@ export async function showDevToolsMenu(
       memory,
       isDev,
       cwd,
+      skipPrompts,
     );
   } else if (option === "ai-chat-test") {
     await aiChatHandler(memory);

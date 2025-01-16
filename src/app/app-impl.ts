@@ -38,7 +38,14 @@ export async function app({
   if (!isDev) {
     const rootProject = await detectProject(cwd);
     if (rootProject) {
-      await handleOpenProjectMenu([rootProject], isDev, memory, cwd, true);
+      await handleOpenProjectMenu(
+        [rootProject],
+        isDev,
+        memory,
+        cwd,
+        true,
+        config,
+      );
       await showEndPrompt();
       deleteLastLines(4);
       renderEndLine();
@@ -56,7 +63,7 @@ export async function app({
   if (mainMenuOption === "create") {
     await showNewProjectMenu(cwd, isDev, memory, config, reli);
   } else if (mainMenuOption === "detected-projects") {
-    await showOpenProjectMenu(cwd, isDev, memory, true);
+    await showOpenProjectMenu(cwd, isDev, memory, config, reli);
   } else if (mainMenuOption === "isDevTools") {
     await showDevToolsMenu(cwd, isDev, config, memory);
   }

@@ -11,12 +11,18 @@ import fs from "fs-extra";
 import path from "pathe";
 import { readPackageJSON } from "pkg-types";
 
-import type { DeploymentService, ProjectTypeOptions } from "~/types.js";
+import type { DeploymentService } from "~/types.js";
 
+import {
+  RELIVERSE_SCHEMA,
+  DEFAULT_DOMAIN,
+  UNKNOWN_VALUE,
+} from "~/app/constants.js";
 import { getBiomeConfig } from "~/utils/configHandler.js";
 
 import {
   reliverseConfigSchema,
+  type ProjectFramework,
   type ReliverseConfig,
 } from "./reliverseSchema.js";
 
@@ -52,26 +58,28 @@ export type ProjectFeatures = {
 };
 
 /* ------------------------------------------------------------------
- * Detecting Project Type
+ * Detecting Project Framework
  * ------------------------------------------------------------------ */
 
-export const PROJECT_TYPE_FILES: Record<ProjectTypeOptions, string[]> = {
-  "": [],
+export const PROJECT_FRAMEWORK_FILES: Record<ProjectFramework, string[]> = {
+  unknown: [],
+  "npm-jsr": ["jsr.json", "jsr.jsonc"],
   astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
-  library: ["jsr.json", "jsr.jsonc"],
   nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
-  react: ["vite.config.js", "vite.config.ts", "react.config.js"],
+  vite: ["vite.config.js", "vite.config.ts", "react.config.js"],
   svelte: ["svelte.config.js", "svelte.config.ts"],
   vue: ["vue.config.js", "vite.config.ts"],
+  wxt: ["wxt.config.js", "wxt.config.ts"],
+  vscode: ["vscode.config.js", "vscode.config.ts"],
 };
 
-export async function detectProjectType(
+export async function detectProjectFramework(
   cwd: string,
-): Promise<keyof typeof PROJECT_TYPE_FILES | null> {
-  for (const [type, files] of Object.entries(PROJECT_TYPE_FILES)) {
+): Promise<ProjectFramework | null> {
+  for (const [type, files] of Object.entries(PROJECT_FRAMEWORK_FILES)) {
     for (const file of files) {
       if (await fs.pathExists(path.join(cwd, file))) {
-        return type as keyof typeof PROJECT_TYPE_FILES;
+        return type as ProjectFramework;
       }
     }
   }
@@ -83,26 +91,29 @@ export async function detectProjectType(
  * ------------------------------------------------------------------ */
 
 export const DEFAULT_CONFIG: ReliverseConfig = {
+  // Reliverse config schema
+  $schema: RELIVERSE_SCHEMA,
+
   // General project information
-  projectName: "",
-  projectAuthor: "",
-  projectDescription: "",
+  projectName: UNKNOWN_VALUE,
+  projectAuthor: UNKNOWN_VALUE,
+  projectDescription: UNKNOWN_VALUE,
   projectVersion: "0.1.0",
   projectLicense: "MIT",
-  projectRepository: "",
+  projectRepository: UNKNOWN_VALUE,
   projectState: "creating",
-  projectDomain: "",
-  projectType: "",
-  projectCategory: "unknown",
-  projectSubcategory: "",
-  projectTemplate: "unknown",
-  projectDisplayName: "",
-  projectFrameworkVersion: "",
+  projectDomain: DEFAULT_DOMAIN,
+  projectCategory: UNKNOWN_VALUE,
+  projectSubcategory: UNKNOWN_VALUE,
+  projectTemplate: UNKNOWN_VALUE,
+  projectDisplayName: UNKNOWN_VALUE,
+  projectFrameworkVersion: UNKNOWN_VALUE,
   projectActivation: "manual",
-  nodeVersion: "",
-  runtime: "",
-  deployUrl: "",
+  nodeVersion: UNKNOWN_VALUE,
+  runtime: UNKNOWN_VALUE,
+  deployUrl: UNKNOWN_VALUE,
   productionBranch: "main",
+  repoPrivacy: UNKNOWN_VALUE,
 
   // Primary tech stack/framework
   projectFramework: "nextjs",
@@ -333,8 +344,9 @@ function injectSectionComments(fileContent: string): string {
   const commentSections: CommentSections = {
     projectName: [comment("General project information")],
     skipPromptsUseAutoBehavior: [
-      comment("Enable auto-answering for prompts?"),
+      comment("Want to enable auto-answering for prompts?"),
       comment("Set to true to skip manual confirmations."),
+      comment("Remember to set also the project* fields."),
     ],
     features: [comment("Project features")],
     projectFramework: [comment("Primary tech stack/framework")],
@@ -342,7 +354,7 @@ function injectSectionComments(fileContent: string): string {
     ignoreDependencies: [comment("Dependencies to exclude from checks")],
     customRules: [comment("Custom rules for Reliverse AI")],
     deployBehavior: [
-      comment("Behavior for deployment prompts"),
+      comment("Specific prompts behavior"),
       comment("prompt | autoYes | autoNo"),
     ],
   };
@@ -572,15 +584,25 @@ async function parseAndFixConfig(
 
 export async function getDefaultReliverseConfig(
   cwd: string,
-  projectName: string,
-  projectAuthor: string,
-  projectFramework = "nextjs",
+  projectName?: string,
+  projectAuthor?: string,
 ): Promise<ReliverseConfig> {
+  const packageJson = await getPackageJsonSafe(cwd);
+  const effectiveProjectName =
+    packageJson?.name ?? projectName ?? UNKNOWN_VALUE;
+  const effectiveProjectAuthor =
+    typeof packageJson?.author === "object"
+      ? (packageJson.author?.name ?? projectAuthor)
+      : (packageJson?.author ?? projectAuthor ?? UNKNOWN_VALUE);
+
   const biomeConfig = await getBiomeConfig(cwd);
   const detectedPkgManager = await detect();
 
   const packageJsonPath = path.join(cwd, "package.json");
-  let packageData: PackageJson = { name: projectName, author: projectAuthor };
+  let packageData: PackageJson = {
+    name: effectiveProjectName,
+    author: effectiveProjectAuthor,
+  };
 
   if (await fs.pathExists(packageJsonPath)) {
     try {
@@ -590,13 +612,12 @@ export async function getDefaultReliverseConfig(
     }
   }
 
+  const detectedProjectFramework = await detectProjectFramework(cwd);
+
   return {
     ...DEFAULT_CONFIG,
-    projectName: packageData.name ?? projectName,
-    projectAuthor:
-      typeof packageData.author === "object"
-        ? (packageData.author?.name ?? projectAuthor)
-        : (packageData.author ?? projectAuthor),
+    projectName: effectiveProjectName,
+    projectAuthor: effectiveProjectAuthor,
     projectDescription: packageData.description ?? "",
     projectVersion: packageData.version ?? "0.1.0",
     projectLicense: packageData.license ?? "MIT",
@@ -604,7 +625,7 @@ export async function getDefaultReliverseConfig(
       typeof packageData.repository === "string"
         ? packageData.repository
         : (packageData.repository?.url ?? ""),
-    projectFramework,
+    projectFramework: detectedProjectFramework ?? UNKNOWN_VALUE,
     projectPackageManager: detectedPkgManager,
     codeStyle: {
       ...DEFAULT_CONFIG.codeStyle,
@@ -643,12 +664,21 @@ async function getPackageJson(
 /* ------------------------------------------------------------------
  * Project Detection & Additional Logic
  * ------------------------------------------------------------------ */
+export async function getPackageJsonSafe(
+  cwd: string,
+): Promise<PackageJson | null> {
+  const packageJsonPath = path.join(cwd, "package.json");
+  if (!(await fs.pathExists(packageJsonPath))) {
+    return null;
+  }
+  return await readPackageJSON(cwd);
+}
 
 export async function generateDefaultRulesForProject(
   cwd: string,
 ): Promise<ReliverseConfig | null> {
-  const projectType = await detectProjectType(cwd);
-  const effectiveProjectType = projectType ?? "nextjs";
+  const projectCategory = await detectProjectFramework(cwd);
+  const effectiveProjectCategory = projectCategory ?? "nextjs";
 
   const packageJsonPath = path.join(cwd, "package.json");
   let packageJson: any = {};
@@ -661,14 +691,9 @@ export async function generateDefaultRulesForProject(
     }
   }
 
-  const rules = await getDefaultReliverseConfig(
-    cwd,
-    (packageJson.name as string) ?? path.basename(cwd),
-    (packageJson.author as string) ?? "user",
-    effectiveProjectType,
-  );
+  const rules = await getDefaultReliverseConfig(cwd);
 
-  if (!projectType) {
+  if (!projectCategory) {
     rules.features = {
       ...DEFAULT_CONFIG.features,
       language: ["typescript"],
@@ -711,7 +736,7 @@ export async function generateDefaultRulesForProject(
     rules.preferredLibraries = {};
   }
 
-  if (effectiveProjectType === "nextjs") {
+  if (effectiveProjectCategory === "nextjs") {
     rules.preferredLibraries["database"] = "prisma";
     rules.preferredLibraries["authentication"] = "next-auth";
   } else {
@@ -884,7 +909,6 @@ export async function generateReliverseConfig({
     projectPath,
     projectName,
     uiUsername,
-    packageJson?.type === "module" ? "nextjs" : "nextjs",
   );
 
   baseRules.projectName = projectName;
@@ -901,7 +925,7 @@ export async function generateReliverseConfig({
 
   baseRules.projectDeployService = deployService;
   baseRules.projectDomain = primaryDomain
-    ? `https://${primaryDomain}`
+    ? `https://${primaryDomain.replace(/^https?:\/\//, "")}`
     : `https://${projectName}.vercel.app`;
 
   baseRules.features = await detectFeatures(
@@ -974,7 +998,7 @@ async function createReliverseConfig(
 
   const finalProjectName = defaultRules?.projectName ?? path.basename(cwd);
   const finalAuthorName = defaultRules?.projectAuthor ?? "user";
-  const finalDomain = defaultRules?.projectDomain ?? "";
+  const finalDomain = defaultRules?.projectDomain ?? DEFAULT_DOMAIN;
 
   await generateReliverseConfig({
     projectName: finalProjectName,
@@ -1043,8 +1067,9 @@ export async function readReliverseConfigsInReliFolder(
 
 export async function handleReliverseConfig(
   cwd: string,
-  githubUsername = "user",
 ): Promise<{ config: ReliverseConfig; reli: ReliverseConfig[] }> {
+  const githubUsername = UNKNOWN_VALUE;
+
   // 1. First, detect multi-config folder "reli"
   const reliFolderPath = path.join(cwd, "reli");
   const hasReliFolder = await fs.pathExists(reliFolderPath);
