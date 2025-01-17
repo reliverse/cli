@@ -35,13 +35,13 @@ import { getCurrentWorkingDirectory } from "./terminalHelpers.js";
 
 export type GenerateReliverseConfigOptions = {
   projectName: string;
-  uiUsername: string;
+  cliUsername: string;
   deployService: DeploymentService;
   primaryDomain: string;
   projectPath: string;
-  i18nShouldBeEnabled: boolean;
-  overwrite?: boolean;
   githubUsername: string;
+  overwrite?: boolean;
+  enableI18n?: boolean;
   isDev?: boolean;
 };
 
@@ -112,18 +112,13 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   projectSubcategory: UNKNOWN_VALUE,
   projectTemplate: UNKNOWN_VALUE,
   projectArchitecture: UNKNOWN_VALUE,
-  projectDisplayName: UNKNOWN_VALUE,
-  projectFrameworkVersion: UNKNOWN_VALUE,
-  projectActivation: "manual",
-  nodeVersion: UNKNOWN_VALUE,
-  runtime: UNKNOWN_VALUE,
-  deployUrl: UNKNOWN_VALUE,
-  productionBranch: "main",
   repoPrivacy: UNKNOWN_VALUE,
+  repoBranch: "main",
 
   // Primary tech stack/framework
   projectFramework: "nextjs",
-  projectPackageManager: "npm",
+  projectPackageManager: "bun",
+  projectRuntime: "nodejs",
   preferredLibraries: {
     stateManagement: "zustand",
     formManagement: "react-hook-form",
@@ -142,7 +137,7 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   ignoreDependencies: [],
   customRules: {},
   features: {
-    i18n: true,
+    i18n: false,
     analytics: false,
     themeMode: "dark-light",
     authentication: true,
@@ -189,6 +184,7 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   gitBehavior: "prompt",
   i18nBehavior: "prompt",
   scriptsBehavior: "prompt",
+  existingRepoBehavior: "prompt",
 };
 
 /**
@@ -345,7 +341,7 @@ export function fixLineByLine(
 
 type CommentSections = Partial<Record<keyof ReliverseConfig, string[]>>;
 
-function injectSectionComments(fileContent: string): string {
+export function injectSectionComments(fileContent: string): string {
   const comment = (text: string) => (text ? `// ${text}` : "");
 
   const commentSections: CommentSections = {
@@ -370,8 +366,12 @@ function injectSectionComments(fileContent: string): string {
     ignoreDependencies: [comment("Dependencies to exclude from checks")],
     customRules: [comment("Custom rules for Reliverse AI")],
     deployBehavior: [
-      comment("Behavior for specific prompts"),
-      comment("Options: prompt | autoYes | autoNo"),
+      comment("Specific prompts behavior"),
+      comment("prompt | autoYes | autoNo"),
+    ],
+    existingRepoBehavior: [
+      comment("What CLI should do with existing GitHub repo"),
+      comment("prompt | autoYes | autoYesSkipCommit | autoNo"),
     ],
   };
 
@@ -606,10 +606,16 @@ export async function getDefaultReliverseConfig(
   const packageJson = await getPackageJsonSafe(cwd);
   const effectiveProjectName =
     packageJson?.name ?? projectName ?? UNKNOWN_VALUE;
-  const effectiveProjectAuthor =
+
+  let effectiveProjectAuthor =
     typeof packageJson?.author === "object"
       ? (packageJson.author?.name ?? projectAuthor)
       : (packageJson?.author ?? projectAuthor ?? UNKNOWN_VALUE);
+
+  // Handle dev mode author replacement
+  if (effectiveProjectAuthor === "reliverse") {
+    effectiveProjectAuthor = "blefnk";
+  }
 
   const biomeConfig = await getBiomeConfig(cwd);
   const detectedPkgManager = await detect();
@@ -648,18 +654,13 @@ export async function getDefaultReliverseConfig(
     projectSubcategory: UNKNOWN_VALUE,
     projectTemplate: UNKNOWN_VALUE,
     projectArchitecture: UNKNOWN_VALUE,
-    projectDisplayName: UNKNOWN_VALUE,
-    projectFrameworkVersion: UNKNOWN_VALUE,
-    projectActivation: "manual",
-    nodeVersion: UNKNOWN_VALUE,
-    runtime: UNKNOWN_VALUE,
-    deployUrl: UNKNOWN_VALUE,
-    productionBranch: "main",
     repoPrivacy: UNKNOWN_VALUE,
+    repoBranch: "main",
 
     // Primary tech stack/framework
     projectFramework: detectedProjectFramework ?? UNKNOWN_VALUE,
     projectPackageManager: detectedPkgManager,
+    projectRuntime: "nodejs",
     codeStyle: {
       ...DEFAULT_CONFIG.codeStyle,
       lineWidth: biomeConfig?.lineWidth ?? 80,
@@ -740,7 +741,6 @@ export async function generateDefaultRulesForProject(
     return rules;
   }
 
-  const hasI18n = await fs.pathExists(path.join(cwd, "src/app/[locale]"));
   const hasPrisma = await fs.pathExists(path.join(cwd, "prisma/schema.prisma"));
   const hasDrizzle = await fs.pathExists(path.join(cwd, "drizzle.config.ts"));
   const hasNextAuth = await fs.pathExists(
@@ -750,7 +750,6 @@ export async function generateDefaultRulesForProject(
 
   rules.features = {
     ...rules.features,
-    i18n: hasI18n,
     database: hasPrisma || hasDrizzle,
     authentication: hasNextAuth || hasClerk,
     analytics: false,
@@ -883,7 +882,6 @@ export async function detectProjectsWithReliverse(
 export async function detectFeatures(
   projectPath: string,
   packageJson: PackageJson | null,
-  i18nShouldBeEnabled: boolean,
 ): Promise<ProjectFeatures> {
   const deps = {
     ...(packageJson?.dependencies ?? {}),
@@ -894,8 +892,6 @@ export async function detectFeatures(
   const hasClerk = "@clerk/nextjs" in deps;
   const hasPrisma = "@prisma/client" in deps;
   const hasDrizzle = "drizzle-orm" in deps;
-  const hasI18n =
-    "next-intl" in deps || "react-i18next" in deps || i18nShouldBeEnabled;
   const hasAnalytics =
     "@vercel/analytics" in deps || "@segment/analytics-next" in deps;
   const hasDocker = await fs.pathExists(path.join(projectPath, "Dockerfile"));
@@ -906,7 +902,7 @@ export async function detectFeatures(
     "jest" in deps || "vitest" in deps || "@testing-library/react" in deps;
 
   return {
-    i18n: hasI18n,
+    i18n: false,
     analytics: hasAnalytics,
     themeMode: "dark-light",
     authentication: hasNextAuth || hasClerk,
@@ -928,25 +924,29 @@ export async function detectFeatures(
 
 export async function generateReliverseConfig({
   projectName,
-  uiUsername,
+  cliUsername,
   deployService,
   primaryDomain,
   projectPath,
-  i18nShouldBeEnabled,
   githubUsername,
+  enableI18n,
   overwrite,
   isDev,
 }: GenerateReliverseConfigOptions): Promise<void> {
   const packageJson = await getPackageJson(projectPath);
 
+  if (isDev) {
+    cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+  }
+
   const baseRules = await getDefaultReliverseConfig(
     projectPath,
     projectName,
-    uiUsername,
+    cliUsername,
   );
 
   baseRules.projectName = projectName;
-  baseRules.projectAuthor = uiUsername;
+  baseRules.projectAuthor = cliUsername;
   baseRules.projectDescription =
     packageJson?.description ?? baseRules.projectDescription ?? UNKNOWN_VALUE;
   baseRules.projectVersion = packageJson?.version ?? baseRules.projectVersion;
@@ -966,11 +966,8 @@ export async function generateReliverseConfig({
       ? `https://${projectName}.vercel.app`
       : UNKNOWN_VALUE;
 
-  baseRules.features = await detectFeatures(
-    projectPath,
-    packageJson,
-    i18nShouldBeEnabled,
-  );
+  baseRules.features = await detectFeatures(projectPath, packageJson);
+  baseRules.features.i18n = enableI18n ?? false;
 
   baseRules.envComposerOpenBrowser = true;
 
@@ -1021,7 +1018,7 @@ export async function generateReliverseConfig({
     }
   }
 
-  const finalConfig = {
+  const effectiveConfig = {
     ...DEFAULT_CONFIG,
     ...existingContent,
     ...baseRules,
@@ -1029,10 +1026,10 @@ export async function generateReliverseConfig({
 
   // Update schema URL if in dev mode
   if (isDev) {
-    finalConfig.$schema = RELIVERSE_SCHEMA_DEV;
+    effectiveConfig.$schema = RELIVERSE_SCHEMA_DEV;
   }
 
-  await writeReliverseConfig(configPath, finalConfig);
+  await writeReliverseConfig(configPath, effectiveConfig);
 }
 
 async function createReliverseConfig(
@@ -1042,17 +1039,21 @@ async function createReliverseConfig(
 ): Promise<void> {
   const defaultRules = await generateDefaultRulesForProject(cwd);
 
-  const finalProjectName = defaultRules?.projectName ?? path.basename(cwd);
-  const finalAuthorName = defaultRules?.projectAuthor ?? "user";
-  const finalDomain = defaultRules?.projectDomain ?? DEFAULT_DOMAIN;
+  const effectiveProjectName = defaultRules?.projectName ?? path.basename(cwd);
+  let effectiveAuthorName = defaultRules?.projectAuthor ?? UNKNOWN_VALUE;
+  const effectiveDomain = defaultRules?.projectDomain ?? DEFAULT_DOMAIN;
+
+  if (isDev) {
+    effectiveAuthorName =
+      effectiveAuthorName === "reliverse" ? "blefnk" : effectiveAuthorName;
+  }
 
   await generateReliverseConfig({
-    projectName: finalProjectName,
-    uiUsername: finalAuthorName,
+    projectName: effectiveProjectName,
+    cliUsername: effectiveAuthorName,
     deployService: "vercel",
-    primaryDomain: finalDomain,
+    primaryDomain: effectiveDomain,
     projectPath: cwd,
-    i18nShouldBeEnabled: defaultRules?.features?.i18n ?? false,
     githubUsername,
     isDev,
   });

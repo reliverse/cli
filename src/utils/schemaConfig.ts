@@ -88,11 +88,11 @@ export const reliverseConfigSchema = Type.Object({
 
   // General project information
   projectName: Type.Union([
-    // Type.Literal(UNKNOWN_VALUE),
+    Type.Literal(UNKNOWN_VALUE),
     Type.String({ minLength: 1 }),
   ]),
   projectAuthor: Type.Union([
-    // Type.Literal(UNKNOWN_VALUE),
+    Type.Literal(UNKNOWN_VALUE),
     Type.String({ minLength: 1 }),
   ]),
   projectDescription: Type.String(),
@@ -107,14 +107,12 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("deno"),
     Type.Literal("none"),
   ]),
-  projectDisplayName: Type.String(),
   projectPackageManager: Type.Union([
     Type.Literal("npm"),
     Type.Literal("pnpm"),
     Type.Literal("yarn"),
     Type.Literal("bun"),
   ]),
-  projectFrameworkVersion: Type.String(),
   projectState: Type.Union([Type.Literal("creating"), Type.Literal("created")]),
   projectCategory: Type.Union([
     Type.Literal(UNKNOWN_VALUE),
@@ -159,10 +157,6 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("microsoft/vscode-extension-template"),
     Type.Literal("reliverse/cli-starter-template"),
   ]),
-  projectActivation: Type.Union([Type.Literal("auto"), Type.Literal("manual")]),
-  nodeVersion: Type.String(),
-  runtime: Type.String(),
-  deployUrl: Type.String(),
 
   features: featuresSchema,
   preferredLibraries: Type.Record(Type.String(), Type.String()),
@@ -172,6 +166,23 @@ export const reliverseConfigSchema = Type.Object({
   customRules: Type.Record(Type.String(), Type.Unknown()),
 
   envComposerOpenBrowser: Type.Boolean(),
+
+  repoBranch: Type.String(),
+  repoPrivacy: Type.Union([
+    Type.Literal("unknown"),
+    Type.Literal("public"),
+    Type.Literal("private"),
+  ]),
+  projectArchitecture: Type.Union([
+    Type.Literal("unknown"),
+    Type.Literal("fullstack"),
+    Type.Literal("separated"),
+  ]),
+  projectRuntime: Type.Union([
+    Type.Literal("nodejs"),
+    Type.Literal("deno"),
+    Type.Literal("bun"),
+  ]),
 
   skipPromptsUseAutoBehavior: Type.Boolean(),
   deployBehavior: Type.Union([
@@ -199,17 +210,11 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("autoYes"),
     Type.Literal("autoNo"),
   ]),
-
-  productionBranch: Type.String(),
-  repoPrivacy: Type.Union([
-    Type.Literal("unknown"),
-    Type.Literal("public"),
-    Type.Literal("private"),
-  ]),
-  projectArchitecture: Type.Union([
-    Type.Literal("unknown"),
-    Type.Literal("fullstack"),
-    Type.Literal("separated"),
+  existingRepoBehavior: Type.Union([
+    Type.Literal("prompt"),
+    Type.Literal("autoYes"),
+    Type.Literal("autoYesSkipCommit"),
+    Type.Literal("autoNo"),
   ]),
 });
 

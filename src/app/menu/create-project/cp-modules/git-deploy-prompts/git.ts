@@ -1,7 +1,7 @@
 import type { SimpleGit } from "simple-git";
 
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 import pc from "picocolors";
@@ -33,9 +33,9 @@ type GitOptions = {
  * -------------------------------------------------------------------------- */
 
 /**
- * Gets the final directory path based on dev mode and project settings
+ * Gets the effective directory path based on dev mode and project settings
  */
-function getFinalDir({
+function getEffectiveDir({
   cwd,
   isDev,
   projectPath,
@@ -47,9 +47,9 @@ function getFinalDir({
 /**
  * Validates that the project directory exists
  */
-async function validateProjectDir(finalDir: string): Promise<boolean> {
-  if (!(await fs.pathExists(finalDir))) {
-    relinka("error", `Project directory does not exist: ${finalDir}`);
+async function validateProjectDir(effectiveDir: string): Promise<boolean> {
+  if (!(await fs.pathExists(effectiveDir))) {
+    relinka("error", `Project directory does not exist: ${effectiveDir}`);
     return false;
   }
   return true;
@@ -62,9 +62,9 @@ async function validateProjectDir(finalDir: string): Promise<boolean> {
 /**
  * Removes the .git directory from a project
  */
-async function removeGitDir(finalDir: string): Promise<boolean> {
+async function removeGitDir(effectiveDir: string): Promise<boolean> {
   try {
-    await fs.remove(path.join(finalDir, ".git"));
+    await fs.remove(path.join(effectiveDir, ".git"));
     relinka("info", "Removed existing .git directory");
     return true;
   } catch (error) {
@@ -107,7 +107,7 @@ async function initializeGitRepo(
  */
 async function createGitCommit(
   git: SimpleGit,
-  finalDir: string,
+  effectiveDir: string,
   dirHasGit: boolean,
   message?: string,
 ): Promise<void> {
@@ -115,7 +115,7 @@ async function createGitCommit(
 
   if (status.files.length === 0 && !dirHasGit) {
     relinka("info", "No files to commit. Creating an empty initial commit");
-    await fs.writeFile(path.join(finalDir, ".gitkeep"), "");
+    await fs.writeFile(path.join(effectiveDir, ".gitkeep"), "");
     await git.add(".gitkeep");
     await git.commit(message ?? `Initial commit by ${cliName}`);
     relinka("success", "Created empty initial commit");
@@ -145,11 +145,11 @@ async function createGitCommit(
 export async function initGitDir(
   options: GitOptions & { allowReInit?: boolean },
 ): Promise<boolean> {
-  const finalDir = getFinalDir(options);
+  const effectiveDir = getEffectiveDir(options);
 
   try {
     // 1. Validate directory
-    if (!(await validateProjectDir(finalDir))) {
+    if (!(await validateProjectDir(effectiveDir))) {
       return false;
     }
 
@@ -163,22 +163,23 @@ export async function initGitDir(
 
     // 3. Handle reinitialization if needed
     if (dirHasGit && options.allowReInit) {
+      deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
       relinka("info", "Reinitializing existing git repository");
-      if (!(await removeGitDir(finalDir))) {
+      if (!(await removeGitDir(effectiveDir))) {
         return false;
       }
-      const git: SimpleGit = simpleGit({ baseDir: finalDir });
+      const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
       await initializeGitRepo(git, false);
-      await createGitCommit(git, finalDir, false);
+      await createGitCommit(git, effectiveDir, false);
       return true;
     }
 
     // 4. Initialize git directory if needed
-    const git: SimpleGit = simpleGit({ baseDir: finalDir });
+    const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
     await initializeGitRepo(git, dirHasGit);
 
     // 5. Create initial commit if needed
-    await createGitCommit(git, finalDir, dirHasGit);
+    await createGitCommit(git, effectiveDir, dirHasGit);
 
     return true;
   } catch (error) {
@@ -198,7 +199,7 @@ export async function initGitDir(
       "info",
       `You can ${
         existingRepo ? "commit changes" : "initialize git"
-      } manually:\ncd ${finalDir}\n${
+      } manually:\ncd ${effectiveDir}\n${
         existingRepo
           ? 'git add .\ngit commit -m "Update"'
           : 'git init\ngit add .\ngit commit -m "Initial commit"'
@@ -215,11 +216,11 @@ export async function initGitDir(
 export async function createCommit(
   options: GitOptions & { message?: string },
 ): Promise<boolean> {
-  const finalDir = getFinalDir(options);
+  const effectiveDir = getEffectiveDir(options);
 
   try {
     // 1. Validate directory
-    if (!(await validateProjectDir(finalDir))) {
+    if (!(await validateProjectDir(effectiveDir))) {
       return false;
     }
 
@@ -232,11 +233,11 @@ export async function createCommit(
     );
 
     // 3. Initialize git directory if needed
-    const git: SimpleGit = simpleGit({ baseDir: finalDir });
+    const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
     await initializeGitRepo(git, dirHasGit);
 
     // 4. Create commit with specified message
-    await createGitCommit(git, finalDir, dirHasGit, options.message);
+    await createGitCommit(git, effectiveDir, dirHasGit, options.message);
 
     return true;
   } catch (error) {
@@ -256,7 +257,7 @@ export async function createCommit(
       "info",
       `You can ${
         existingRepo ? "commit changes" : "initialize git"
-      } manually:\ncd ${finalDir}\n${
+      } manually:\ncd ${effectiveDir}\n${
         existingRepo
           ? 'git add .\ngit commit -m "Update"'
           : 'git init\ngit add .\ngit commit -m "Initial commit"'
@@ -306,13 +307,14 @@ async function isRepoOwner(
  */
 export async function createGithubRepository(
   options: GitOptions & {
+    skipPrompts: boolean;
     memory: ReliverseMemory;
     config: ReliverseConfig;
     shouldMaskSecretInput: boolean;
     githubUsername: string;
   },
 ): Promise<boolean> {
-  const finalDir = getFinalDir(options);
+  const effectiveDir = getEffectiveDir(options);
 
   try {
     if (!options.memory) {
@@ -333,34 +335,49 @@ export async function createGithubRepository(
     );
 
     if (repoExists) {
-      // Change to project directory if in dev mode
       if (options.isDev) {
-        await cd(finalDir);
+        await cd(effectiveDir);
         pwd();
       }
 
-      // Prompt user for choice: use, use + new commit, init new repo
-      const choice = await selectPrompt({
-        title: `Repository ${options.githubUsername}/${options.projectName} already exists and you own it. What would you like to do?`,
-        content:
-          "Note: A commit will be created and pushed only if you have uncommitted changes.",
-        options: [
-          {
-            value: "commit",
-            label: `${pc.greenBright("✅ Recommended")} Use existing repository and create+push new commit`,
-          },
-          {
-            value: "skip",
-            label: "Use existing repository, but skip creating a commit",
-          },
-          {
-            value: "new",
-            label:
-              "Initialize a brand-new GitHub repository with a different name",
-          },
-        ],
-        defaultValue: "commit",
-      });
+      // Decide what to do with existing repo
+      let choice = "commit";
+      const alreadyExistsDecision = options.config.existingRepoBehavior;
+      if (options.skipPrompts) {
+        switch (alreadyExistsDecision) {
+          case "autoYes":
+            choice = "commit";
+            break;
+          case "autoYesSkipCommit":
+            choice = "skip";
+            break;
+          case "autoNo":
+            choice = "new";
+            break;
+        }
+      } else {
+        choice = await selectPrompt({
+          title: `Repository ${options.githubUsername}/${options.projectName} already exists and you own it. What would you like to do?`,
+          content:
+            "Note: A commit will be created and pushed only if you have uncommitted changes.",
+          options: [
+            {
+              value: "commit",
+              label: `${pc.greenBright("✅ Recommended")} Use existing repository and create+push new commit`,
+            },
+            {
+              value: "skip",
+              label: "Use existing repository, but skip creating a commit",
+            },
+            {
+              value: "new",
+              label:
+                "Initialize a brand-new GitHub repository with a different name",
+            },
+          ],
+          defaultValue: "commit",
+        });
+      }
 
       if (choice === "new") {
         // Prompt for a new repo name
@@ -384,7 +401,7 @@ export async function createGithubRepository(
           options.memory,
           newName,
           options.githubUsername,
-          finalDir,
+          effectiveDir,
           options.isDev,
           options.cwd,
           options.shouldMaskSecretInput,
@@ -405,7 +422,7 @@ export async function createGithubRepository(
           }
 
           // Add and commit all files in the working directory
-          const git = simpleGit({ baseDir: finalDir });
+          const git = simpleGit({ baseDir: effectiveDir });
           await git.add(".");
           await git.commit(`Update by ${cliName}`);
 
@@ -438,7 +455,7 @@ export async function createGithubRepository(
       options.memory,
       options.projectName,
       options.githubUsername,
-      finalDir,
+      effectiveDir,
       options.isDev,
       options.cwd,
       options.shouldMaskSecretInput,
@@ -465,7 +482,7 @@ export async function createGithubRepository(
  * Pushes local commits to the remote
  */
 export async function pushGitCommits(options: GitOptions): Promise<boolean> {
-  const finalDir = getFinalDir(options);
+  const effectiveDir = getEffectiveDir(options);
 
   try {
     if (
@@ -480,7 +497,7 @@ export async function pushGitCommits(options: GitOptions): Promise<boolean> {
       return false;
     }
 
-    const git = simpleGit({ baseDir: finalDir });
+    const git = simpleGit({ baseDir: effectiveDir });
 
     // Get current branch
     const currentBranch = (await git.branch()).current;

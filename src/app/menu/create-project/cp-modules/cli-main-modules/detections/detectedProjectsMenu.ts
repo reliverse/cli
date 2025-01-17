@@ -5,9 +5,7 @@ import {
   confirmPrompt,
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
-import fs from "fs-extra";
 import { installDependencies } from "nypm";
-import path from "pathe";
 import pc from "picocolors";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
@@ -47,10 +45,7 @@ import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/g
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
-import {
-  detectProjectsWithReliverse,
-  type DetectedProject,
-} from "~/utils/reliverseConfig.js";
+import { type DetectedProject } from "~/utils/reliverseConfig.js";
 
 export async function handleOpenProjectMenu(
   projects: DetectedProject[],
@@ -105,7 +100,9 @@ export async function handleOpenProjectMenu(
     shouldInstallDeps = await confirmPrompt({
       title:
         "Dependencies are missing in your project. Do you want to install them?",
-      content: "Some features will be disabled until you install dependencies.",
+      content: pc.bold(
+        "🚨 Some features will be disabled until you install dependencies.",
+      ),
     });
 
     if (shouldInstallDeps) {
@@ -137,6 +134,11 @@ export async function handleOpenProjectMenu(
 
   const action = await selectPrompt({
     title: `Managing ${selectedProject.name}${gitStatusTitle}`,
+    content: needsDepsInstall
+      ? pc.bold(
+          "Some features were disabled because you didn't install dependencies.",
+        )
+      : "",
     options: [
       {
         label: "- Git and Deploy Operations",
@@ -144,43 +146,57 @@ export async function handleOpenProjectMenu(
         hint: pc.dim("Commit and push changes"),
       },
       {
-        label: `- Code Modifications ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Code Modifications ${experimental}`)
+          : `- Code Modifications ${experimental}`,
         value: "codemods",
         hint: pc.dim("Apply code transformations"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Integrations ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Integrations ${experimental}`)
+          : `- Integrations ${experimental}`,
         value: "integration",
         hint: pc.dim("Manage project integrations"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Database Operations ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Database Operations ${experimental}`)
+          : `- Database Operations ${experimental}`,
         value: "convert-db",
         hint: pc.dim("Convert between database types"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Shadcn/UI Components ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Shadcn/UI Components ${experimental}`)
+          : `- Shadcn/UI Components ${experimental}`,
         value: "shadcn",
         hint: pc.dim("Manage UI components"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Drizzle Schema ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Drizzle Schema ${experimental}`)
+          : `- Drizzle Schema ${experimental}`,
         value: "drizzle-schema",
         hint: pc.dim("Manage database schema"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Cleanup Project ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Cleanup Project ${experimental}`)
+          : `- Cleanup Project ${experimental}`,
         value: "cleanup",
         hint: pc.dim("Clean up project files"),
         disabled: needsDepsInstall,
       },
       {
-        label: `- Edit Configuration ${experimental}`,
+        label: needsDepsInstall
+          ? pc.gray(`- Edit Configuration ${experimental}`)
+          : `- Edit Configuration ${experimental}`,
         value: "edit-config",
         hint: pc.dim("Modify project settings"),
         disabled: needsDepsInstall,
@@ -309,6 +325,7 @@ export async function handleOpenProjectMenu(
       }
 
       const success = await createGithubRepository({
+        skipPrompts: false,
         cwd,
         isDev,
         memory,
@@ -335,6 +352,7 @@ export async function handleOpenProjectMenu(
       }
 
       const { deployService } = await deployProject(
+        false,
         selectedProject.name,
         selectedProject.config,
         selectedProject.path,
@@ -507,32 +525,5 @@ export async function handleOpenProjectMenu(
     await handleCleanup(cwd, selectedProject.path);
   } else if (action === "edit-config") {
     await handleConfigEditing(selectedProject.path);
-  }
-}
-
-export async function showOpenProjectMenu(
-  cwd: string,
-  isDev: boolean,
-  memory: ReliverseMemory,
-  config: ReliverseConfig,
-  reli: ReliverseConfig[],
-) {
-  if (reli.length >= 0) {
-    throw new Error(
-      "Please run `reliverse cli` without `reli` folder to open the projects menu.",
-    );
-  }
-
-  const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
-  if (await fs.pathExists(searchPath)) {
-    const detectedProjects = await detectProjectsWithReliverse(searchPath);
-    await handleOpenProjectMenu(
-      detectedProjects,
-      isDev,
-      memory,
-      cwd,
-      true,
-      config,
-    );
   }
 }

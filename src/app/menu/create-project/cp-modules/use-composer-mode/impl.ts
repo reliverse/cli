@@ -15,6 +15,8 @@ import { IsTTYError } from "./utils/isTTYError.js";
 import { validateAppName } from "./utils/validateAppName.js";
 import { validateImportAlias } from "./utils/validateImportAlias.js";
 
+// TODO: Deprecate this in favor of the new ".reliverse" config file
+
 export async function runComposerMode(
   cliResults: CliResults,
 ): Promise<CliResults> {
@@ -25,7 +27,7 @@ export async function runComposerMode(
         "warn",
         `  WARNING: It looks like you are using MinTTY, which is non-interactive. This is most likely because you are
   using Git Bash. If that's that case, please use Git Bash from another terminal, such as Windows Terminal. Alternatively, you
-  can provide the arguments from the CLI directly: https://docs.reliverse.org/en/installation#experimental-usage to skip the prompts.`,
+  can configure ".reliverse" config file to skip the prompts: https://docs.reliverse.org/cli`,
       );
 
       throw new IsTTYError("Non-interactive environment");

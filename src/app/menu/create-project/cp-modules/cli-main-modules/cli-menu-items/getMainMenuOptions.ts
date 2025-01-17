@@ -23,12 +23,17 @@ export async function getMainMenuOptions(
   isDev: boolean,
   reli: ReliverseConfig[],
 ): Promise<MainMenuOption[]> {
+  const multiConfigMsg =
+    reli.length > 0
+      ? pc.dim(`multi-config mode with ${reli.length} projects`)
+      : "";
+
   // 1) Start with the base options
   const options: MainMenuOption[] = [
     {
       label: pc.bold("✨ Create a brand new project"),
+      hint: multiConfigMsg,
       value: "create",
-      hint: reli.length > 0 ? pc.dim("multi-config mode") : "",
     },
   ];
 
@@ -36,8 +41,6 @@ export async function getMainMenuOptions(
   if (isDev) {
     options.push({
       label: "🧰 Open developer tools",
-      hint:
-        reli.length > 0 ? pc.dim(`detected ${reli.length} reli configs`) : "",
       value: "isDevTools",
     });
   }

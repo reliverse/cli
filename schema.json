@@ -9,12 +9,28 @@
       "enum": ["https://reliverse.org/schema.json", "./schema.json"]
     },
     "projectName": {
-      "type": "string",
-      "minLength": 1
+      "anyOf": [
+        {
+          "const": "unknown",
+          "type": "string"
+        },
+        {
+          "minLength": 1,
+          "type": "string"
+        }
+      ]
     },
     "projectAuthor": {
-      "type": "string",
-      "minLength": 1
+      "anyOf": [
+        {
+          "const": "unknown",
+          "type": "string"
+        },
+        {
+          "minLength": 1,
+          "type": "string"
+        }
+      ]
     },
     "projectDescription": {
       "type": "string"
@@ -35,15 +51,9 @@
       "type": "string",
       "enum": ["vercel", "netlify", "railway", "deno", "none"]
     },
-    "projectDisplayName": {
-      "type": "string"
-    },
     "projectPackageManager": {
       "type": "string",
       "enum": ["npm", "pnpm", "yarn", "bun"]
-    },
-    "projectFrameworkVersion": {
-      "type": "string"
     },
     "projectState": {
       "type": "string",
@@ -88,19 +98,6 @@
         "microsoft/vscode-extension-template",
         "reliverse/cli-starter-template"
       ]
-    },
-    "projectActivation": {
-      "type": "string",
-      "enum": ["auto", "manual"]
-    },
-    "nodeVersion": {
-      "type": "string"
-    },
-    "runtime": {
-      "type": "string"
-    },
-    "deployUrl": {
-      "type": "string"
     },
     "features": {
       "type": "object",
@@ -330,6 +327,21 @@
     "envComposerOpenBrowser": {
       "type": "boolean"
     },
+    "repoBranch": {
+      "type": "string"
+    },
+    "repoPrivacy": {
+      "type": "string",
+      "enum": ["unknown", "public", "private"]
+    },
+    "projectArchitecture": {
+      "type": "string",
+      "enum": ["unknown", "fullstack", "separated"]
+    },
+    "projectRuntime": {
+      "type": "string",
+      "enum": ["nodejs", "deno", "bun"]
+    },
     "skipPromptsUseAutoBehavior": {
       "type": "boolean"
     },
@@ -353,16 +365,9 @@
       "type": "string",
       "enum": ["prompt", "autoYes", "autoNo"]
     },
-    "productionBranch": {
-      "type": "string"
-    },
-    "repoPrivacy": {
+    "existingRepoBehavior": {
       "type": "string",
-      "enum": ["unknown", "public", "private"]
-    },
-    "projectArchitecture": {
-      "type": "string",
-      "enum": ["unknown", "fullstack", "separated"]
+      "enum": ["prompt", "autoYes", "autoYesSkipCommit", "autoNo"]
     }
   },
   "required": [
@@ -375,18 +380,12 @@
     "projectRepository",
     "projectDomain",
     "projectDeployService",
-    "projectDisplayName",
     "projectPackageManager",
-    "projectFrameworkVersion",
     "projectState",
     "projectCategory",
     "projectSubcategory",
     "projectFramework",
     "projectTemplate",
-    "projectActivation",
-    "nodeVersion",
-    "runtime",
-    "deployUrl",
     "features",
     "preferredLibraries",
     "codeStyle",
@@ -394,14 +393,16 @@
     "ignoreDependencies",
     "customRules",
     "envComposerOpenBrowser",
+    "repoBranch",
+    "repoPrivacy",
+    "projectArchitecture",
+    "projectRuntime",
     "skipPromptsUseAutoBehavior",
     "deployBehavior",
     "depsBehavior",
     "gitBehavior",
     "i18nBehavior",
     "scriptsBehavior",
-    "productionBranch",
-    "repoPrivacy",
-    "projectArchitecture"
+    "existingRepoBehavior"
   ]
 }

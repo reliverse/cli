@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
+import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 
 // Mock the prompts

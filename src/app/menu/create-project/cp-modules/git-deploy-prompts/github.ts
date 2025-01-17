@@ -337,9 +337,9 @@ export async function createGithubRepo(
     // 2. Get an available repository name and check its status
     deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
     relinka("info", "Checking repository status...");
-    const { name: finalRepoName, exists: repoExists } =
+    const { name: effectiveRepoName, exists: repoExists } =
       await getAvailableGithubRepoName(octokit, repoOwner, repoName);
-    repoName = finalRepoName;
+    repoName = effectiveRepoName;
 
     if (repoExists) {
       relinka("info", `Using existing repository: ${repoOwner}/${repoName}`);
@@ -353,7 +353,6 @@ export async function createGithubRepo(
         projectName: repoName,
         allowReInit: true,
       });
-      deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
       let privacyAction = config.repoPrivacy;
       if (privacyAction === "unknown") {
         const selectedPrivacyAction = await selectPrompt({
@@ -376,7 +375,11 @@ export async function createGithubRepo(
       }
 
       // Create the repository
-      relinka("info", `Creating repository ${repoOwner}/${repoName}...`);
+      // deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
+      relinka(
+        "info",
+        `Creating repository https://github.com/${repoOwner}/${repoName}`,
+      );
       try {
         await octokit.rest.repos.createForAuthenticatedUser({
           name: repoName,

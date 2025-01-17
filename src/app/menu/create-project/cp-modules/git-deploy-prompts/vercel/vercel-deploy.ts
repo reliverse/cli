@@ -5,6 +5,8 @@ import { type InlinedFile } from "@vercel/sdk/models/createdeploymentop.js";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ReliverseMemory } from "~/utils/schemaMemory.js";
+
 import type {
   DeploymentLog,
   DeploymentOptions,
@@ -13,6 +15,7 @@ import type {
 
 import { withRateLimit } from "./vercel-api.js";
 import { handleEnvironmentVariables } from "./vercel-env.js";
+import { getPrimaryVercelTeam } from "./vercel-team.js";
 
 /**
  * Checks if a file is binary
@@ -198,6 +201,7 @@ export async function monitorDeployment(
 }
 
 export async function createDeployment(
+  memory: ReliverseMemory,
   vercel: Vercel,
   projectName: string,
   config: VercelDeploymentConfig,
@@ -238,6 +242,17 @@ export async function createDeployment(
   // Monitor deployment progress
   let status = deployment.readyState;
   const inProgressStates = ["BUILDING", "INITIALIZING", "QUEUED"] as const;
+
+  const vercelTeam = await getPrimaryVercelTeam(vercel, memory);
+  const vercelSlug = vercelTeam?.slug;
+  const deploymentUrl = vercelSlug
+    ? `https://vercel.com/${vercelSlug}/${projectName}`
+    : "https://vercel.com";
+
+  relinka(
+    "info",
+    `Deployment started. Visit ${deploymentUrl} to monitor progress.`,
+  );
 
   while (inProgressStates.includes(status)) {
     // Monitor logs with detailed option

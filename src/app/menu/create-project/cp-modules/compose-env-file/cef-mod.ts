@@ -7,17 +7,15 @@ import open from "open";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import {
-  ensureExampleExists,
-  ensureEnvExists,
-  getMissingKeys,
-  copyFromExisting,
-  getEnvPath,
-} from "./helpers/env-manager.js";
-import {
   promptAndSetMissingValues,
   getLastEnvFilePath,
   saveLastEnvFilePath,
-} from "./helpers/env.js";
+  ensureExampleExists,
+  ensureEnvExists,
+  getMissingKeys,
+  getEnvPath,
+  copyFromExisting,
+} from "./cef-impl.js";
 
 export async function composeEnvFile(
   projectDir: string,

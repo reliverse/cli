@@ -1,3 +1,5 @@
+import { UNKNOWN_VALUE } from "~/app/constants.js";
+
 export const randomWelcomeMessages = (username: string) => [
   `Welcome back, ${username}! Ready to pick up where you left off?`,
   `It's great to see you again, ${username}! Let's make something amazing today.`,
@@ -9,7 +11,7 @@ export const randomWelcomeMessages = (username: string) => [
   `Welcome back to your dev journey, ${username}! The possibilities are endless.`,
 ];
 
-export const randomReliverseMenuTitle = [
+export const randomWelcomeTitle = [
   "What would you like to create today? Consider me your versatile dev companion!",
   "Ready to craft something extraordinary? I've got all the tools you need!",
   "Let's transform your vision into reality! I'm here to help bring your ideas to life.",
@@ -57,22 +59,24 @@ export const randomWebsiteDetailsTitle = [
 
 export function getWelcomeTitle(username: string) {
   return `🤖 ${
-    username && username !== ""
+    username !== UNKNOWN_VALUE
       ? randomWelcomeMessages(username)[
           Math.floor(Math.random() * randomWelcomeMessages(username).length)
         ]
       : ""
-  } ${
-    randomReliverseMenuTitle[
-      Math.floor(Math.random() * randomReliverseMenuTitle.length)
-    ]
-  }`;
+  } ${getRandomMessage("welcome")}`;
 }
 
 export function getRandomMessage(
-  kind: "initial" | "category" | "subcategory" | "details",
+  kind: "welcome" | "initial" | "category" | "subcategory" | "details",
 ) {
-  if (kind === "initial") {
+  if (kind === "welcome") {
+    return (
+      randomWelcomeTitle[
+        Math.floor(Math.random() * randomWelcomeTitle.length)
+      ] ?? ""
+    );
+  } else if (kind === "initial") {
     return (
       randomInitialMessage[
         Math.floor(Math.random() * randomInitialMessage.length)

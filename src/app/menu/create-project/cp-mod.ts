@@ -12,7 +12,7 @@ import {
   generateProjectConfigs,
   updateProjectConfig,
 } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
-import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
+import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import {
   TEMPLATES,
   saveTemplateToDevice,
@@ -51,6 +51,7 @@ async function checkTemplateVersion(template: Template) {
  * Also handles skipping prompts if `skipPromptsUseAutoBehavior` is true.
  */
 export async function createWebProject({
+  initialProjectName,
   webProjectTemplate,
   message,
   isDev,
@@ -59,9 +60,10 @@ export async function createWebProject({
   cwd,
   skipPrompts,
 }: {
+  projectName: string;
+  initialProjectName: string;
   webProjectTemplate: TemplateOption;
   message: string;
-  mode: "showNewProjectMenu" | "installAnyGitRepo";
   isDev: boolean;
   config: ReliverseConfig;
   memory: ReliverseMemory;
@@ -74,6 +76,7 @@ export async function createWebProject({
   // 1) Initialize project configuration (prompt or auto)
   // -------------------------------------------------
   const projectConfig = await initializeProjectConfig(
+    initialProjectName,
     memory,
     config,
     skipPrompts,
@@ -81,7 +84,7 @@ export async function createWebProject({
     cwd,
   );
   const {
-    uiUsername,
+    cliUsername,
     projectName,
     primaryDomain: initialDomain,
   } = projectConfig;
@@ -202,21 +205,29 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 6) Replace placeholders in the template
+  // 6) Remove .reliverse file from project if exists
+  // -------------------------------------------------
+  const externalReliverse = path.join(projectPath, ".reliverse");
+  if (await fs.pathExists(externalReliverse)) {
+    await fs.remove(externalReliverse);
+  }
+
+  // -------------------------------------------------
+  // 7) Replace placeholders in the template
   // -------------------------------------------------
   await replaceTemplateStrings(projectPath, webProjectTemplate, {
     primaryDomain: initialDomain,
-    uiUsername,
+    cliUsername,
     projectName,
   });
 
   // -------------------------------------------------
-  // 7) Setup i18n (auto or prompt-based)
+  // 8) Setup i18n (auto or prompt-based)
   // -------------------------------------------------
-  await setupI18nSupport(projectPath, skipPrompts, config);
+  const enableI18n = await setupI18nSupport(projectPath, config);
 
   // -------------------------------------------------
-  // 8) Ask about masking secrets
+  // 9) Ask about masking secrets
   // -------------------------------------------------
   let shouldMaskSecretInput = true;
   if (skipPrompts) {
@@ -229,7 +240,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 9) Compose .env files
+  // 10) Compose .env files
   // -------------------------------------------------
   await composeEnvFile(
     projectPath,
@@ -240,7 +251,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 10) Handle dependencies (install or not?)
+  // 11) Handle dependencies (install or not?)
   // -------------------------------------------------
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     projectPath,
@@ -248,21 +259,20 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 11) Generate or update .reliverse config
+  // 12) Generate or update .reliverse config
   // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
     projectName,
-    uiUsername,
+    cliUsername,
     "vercel",
     initialDomain,
-    config?.features?.i18n || false,
-    uiUsername,
+    enableI18n,
     isDev,
   );
 
   // -------------------------------------------------
-  // 12) Deployment flow
+  // 13) Deployment flow
   // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
     await handleDeployment({
@@ -289,15 +299,16 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 13) Final success & next steps
+  // 14) Final success & next steps
   // -------------------------------------------------
   await showSuccessAndNextSteps(
     projectPath,
     webProjectTemplate,
-    uiUsername,
+    cliUsername,
     isDeployed,
     primaryDomain,
     allDomains,
+    skipPrompts,
     isDev,
   );
 }

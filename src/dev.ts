@@ -1,4 +1,4 @@
-import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
@@ -9,14 +9,13 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
-import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/mod.js";
+import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "./app/constants.js";
-import { aiChatHandler } from "./utils/aiChatHandler.js";
 
-async function rmTestsRuntime(cwd: string) {
+export async function rmTestsRuntime(cwd: string) {
   const TestsRuntimePath = path.join(cwd, "tests-runtime");
   if (await fs.pathExists(TestsRuntimePath)) {
     const shouldRemoveTestsRuntime = await confirmPrompt({
@@ -28,7 +27,7 @@ async function rmTestsRuntime(cwd: string) {
   }
 }
 
-async function downloadTemplateOption(
+export async function downloadTemplateOption(
   template: TemplateOption,
   config: ReliverseConfig,
   memory: ReliverseMemory,
@@ -83,51 +82,5 @@ async function downloadTemplateOption(
     relinka("info", "Skipping deploy process...");
   } else {
     relinka("success", `Project deployed successfully to ${primaryDomain}`);
-  }
-}
-
-export async function showDevToolsMenu(
-  cwd: string,
-  isDev: boolean,
-  config: ReliverseConfig,
-  memory: ReliverseMemory,
-) {
-  const TestsRuntimePath = path.join(cwd, "tests-runtime");
-  const TestsRuntimeExists = await fs.pathExists(TestsRuntimePath);
-  const skipPrompts = config.skipPromptsUseAutoBehavior;
-
-  const option = await selectPrompt({
-    title: "Dev tools menu",
-    options: [
-      ...(TestsRuntimeExists
-        ? [{ label: "remove tests-runtime dir", value: "rm-tests-runtime" }]
-        : []),
-      {
-        label:
-          "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
-        value: "download-template",
-      },
-      {
-        label: "Create config or force re-population",
-        value: "force-populate-config",
-      },
-      { label: "Test chat with Reliverse AI", value: "ai-chat-test" },
-      { label: "Exit", value: "exit" },
-    ],
-  });
-
-  if (option === "rm-tests-runtime") {
-    await rmTestsRuntime(cwd);
-  } else if (option === "download-template") {
-    await downloadTemplateOption(
-      "blefnk/relivator",
-      config,
-      memory,
-      isDev,
-      cwd,
-      skipPrompts,
-    );
-  } else if (option === "ai-chat-test") {
-    await aiChatHandler(memory);
   }
 }

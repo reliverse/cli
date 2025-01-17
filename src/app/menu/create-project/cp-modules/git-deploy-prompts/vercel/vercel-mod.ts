@@ -349,6 +349,7 @@ async function verifyDomain(
  * Creates or updates a Vercel deployment
  */
 export async function createVercelDeployment(
+  skipPrompts: boolean,
   projectName: string,
   projectPath: string,
   domain: string,
@@ -397,7 +398,7 @@ export async function createVercelDeployment(
 
     // Get configuration options before starting the spinner
     const selectedOptions = !isDeployed
-      ? await getConfigurationOptions()
+      ? await getConfigurationOptions(skipPrompts)
       : { options: ["env"] };
 
     await spinnerTaskPrompt({
@@ -441,7 +442,14 @@ export async function createVercelDeployment(
           }
 
           // 3. Domain Configuration Phase
-          if (domain && !domain.endsWith(".vercel.app")) {
+          if (skipPrompts) {
+            domain = `${projectName}.vercel.app`;
+          }
+          // Only configure custom domains (excluding vercel.app and example domains)
+          if (
+            !domain.includes(".vercel.app") &&
+            !domain.includes("example.com")
+          ) {
             await vercel.projects.addProjectDomain({
               idOrName: projectName,
               requestBody: {
@@ -484,6 +492,7 @@ export async function createVercelDeployment(
         }
 
         const deployment = await createDeployment(
+          memory,
           vercel,
           projectName,
           {
@@ -498,7 +507,7 @@ export async function createVercelDeployment(
         );
 
         console.log("");
-        relinka("success", `Deployment URL: ${deployment.url}`);
+        relinka("success", `Deployment URL: https://${deployment.url}`);
       },
     });
 

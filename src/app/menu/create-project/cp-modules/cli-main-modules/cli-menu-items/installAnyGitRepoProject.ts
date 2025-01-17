@@ -1,30 +1,23 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
+import type { AppParams } from "~/app/app-types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
-import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { createWebProject } from "~/app/menu/create-project/cp-mod.js";
-import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 import { showNewProjectMenu } from "~/app/menu/menu-mod.js";
+
+// TODO: Deprecate this file in favor of the new CLI logic
 
 /**
  * @deprecated TODO: Integrate function logic into the main one
  */
-export async function installAnyGitRepo(
-  cwd: string,
-  isDev: boolean,
-  memory: ReliverseMemory,
-  config: ReliverseConfig,
-  reli: ReliverseConfig[],
-) {
+export async function installAnyGitRepo(params: AppParams) {
+  const { cwd, isDev, memory, config, reli, skipPrompts } = params;
   relinka(
     "info",
     "At the moment, the current mode is optimized for installing any package.json-based projects from GitHub. Support for other types of projects and git providers will be added in the future.",
   );
-
-  const skipPrompts = config?.skipPromptsUseAutoBehavior ?? false;
 
   const projectCategory = await selectPrompt({
     title: "Choose an installation category:",
@@ -45,7 +38,6 @@ export async function installAnyGitRepo(
       },
     ],
   });
-  validate(projectCategory, "string", "Project category selection canceled.");
 
   let repoToInstall: TemplateOption = "blefnk/relivator";
 
@@ -77,7 +69,6 @@ export async function installAnyGitRepo(
         },
       ],
     });
-    validate(reliverseTemplate, "string", "Template selection canceled.");
     repoToInstall = reliverseTemplate;
   } else if (projectCategory === "2") {
     const defaultLinks = [
@@ -97,7 +88,6 @@ export async function installAnyGitRepo(
         },
       ],
     });
-    validate(customLink, "string", "Custom template providing canceled.");
     repoToInstall = customLink as TemplateOption;
   } else if (projectCategory === "3") {
     const defaultLinks = [
@@ -117,7 +107,6 @@ export async function installAnyGitRepo(
       defaultValue: randomDefaultLink ?? "",
       placeholder: randomDefaultLink ?? "",
     });
-    validate(customLink, "string", "Custom template providing canceled.");
     repoToInstall = customLink as TemplateOption;
   } else {
     relinka("error", "Invalid option selected. Exiting.");
@@ -128,13 +117,22 @@ export async function installAnyGitRepo(
     repoToInstall === "blefnk/relivator" ||
     repoToInstall === "blefnk/next-react-ts-src-minimal"
   ) {
-    return showNewProjectMenu(cwd, isDev, memory, config, reli);
+    return showNewProjectMenu({
+      projectName: params.projectName,
+      cwd,
+      isDev,
+      memory,
+      config,
+      reli,
+      skipPrompts,
+    });
   }
 
   await createWebProject({
+    projectName: params.projectName,
+    initialProjectName: params.projectName,
     webProjectTemplate: repoToInstall,
     message: `Setting up the repository: ${repoToInstall}...`,
-    mode: "installAnyGitRepo",
     isDev,
     config,
     memory,

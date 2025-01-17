@@ -1,7 +1,6 @@
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
-import pc from "picocolors";
 
-import { DEFAULT_DOMAIN } from "~/app/constants.js";
+import { DEFAULT_DOMAIN, experimental } from "~/app/constants.js";
 
 /**
  * Validates and formats a domain name
@@ -30,7 +29,7 @@ export async function promptForDomain(projectName: string): Promise<string> {
         hint: defaultDomain,
       },
       {
-        label: `Yes, configure custom domain ${pc.red("[🚨 Experimental]")}`,
+        label: `Yes, configure custom domain ${experimental}`,
         value: "custom",
         hint: "The default domain will still be generated",
       },

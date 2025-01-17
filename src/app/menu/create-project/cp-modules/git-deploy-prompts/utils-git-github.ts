@@ -16,22 +16,22 @@ export async function isDirHasGit(
   projectName: string,
   projectPath: string,
 ): Promise<boolean> {
-  const finalDir = isDev
+  const effectiveDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
-    if (!(await fs.pathExists(finalDir))) {
-      relinka("error", `Directory does not exist: ${finalDir}`);
+    if (!(await fs.pathExists(effectiveDir))) {
+      relinka("error", `Directory does not exist: ${effectiveDir}`);
       return false;
     }
 
-    const gitDir = path.join(finalDir, ".git");
+    const gitDir = path.join(effectiveDir, ".git");
     if (!(await fs.pathExists(gitDir))) {
       return false;
     }
 
-    const git = simpleGit({ baseDir: finalDir });
+    const git = simpleGit({ baseDir: effectiveDir });
     return await git.checkIsRepo();
   } catch (error) {
     // Only log if it's not a "not a git repo" error
@@ -61,14 +61,14 @@ export async function setupGitRemote(
   remoteUrl: string,
   remoteName = "origin",
 ): Promise<boolean> {
-  const finalDir = isDev
+  const effectiveDir = isDev
     ? path.join(cwd, "tests-runtime", projectName)
     : projectPath;
 
   try {
     // Validate directory and git repo
-    if (!(await fs.pathExists(finalDir))) {
-      relinka("error", `Directory does not exist: ${finalDir}`);
+    if (!(await fs.pathExists(effectiveDir))) {
+      relinka("error", `Directory does not exist: ${effectiveDir}`);
       return false;
     }
 
@@ -80,7 +80,7 @@ export async function setupGitRemote(
       return false;
     }
 
-    const git = simpleGit({ baseDir: finalDir });
+    const git = simpleGit({ baseDir: effectiveDir });
     const remotes = await git.getRemotes();
 
     // Setup remote
@@ -117,7 +117,7 @@ export async function setupGitRemote(
     );
     relinka(
       "info",
-      `You can setup the remote manually:\ncd ${finalDir}\ngit remote add ${remoteName} ${remoteUrl}\ngit push -u ${remoteName} main`,
+      `You can setup the remote manually:\ncd ${effectiveDir}\ngit remote add ${remoteName} ${remoteUrl}\ngit push -u ${remoteName} main`,
     );
     return false;
   }

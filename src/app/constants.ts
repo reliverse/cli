@@ -2,13 +2,15 @@ import path from "pathe";
 import pc from "picocolors";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.28";
+export const cliVersion = "1.4.29";
 export const cliName = "@reliverse/cli";
 
 export const useLocalhost = false;
 export const isVerboseEnabled = false;
 
 export const FAKE_PREFIX = "fake___";
+
+export const DEFAULT_CLI_USERNAME = "johnny911";
 
 export const recommended = pc.green("🚀 Recommended");
 export const experimental = pc.red("🚨 Experimental");

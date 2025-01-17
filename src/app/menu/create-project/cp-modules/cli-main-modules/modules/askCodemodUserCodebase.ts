@@ -2,7 +2,6 @@ import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
 import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
-import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 
 export async function askCodemodUserCodebase(cwd: string) {
   relinka("info", "The code modification process will start now.");
@@ -14,9 +13,6 @@ export async function askCodemodUserCodebase(cwd: string) {
     defaultValue: cwd,
   });
 
-  // Validate project path
-  validate(projectPath, "string", "Invalid project path provided. Exiting.");
-
   const action = await selectPrompt({
     title: "Select the action to perform",
     options: [
@@ -26,8 +22,6 @@ export async function askCodemodUserCodebase(cwd: string) {
       },
     ],
   });
-
-  validate(action, "string", "Invalid option selected. Exiting.");
 
   if (action === "replaceImportSymbol") {
     const to = await inputPrompt({

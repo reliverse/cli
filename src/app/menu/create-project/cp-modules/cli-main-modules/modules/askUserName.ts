@@ -4,9 +4,8 @@ import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
+import { DEFAULT_CLI_USERNAME } from "~/app/constants.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
-
-const DEFAULT_NAME = "johnny911";
 
 export async function askUserName(
   memory: ReliverseMemory,
@@ -15,10 +14,10 @@ export async function askUserName(
   const hasPreviousName = previousName !== "";
 
   // Determine placeholder and content based on previous memory
-  const placeholder = hasPreviousName ? previousName : DEFAULT_NAME;
+  const placeholder = hasPreviousName ? previousName : DEFAULT_CLI_USERNAME;
   const content = hasPreviousName
     ? `Last used name: ${pc.cyanBright(placeholder)} (press <Enter> to use it again)`
-    : `You can press Enter to use the default name: ${pc.cyanBright(DEFAULT_NAME)}`;
+    : `You can press Enter to use the default name: ${pc.cyanBright(DEFAULT_CLI_USERNAME)}`;
 
   // Prompt the user for a name
   const userInput = await inputPrompt({
@@ -26,27 +25,37 @@ export async function askUserName(
       "Enter a name/username for the frontend (e.g. footer, contact page, etc.):",
     content,
     placeholder: hasPreviousName
-      ? ""
+      ? "No worries about @ symbol anywhere, I'll add it for you."
       : `[Default: ${placeholder}] No worries about @ symbol anywhere, I'll add it for you.`,
   });
 
-  // If the user leaves the input empty, we fall back to placeholder
-  const finalName = userInput.trim() ?? placeholder;
-
-  // Update memory only if the provided name differs from what was stored
-  if (!hasPreviousName || finalName !== previousName) {
-    await updateReliverseMemory({ name: finalName });
-  }
-
-  // If the user leaves the input empty, deleteLastLine()
-  if (finalName === "") {
+  // If user presses Enter (empty input):
+  // - If there's a previous name, use it without saving to memory again
+  // - If no previous name, use DEFAULT_CLI_USERNAME and save it
+  const trimmedInput = userInput.trim();
+  if (trimmedInput === "") {
+    if (hasPreviousName) {
+      deleteLastLine();
+      relinka(
+        "info",
+        "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
+      );
+      return previousName;
+    }
+    await updateReliverseMemory({ name: DEFAULT_CLI_USERNAME });
     deleteLastLine();
+    relinka(
+      "info",
+      "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
+    );
+    return DEFAULT_CLI_USERNAME;
   }
 
+  // User provided a new name, save it to memory
+  await updateReliverseMemory({ name: trimmedInput });
   relinka(
     "info",
     "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
   );
-
-  return finalName;
+  return trimmedInput;
 }

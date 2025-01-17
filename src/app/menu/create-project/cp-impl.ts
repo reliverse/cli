@@ -13,13 +13,13 @@ import { installDependencies } from "nypm";
 import open from "open";
 import os from "os";
 import path from "pathe";
-import pc from "picocolors";
 
 import type { Behavior, DeploymentService } from "~/types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
+import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
 import { extractRepoInfo } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/extractRepoInfo.js";
 import { isVSCodeInstalled } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/isAppInstalled.js";
@@ -29,6 +29,7 @@ import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-mo
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
+import { normalizeName } from "~/utils/validateHelpers.js";
 
 /**
  * For parsing and updating package.json
@@ -44,7 +45,7 @@ export type PackageJson = {
  * Minimal object describing essential project info after initialization
  */
 export type ProjectConfig = {
-  uiUsername: string;
+  cliUsername: string;
   projectName: string;
   primaryDomain: string;
 };
@@ -95,6 +96,7 @@ async function ensureUniqueProjectName(
  * Asks or auto-fills project details (username, projectName, domain).
  */
 export async function initializeProjectConfig(
+  projectName: string,
   memory: ReliverseMemory,
   config: ReliverseConfig,
   skipPrompts: boolean,
@@ -102,26 +104,21 @@ export async function initializeProjectConfig(
   cwd: string,
 ): Promise<ProjectConfig> {
   // 1. Determine user (author)
-  const uiUsername =
-    skipPrompts && config?.projectAuthor
+  const cliUsername =
+    skipPrompts &&
+    config?.projectAuthor !== UNKNOWN_VALUE &&
+    config?.projectAuthor !== ""
       ? config.projectAuthor
       : ((await askUserName(memory)) ?? "");
 
   // 2. Determine project name
-  let projectName: string;
   if (skipPrompts) {
-    // Use config's project name if available, regardless of isMultiConfig
-    // This ensures we respect the config's project name in both single and multi-config modes
-    if (config?.projectName) {
-      projectName = config.projectName;
-    } else if (config?.projectTemplate) {
-      projectName = path.basename(config.projectTemplate);
+    if (projectName !== UNKNOWN_VALUE) {
+      projectName = normalizeName(projectName);
     } else {
-      // Fallback: prompt user anyway
       projectName = (await askProjectName()) ?? "my-app";
     }
   } else {
-    // Normal prompt flow
     projectName = (await askProjectName()) ?? "my-app";
   }
 
@@ -135,11 +132,13 @@ export async function initializeProjectConfig(
 
   // 3. Determine domain
   const primaryDomain =
-    skipPrompts && config?.projectDomain
+    skipPrompts &&
+    config?.projectDomain !== UNKNOWN_VALUE &&
+    config?.projectDomain !== ""
       ? config.projectDomain
       : `${projectName}.vercel.app`;
 
-  return { uiUsername, projectName, primaryDomain };
+  return { cliUsername, projectName, primaryDomain };
 }
 
 /**
@@ -163,7 +162,7 @@ export async function replaceTemplateStrings(
       // Potential replacements
       const replacements: Record<string, string> = {
         [`${oldProjectName}.com`]: config.primaryDomain,
-        [author]: config.uiUsername,
+        [author]: config.cliUsername,
         [oldProjectName]: config.projectName,
         ["relivator.com"]: config.primaryDomain,
       };
@@ -194,9 +193,8 @@ export async function replaceTemplateStrings(
  */
 export async function setupI18nSupport(
   projectPath: string,
-  skipPrompts: boolean,
   config: ReliverseConfig,
-) {
+): Promise<boolean> {
   // Check if i18n folder already exists
   const i18nFolderExists =
     (await fs.pathExists(path.join(projectPath, "src/app/[locale]"))) ||
@@ -207,14 +205,14 @@ export async function setupI18nSupport(
       "info-verbose",
       "i18n is already enabled in the template. No changes needed.",
     );
-    return;
+    return true;
   }
 
   // Determine if i18n should be enabled based on behavior setting
-  const i18nBehavior = config?.i18nBehavior ?? "prompt";
+  const i18nBehavior = config.i18nBehavior;
   let shouldEnableI18n = false;
 
-  if (skipPrompts || i18nBehavior !== "prompt") {
+  if (i18nBehavior !== "prompt") {
     // Use automatic behavior if skipping prompts or behavior is set
     shouldEnableI18n = i18nBehavior === "autoYes";
   } else {
@@ -231,6 +229,8 @@ export async function setupI18nSupport(
   if (shouldEnableI18n) {
     await setupI18nFiles(projectPath);
   }
+
+  return shouldEnableI18n;
 }
 
 /**
@@ -288,9 +288,7 @@ async function moveProjectFromTestsRuntime(
 ): Promise<string | null> {
   try {
     const shouldUseProject = await confirmPrompt({
-      title: `Project bootstrapped in dev mode. Move to a permanent location? ${pc.redBright(
-        "[🚨 Experimental]",
-      )}`,
+      title: `Project bootstrapped in dev mode. Move to a permanent location? ${experimental}`,
       content:
         "If yes, I'll move it from the tests-runtime directory to a new location you specify.",
       defaultValue: false,
@@ -312,13 +310,13 @@ async function moveProjectFromTestsRuntime(
     await fs.ensureDir(targetDir);
 
     // Check if a directory with the same name exists
-    let finalProjectName = projectName;
-    let finalPath = path.join(targetDir, projectName);
+    let effectiveProjectName = projectName;
+    let effectivePath = path.join(targetDir, projectName);
     let counter = 1;
 
-    while (await fs.pathExists(finalPath)) {
+    while (await fs.pathExists(effectivePath)) {
       const newName = await inputPrompt({
-        title: `Directory '${finalProjectName}' already exists at ${targetDir}`,
+        title: `Directory '${effectiveProjectName}' already exists at ${targetDir}`,
         content: "Enter a new name for the project directory:",
         defaultValue: `${projectName}-${counter}`,
         validate: (value: string) =>
@@ -327,14 +325,14 @@ async function moveProjectFromTestsRuntime(
             : "Invalid directory name format",
       });
 
-      finalProjectName = newName;
-      finalPath = path.join(targetDir, finalProjectName);
+      effectiveProjectName = newName;
+      effectivePath = path.join(targetDir, effectiveProjectName);
       counter++;
     }
 
-    await fs.move(sourceDir, finalPath);
-    relinka("success", `Project moved to ${finalPath}`);
-    return finalPath;
+    await fs.move(sourceDir, effectivePath);
+    relinka("success", `Project moved to ${effectivePath}`);
+    return effectivePath;
   } catch (error) {
     relinka("error", "Failed to move project:", String(error));
     return null;
@@ -382,28 +380,29 @@ export async function handleDeployment(params: {
 export async function showSuccessAndNextSteps(
   projectPath: string,
   webProjectTemplate: TemplateOption,
-  uiUsername: string,
+  cliUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
+  skipPrompts: boolean,
   isDev: boolean,
 ) {
-  let finalProjectPath = projectPath;
+  let effectiveProjectPath = projectPath;
 
   // If dev mode, offer to move from tests-runtime
-  if (isDev) {
+  if (isDev && !skipPrompts) {
     const newPath = await moveProjectFromTestsRuntime(
       path.basename(projectPath),
       projectPath,
     );
     if (newPath) {
-      finalProjectPath = newPath;
+      effectiveProjectPath = newPath;
     }
   }
 
   relinka(
     "info",
-    `🎉 '${webProjectTemplate}' was installed at ${finalProjectPath}.`,
+    `🎉 '${webProjectTemplate}' was installed at ${effectiveProjectPath}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
@@ -412,34 +411,36 @@ export async function showSuccessAndNextSteps(
     title: "🤘 Project created successfully! Next steps:",
     titleColor: "cyanBright",
     content: [
-      `- To open in VSCode: code ${finalProjectPath}`,
-      `- Or in terminal: cd ${finalProjectPath}`,
+      `- To open in VSCode: code ${effectiveProjectPath}`,
+      `- Or in terminal: cd ${effectiveProjectPath}`,
       "- Install dependencies manually if needed: bun i OR pnpm i",
       "- Apply linting & formatting: bun check OR pnpm check",
       "- Run the project: bun dev OR pnpm dev",
     ],
   });
 
-  await handleNextActions(
-    finalProjectPath,
-    vscodeInstalled,
-    uiUsername,
-    isDeployed,
-    primaryDomain,
-    allDomains,
+  if (!skipPrompts) {
+    await handleNextActions(
+      effectiveProjectPath,
+      vscodeInstalled,
+      cliUsername,
+      isDeployed,
+      primaryDomain,
+      allDomains,
+    );
+  }
+
+  relinka(
+    "success",
+    "✨ One more thing you can try (experimental):",
+    "👉 `reliverse cli` in your new project to add/remove features.",
   );
 
   relinka(
     "info",
-    uiUsername
-      ? `👋 More features soon! See you, ${uiUsername}!`
+    cliUsername !== UNKNOWN_VALUE && cliUsername !== ""
+      ? `👋 More features soon! See you, ${cliUsername}!`
       : "👋 All done for now!",
-  );
-
-  relinka(
-    "success",
-    "✨ One more thing (experimental):",
-    "👉 `reliverse cli` in your new project to add/remove features.",
   );
 }
 
@@ -449,7 +450,7 @@ export async function showSuccessAndNextSteps(
 export async function handleNextActions(
   projectPath: string,
   vscodeInstalled: boolean,
-  uiUsername: string,
+  cliUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -494,7 +495,7 @@ export async function handleNextActions(
   }
   relinka(
     "info",
-    uiUsername ? `See you soon, ${uiUsername}!` : "Done for now!",
+    cliUsername ? `See you soon, ${cliUsername}!` : "Done for now!",
   );
 }
 

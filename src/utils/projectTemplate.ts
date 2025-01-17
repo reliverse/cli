@@ -8,7 +8,7 @@ import os from "os";
 import path from "pathe";
 import pc from "picocolors";
 
-import type { VSCodeTemplateOption } from "~/app/menu/menu-mod.js";
+import type { VSCodeTemplateOption } from "~/app/menu/menu-impl.js";
 
 import { experimental, recommended } from "~/app/constants.js";
 

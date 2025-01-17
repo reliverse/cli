@@ -58,6 +58,7 @@ export async function handleGitInit(
  * Creates or configures a GitHub repo (plus local git) if needed.
  */
 export async function handleGithubRepo(
+  skipPrompts: boolean,
   cwd: string,
   isDev: boolean,
   memory: ReliverseMemory,
@@ -79,6 +80,7 @@ export async function handleGithubRepo(
 
   // Even if token is not found, we proceed. createGithubRepo() will prompt for a token if needed.
   const repoCreated = await createGithubRepository({
+    skipPrompts,
     cwd,
     isDev,
     memory,
@@ -240,6 +242,7 @@ export async function promptGitDeploy({
     while (githubRetryCount < 3 && !skipGitHub) {
       try {
         githubData = await handleGithubRepo(
+          skipPrompts,
           cwd,
           isDev,
           memory,
@@ -540,6 +543,7 @@ export async function promptGitDeploy({
 
     // Deploy to Vercel
     const vercelDeployed = await createVercelDeployment(
+      skipPrompts,
       projectName,
       projectPath,
       primaryDomain,
@@ -562,6 +566,7 @@ export async function promptGitDeploy({
     while (deployRetryCount < 3) {
       try {
         const deployResult = await deployProject(
+          skipPrompts,
           projectName,
           config,
           projectPath,

@@ -4,9 +4,13 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { CONFIG_CATEGORIES } from "~/app/constants.js";
+import { CONFIG_CATEGORIES, UNKNOWN_VALUE } from "~/app/constants.js";
 import { type DeploymentService, type VSCodeSettings } from "~/types.js";
-import { generateReliverseConfig } from "~/utils/reliverseConfig.js";
+import {
+  DEFAULT_CONFIG,
+  injectSectionComments,
+} from "~/utils/reliverseConfig.js";
+import { type ReliverseConfig } from "~/utils/schemaConfig.js";
 
 async function generateBiomeConfig(
   projectPath: string,
@@ -111,15 +115,14 @@ async function generateVSCodeSettings(
   );
 }
 
-async function generateConfigFiles(
+export async function generateConfigFiles(
   projectPath: string,
   overwrite: boolean,
   projectName: string,
-  uiUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
-  i18nShouldBeEnabled: boolean,
-  githubUsername: string,
+  cliUsername: string,
+  enableI18n: boolean,
   isDev: boolean,
   filesToGenerate: string[] = [],
 ): Promise<void> {
@@ -139,19 +142,51 @@ async function generateConfigFiles(
           );
         };
 
+        // Clean up domain format
+        const cleanDomain = primaryDomain
+          .replace(/^https?:\/\//, "") // Remove protocol
+          .replace(/\/.*$/, ""); // Remove paths
+
+        if (isDev) {
+          cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+        }
+
         const configGenerators = {
-          ".reliverse": async () =>
-            generateReliverseConfig({
+          ".reliverse": async () => {
+            // Handle empty project author
+            const effectiveAuthor =
+              !cliUsername || cliUsername.trim() === ""
+                ? UNKNOWN_VALUE
+                : cliUsername;
+
+            const config: ReliverseConfig = {
+              ...DEFAULT_CONFIG,
               projectName,
-              uiUsername,
-              deployService,
-              primaryDomain,
-              projectPath,
-              i18nShouldBeEnabled,
-              githubUsername,
-              overwrite,
-              isDev,
-            }),
+              projectAuthor: effectiveAuthor,
+              projectRepository: `https://github.com/${effectiveAuthor}/${projectName}`,
+              projectState: "creating",
+              projectDomain: cleanDomain,
+              projectDeployService: deployService,
+              features: {
+                ...DEFAULT_CONFIG.features,
+                i18n: enableI18n,
+              },
+            };
+
+            const configPath = path.join(projectPath, ".reliverse");
+            if (!overwrite && (await fs.pathExists(configPath))) {
+              relinka("info", "Reliverse config already exists, skipping...");
+              return;
+            }
+
+            // Write with proper formatting and comments
+            const fileContent = JSON.stringify(config, null, 2);
+            const contentWithComments = injectSectionComments(fileContent);
+            await fs.writeFile(configPath, contentWithComments, {
+              encoding: "utf-8",
+            });
+            relinka("success-verbose", "Generated .reliverse config");
+          },
           "biome.json": () => generateBiomeConfig(projectPath, overwrite),
           "settings.json": () => generateVSCodeSettings(projectPath, overwrite),
         };
@@ -176,11 +211,10 @@ async function generateConfigFiles(
 export async function generateProjectConfigs(
   projectPath: string,
   projectName: string,
-  uiUsername: string,
+  cliUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
-  i18nShouldBeEnabled: boolean,
-  githubUsername: string,
+  enableI18n: boolean,
   isDev: boolean,
 ): Promise<void> {
   try {
@@ -207,11 +241,10 @@ export async function generateProjectConfigs(
         projectPath,
         false,
         projectName,
-        uiUsername,
         deployService,
         primaryDomain,
-        i18nShouldBeEnabled,
-        githubUsername,
+        cliUsername,
+        enableI18n,
         isDev,
       );
     } else {
@@ -220,11 +253,10 @@ export async function generateProjectConfigs(
         projectPath,
         true,
         projectName,
-        uiUsername,
         deployService,
         primaryDomain,
-        i18nShouldBeEnabled,
-        githubUsername,
+        cliUsername,
+        enableI18n,
         isDev,
       );
     }

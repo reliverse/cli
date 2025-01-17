@@ -7,7 +7,6 @@ import path from "pathe";
 import { getRepoUrl } from "~/app/constants.js";
 import { downloadGitRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadGitRepo.js";
 import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
-import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
 
 type UpdateConfig = {
   actions: {
@@ -37,8 +36,6 @@ export async function showUpdateCloneMenu(isDev: boolean, cwd: string) {
       value: option,
     })),
   });
-
-  validate(option, "string", "Invalid option selected. Exiting.");
 
   // For test development purposes only
   if (option === "🚧 relivator (local dev only)") {

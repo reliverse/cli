@@ -2,8 +2,6 @@ import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import pc from "picocolors";
 
-import { validate } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/validate.js";
-
 export async function askSummaryConfirmation(
   template: string,
   projectName: string,
@@ -30,8 +28,6 @@ ${bar} Do you want to proceed?`;
   });
 
   relinka("info-verbose", "Installation confirmed by the user (1)."); // TODO: remove if random bun crash is fixed
-
-  validate(confirmed, "boolean");
 
   if (!confirmed) {
     relinka("info", "Installation canceled by the user.");

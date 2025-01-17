@@ -37,6 +37,7 @@ export async function selectDeploymentService(
 }
 
 export async function deployProject(
+  skipPrompts: boolean,
   projectName: string,
   config: ReliverseConfig,
   projectPath: string,
@@ -74,6 +75,7 @@ export async function deployProject(
     }
 
     const success = await createVercelDeployment(
+      skipPrompts,
       projectName,
       projectPath,
       primaryDomain,

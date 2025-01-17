@@ -4,6 +4,7 @@ import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import pc from "picocolors";
 
+import { experimental } from "~/app/constants.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
 
 export type ScriptStatus = {
@@ -41,7 +42,7 @@ const SCRIPT_DEFINITIONS = {
   },
   dbSeed: {
     label: "Populate database with initial data",
-    hint: "add sample data [🚨 Experimental]",
+    hint: `add sample data ${experimental}`,
   },
   check: {
     label: "Run all code quality checks",

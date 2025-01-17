@@ -47,7 +47,7 @@ export async function getVercelProjectDomain(
     });
 
     // For each group, prefer non-www version unless only www exists
-    const finalDomains = Array.from(domainMap.values())
+    const effectiveDomains = Array.from(domainMap.values())
       .map((group) => {
         const nonWww = group.find((d) => !d.startsWith("www."));
         return nonWww ?? group[0];
@@ -55,8 +55,8 @@ export async function getVercelProjectDomain(
       .filter((domain): domain is string => domain !== undefined);
 
     return {
-      domains: finalDomains,
-      primary: finalDomains[0] ?? defaultDomain,
+      domains: effectiveDomains,
+      primary: effectiveDomains[0] ?? defaultDomain,
     };
   } catch (error) {
     relinka(

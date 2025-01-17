@@ -1,39 +1,31 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { deleteLastLines, relinka } from "@reliverse/relinka";
-
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
-import type { ReliverseMemory } from "~/utils/schemaMemory.js";
+import { deleteLastLines } from "@reliverse/relinka";
+import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
-import {
-  showOpenProjectMenu,
-  handleOpenProjectMenu,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
+import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import { showEndPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
-import { showDevToolsMenu } from "~/dev.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
 import { renderEndLine } from "~/utils/terminalHelpers.js";
 
-import { getWelcomeTitle } from "./db/messages.js";
-import { pm } from "./menu/create-project/cp-modules/cli-main-modules/detections/detectPackageManager.js";
-import { showNewProjectMenu } from "./menu/menu-mod.js";
+import type { ParamsOmitSkipPN } from "./app-types.js";
 
-export async function app({
-  cwd,
-  isDev,
-  memory,
-  config,
-  reli,
-}: {
-  cwd: string;
-  isDev: boolean;
-  memory: ReliverseMemory;
-  config: ReliverseConfig;
-  reli: ReliverseConfig[];
-}) {
-  // await showStartPrompt(isDev);
-  relinka("info-verbose", "Detected project manager:", pm);
-  const uiUsername = memory.name && memory.name !== "" ? memory.name : "";
+import { UNKNOWN_VALUE } from "./constants.js";
+import { getRandomMessage, getWelcomeTitle } from "./db/messages.js";
+import {
+  showDevToolsMenu,
+  showNewProjectMenu,
+  showOpenProjectMenu,
+} from "./menu/menu-mod.js";
+
+export async function app(params: ParamsOmitSkipPN) {
+  const { cwd, isDev, reli, memory, config } = params;
+
+  const skipPrompts = config.skipPromptsUseAutoBehavior;
+  const cliUsername = memory.name !== "" ? memory.name : UNKNOWN_VALUE;
+  const projectName = isDev
+    ? generate({ exactly: 2, join: "-" })
+    : config.projectName;
 
   if (!isDev) {
     const rootProject = await detectProject(cwd);
@@ -54,18 +46,43 @@ export async function app({
   }
 
   const mainMenuOption = await selectPrompt({
-    title: getWelcomeTitle(uiUsername),
+    title: cliUsername
+      ? getWelcomeTitle(cliUsername)
+      : getRandomMessage("welcome"),
     options: await getMainMenuOptions(cwd, isDev, reli),
     titleColor: "retroGradient",
     displayInstructions: true,
   });
 
   if (mainMenuOption === "create") {
-    await showNewProjectMenu(cwd, isDev, memory, config, reli);
+    await showNewProjectMenu({
+      projectName,
+      cwd,
+      isDev,
+      memory,
+      config,
+      reli,
+      skipPrompts,
+    });
   } else if (mainMenuOption === "detected-projects") {
-    await showOpenProjectMenu(cwd, isDev, memory, config, reli);
+    await showOpenProjectMenu({
+      projectName,
+      cwd,
+      isDev,
+      memory,
+      config,
+      reli,
+      skipPrompts,
+    });
   } else if (mainMenuOption === "isDevTools") {
-    await showDevToolsMenu(cwd, isDev, config, memory);
+    await showDevToolsMenu({
+      projectName,
+      cwd,
+      isDev,
+      config,
+      memory,
+      skipPrompts,
+    });
   }
 
   await showEndPrompt();

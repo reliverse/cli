@@ -5,31 +5,26 @@
   "$schema": "./schema.json",
 
   // General project information
-  "projectName": "cli",
-  "projectAuthor": "reliverse",
+  "projectName": "@reliverse/cli",
+  "projectAuthor": "blefnk",
   "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  "projectVersion": "1.4.27",
+  "projectVersion": "1.4.28",
   "projectLicense": "MIT",
   "projectRepository": "https://github.com/reliverse/cli",
   "projectState": "creating",
-  "projectDomain": "https://example.com",
+  "projectDomain": "https://docs.reliverse.org",
   "projectDeployService": "vercel",
   "projectCategory": "unknown",
   "projectSubcategory": "unknown",
   "projectTemplate": "unknown",
   "projectArchitecture": "unknown",
-  "projectDisplayName": "unknown",
-  "projectFrameworkVersion": "unknown",
-  "projectActivation": "manual",
-  "nodeVersion": "unknown",
-  "runtime": "unknown",
-  "deployUrl": "unknown",
-  "productionBranch": "main",
   "repoPrivacy": "unknown",
+  "repoBranch": "main",
 
   // Primary tech stack/framework
   "projectFramework": "npm-jsr",
   "projectPackageManager": "bun",
+  "projectRuntime": "nodejs",
   "preferredLibraries": {
     "stateManagement": "zustand",
     "formManagement": "react-hook-form",
@@ -65,12 +60,8 @@
     "ci": false,
     "commands": [],
     "webview": [],
-    "language": [
-      "typescript"
-    ],
-    "themes": [
-      "default"
-    ]
+    "language": ["typescript"],
+    "themes": ["default"]
   },
 
   // Code style preferences
@@ -110,11 +101,15 @@
   // Configure also unknown values and prompts behavior.
   "skipPromptsUseAutoBehavior": false,
 
-  // Behavior for specific prompts
-  // Options: prompt | autoYes | autoNo
+  // Specific prompts behavior
+  // prompt | autoYes | autoNo
   "deployBehavior": "prompt",
   "depsBehavior": "prompt",
   "gitBehavior": "prompt",
   "i18nBehavior": "prompt",
-  "scriptsBehavior": "prompt"
+  "scriptsBehavior": "prompt",
+
+  // What CLI should do with existing GitHub repo
+  // prompt | autoYes | autoYesSkipCommit | autoNo
+  "existingRepoBehavior": "prompt"
 }
