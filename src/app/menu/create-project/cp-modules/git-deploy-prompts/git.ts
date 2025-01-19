@@ -65,7 +65,7 @@ async function validateProjectDir(effectiveDir: string): Promise<boolean> {
 async function removeGitDir(effectiveDir: string): Promise<boolean> {
   try {
     await fs.remove(path.join(effectiveDir, ".git"));
-    relinka("info", "Removed existing .git directory");
+    relinka("info-verbose", "Removed existing .git directory");
     return true;
   } catch (error) {
     relinka(
@@ -164,7 +164,7 @@ export async function initGitDir(
     // 3. Handle reinitialization if needed
     if (dirHasGit && options.allowReInit) {
       deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
-      relinka("info", "Reinitializing existing git repository");
+      relinka("info-verbose", "Reinitializing existing git repository...");
       if (!(await removeGitDir(effectiveDir))) {
         return false;
       }

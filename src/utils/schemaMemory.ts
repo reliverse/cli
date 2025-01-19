@@ -23,7 +23,5 @@ export const memorySchema = Type.Composite([
 ]);
 
 export type ReliverseMemory = Static<typeof memorySchema>;
-
 export type EncryptedDataMemory = keyof Static<typeof encryptedDataSchema>;
-
 export type UserDataMemory = keyof Static<typeof userDataSchema>;

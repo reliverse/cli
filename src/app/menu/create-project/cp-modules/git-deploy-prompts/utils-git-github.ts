@@ -86,7 +86,7 @@ export async function setupGitRemote(
     // Setup remote
     if (!remotes.find((remote) => remote.name === remoteName)) {
       await git.addRemote(remoteName, remoteUrl);
-      relinka("success", `Remote '${remoteName}' added successfully.`);
+      relinka("success-verbose", `Remote '${remoteName}' added successfully.`);
     } else {
       // Update existing remote URL if different
       const remoteGetUrl = await git.remote(["get-url", remoteName]);

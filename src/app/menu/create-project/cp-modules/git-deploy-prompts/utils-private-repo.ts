@@ -94,7 +94,7 @@ export async function archiveExistingRepoContent(
       const targetGitDir = path.join(projectPath, ".git");
       if (await fs.pathExists(targetGitDir)) {
         await fs.remove(targetGitDir);
-        relinka("info", "Removed existing .git directory");
+        relinka("info-verbose", "Removed existing .git directory");
       }
       await fs.copy(gitDir, path.join(projectPath, ".git"), {
         preserveTimestamps: true,

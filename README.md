@@ -1,6 +1,9 @@
 # Reliverse CLI
 
-**📚 Docs**: [docs.reliverse.org](https://docs.reliverse.org/cli) | **💙 Discord**: [discord.gg/Pb8uKbwpsJ](https://discord.gg/Pb8uKbwpsJ) | [NPM](https://npmjs.com/@reliverse/cli) | [GitHub](https://github.com/reliverse/cli)
+**✨ NPM**: [npmjs.com/@reliverse/cli](https://npmjs.com/@reliverse/cli)
+**💙 Discord**: [discord.gg/Pb8uKbwpsJ](https://discord.gg/Pb8uKbwpsJ)
+**⭐ GitHub**: [github.com/reliverse/cli](https://github.com/reliverse/cli)
+**📚 Docs**: [docs.reliverse.org](https://docs.reliverse.org/cli)
 
 @reliverse/cli is a powerful command-line interface tool that helps you effortlessly create new web projects, manage existing ones, and apply advanced, automated modifications to the codebase. Having Reliverse CLI is like having a superapp right in the terminal.
 

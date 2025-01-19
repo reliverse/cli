@@ -61,7 +61,8 @@ export const TEMPLATES: Template[] = [
     id: "blefnk/all-in-one-nextjs-template",
     author: "blefnk",
     name: "all-in-one-nextjs-template",
-    description: "Comprehensive Next.js template with multiple features",
+    description:
+      "Comprehensive Next.js eCommerce template with multiple features",
     category: "website",
   },
   {

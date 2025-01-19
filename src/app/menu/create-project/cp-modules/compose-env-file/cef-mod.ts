@@ -53,19 +53,20 @@ export async function composeEnvFile(
       if (await copyFromExisting(projectDir, lastEnvPath)) {
         relinka(
           "success",
-          "Environment variables copied from the last used file",
+          "Environment variables copied from the last used file.",
         );
         const remainingMissingKeys = await getMissingKeys(projectDir);
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",
-            "Some values are still missing in the copied .env file.",
+            `The following keys are still missing in the copied .env file: ${remainingMissingKeys.join(", ")}`,
           );
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
             shouldMaskSecretInput,
             config,
+            true,
           );
         }
         return;
@@ -100,7 +101,15 @@ export async function composeEnvFile(
 
     if (response === "manual") {
       relinka("info-verbose", "Opening .env for manual editing...");
-      await execa("code", [envPath]);
+      try {
+        await execa("code", [envPath]);
+      } catch {
+        relinka(
+          "warn",
+          "Failed to open .env in VSCode. Please open it manually:",
+          envPath,
+        );
+      }
     } else if (response === "existing") {
       const existingPath = await inputPrompt({
         title:
@@ -120,13 +129,14 @@ export async function composeEnvFile(
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",
-            "Some values are still missing in the copied .env file.",
+            `The following keys are still missing in the copied .env file: ${remainingMissingKeys.join(", ")}`,
           );
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
             shouldMaskSecretInput,
             config,
+            true,
           );
         }
       }
@@ -134,19 +144,20 @@ export async function composeEnvFile(
       if (lastEnvPath && (await copyFromExisting(projectDir, lastEnvPath))) {
         relinka(
           "success",
-          "Environment variables copied from the last used file",
+          "Environment variables copied from the last used file.",
         );
         const remainingMissingKeys = await getMissingKeys(projectDir);
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",
-            "Some values are still missing in the copied .env file.",
+            `The following keys are still missing in the copied .env file: ${remainingMissingKeys.join(", ")}`,
           );
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
             shouldMaskSecretInput,
             config,
+            true,
           );
         }
       } else {
@@ -156,6 +167,7 @@ export async function composeEnvFile(
           envPath,
           shouldMaskSecretInput,
           config,
+          false,
         );
       }
     } else {
@@ -165,6 +177,7 @@ export async function composeEnvFile(
         envPath,
         shouldMaskSecretInput,
         config,
+        false,
       );
     }
 
@@ -178,7 +191,7 @@ export async function composeEnvFile(
       });
 
       if (shouldOpenDocs) {
-        relinka("info-verbose", "Opening https://docs.reliverse.org/env...");
+        relinka("info-verbose", "Opening https://docs.reliverse.org/env");
         await open("https://docs.reliverse.org/env");
       }
     }

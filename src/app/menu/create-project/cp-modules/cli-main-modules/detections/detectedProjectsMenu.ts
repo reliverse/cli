@@ -359,6 +359,7 @@ export async function handleOpenProjectMenu(
         "",
         memory,
         shouldMaskSecretInput,
+        "update",
       );
 
       if (deployService !== "none") {

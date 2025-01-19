@@ -44,6 +44,7 @@ export async function deployProject(
   primaryDomain: string,
   memory: ReliverseMemory,
   shouldMaskSecretInput: boolean,
+  deployMode: "new" | "update",
 ): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -80,6 +81,7 @@ export async function deployProject(
       projectPath,
       primaryDomain,
       memory,
+      deployMode,
       shouldMaskSecretInput,
     );
 

@@ -336,7 +336,7 @@ export async function createGithubRepo(
 
     // 2. Get an available repository name and check its status
     deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
-    relinka("info", "Checking repository status...");
+    relinka("info-verbose", "Checking repository status...");
     const { name: effectiveRepoName, exists: repoExists } =
       await getAvailableGithubRepoName(octokit, repoOwner, repoName);
     repoName = effectiveRepoName;
@@ -376,10 +376,7 @@ export async function createGithubRepo(
 
       // Create the repository
       // deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
-      relinka(
-        "info",
-        `Creating repository https://github.com/${repoOwner}/${repoName}`,
-      );
+      relinka("info-verbose", "Creating repository...");
       try {
         await octokit.rest.repos.createForAuthenticatedUser({
           name: repoName,
@@ -392,7 +389,7 @@ export async function createGithubRepo(
         });
         relinka(
           "success",
-          `Repository ${repoOwner}/${repoName} created successfully!`,
+          `Repository https://github.com/${repoOwner}/${repoName} created successfully!`,
         );
       } catch (error: any) {
         if (error instanceof RequestError) {
@@ -415,7 +412,10 @@ export async function createGithubRepo(
 
     // 4. Setup remote and push initial commit
     const remoteUrl = `https://github.com/${repoOwner}/${repoName}.git`;
-    relinka("info", "Setting up Git remote and pushing initial commit...");
+    relinka(
+      "info-verbose",
+      "Setting up Git remote and pushing initial commit...",
+    );
     return await setupGitRemote(
       cwd,
       isDev,

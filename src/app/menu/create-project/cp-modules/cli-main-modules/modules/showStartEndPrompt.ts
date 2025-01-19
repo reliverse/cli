@@ -17,7 +17,7 @@ export async function showEndPrompt() {
   await endPrompt({
     title: emojify("ℹ  :books: https://docs.reliverse.org/reliverse/cli"),
     titleAnimation: "glitch",
-    titleColor: "retroGradient",
+    titleColor: "passionGradient",
     titleTypography: "bold",
     titleAnimationDelay: 500,
   });

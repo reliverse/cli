@@ -14,3 +14,12 @@ export type AppParams = {
 export type ParamsOmitPN = Omit<AppParams, "projectName">;
 export type ParamsOmitSkipPN = Omit<AppParams, "skipPrompts" | "projectName">;
 export type ParamsOmitReli = Omit<AppParams, "reli">;
+
+/**
+ * Minimal object describing essential project info after initialization
+ */
+export type ProjectConfigReturn = {
+  cliUsername: string;
+  projectName: string;
+  primaryDomain: string;
+};

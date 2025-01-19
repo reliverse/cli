@@ -13,6 +13,7 @@ import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { deployProject } from "./deploy.js";
 import { createGithubRepository, initGitDir } from "./git.js";
+import { isSpecialDomain } from "./helpers/domainHelpers.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
 import { createOctokitInstance } from "./octokit-instance.js";
@@ -183,7 +184,7 @@ export async function promptGitDeploy({
       "Do you want to create/use a GitHub repository for this project?",
       "This will allow you to:\n" +
         "- Store your code on GitHub\n" +
-        "- Collaborate with others\n" +
+        "- Collaborate with other users\n" +
         "- Deploy to services like Vercel\n" +
         "- Track changes with git automatically",
       true,
@@ -511,12 +512,14 @@ export async function promptGitDeploy({
       };
     }
 
+    const domain = config.projectDomain;
+
     // 5) Proceed with deployment
     // If not previously deployed, prompt user for domain
     if (!alreadyDeployed) {
-      // If skipPrompts => supply a default domain or read from config
-      if (skipPrompts && config.projectDomain) {
-        primaryDomain = config.projectDomain.replace(/^https?:\/\//, "");
+      // If skipPrompts => read from config
+      if (skipPrompts && !isSpecialDomain(domain)) {
+        primaryDomain = domain.replace(/^https?:\/\//, "");
       } else {
         primaryDomain = await promptForDomain(projectName);
       }
@@ -548,6 +551,7 @@ export async function promptGitDeploy({
       projectPath,
       primaryDomain,
       memory,
+      "new",
       shouldMaskSecretInput,
       githubUsername,
     );
@@ -573,6 +577,7 @@ export async function promptGitDeploy({
           primaryDomain,
           memory,
           shouldMaskSecretInput,
+          "new",
         );
         if (deployResult.deployService !== "none") {
           relinka(

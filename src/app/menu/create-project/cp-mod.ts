@@ -20,11 +20,11 @@ import {
   getTemplateInfo,
   type Template,
 } from "~/utils/projectTemplate.js";
+import { replaceTemplateStrings } from "~/utils/replacements/reps-mod.js";
 
 import {
   initializeProjectConfig,
   setupI18nSupport,
-  replaceTemplateStrings,
   handleDeployment,
   handleDependencies,
   showSuccessAndNextSteps,

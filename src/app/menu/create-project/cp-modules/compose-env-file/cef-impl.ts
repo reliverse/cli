@@ -1,5 +1,10 @@
-import { inputPrompt, multiselectPrompt } from "@reliverse/prompts";
+import {
+  inputPrompt,
+  multiselectPrompt,
+  confirmPrompt,
+} from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
+import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
@@ -12,10 +17,7 @@ import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { userDataTable } from "~/app/db/schema.js";
 
-import type { KeyVars } from "./cef-services.js";
-
-import { setDefaultValues } from "./cef-defaults.js";
-import { KNOWN_SERVICES } from "./cef-services.js";
+import { KNOWN_SERVICES, type KeyType } from "./cef-keys.js";
 
 type EnvPaths = {
   projectRoot: string;
@@ -113,6 +115,38 @@ export async function ensureEnvExists(projectDir: string): Promise<boolean> {
   }
 }
 
+/**
+ * Helper to parse lines from a .env file
+ * Returns an object: { KEY: "value", ... }
+ */
+function parseEnvKeys(envContents: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  const lines = envContents
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => !!l && !l.startsWith("#"));
+
+  for (const line of lines) {
+    // Simplistic parse: KEY=VALUE
+    // It will also handle lines like KEY="VALUE" or KEY='VALUE'
+    const [rawKey, ...rest] = line.split("=");
+    if (!rawKey) continue;
+    const key = rawKey.trim();
+    // Rejoin with "=" in case the value has "=" inside
+    let rawValue = rest.join("=");
+    // Remove possible wrapping quotes
+    rawValue = rawValue.replace(/^["']|["']$/g, "");
+    result[key] = rawValue;
+  }
+  return result;
+}
+
+/**
+ * Revised getMissingKeys:
+ * 1) Reads all required keys from .env.example
+ * 2) Parses .env to see which keys are present & non-empty
+ * 3) Returns only those that are truly missing or empty
+ */
 export async function getMissingKeys(projectDir: string): Promise<string[]> {
   const { envPath, exampleEnvPath } = getEnvPaths(projectDir);
 
@@ -122,23 +156,26 @@ export async function getMissingKeys(projectDir: string): Promise<string[]> {
       relinka("error", "Failed to read .env file.");
       return [];
     }
+    const exampleContent = await safeReadFile(exampleEnvPath);
+    if (!exampleContent) {
+      relinka("error", "Failed to read .env.example file.");
+      return [];
+    }
 
+    // 1) All required keys
     const requiredKeys = await getRequiredKeys(exampleEnvPath);
-    return requiredKeys.filter((key) => {
-      const service = Object.values(KNOWN_SERVICES).find((svc) =>
-        svc.keys.some((k) => k.key === (key as KeyVars)),
-      );
-      const keyConfig = service?.keys?.find((k) => k.key === (key as KeyVars));
-      if (keyConfig?.defaultValue) return false;
 
-      // Check if key exists and has a non-empty value
-      const lines = envContent.split("\n");
-      const keyLine = lines.find((line) => line.trim().startsWith(`${key}=`));
-      if (!keyLine) return true;
+    // 2) Parse .env
+    const existingEnvKeys = parseEnvKeys(envContent);
 
-      const value = keyLine.split("=")[1]?.trim();
-      return !value || value === '""' || value === "''";
+    // 3) Which required keys are not found or have empty value
+    const missing = requiredKeys.filter((key) => {
+      const val = existingEnvKeys[key];
+      // If the key isn't present or is empty string, treat it as missing
+      return !val;
     });
+
+    return missing;
   } catch {
     relinka("error", "Failed to get missing keys.");
     return [];
@@ -178,7 +215,10 @@ export async function copyFromExisting(
     }
 
     await fs.copy(fullEnvPath, envPath);
-    relinka("success", "Existing .env file has been copied successfully!");
+    relinka(
+      "success-verbose",
+      "Existing .env file has been copied successfully!",
+    );
     return true;
   } catch {
     relinka("error", "Failed to copy existing .env file.");
@@ -207,42 +247,12 @@ export async function fetchEnvExampleContent(
   } catch (error) {
     relinka(
       "error",
-      `Error fetching .env.example: ${error instanceof Error ? error.message : String(error)}`,
+      `Error fetching .env.example: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
     return null;
   }
-}
-
-export function generateSecureString({
-  length = 44,
-  charset = "alphanumeric",
-  purpose = "general",
-}: {
-  length?: number;
-  charset?: "alphanumeric" | "numeric" | "alphabetic";
-  purpose?: string;
-}): string {
-  const charsets: Record<string, string> = {
-    alphanumeric:
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-    numeric: "0123456789",
-    alphabetic: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  };
-
-  const purposeLengths: Record<string, number> = {
-    "auth-secret": 44,
-    "encryption-key": 64,
-    general: 44,
-  };
-
-  const effectiveLength = purposeLengths[purpose] ?? length;
-  const chars = charsets[charset] ?? charset;
-  const bytes = new Uint8Array(effectiveLength);
-  crypto.getRandomValues(bytes);
-
-  return Array.from(bytes)
-    .map((byte) => chars.charAt(byte % chars.length))
-    .join("");
 }
 
 const LAST_ENV_FILE_KEY = "last_env_file";
@@ -252,7 +262,7 @@ export async function ensureEnvFile(
   envExamplePath: string,
 ): Promise<void> {
   if (!(await fs.pathExists(envPath)) || (await fs.stat(envPath)).size === 0) {
-    relinka("info-verbose", "Creating .env file from .env.example...");
+    relinka("info-verbose", "Creating .env file based on .env.example file...");
     await fs.copy(envExamplePath, envPath);
   }
 }
@@ -291,8 +301,46 @@ async function updateEnvValue(
     envLines.push(newLine);
   }
 
-  // biome-ignore lint/style/useTemplate: <explanation>
-  await fs.writeFile(envPath, envLines.join("\n").trim() + "\n");
+  await fs.writeFile(envPath, `${envLines.join("\n").trim()}\n`);
+}
+
+/**
+ * Validate user-provided values based on key type.
+ * Returns true if the value passes, otherwise returns an error message.
+ */
+function validateKeyValue(value: string, keyType: KeyType): string | boolean {
+  const trimmed = value.trim();
+
+  switch (keyType) {
+    case "string":
+    case "password":
+    case "database":
+      return true;
+    case "email": {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(trimmed)
+        ? true
+        : "Please enter a valid email address.";
+    }
+    case "boolean": {
+      // Accept "true" or "false" (case-insensitive)
+      const lower = trimmed.toLowerCase();
+      if (lower === "true" || lower === "false") return true;
+      return 'Please enter "true" or "false".';
+    }
+    case "number": {
+      // Check if numeric
+      return isNaN(Number(trimmed)) ? "Please enter a valid number." : true;
+    }
+    default:
+      return true;
+  }
+}
+
+function generateSecureString(length = 64): string {
+  return randomBytes(Math.ceil(length / 2))
+    .toString("hex")
+    .slice(0, length);
 }
 
 export async function promptAndSetMissingValues(
@@ -300,9 +348,15 @@ export async function promptAndSetMissingValues(
   envPath: string,
   shouldMaskSecretInput: boolean,
   config: ReliverseConfig,
+  wasEnvCopied = false,
 ): Promise<void> {
-  if (missingKeys.length === 0) {
-    relinka("info-verbose", "No missing keys to process.");
+  if (missingKeys.length === 0 || wasEnvCopied) {
+    relinka(
+      "info-verbose",
+      wasEnvCopied
+        ? "Using values from copied .env file"
+        : "No missing keys to process.",
+    );
     return;
   }
 
@@ -311,49 +365,35 @@ export async function promptAndSetMissingValues(
     `Processing missing values: ${missingKeys.join(", ")}`,
   );
 
-  // First, handle default values
-  const { keysWithDefaultValues } = await setDefaultValues(
-    envPath,
-    missingKeys,
+  // Group missing keys by service
+  const servicesWithMissingKeys = Object.entries(KNOWN_SERVICES).filter(
+    ([, service]) => service.keys.some((k) => missingKeys.includes(k.key)),
   );
 
-  // Show message about default values if any were set
-  if (keysWithDefaultValues.length > 0) {
+  const selectedServicesMsg = config.envComposerOpenBrowser
+    ? "✨ I'll open the service dashboards for you. Remember to come back to the terminal after accessing them!"
+    : "✨ I'll show you the dashboard links for your selected services. You can open them in your browser (use Ctrl+Click if your terminal supports it).";
+
+  // Filter only the services that actually have keys that are missing.
+  const validServices = servicesWithMissingKeys.map(([key, service]) => ({
+    label: service.name,
+    value: key,
+  }));
+
+  // If for some reason no services matched, just skip
+  if (validServices.length === 0) {
     relinka(
-      "info",
-      "The following keys have been set to default values. Edit them manually if needed:",
+      "info-verbose",
+      "No known services require missing keys. Possibly custom keys missing?",
     );
-    relinka("info", keysWithDefaultValues.join(", "));
-  }
-
-  // Reread missing keys after setting defaults
-  const remainingKeys = missingKeys.filter((key) => {
-    const service = Object.values(KNOWN_SERVICES).find((svc) =>
-      svc.keys.some((k) => k.key === (key as KeyVars)),
-    );
-    const keyConfig = service?.keys.find((k) => k.key === (key as KeyVars));
-    return keyConfig?.defaultValue === undefined;
-  });
-
-  if (remainingKeys.length === 0) {
-    relinka("info-verbose", "All missing keys have been handled.");
     return;
   }
 
-  // Group remaining keys by service
-  const servicesWithMissingKeys = Object.entries(KNOWN_SERVICES).filter(
-    ([_, service]) => service.keys.some((k) => remainingKeys.includes(k.key)),
-  );
-
   const selectedServices = await multiselectPrompt({
     title: "Great! Which services do you want to configure?",
-    content:
-      "✨ I'll try to open the dashboard of the selected services for you. Don't forget to return to the terminal afterwards!",
-    defaultValue: servicesWithMissingKeys.map(([key]) => key),
-    options: servicesWithMissingKeys.map(([key, service]) => ({
-      label: service.name,
-      value: key,
-    })),
+    content: selectedServicesMsg,
+    defaultValue: validServices.map((srv) => srv.value),
+    options: validServices,
   });
 
   for (const serviceKey of selectedServices) {
@@ -361,41 +401,107 @@ export async function promptAndSetMissingValues(
     const service = KNOWN_SERVICES[serviceKey];
     if (!service) continue;
 
-    if (service.dashboardUrl) {
+    if (service.dashboardUrl && service.dashboardUrl !== "none") {
       relinka("info-verbose", `Opening ${service.name} dashboard...`);
       if (config.envComposerOpenBrowser) {
         await open(service.dashboardUrl);
+      } else {
+        relinka("info", `Dashboard link: ${service.dashboardUrl}`);
       }
     }
 
     for (const keyConfig of service.keys) {
-      if (remainingKeys.includes(keyConfig.key)) {
-        const value = await inputPrompt({
+      // If it's not in the missing list, skip
+      if (!missingKeys.includes(keyConfig.key)) {
+        continue;
+      }
+
+      // If optional is true, give user a chance to skip
+      if (keyConfig.optional) {
+        const displayValue =
+          shouldMaskSecretInput && keyConfig.defaultValue
+            ? "[hidden]"
+            : keyConfig.defaultValue === "generate-64-chars"
+              ? "[will generate secure string]"
+              : keyConfig.defaultValue
+                ? `"${keyConfig.defaultValue}"`
+                : "";
+
+        const shouldFill = await confirmPrompt({
+          title: `Do you want to configure ${keyConfig.key}?${
+            displayValue ? ` (default: ${displayValue})` : ""
+          }`,
+          defaultValue: false,
+        });
+        if (!shouldFill) {
+          if (keyConfig.defaultValue) {
+            const value =
+              keyConfig.defaultValue === "generate-64-chars"
+                ? generateSecureString()
+                : keyConfig.defaultValue;
+            await updateEnvValue(envPath, keyConfig.key, value);
+            relinka(
+              "info-verbose",
+              `Using ${
+                keyConfig.defaultValue === "generate-64-chars"
+                  ? "generated"
+                  : "default"
+              } value for ${keyConfig.key}${
+                shouldMaskSecretInput ? "" : `: ${value}`
+              }`,
+            );
+          }
+          continue;
+        }
+      }
+
+      let isValid = false;
+      let userInput = "";
+
+      while (!isValid) {
+        const defaultVal =
+          keyConfig.defaultValue === "generate-64-chars"
+            ? generateSecureString()
+            : keyConfig.defaultValue;
+
+        userInput = await inputPrompt({
           title: `Enter value for ${keyConfig.key}:`,
-          placeholder: "Paste your value here...",
+          placeholder: defaultVal
+            ? `Press Enter to use default: ${
+                shouldMaskSecretInput ? "[hidden]" : defaultVal
+              }`
+            : "Paste your value here...",
+          defaultValue: defaultVal ?? "",
           mode: shouldMaskSecretInput ? "password" : "plain",
-          validate: (value: string): string | boolean => {
-            if (!value?.trim()) {
-              return "This value is required";
-            }
-            return true;
-          },
           ...(keyConfig.instruction && {
             content: keyConfig.instruction,
             contentColor: "yellowBright",
           }),
-          ...(service.dashboardUrl && {
-            hint: `Visit ${service.dashboardUrl} to get your key`,
-          }),
+          ...(service.dashboardUrl &&
+            service.dashboardUrl !== "none" && {
+              hint: `Visit ${service.dashboardUrl} to get your key`,
+            }),
         });
 
-        const rawValue = value.startsWith(`${keyConfig.key}=`)
-          ? value.substring(value.indexOf("=") + 1)
-          : value;
-        const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
+        // If user just pressed Enter, use default
+        if (!userInput.trim() && keyConfig.defaultValue) {
+          userInput = keyConfig.defaultValue;
+        }
 
-        await updateEnvValue(envPath, keyConfig.key, cleanValue);
+        const validationResult = validateKeyValue(userInput, keyConfig.type);
+        if (validationResult === true) {
+          isValid = true;
+        } else {
+          relinka("warn", validationResult as string);
+        }
       }
+
+      const rawValue = userInput.startsWith(`${keyConfig.key}=`)
+        ? userInput.substring(userInput.indexOf("=") + 1)
+        : userInput;
+      const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
+
+      await updateEnvValue(envPath, keyConfig.key, cleanValue);
     }
   }
 }

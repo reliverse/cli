@@ -19,6 +19,7 @@ import {
   RELIVERSE_SCHEMA_URL,
   RELIVERSE_SCHEMA_DEV,
   cliName,
+  cliDomain,
 } from "~/app/constants.js";
 import { getBiomeConfig } from "~/utils/configHandler.js";
 
@@ -648,7 +649,8 @@ export async function getDefaultReliverseConfig(
         ? packageData.repository
         : (packageData.repository?.url ?? UNKNOWN_VALUE),
     projectState: "creating",
-    projectDomain: DEFAULT_DOMAIN,
+    projectDomain:
+      effectiveProjectName === cliName ? cliDomain : DEFAULT_DOMAIN,
     projectDeployService: "vercel",
     projectCategory: UNKNOWN_VALUE,
     projectSubcategory: UNKNOWN_VALUE,
@@ -1041,7 +1043,9 @@ async function createReliverseConfig(
 
   const effectiveProjectName = defaultRules?.projectName ?? path.basename(cwd);
   let effectiveAuthorName = defaultRules?.projectAuthor ?? UNKNOWN_VALUE;
-  const effectiveDomain = defaultRules?.projectDomain ?? DEFAULT_DOMAIN;
+  const effectiveDomain =
+    defaultRules?.projectDomain ??
+    (effectiveProjectName === cliName ? cliDomain : DEFAULT_DOMAIN);
 
   if (isDev) {
     effectiveAuthorName =

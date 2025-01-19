@@ -86,16 +86,7 @@ export type ConfigurationOptions = {
 /**
  * Gets configuration options from user
  */
-export async function getConfigurationOptions(
-  skipPrompts: boolean,
-): Promise<ConfigurationOptions> {
-  if (skipPrompts) {
-    return {
-      options: ["env"],
-      useSharedEnvVars: false,
-    };
-  }
-
+export async function getConfigurationOptions(): Promise<ConfigurationOptions> {
   const result = await multiselectPrompt({
     title: "Select Vercel deployment options:",
     options: [

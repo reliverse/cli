@@ -6,6 +6,7 @@ import type {
 } from "@vercel/sdk/models/getprojectsop";
 
 import {
+  confirmPrompt,
   inputPrompt,
   selectPrompt,
   spinnerTaskPrompt,
@@ -17,6 +18,7 @@ import path from "pathe";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { isSpecialDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/domainHelpers.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -354,6 +356,7 @@ export async function createVercelDeployment(
   projectPath: string,
   domain: string,
   memory: ReliverseMemory,
+  deployMode: "new" | "update",
   shouldMaskSecretInput: boolean,
   existingGithubUsername?: string,
 ): Promise<boolean> {
@@ -397,9 +400,10 @@ export async function createVercelDeployment(
     }
 
     // Get configuration options before starting the spinner
-    const selectedOptions = !isDeployed
-      ? await getConfigurationOptions(skipPrompts)
-      : { options: ["env"] };
+    const selectedOptions =
+      deployMode === "new" || skipPrompts
+        ? { options: ["env"] }
+        : await getConfigurationOptions();
 
     await spinnerTaskPrompt({
       spinnerSolution: "ora",
@@ -441,27 +445,47 @@ export async function createVercelDeployment(
             await configureResources(vercel, projectId);
           }
 
-          // 3. Domain Configuration Phase
-          if (skipPrompts) {
-            domain = `${projectName}.vercel.app`;
-          }
-          // Only configure custom domains (excluding vercel.app and example domains)
+          // Only configure custom domains if it's not a default Vercel
+          // domain or it's not included in the special domains list
           if (
-            !domain.includes(".vercel.app") &&
-            !domain.includes("example.com")
+            !isSpecialDomain(domain) &&
+            domain !== `${projectName}.vercel.app`
           ) {
-            await vercel.projects.addProjectDomain({
-              idOrName: projectName,
-              requestBody: {
-                name: domain,
-              },
-            });
+            let shouldAddDomain = false;
+            if (skipPrompts) {
+              shouldAddDomain = false;
+            } else {
+              shouldAddDomain = await confirmPrompt({
+                title: `Do you want to add ${domain} to your Vercel project?`,
+                content: `If no, ${projectName}.vercel.app domain will be created for you. You can add a custom domain later in the Vercel dashboard.`,
+              });
+            }
+            if (!shouldAddDomain) {
+              relinka("info", "Skipping custom domain configuration");
+              return;
+            }
 
-            const isVerified = await verifyDomain(vercel, projectId, domain);
-            if (!isVerified) {
+            relinka("info", "Setting up custom domain...");
+            try {
+              await vercel.projects.addProjectDomain({
+                idOrName: projectName,
+                requestBody: {
+                  name: domain,
+                },
+              });
+
+              const isVerified = await verifyDomain(vercel, projectId, domain);
+              if (!isVerified) {
+                relinka(
+                  "warn",
+                  "Please complete domain verification in your Vercel dashboard before proceeding",
+                );
+              }
+            } catch (error) {
               relinka(
                 "warn",
-                "Please complete domain verification before proceeding",
+                "Failed to set up custom domain. You can add it later in the Vercel dashboard:",
+                error instanceof Error ? error.message : String(error),
               );
             }
           }

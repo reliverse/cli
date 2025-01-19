@@ -1,7 +1,6 @@
 import {
   confirmPrompt,
   selectPrompt,
-  spinnerTaskPrompt,
   multiselectPrompt,
   nextStepsPrompt,
   inputPrompt,
@@ -14,6 +13,7 @@ import open from "open";
 import os from "os";
 import path from "pathe";
 
+import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { Behavior, DeploymentService } from "~/types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
@@ -21,10 +21,8 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
-import { extractRepoInfo } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/extractRepoInfo.js";
 import { isVSCodeInstalled } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/promptPackageJsonScripts.js";
-import { replaceStringsInFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/replaceStringsInFiles.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
@@ -39,15 +37,6 @@ export type PackageJson = {
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
-};
-
-/**
- * Minimal object describing essential project info after initialization
- */
-export type ProjectConfig = {
-  cliUsername: string;
-  projectName: string;
-  primaryDomain: string;
 };
 
 /**
@@ -102,7 +91,7 @@ export async function initializeProjectConfig(
   skipPrompts: boolean,
   isDev: boolean,
   cwd: string,
-): Promise<ProjectConfig> {
+): Promise<ProjectConfigReturn> {
   // 1. Determine user (author)
   const cliUsername =
     skipPrompts &&
@@ -139,52 +128,6 @@ export async function initializeProjectConfig(
       : `${projectName}.vercel.app`;
 
   return { cliUsername, projectName, primaryDomain };
-}
-
-/**
- * Replaces placeholders in the downloaded template with user-specified values.
- */
-export async function replaceTemplateStrings(
-  projectPath: string,
-  webProjectTemplate: TemplateOption,
-  config: ProjectConfig,
-) {
-  await spinnerTaskPrompt({
-    spinnerSolution: "ora",
-    initialMessage: "Editing texts in the initialized files...",
-    successMessage: "✅ Finished editing texts in the initialized files.",
-    errorMessage: "❌ Failed to edit some texts...",
-    async action(updateMessage: (msg: string) => void) {
-      const { author, projectName: oldProjectName } =
-        extractRepoInfo(webProjectTemplate);
-      updateMessage("Some magic is happening... Please wait...");
-
-      // Potential replacements
-      const replacements: Record<string, string> = {
-        [`${oldProjectName}.com`]: config.primaryDomain,
-        [author]: config.cliUsername,
-        [oldProjectName]: config.projectName,
-        ["relivator.com"]: config.primaryDomain,
-      };
-
-      // Filter out empty or identical
-      const validReplacements = Object.fromEntries(
-        Object.entries(replacements).filter(
-          ([key, value]) => key && value && key !== value,
-        ),
-      );
-
-      try {
-        await replaceStringsInFiles(projectPath, validReplacements);
-      } catch (error) {
-        relinka(
-          "error",
-          "Failed to replace strings in files:",
-          error instanceof Error ? error.message : String(error),
-        );
-      }
-    },
-  });
 }
 
 /**
@@ -402,7 +345,7 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `🎉 '${webProjectTemplate}' was installed at ${effectiveProjectPath}.`,
+    `🎉 Template '${webProjectTemplate}' was installed at ${effectiveProjectPath}.`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();
@@ -515,7 +458,7 @@ export async function handleNextAction(
         relinka(
           "info",
           vscodeInstalled
-            ? "Opening project in VSCode-based IDE..."
+            ? "Opening bootstrapped project in VSCode-based IDE..."
             : "Trying to open project in default IDE...",
         );
         try {

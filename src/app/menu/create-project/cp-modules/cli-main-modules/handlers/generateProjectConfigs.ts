@@ -81,20 +81,23 @@ async function generateVSCodeSettings(
       const existingSettings = destr(content);
 
       if (existingSettings && typeof existingSettings === "object") {
-        const existingCodeActions =
-          // @ts-expect-error TODO: fix ts
-          existingSettings["editor.codeActionsOnSave"] ?? {};
+        const defaultCodeActions: VSCodeSettings["editor.codeActionsOnSave"] = {
+          "quickfix.biome": "explicit",
+          "source.addMissingImports": "never",
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "never",
+          "source.removeUnused": "never",
+        };
+        const existingCodeActions = {
+          ...defaultCodeActions,
+          ...((existingSettings as Record<string, unknown>)[
+            "editor.codeActionsOnSave"
+          ] as typeof defaultCodeActions),
+        };
         settings = {
           ...defaultSettings,
           ...existingSettings,
-          "editor.codeActionsOnSave": {
-            ...existingCodeActions,
-            "quickfix.biome": "explicit",
-            "source.addMissingImports": "never",
-            "source.fixAll.eslint": "explicit",
-            "source.organizeImports": "never",
-            "source.removeUnused": "never",
-          },
+          "editor.codeActionsOnSave": existingCodeActions,
         };
       }
     } catch (error) {
@@ -110,8 +113,8 @@ async function generateVSCodeSettings(
   relinka(
     "success-verbose",
     overwrite
-      ? "Generated new .vscode/settings.json"
-      : "Updated .vscode/settings.json with required settings",
+      ? "Generated brand new VSCode settings.json file"
+      : "Updated VSCode settings.json with required settings",
   );
 }
 
@@ -134,7 +137,7 @@ export async function generateConfigFiles(
         : `Generating the following configuration files: ${filesToGenerate.join(", ")}...`,
     successMessage: "✅ Configuration files generated successfully!",
     errorMessage: "❌ Failed to generate configuration files",
-    async action() {
+    async action(updateMessage) {
       try {
         const shouldGenerateFile = (filename: string): boolean => {
           return (
@@ -176,7 +179,7 @@ export async function generateConfigFiles(
             const configPath = path.join(projectPath, ".reliverse");
             if (!overwrite && (await fs.pathExists(configPath))) {
               relinka("info", "Reliverse config already exists, skipping...");
-              return;
+              return false;
             }
 
             // Write with proper formatting and comments
@@ -186,15 +189,32 @@ export async function generateConfigFiles(
               encoding: "utf-8",
             });
             relinka("success-verbose", "Generated .reliverse config");
+            return true;
           },
-          "biome.json": () => generateBiomeConfig(projectPath, overwrite),
-          "settings.json": () => generateVSCodeSettings(projectPath, overwrite),
+          "biome.json": async () => {
+            const result = await generateBiomeConfig(projectPath, overwrite);
+            return result;
+          },
+          "settings.json": async () => {
+            const result = await generateVSCodeSettings(projectPath, overwrite);
+            return result;
+          },
         };
 
+        const generatedFiles: string[] = [];
         await Promise.all(
           Object.entries(configGenerators)
             .filter(([filename]) => shouldGenerateFile(filename))
-            .map(([_, generator]) => generator()),
+            .map(async ([filename, generator]) => {
+              const wasGenerated = await generator();
+              if (wasGenerated) {
+                generatedFiles.push(filename);
+              }
+            }),
+        );
+
+        updateMessage(
+          `✅ Configuration files generated successfully: ${generatedFiles.join(", ")}`,
         );
       } catch (error) {
         relinka(

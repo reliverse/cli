@@ -1,6 +1,6 @@
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 
-import { DEFAULT_DOMAIN, experimental } from "~/app/constants.js";
+import { DEFAULT_DOMAIN, experimental, recommended } from "~/app/constants.js";
 
 /**
  * Validates and formats a domain name
@@ -24,7 +24,7 @@ export async function promptForDomain(projectName: string): Promise<string> {
     content: "You can add a custom domain later in the Vercel dashboard.",
     options: [
       {
-        label: "No, use default Vercel domain only",
+        label: `No, use default Vercel domain only ${recommended}`,
         value: "default",
         hint: defaultDomain,
       },

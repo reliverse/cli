@@ -4,6 +4,8 @@ import { getRepoUrl } from "~/app/constants.js";
 import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
 import { productCategories } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/products.js";
 
+// TODO: deprecate this file
+
 export function slugify(str: string) {
   return str
     .toLowerCase()
