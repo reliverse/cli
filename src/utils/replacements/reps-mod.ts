@@ -13,12 +13,13 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export async function replacements(
+export async function handleReplacements(
   projectPath: string,
   webProjectTemplate: TemplateOption,
   externalReliversePath: string,
   config: ProjectConfigReturn & { projectDescription?: string },
   existingRepo: boolean,
+  showSuccessMessage: boolean,
 ) {
   relinka("info-verbose", "Personalizing texts in the initialized files...");
 
@@ -171,7 +172,9 @@ export async function replacements(
       maxConcurrency: 10, // limit concurrency
       stopOnError: false, // continue processing other files if one fails
     });
-    relinka("success", "Successfully personalized project files...");
+    if (showSuccessMessage) {
+      relinka("success", "Successfully personalized project files...");
+    }
   } catch (error) {
     relinka(
       "error",

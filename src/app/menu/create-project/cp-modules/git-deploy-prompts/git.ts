@@ -124,7 +124,7 @@ async function createGitCommit(
  * If allowReInit is true and repository exists, it will be reinitialized.
  */
 export async function initGitDir(
-  params: GitModParams & { allowReInit?: boolean },
+  params: GitModParams & { allowReInit: boolean; createCommit: boolean },
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);
 
@@ -151,7 +151,9 @@ export async function initGitDir(
       }
       const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
       await initializeGitRepo(git, false);
-      await createGitCommit(git, effectiveDir, false);
+      if (params.createCommit) {
+        await createGitCommit(git, effectiveDir, false);
+      }
       return true;
     }
 
@@ -160,7 +162,9 @@ export async function initGitDir(
     await initializeGitRepo(git, dirHasGit);
 
     // 5. Create initial commit if needed
-    await createGitCommit(git, effectiveDir, dirHasGit);
+    if (params.createCommit) {
+      await createGitCommit(git, effectiveDir, dirHasGit);
+    }
 
     return true;
   } catch (error) {
@@ -286,7 +290,7 @@ async function isRepoOwner(
 /**
  * Creates a GitHub repository and sets it up locally
  */
-export async function createGithubRepository(
+export async function handleGithubRepo(
   params: GitModParams & {
     skipPrompts: boolean;
     memory: ReliverseMemory;
@@ -303,7 +307,6 @@ export async function createGithubRepository(
       relinka("error", "Failed to read reliverse memory");
       return false;
     }
-
     if (!params.githubUsername) {
       relinka("error", "Could not determine GitHub username");
       return false;
@@ -316,7 +319,23 @@ export async function createGithubRepository(
       params.memory,
     );
 
-    if (repoExists) {
+    if (!repoExists) {
+      // If repo DOES NOT exist,
+      // just create a new repo
+      return await createGithubRepo(
+        params.memory,
+        params.projectName,
+        params.githubUsername,
+        effectiveDir,
+        params.isDev,
+        params.cwd,
+        params.shouldMaskSecretInput,
+        params.config,
+      );
+
+      // But if repo DOES exist, then
+      // we prompt the user what to do
+    } else {
       if (params.isDev) {
         await cd(effectiveDir);
         pwd();
@@ -378,10 +397,12 @@ export async function createGithubRepository(
             return true;
           },
         });
+
         if (!newName || typeof newName !== "string") {
           relinka("error", "Invalid repository name provided");
           return false;
         }
+
         // After we have a free repo name,
         // create a new GitHub repository
         return await createGithubRepo(
@@ -393,24 +414,11 @@ export async function createGithubRepository(
           params.cwd,
           params.shouldMaskSecretInput,
           params.config,
-          params.selectedTemplate,
         );
       }
     }
 
-    // If repo DOES NOT exist,
-    // just create a new repo
-    return await createGithubRepo(
-      params.memory,
-      params.projectName,
-      params.githubUsername,
-      effectiveDir,
-      params.isDev,
-      params.cwd,
-      params.shouldMaskSecretInput,
-      params.config,
-      params.selectedTemplate,
-    );
+    return true;
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {
       relinka(

@@ -11,7 +11,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 import { cliName } from "~/app/constants.js";
 import { getEffectiveDir } from "~/utils/getEffectiveDir.js";
 import { updateReliverseConfig } from "~/utils/reliverseConfig.js";
-import { replacements } from "~/utils/replacements/reps-mod.js";
+import { handleReplacements } from "~/utils/replacements/reps-mod.js";
 
 import { handleExistingRepoContent } from "./utils-private-repo.js";
 
@@ -161,8 +161,9 @@ export async function handleExistingRepo(
         }),
       };
 
-      // Update the .reliverse config with migrated data
+      // Update the .reliverse config with migrated data, preserving comments
       const success = await updateReliverseConfig(effectiveDir, validConfig);
+
       if (success) {
         relinka("success", "Successfully migrated .reliverse config");
         relinka(
@@ -184,7 +185,7 @@ export async function handleExistingRepo(
   }
 
   // Always run replacements after migration (or if migration failed)
-  await replacements(
+  await handleReplacements(
     effectiveDir,
     params.selectedTemplate,
     "",
@@ -194,6 +195,7 @@ export async function handleExistingRepo(
       primaryDomain: `${params.projectName}.com`,
     },
     true,
+    false,
   );
 
   if (shouldCommitAndPush) {

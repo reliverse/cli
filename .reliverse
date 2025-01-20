@@ -60,12 +60,8 @@
     "ci": false,
     "commands": [],
     "webview": [],
-    "language": [
-      "typescript"
-    ],
-    "themes": [
-      "default"
-    ]
+    "language": ["typescript"],
+    "themes": ["default"]
   },
 
   // Code style preferences

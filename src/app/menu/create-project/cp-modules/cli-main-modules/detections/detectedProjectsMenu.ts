@@ -38,7 +38,7 @@ import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-p
 import {
   pushGitCommits,
   initGitDir,
-  createGithubRepository,
+  handleGithubRepo,
   createCommit,
 } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
@@ -277,6 +277,7 @@ export async function handleOpenProjectMenu(
         projectPath: selectedProject.path,
         projectName: selectedProject.name,
         allowReInit: true,
+        createCommit: true,
       });
       if (success) {
         relinka("success", "Git repository initialized successfully");
@@ -324,7 +325,7 @@ export async function handleOpenProjectMenu(
         throw new Error("Could not determine GitHub username");
       }
 
-      const success = await createGithubRepository({
+      const success = await handleGithubRepo({
         skipPrompts: false,
         cwd,
         isDev,

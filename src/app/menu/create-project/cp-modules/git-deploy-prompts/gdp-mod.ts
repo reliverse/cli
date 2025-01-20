@@ -13,7 +13,7 @@ import { decide } from "~/utils/decideHelper.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { deployProject } from "./deploy.js";
-import { createGithubRepository, initGitDir } from "./git.js";
+import { handleGithubRepo, initGitDir } from "./git.js";
 import { isSpecialDomain } from "./helpers/domainHelpers.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
@@ -48,6 +48,7 @@ export async function handleGitInit(
     projectName,
     projectPath,
     allowReInit: true,
+    createCommit: true,
   });
   if (!gitInitialized) {
     relinka("error", "Failed to initialize git. Stopping git/deploy process.");
@@ -59,7 +60,7 @@ export async function handleGitInit(
 /**
  * Creates or configures a GitHub repo (plus local git) if needed.
  */
-export async function handleGithubRepo(
+export async function configureGithubRepo(
   skipPrompts: boolean,
   cwd: string,
   isDev: boolean,
@@ -83,7 +84,7 @@ export async function handleGithubRepo(
 
   // Even if token is not found, we proceed.
   // createGithubRepo will prompt for a token if needed.
-  const repoCreated = await createGithubRepository({
+  const repoCreated = await handleGithubRepo({
     skipPrompts,
     cwd,
     isDev,
@@ -248,7 +249,7 @@ export async function promptGitDeploy({
     // Attempt up to 3 times
     while (githubRetryCount < 3 && !skipGitHub) {
       try {
-        githubData = await handleGithubRepo(
+        githubData = await configureGithubRepo(
           skipPrompts,
           cwd,
           isDev,

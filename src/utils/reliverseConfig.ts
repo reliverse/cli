@@ -101,41 +101,7 @@ export async function detectProjectFramework(
 }
 
 /* ------------------------------------------------------------------
- * Deep merges (unchanged; can keep or remove if you want partial merges)
- * ------------------------------------------------------------------ */
-
-function deepMerge<T extends Record<string, any>>(
-  target: T,
-  source: Partial<T>,
-): T {
-  // unchanged
-  const result = { ...target };
-  for (const key in source) {
-    const sourceValue = source[key];
-    const targetValue = target[key];
-    if (sourceValue !== undefined) {
-      if (
-        sourceValue !== null &&
-        typeof sourceValue === "object" &&
-        !Array.isArray(sourceValue) &&
-        targetValue !== null &&
-        typeof targetValue === "object" &&
-        !Array.isArray(targetValue)
-      ) {
-        result[key] = deepMerge(targetValue, sourceValue as any) as T[Extract<
-          keyof T,
-          string
-        >];
-      } else {
-        result[key] = sourceValue as T[Extract<keyof T, string>];
-      }
-    }
-  }
-  return result;
-}
-
-/* ------------------------------------------------------------------
- * Example: using compiled schema to validate
+ * Using compiled schema to validate
  * ------------------------------------------------------------------ */
 const BACKUP_EXTENSION = ".backup";
 const TEMP_EXTENSION = ".tmp";
@@ -174,76 +140,74 @@ export async function updateReliverseConfig(
   updates: Partial<ReliverseConfig>,
 ): Promise<boolean> {
   const configPath = path.join(projectPath, ".reliverse");
-  const backupPath = configPath + BACKUP_EXTENSION;
-  const tempPath = configPath + TEMP_EXTENSION;
 
   try {
-    let existingConfig: ReliverseConfig = {} as ReliverseConfig;
+    // Read existing config if it exists
+    let existingConfig: Partial<ReliverseConfig> = {};
     let existingContent = "";
 
-    // Read and parse existing config
     if (await fs.pathExists(configPath)) {
       existingContent = await fs.readFile(configPath, "utf-8");
       const parsed = parseJSONC(existingContent);
-      // Validate
-      const check = validateReliverseConfig(parsed);
-      if (check.valid) {
-        existingConfig = parsed as ReliverseConfig;
-      } else {
-        relinka("warn", "Invalid .reliverse schema, starting fresh");
+      if (parsed && typeof parsed === "object") {
+        existingConfig = parsed as Partial<ReliverseConfig>;
       }
     }
 
-    // Merge
-    const mergedConfig = deepMerge(existingConfig, updates);
+    // Merge updates with existing config
+    const mergedConfig = {
+      ...existingConfig,
+      ...updates,
+    };
 
-    // Validate final
-    const checkFinal = validateReliverseConfig(mergedConfig);
-    if (!checkFinal.valid) {
-      relinka(
-        "error",
-        "Invalid .reliverse config after merge:",
-        checkFinal.errors.join("; "),
+    // Validate the merged config
+    if (!Value.Check(reliverseConfigSchema, mergedConfig)) {
+      const errors = [...Value.Errors(reliverseConfigSchema, mergedConfig)];
+      const errorMessages = errors.map(
+        (err) => `Path "${err.path}": ${err.message}`,
       );
+      relinka("error", "Invalid .reliverse config:", errorMessages.join(", "));
       return false;
     }
 
-    // Backup if it existed
-    if (await fs.pathExists(configPath)) {
-      await fs.copy(configPath, backupPath);
+    // If we have existing content, try to preserve comments and formatting
+    if (existingContent) {
+      // Parse the existing content to get its structure
+      const existingLines = existingContent.split("\n");
+      const updatedLines = existingLines.map((line) => {
+        // Skip comment lines and empty lines
+        if (line.trim().startsWith("//") || line.trim() === "") {
+          return line;
+        }
+        // Try to update the value while keeping the formatting
+        const match = /^(\s*)"([^"]+)"\s*:/.exec(line);
+        if (match?.[2]) {
+          const [, indent, key] = match;
+          if (key in updates) {
+            const value = JSON.stringify(
+              updates[key as keyof ReliverseConfig],
+              null,
+              2,
+            );
+            return `${indent}"${key}": ${value}${line.endsWith(",") ? "," : ""}`;
+          }
+        }
+        return line;
+      });
+
+      await fs.writeFile(configPath, updatedLines.join("\n"));
+    } else {
+      // For new files, write with standard formatting
+      await fs.writeJson(configPath, mergedConfig, { spaces: 2 });
     }
 
-    // Write to temp file first
-    let fileContent = JSON.stringify(mergedConfig, null, 2);
-
-    // If brand new file, you might want to call `injectSectionComments(fileContent)`
-    if (!existingContent) {
-      fileContent = injectSectionComments(fileContent);
-    }
-
-    await fs.writeFile(tempPath, fileContent);
-    await fs.rename(tempPath, configPath);
-
-    if (await fs.pathExists(backupPath)) {
-      await fs.remove(backupPath);
-    }
-
-    relinka("success-verbose", "Reliverse config updated successfully");
     return true;
   } catch (error) {
-    // restore if we created a backup
-    if (
-      (await fs.pathExists(backupPath)) &&
-      !(await fs.pathExists(configPath))
-    ) {
-      await fs.copy(backupPath, configPath);
-      relinka("warn", "Restored config from backup after failed update");
-    }
-    // cleanup
-    if (await fs.pathExists(tempPath)) {
-      await fs.remove(tempPath);
-    }
-    relinka("error", "Failed to update .reliverse config:", String(error));
+    relinka(
+      "error",
+      "Failed to update .reliverse config:",
+      error instanceof Error ? error.message : String(error),
+    );
     return false;
   }
 }
@@ -344,7 +308,6 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
  * Simple merge with defaults
  * ------------------------------------------------------------------ */
 function mergeWithDefaults(partial: Partial<ReliverseConfig>): ReliverseConfig {
-  // unchanged from your code
   return {
     ...DEFAULT_CONFIG,
     ...partial,
@@ -378,13 +341,12 @@ function mergeWithDefaults(partial: Partial<ReliverseConfig>): ReliverseConfig {
 }
 
 /* ------------------------------------------------------------------
- * fixLineByLine (example improved with Value.Parse)
+ * fixLineByLine via Value.Parse
  * ------------------------------------------------------------------ */
 
 /**
- * Example using Value.Parse to fix line-by-line.
+ * Using Value.Parse to fix line-by-line.
  * We can parse with Clean, Default, Convert, Assert if we want a single pass.
- * This is simpler than the custom approach you had, but we keep the same function name.
  */
 export function fixLineByLine(userConfig: unknown): {
   fixedConfig: unknown;
@@ -429,7 +391,6 @@ export function fixLineByLine(userConfig: unknown): {
 type CommentSections = Partial<Record<keyof ReliverseConfig, string[]>>;
 
 export function injectSectionComments(fileContent: string): string {
-  // unchanged from your code
   const comment = (text: string) => (text ? `// ${text}` : "");
 
   const commentSections: CommentSections = {

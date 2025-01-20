@@ -18,7 +18,7 @@ import {
   type Template,
 } from "~/utils/projectTemplate.js";
 import { updateReliverseConfig } from "~/utils/reliverseConfig.js";
-import { replacements } from "~/utils/replacements/reps-mod.js";
+import { handleReplacements } from "~/utils/replacements/reps-mod.js";
 
 import {
   initializeProjectConfig,
@@ -206,7 +206,7 @@ export async function createWebProject({
   // 6) Replace placeholders in the template
   // -------------------------------------------------
   const externalReliversePath = path.join(projectPath, ".reliverse");
-  await replacements(
+  await handleReplacements(
     projectPath,
     webProjectTemplate,
     externalReliversePath,
@@ -216,6 +216,7 @@ export async function createWebProject({
       projectName,
     },
     false,
+    true,
   );
 
   // -------------------------------------------------

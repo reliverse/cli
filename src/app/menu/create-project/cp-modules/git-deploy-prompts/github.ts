@@ -2,11 +2,10 @@ import type { Octokit } from "@octokit/rest";
 
 import { RequestError } from "@octokit/request-error";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
-import { deleteLastLine, relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -17,7 +16,6 @@ import { cd } from "~/utils/terminalHelpers.js";
 import { initGitDir } from "./git.js";
 import { createOctokitInstance } from "./octokit-instance.js";
 import { setupGitRemote } from "./utils-git-github.js";
-import { handleExistingRepo } from "./utils-repo-exists.js";
 
 export async function checkGithubRepoOwnership(
   octokit: Octokit,
@@ -328,7 +326,6 @@ export async function createGithubRepo(
   cwd: string,
   shouldMaskSecretInput: boolean,
   config: ReliverseConfig,
-  selectedTemplate: TemplateOption,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
@@ -337,94 +334,56 @@ export async function createGithubRepo(
 
     await cd(projectPath);
 
-    // 2. Get an available repository name and check its status
-    deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
-    relinka("info-verbose", "Checking repository status...");
-    const { name: effectiveRepoName, exists: repoExists } =
-      await getAvailableGithubRepoName(octokit, repoOwner, repoName);
-    repoName = effectiveRepoName;
+    // Initialize git and create repository
+    await initGitDir({
+      cwd,
+      isDev,
+      projectPath,
+      projectName: repoName,
+      allowReInit: true,
+      createCommit: true,
+    });
 
-    if (repoExists) {
-      await handleExistingRepo(
-        {
-          cwd,
-          isDev,
-          projectPath,
-          projectName: repoName,
-          memory,
-          config,
-          githubUsername: repoOwner,
-          selectedTemplate,
-        },
-        true,
-      );
-    } else {
-      // New repository
-      await initGitDir({
-        cwd,
-        isDev,
-        projectPath,
-        projectName: repoName,
-        allowReInit: true,
+    // For new repositories, determine privacy setting
+    let privacyAction = config.repoPrivacy;
+    if (privacyAction === "unknown") {
+      const selectedPrivacyAction = await selectPrompt({
+        title: "Choose repository privacy setting",
+        defaultValue: "public",
+        options: [
+          {
+            label: "Public repository",
+            value: "public",
+            hint: "Anyone can see the repository (recommended for open source)",
+          },
+          {
+            label: "Private repository",
+            value: "private",
+            hint: "Only you and collaborators can see the repository",
+          },
+        ],
       });
-      let privacyAction = config.repoPrivacy;
-      if (privacyAction === "unknown") {
-        const selectedPrivacyAction = await selectPrompt({
-          title: "Choose repository privacy setting",
-          defaultValue: "public",
-          options: [
-            {
-              label: "Public repository",
-              value: "public",
-              hint: "Anyone can see the repository (recommended for open source)",
-            },
-            {
-              label: "Private repository",
-              value: "private",
-              hint: "Only you and collaborators can see the repository",
-            },
-          ],
-        });
-        privacyAction = selectedPrivacyAction;
-      }
-
-      // Create the repository
-      // deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
-      relinka("info-verbose", "Creating repository...");
-      try {
-        await octokit.rest.repos.createForAuthenticatedUser({
-          name: repoName,
-          description: `Created with ${cliName} - ${new Date().toISOString()}`,
-          private: privacyAction === "private",
-          auto_init: false,
-          has_issues: true,
-          has_projects: true,
-          has_wiki: true,
-        });
-        relinka(
-          "success",
-          `Repository https://github.com/${repoOwner}/${repoName} created successfully!`,
-        );
-      } catch (error: any) {
-        if (error instanceof RequestError) {
-          if (error.status === 422 && error.message?.includes("exists")) {
-            relinka(
-              "error",
-              `Repository ${repoOwner}/${repoName} was just created by someone else. Please try again with a different name.`,
-            );
-            return false;
-          }
-          if (error.status === 403) {
-            relinka("error", "Rate limit exceeded. Please try again later.");
-            return false;
-          }
-        }
-        // If not specifically handled above, rethrow
-        throw error;
-      }
+      privacyAction = selectedPrivacyAction;
     }
 
-    // 4. Setup remote and push initial commit
+    // Create the repository
+    relinka("info-verbose", "Creating repository...");
+
+    try {
+      await octokit.rest.repos.createForAuthenticatedUser({
+        name: repoName,
+        private: privacyAction === "private",
+        auto_init: false,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("already exists")) {
+        relinka("error", `Repository '${repoName}' already exists on GitHub`);
+        return false;
+      }
+      throw error;
+    }
+
+    // Setup remote and push initial commit
     const remoteUrl = `https://github.com/${repoOwner}/${repoName}.git`;
     relinka(
       "info-verbose",

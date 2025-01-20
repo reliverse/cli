@@ -219,7 +219,10 @@ export async function replaceStringsInFiles(
       "dist-npm",
       "coverage",
     ],
-    stringExclusions = ["https://api.github.com/repos/blefnk/relivator"],
+    stringExclusions = [
+      "https://api.github.com/repos/blefnk/relivator",
+      "https://api.github.com/repos/blefnk/relivator-nextjs-template",
+    ],
     verbose = false,
     dryRun = false,
     skipBinaryFiles = false,
