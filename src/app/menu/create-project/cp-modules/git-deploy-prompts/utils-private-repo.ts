@@ -1,14 +1,39 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import { createTarGzip, type TarFileInput } from "nanotar";
 import { homedir } from "node:os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
+import tar from "tar-stream";
+import { promisify } from "util";
+import { gzip } from "zlib";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
+
+const gzipAsync = promisify(gzip);
+
+async function createArchive(
+  files: { name: string; data: Buffer }[],
+): Promise<Buffer> {
+  const pack = tar.pack();
+
+  for (const file of files) {
+    pack.entry({ name: file.name }, file.data);
+  }
+  pack.finalize();
+
+  // Collect all chunks
+  const chunks: Buffer[] = [];
+  for await (const chunk of pack) {
+    chunks.push(chunk);
+  }
+
+  // Compress the tar
+  const tarBuffer = Buffer.concat(chunks);
+  return gzipAsync(tarBuffer);
+}
 
 /**
  * Clones a repository to a temporary directory and copies specified files
@@ -16,7 +41,7 @@ import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 export async function archiveExistingRepoContent(
   repoUrl: string,
   projectPath: string,
-): Promise<boolean> {
+): Promise<{ success: boolean; externalReliversePath?: string }> {
   const tempDir = path.join(
     homedir(),
     ".reliverse",
@@ -36,12 +61,12 @@ export async function archiveExistingRepoContent(
         "Would you like to create an archive of the existing repository content?",
       content:
         "In the future, you will be able to run `reliverse cli` to use merge operations on the project's old and new content. The term `cluster` is used as the name for the old content.",
-      defaultValue: true,
+      defaultValue: false,
     });
 
     if (shouldArchive) {
       // Create archive of tempDir content
-      const fileInputs: TarFileInput[] = [];
+      const fileInputs: { name: string; data: Buffer }[] = [];
       const tempFiles = await fs.readdir(tempDir);
 
       for (const file of tempFiles) {
@@ -78,8 +103,8 @@ export async function archiveExistingRepoContent(
       if (fileInputs.length > 0) {
         const archiveName = "cluster.tar.gz";
         const archivePath = path.join(projectPath, archiveName);
-        const tarData = await createTarGzip(fileInputs);
-        await fs.writeFile(archivePath, Buffer.from(tarData));
+        const tarData = await createArchive(fileInputs);
+        await fs.writeFile(archivePath, tarData);
         relinka(
           "info",
           `Created archive of repository content at ${archiveName}`,
@@ -104,11 +129,9 @@ export async function archiveExistingRepoContent(
 
       // Set hidden attribute for .git folder on Windows
       const gitFolderPath = path.join(projectPath, ".git");
-      if (await fs.pathExists(gitFolderPath)) {
-        await setHiddenAttributeOnWindows(gitFolderPath);
-      }
+      await setHiddenAttributeOnWindows(gitFolderPath);
 
-      relinka("info", "Copied .git folder from existing repository");
+      relinka("info-verbose", "Copied .git folder from existing repository");
     } else {
       throw new Error("Required .git folder not found");
     }
@@ -117,14 +140,33 @@ export async function archiveExistingRepoContent(
     const filesToCopy = [
       { name: "README.md", required: false },
       { alternatives: ["LICENSE", "LICENSE.md"], required: false },
+      {
+        name: ".reliverse",
+        required: false,
+        targetName: "temp.reliverse",
+        hidden: true,
+      },
     ];
+
+    let externalReliversePath: string | undefined;
 
     for (const file of filesToCopy) {
       if (file.name) {
         const sourcePath = path.join(tempDir, file.name);
         if (await fs.pathExists(sourcePath)) {
-          await fs.copy(sourcePath, path.join(projectPath, file.name));
-          relinka("info", `Copied ${file.name} from existing repository`);
+          const targetPath = path.join(
+            projectPath,
+            file.targetName ?? file.name,
+          );
+          await fs.copy(sourcePath, targetPath);
+          if (!file.hidden) {
+            relinka("info", `Copied ${file.name} from existing repository`);
+          }
+
+          // Store temp.reliverse path if found
+          if (file.name === ".reliverse") {
+            externalReliversePath = targetPath;
+          }
         }
       } else if (file.alternatives) {
         for (const name of file.alternatives) {
@@ -138,14 +180,17 @@ export async function archiveExistingRepoContent(
       }
     }
 
-    return true;
+    return {
+      success: true,
+      ...(externalReliversePath && { externalReliversePath }),
+    };
   } catch (error) {
     relinka(
       "error",
       "Failed to clone repository:",
       error instanceof Error ? error.message : String(error),
     );
-    return false;
+    return { success: false };
   } finally {
     // Cleanup temp directory
     try {
@@ -161,24 +206,30 @@ export async function handleExistingRepoContent(
   repoOwner: string,
   repoName: string,
   projectPath: string,
-): Promise<boolean> {
+): Promise<{ success: boolean; externalReliversePath?: string }> {
   try {
     // Clone repo to temp dir and copy files
     const repoUrl = `https://oauth2:${memory.githubKey}@github.com/${repoOwner}/${repoName}.git`;
-    const success = await archiveExistingRepoContent(repoUrl, projectPath);
+    const { success, externalReliversePath } = await archiveExistingRepoContent(
+      repoUrl,
+      projectPath,
+    );
 
     if (!success) {
       throw new Error("Failed to retrieve repository git data");
     }
 
-    relinka("success", "Retrieved repository git data");
-    return true;
+    relinka("success", "Retrieved repository git directory data");
+    return {
+      success: true,
+      ...(externalReliversePath && { externalReliversePath }),
+    };
   } catch (error) {
     relinka(
       "error",
       "Failed to set up existing repository:",
       error instanceof Error ? error.message : String(error),
     );
-    return false;
+    return { success: false };
   }
 }

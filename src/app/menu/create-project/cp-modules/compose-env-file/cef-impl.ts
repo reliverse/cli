@@ -519,7 +519,10 @@ export async function saveLastEnvFilePath(envPath: string): Promise<void> {
         target: userDataTable.key,
         set: { value: encryptedPath },
       });
-    relinka("success", "Environment file path saved");
+    relinka(
+      "success",
+      "Environment file path saved securely. You can use it later.",
+    );
   } catch (error) {
     relinka(
       "error",

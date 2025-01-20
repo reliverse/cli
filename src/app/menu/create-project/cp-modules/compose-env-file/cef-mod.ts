@@ -116,7 +116,7 @@ export async function composeEnvFile(
           "Please provide the path to your existing .env file or directory:",
         placeholder:
           process.platform === "win32"
-            ? `Enter the path (e.g. "C:\\Users\\name\\project\\.env" or "C:\\Users\\name\\project")`
+            ? `Enter the path (e.g. "C:\\B\\S\\project\\.env" or "C:\\B\\S\\project")`
             : `Enter the path (e.g. "/home/user/project/.env" or "/home/user/project")`,
         content:
           "You can provide either the .env file path or the directory containing it.\nHint: Drag-n-drop the file or directory into the terminal to insert the path.",

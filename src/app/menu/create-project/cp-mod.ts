@@ -8,10 +8,7 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
-import {
-  generateProjectConfigs,
-  updateProjectConfig,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
+import { generateProjectConfigs } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import {
   TEMPLATES,
@@ -20,7 +17,8 @@ import {
   getTemplateInfo,
   type Template,
 } from "~/utils/projectTemplate.js";
-import { replaceTemplateStrings } from "~/utils/replacements/reps-mod.js";
+import { updateReliverseConfig } from "~/utils/reliverseConfig.js";
+import { replacements } from "~/utils/replacements/reps-mod.js";
 
 import {
   initializeProjectConfig,
@@ -205,21 +203,27 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 6) Remove .reliverse file from project if exists
+  // 6) Replace placeholders in the template
   // -------------------------------------------------
-  const externalReliverse = path.join(projectPath, ".reliverse");
-  if (await fs.pathExists(externalReliverse)) {
-    await fs.remove(externalReliverse);
-  }
+  const externalReliversePath = path.join(projectPath, ".reliverse");
+  await replacements(
+    projectPath,
+    webProjectTemplate,
+    externalReliversePath,
+    {
+      primaryDomain: initialDomain,
+      cliUsername,
+      projectName,
+    },
+    false,
+  );
 
   // -------------------------------------------------
-  // 7) Replace placeholders in the template
+  // 7) Remove .reliverse file from project if exists
   // -------------------------------------------------
-  await replaceTemplateStrings(projectPath, webProjectTemplate, {
-    primaryDomain: initialDomain,
-    cliUsername,
-    projectName,
-  });
+  if (await fs.pathExists(externalReliversePath)) {
+    await fs.remove(externalReliversePath);
+  }
 
   // -------------------------------------------------
   // 8) Setup i18n (auto or prompt-based)
@@ -288,13 +292,14 @@ export async function createWebProject({
       cwd,
       shouldMaskSecretInput,
       skipPrompts,
+      selectedTemplate: webProjectTemplate,
     });
 
   // If the user changed domain or deploy service, update .reliverse again
   if (deployService !== "vercel" || primaryDomain !== initialDomain) {
-    await updateProjectConfig(projectPath, "reliverse", {
-      deployService,
-      primaryDomain,
+    await updateReliverseConfig(projectPath, {
+      projectDeployService: deployService,
+      projectDomain: primaryDomain,
     });
   }
 

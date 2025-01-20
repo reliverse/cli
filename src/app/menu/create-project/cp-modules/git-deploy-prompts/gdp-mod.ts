@@ -4,6 +4,7 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
 import type { DeploymentService } from "~/types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -67,6 +68,7 @@ export async function handleGithubRepo(
   projectName: string,
   projectPath: string,
   shouldMaskSecretInput: boolean,
+  selectedTemplate: TemplateOption,
 ): Promise<GithubSetupResult> {
   if (!memory) {
     relinka("error", "Failed to read reliverse memory");
@@ -79,7 +81,8 @@ export async function handleGithubRepo(
     return { success: false };
   }
 
-  // Even if token is not found, we proceed. createGithubRepo() will prompt for a token if needed.
+  // Even if token is not found, we proceed.
+  // createGithubRepo will prompt for a token if needed.
   const repoCreated = await createGithubRepository({
     skipPrompts,
     cwd,
@@ -90,6 +93,7 @@ export async function handleGithubRepo(
     projectPath,
     shouldMaskSecretInput,
     githubUsername: username,
+    selectedTemplate,
   });
   if (!repoCreated) {
     relinka(
@@ -153,6 +157,7 @@ export async function promptGitDeploy({
   cwd,
   shouldMaskSecretInput,
   skipPrompts,
+  selectedTemplate,
 }: {
   projectName: string;
   config: ReliverseConfig;
@@ -166,6 +171,7 @@ export async function promptGitDeploy({
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
+  selectedTemplate: TemplateOption;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -251,6 +257,7 @@ export async function promptGitDeploy({
           projectName,
           projectPath,
           shouldMaskSecretInput,
+          selectedTemplate,
         );
         if (githubData.success) {
           break; // success => break out of loop
@@ -465,7 +472,8 @@ export async function promptGitDeploy({
     if (alreadyDeployed) {
       relinka(
         "success",
-        "Project already has Vercel deployments configured. New commits auto-deploy!",
+        "Project already has Vercel deployments configured on GitHub.",
+        "New deployments are automatically triggered on new commits.",
       );
       return {
         deployService: "vercel",

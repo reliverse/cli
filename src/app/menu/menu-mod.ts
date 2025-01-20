@@ -9,12 +9,12 @@ import type { ProjectCategory } from "~/utils/schemaConfig.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { getRandomMessage } from "~/app/db/messages.js";
-import { downloadTemplateOption } from "~/dev.js";
-import { rmTestsRuntime } from "~/dev.js";
 import { aiChatHandler } from "~/utils/aiChatHandler.js";
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
+import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
+import { downloadTemplateOption } from "./dev-submenu/dev-mod.js";
 import {
   optionCreateBrowserExtension,
   optionCreateVSCodeExtension,

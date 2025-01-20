@@ -62,7 +62,7 @@ export async function convertRuntime(
     cwd: path.resolve(projectPath),
   });
 
-  const replacements = RUNTIME_REPLACEMENTS[targetRuntime];
+  const runtimeReplacements = RUNTIME_REPLACEMENTS[targetRuntime];
 
   for (const file of files) {
     const filePath = path.join(projectPath, file);
@@ -70,7 +70,9 @@ export async function convertRuntime(
     let updatedContent = content;
 
     // Replace imports and APIs
-    for (const [nodePattern, runtimePattern] of Object.entries(replacements)) {
+    for (const [nodePattern, runtimePattern] of Object.entries(
+      runtimeReplacements,
+    )) {
       updatedContent = updatedContent.replace(
         new RegExp(nodePattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
         runtimePattern,

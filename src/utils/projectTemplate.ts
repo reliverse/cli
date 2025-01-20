@@ -210,9 +210,7 @@ export async function saveTemplateToDevice(
 
     // Set hidden attribute for .git folder on Windows
     const gitFolderPath = path.join(templateSavePath, ".git");
-    if (await fs.pathExists(gitFolderPath)) {
-      await setHiddenAttributeOnWindows(gitFolderPath);
-    }
+    await setHiddenAttributeOnWindows(gitFolderPath);
 
     // Get GitHub repository information
     const [owner, repo] = template.id.split("/");

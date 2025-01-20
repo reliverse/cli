@@ -27,6 +27,7 @@ export async function askUserName(
     placeholder: hasPreviousName
       ? "No worries about @ symbol anywhere, I'll add it for you."
       : `[Default: ${placeholder}] No worries about @ symbol anywhere, I'll add it for you.`,
+    defaultValue: hasPreviousName ? previousName : DEFAULT_CLI_USERNAME,
   });
 
   // If user presses Enter (empty input):
@@ -35,11 +36,6 @@ export async function askUserName(
   const trimmedInput = userInput.trim();
   if (trimmedInput === "") {
     if (hasPreviousName) {
-      deleteLastLine();
-      relinka(
-        "info",
-        "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
-      );
       return previousName;
     }
     await updateReliverseMemory({ name: DEFAULT_CLI_USERNAME });

@@ -6,6 +6,7 @@ import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -16,6 +17,7 @@ import { cd } from "~/utils/terminalHelpers.js";
 import { initGitDir } from "./git.js";
 import { createOctokitInstance } from "./octokit-instance.js";
 import { setupGitRemote } from "./utils-git-github.js";
+import { handleExistingRepo } from "./utils-repo-exists.js";
 
 export async function checkGithubRepoOwnership(
   octokit: Octokit,
@@ -326,6 +328,7 @@ export async function createGithubRepo(
   cwd: string,
   shouldMaskSecretInput: boolean,
   config: ReliverseConfig,
+  selectedTemplate: TemplateOption,
 ): Promise<boolean> {
   try {
     // 1. Ensure we have a GitHub token
@@ -342,8 +345,19 @@ export async function createGithubRepo(
     repoName = effectiveRepoName;
 
     if (repoExists) {
-      relinka("info", `Using existing repository: ${repoOwner}/${repoName}`);
-      // await handleExistingRepoContent(memory, repoOwner, repoName, projectPath);
+      await handleExistingRepo(
+        {
+          cwd,
+          isDev,
+          projectPath,
+          projectName: repoName,
+          memory,
+          config,
+          githubUsername: repoOwner,
+          selectedTemplate,
+        },
+        true,
+      );
     } else {
       // New repository
       await initGitDir({

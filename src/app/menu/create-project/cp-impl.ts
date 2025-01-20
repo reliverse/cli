@@ -308,6 +308,7 @@ export async function handleDeployment(params: {
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
+  selectedTemplate: TemplateOption;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -345,7 +346,7 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `🎉 Template '${webProjectTemplate}' was installed at ${effectiveProjectPath}.`,
+    `🎉 Template '${webProjectTemplate}' was installed at ${effectiveProjectPath}`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();

@@ -1,12 +1,15 @@
 // 👉 usage example: `bun pub --bump=1.2.3`
 
 import { relinka } from "@reliverse/relinka";
+import { parseJSONC, parseJSON5 } from "confbox";
 import { destr } from "destr";
 import { execaCommand } from "execa";
 import fs from "fs-extra";
 import { globby } from "globby";
 import mri from "mri";
 import path from "pathe";
+
+// TODO: implement @reliverse/bump npm library
 
 function showHelp() {
   relinka(
@@ -97,60 +100,148 @@ async function publishJsr(dryRun: boolean) {
 }
 
 async function bumpVersions(oldVersion: string, newVersion: string) {
-  // Update package.json
-  const pkgPath = path.resolve("package.json");
-  const pkg = destr<{ version: string }>(await fs.readFile(pkgPath, "utf-8"));
-  pkg.version = newVersion;
-  await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
+  try {
+    // Find all relevant files
+    const codebase = await globby("**/*.{reliverse,json,jsonc,json5,ts}", {
+      ignore: [
+        "**/node_modules/**",
+        "**/.git/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/.next/**",
+        "**/coverage/**",
+        "**/.cache/**",
+        "**/tmp/**",
+        "**/.temp/**",
+        "**/package-lock.json",
+        "**/pnpm-lock.yaml",
+        "**/yarn.lock",
+        "**/bun.lockb",
+      ],
+    });
 
-  // Update jsr.jsonc
-  const jsrPath = path.resolve("jsr.jsonc");
-  if (await fs.pathExists(jsrPath)) {
-    const jsrConfig = destr<{ version: string }>(
-      await fs.readFile(jsrPath, "utf-8"),
-    );
-    jsrConfig.version = newVersion;
-    await fs.writeFile(jsrPath, JSON.stringify(jsrConfig, null, 2));
-  }
+    // Track which files were updated
+    const updatedFiles: string[] = [];
 
-  // Replace version in src/**/*.ts
-  const tsFiles = await globby("src/**/*.ts");
-  for (const file of tsFiles) {
-    const content = await fs.readFile(file, "utf-8");
-    if (content.includes(oldVersion)) {
-      const updated = content.replaceAll(oldVersion, newVersion);
-      await fs.writeFile(file, updated);
+    // Process each file
+    for (const file of codebase) {
+      try {
+        const content = await fs.readFile(file, "utf-8");
+
+        // Handle different file types
+        if (file.endsWith(".json") || file.endsWith(".reliverse")) {
+          const parsed = destr(content);
+          if (parsed && typeof parsed === "object" && "version" in parsed) {
+            parsed.version = newVersion;
+            await fs.writeFile(file, `${JSON.stringify(parsed, null, 2)}\n`);
+            updatedFiles.push(file);
+            continue;
+          }
+        } else if (file.endsWith(".jsonc")) {
+          const parsed = parseJSONC(content);
+          if (parsed && typeof parsed === "object" && "version" in parsed) {
+            parsed.version = newVersion;
+            await fs.writeFile(file, `${JSON.stringify(parsed, null, 2)}\n`);
+            updatedFiles.push(file);
+            continue;
+          }
+        } else if (file.endsWith(".json5")) {
+          const parsed = parseJSON5(content);
+          if (parsed && typeof parsed === "object" && "version" in parsed) {
+            parsed.version = newVersion;
+            await fs.writeFile(file, `${JSON.stringify(parsed, null, 2)}\n`);
+            updatedFiles.push(file);
+            continue;
+          }
+        }
+
+        // For other files (including .ts), do string replacement if version is found
+        if (content.includes(oldVersion)) {
+          const updated = content.replaceAll(oldVersion, newVersion);
+          await fs.writeFile(file, updated);
+          updatedFiles.push(file);
+        }
+      } catch (error) {
+        relinka(
+          "warn",
+          `Failed to process ${file}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      }
     }
-  }
 
-  relinka("success", `Version updated from ${oldVersion} to ${newVersion}`);
+    if (updatedFiles.length > 0) {
+      relinka(
+        "success",
+        `Version updated from ${oldVersion} to ${newVersion}`,
+        `Updated ${updatedFiles.length} files:`,
+        updatedFiles.join("\n"),
+      );
+    } else {
+      relinka("warn", "No files were updated with the new version");
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to bump versions:",
+      error instanceof Error ? error.message : String(error),
+    );
+    throw error;
+  }
 }
 
 async function main() {
-  const { jsr, "dry-run": dryRun } = argv as unknown as {
-    jsr: boolean;
-    "dry-run": boolean;
-  };
-  const newVersion = argv._[0]; // The new version provided by the user (if any)
+  try {
+    const { jsr, "dry-run": dryRun } = argv as unknown as {
+      jsr: boolean;
+      "dry-run": boolean;
+    };
+    const newVersion = argv._[0];
 
-  if (newVersion) {
-    // Perform version bump
-    const pkg = destr<{ version: string }>(
-      await fs.readFile("package.json", "utf-8"),
-    );
-    const oldVersion = pkg.version;
-    if (oldVersion !== newVersion) {
-      await bumpVersions(oldVersion, newVersion);
+    if (!newVersion) {
+      relinka("info", "No version specified, skipping version bump");
     } else {
-      relinka("info", `No version change required: already at ${oldVersion}`);
-    }
-  }
+      // Validate version format
+      if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(newVersion)) {
+        throw new Error(
+          "Invalid version format. Must be a valid semver (e.g., 1.2.3, 1.2.3-beta.1)",
+        );
+      }
 
-  // After potential bump, proceed with publishing
-  if (jsr) {
-    await publishJsr(dryRun);
-  } else {
-    await publishNpm(dryRun);
+      // Read current version
+      const pkgPath = path.resolve("package.json");
+      if (!(await fs.pathExists(pkgPath))) {
+        throw new Error("package.json not found");
+      }
+
+      const pkg = destr<{ version: string }>(
+        await fs.readFile(pkgPath, "utf-8"),
+      );
+      if (!pkg?.version) {
+        throw new Error("No version field found in package.json");
+      }
+
+      const oldVersion = pkg.version;
+      if (oldVersion === newVersion) {
+        relinka("info", `No version change required: already at ${oldVersion}`);
+      } else {
+        await bumpVersions(oldVersion, newVersion);
+      }
+    }
+
+    // Proceed with publishing
+    if (jsr) {
+      await publishJsr(dryRun);
+    } else {
+      await publishNpm(dryRun);
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "❌ An unexpected error occurred:",
+      error instanceof Error ? error.message : String(error),
+    );
+    process.exit(1);
   }
 }
 

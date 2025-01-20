@@ -23,3 +23,10 @@ export type ProjectConfigReturn = {
   projectName: string;
   primaryDomain: string;
 };
+
+export type GitModParams = {
+  cwd: string;
+  isDev: boolean;
+  projectPath: string;
+  projectName: string;
+};

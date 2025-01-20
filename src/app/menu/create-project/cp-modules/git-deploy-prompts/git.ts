@@ -7,42 +7,23 @@ import path from "pathe";
 import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
+import type { GitModParams } from "~/app/app-types.js";
+import type { TemplateOption } from "~/utils/projectTemplate.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { cliName } from "~/app/constants.js";
+import { getEffectiveDir } from "~/utils/getEffectiveDir.js";
 import { cd, pwd } from "~/utils/terminalHelpers.js";
 
 import { checkGithubRepoOwnership, createGithubRepo } from "./github.js";
 import { createOctokitInstance } from "./octokit-instance.js";
 import { isDirHasGit } from "./utils-git-github.js";
-
-/* -----------------------------------------------------------------------------
- * Types
- * -------------------------------------------------------------------------- */
-
-type GitOptions = {
-  cwd: string;
-  isDev: boolean;
-  projectPath: string;
-  projectName: string;
-};
+import { handleExistingRepo } from "./utils-repo-exists.js";
 
 /* -----------------------------------------------------------------------------
  * Utility Functions
  * -------------------------------------------------------------------------- */
-
-/**
- * Gets the effective directory path based on dev mode and project settings
- */
-function getEffectiveDir({
-  cwd,
-  isDev,
-  projectPath,
-  projectName,
-}: GitOptions): string {
-  return isDev ? path.join(cwd, "tests-runtime", projectName) : projectPath;
-}
 
 /**
  * Validates that the project directory exists
@@ -143,9 +124,9 @@ async function createGitCommit(
  * If allowReInit is true and repository exists, it will be reinitialized.
  */
 export async function initGitDir(
-  options: GitOptions & { allowReInit?: boolean },
+  params: GitModParams & { allowReInit?: boolean },
 ): Promise<boolean> {
-  const effectiveDir = getEffectiveDir(options);
+  const effectiveDir = getEffectiveDir(params);
 
   try {
     // 1. Validate directory
@@ -155,14 +136,14 @@ export async function initGitDir(
 
     // 2. Check if it's already a git repo
     const dirHasGit = await isDirHasGit(
-      options.cwd,
-      options.isDev,
-      options.projectName,
-      options.projectPath,
+      params.cwd,
+      params.isDev,
+      params.projectName,
+      params.projectPath,
     );
 
     // 3. Handle reinitialization if needed
-    if (dirHasGit && options.allowReInit) {
+    if (dirHasGit && params.allowReInit) {
       deleteLastLine(); // Deletes the "GET /repos/repoOwner/repoName - 404 ..." line
       relinka("info-verbose", "Reinitializing existing git repository...");
       if (!(await removeGitDir(effectiveDir))) {
@@ -184,10 +165,10 @@ export async function initGitDir(
     return true;
   } catch (error) {
     const existingRepo = await isDirHasGit(
-      options.cwd,
-      options.isDev,
-      options.projectName,
-      options.projectPath,
+      params.cwd,
+      params.isDev,
+      params.projectName,
+      params.projectPath,
     );
     relinka(
       "error",
@@ -214,9 +195,9 @@ export async function initGitDir(
  * Will initialize the repository if it doesn't exist.
  */
 export async function createCommit(
-  options: GitOptions & { message?: string },
+  params: GitModParams & { message?: string },
 ): Promise<boolean> {
-  const effectiveDir = getEffectiveDir(options);
+  const effectiveDir = getEffectiveDir(params);
 
   try {
     // 1. Validate directory
@@ -226,10 +207,10 @@ export async function createCommit(
 
     // 2. Check if it's already a git repo
     const dirHasGit = await isDirHasGit(
-      options.cwd,
-      options.isDev,
-      options.projectName,
-      options.projectPath,
+      params.cwd,
+      params.isDev,
+      params.projectName,
+      params.projectPath,
     );
 
     // 3. Initialize git directory if needed
@@ -237,15 +218,15 @@ export async function createCommit(
     await initializeGitRepo(git, dirHasGit);
 
     // 4. Create commit with specified message
-    await createGitCommit(git, effectiveDir, dirHasGit, options.message);
+    await createGitCommit(git, effectiveDir, dirHasGit, params.message);
 
     return true;
   } catch (error) {
     const existingRepo = await isDirHasGit(
-      options.cwd,
-      options.isDev,
-      options.projectName,
-      options.projectPath,
+      params.cwd,
+      params.isDev,
+      params.projectName,
+      params.projectPath,
     );
     relinka(
       "error",
@@ -306,44 +287,45 @@ async function isRepoOwner(
  * Creates a GitHub repository and sets it up locally
  */
 export async function createGithubRepository(
-  options: GitOptions & {
+  params: GitModParams & {
     skipPrompts: boolean;
     memory: ReliverseMemory;
     config: ReliverseConfig;
     shouldMaskSecretInput: boolean;
     githubUsername: string;
+    selectedTemplate: TemplateOption;
   },
 ): Promise<boolean> {
-  const effectiveDir = getEffectiveDir(options);
+  const effectiveDir = getEffectiveDir(params);
 
   try {
-    if (!options.memory) {
+    if (!params.memory) {
       relinka("error", "Failed to read reliverse memory");
       return false;
     }
 
-    if (!options.githubUsername) {
+    if (!params.githubUsername) {
       relinka("error", "Could not determine GitHub username");
       return false;
     }
 
     // Check if repo exists and user owns it
     const repoExists = await isRepoOwner(
-      options.githubUsername,
-      options.projectName,
-      options.memory,
+      params.githubUsername,
+      params.projectName,
+      params.memory,
     );
 
     if (repoExists) {
-      if (options.isDev) {
+      if (params.isDev) {
         await cd(effectiveDir);
         pwd();
       }
 
       // Decide what to do with existing repo
       let choice = "commit";
-      const alreadyExistsDecision = options.config.existingRepoBehavior;
-      if (options.skipPrompts) {
+      const alreadyExistsDecision = params.config.existingRepoBehavior;
+      if (params.skipPrompts) {
         switch (alreadyExistsDecision) {
           case "autoYes":
             choice = "commit";
@@ -357,7 +339,7 @@ export async function createGithubRepository(
         }
       } else {
         choice = await selectPrompt({
-          title: `Repository ${options.githubUsername}/${options.projectName} already exists and you own it. What would you like to do?`,
+          title: `Repository ${params.githubUsername}/${params.projectName} already exists and you own it. What would you like to do?`,
           content:
             "Note: A commit will be created and pushed only if you have uncommitted changes.",
           options: [
@@ -379,8 +361,14 @@ export async function createGithubRepository(
         });
       }
 
-      if (choice === "new") {
-        // Prompt for a new repo name
+      // If repo already exists, handle it accordingly
+      if (choice === "commit" || choice === "skip") {
+        await handleExistingRepo(params, choice === "commit");
+
+        // Else...
+      } else if (choice === "new") {
+        // If repo already exists, but user wants to
+        // create a new one, prompt for another name
         const newName = await inputPrompt({
           title: "Enter a new repository name:",
           validate: (value: string) => {
@@ -390,82 +378,44 @@ export async function createGithubRepository(
             return true;
           },
         });
-
         if (!newName || typeof newName !== "string") {
           relinka("error", "Invalid repository name provided");
           return false;
         }
-
-        // Create new GitHub repository
+        // After we have a free repo name,
+        // create a new GitHub repository
         return await createGithubRepo(
-          options.memory,
+          params.memory,
           newName,
-          options.githubUsername,
+          params.githubUsername,
           effectiveDir,
-          options.isDev,
-          options.cwd,
-          options.shouldMaskSecretInput,
-          options.config,
+          params.isDev,
+          params.cwd,
+          params.shouldMaskSecretInput,
+          params.config,
+          params.selectedTemplate,
         );
-      }
-
-      if (choice === "commit" || choice === "skip") {
-        relinka(
-          "info",
-          `Using existing repo: ${options.githubUsername}/${options.projectName}`,
-        );
-
-        if (choice === "commit") {
-          // Create Octokit instance with GitHub token
-          if (!options.memory.githubKey) {
-            throw new Error("GitHub token not found");
-          }
-
-          // Add and commit all files in the working directory
-          const git = simpleGit({ baseDir: effectiveDir });
-          await git.add(".");
-          await git.commit(`Update by ${cliName}`);
-
-          // Get the latest commit details
-          const latestCommit = await git.log({ maxCount: 1 });
-          if (!latestCommit.latest) {
-            throw new Error("Failed to get latest commit");
-          }
-
-          // Push the commit
-          try {
-            await git.push("origin", "main");
-            relinka("success", "Created and pushed new commit with changes");
-            return true;
-          } catch (error) {
-            relinka(
-              "error",
-              "Failed to push commit:",
-              error instanceof Error ? error.message : String(error),
-            );
-            return false;
-          }
-        }
-        return true;
       }
     }
 
-    // If repo does not exist, create new repository
+    // If repo DOES NOT exist,
+    // just create a new repo
     return await createGithubRepo(
-      options.memory,
-      options.projectName,
-      options.githubUsername,
+      params.memory,
+      params.projectName,
+      params.githubUsername,
       effectiveDir,
-      options.isDev,
-      options.cwd,
-      options.shouldMaskSecretInput,
-      options.config,
+      params.isDev,
+      params.cwd,
+      params.shouldMaskSecretInput,
+      params.config,
+      params.selectedTemplate,
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("already exists")) {
       relinka(
         "error",
-        `Repository '${options.projectName}' already exists on GitHub`,
+        `Repository '${params.projectName}' already exists on GitHub`,
       );
     } else {
       relinka(
@@ -481,16 +431,16 @@ export async function createGithubRepository(
 /**
  * Pushes local commits to the remote
  */
-export async function pushGitCommits(options: GitOptions): Promise<boolean> {
-  const effectiveDir = getEffectiveDir(options);
+export async function pushGitCommits(params: GitModParams): Promise<boolean> {
+  const effectiveDir = getEffectiveDir(params);
 
   try {
     if (
       !(await isDirHasGit(
-        options.cwd,
-        options.isDev,
-        options.projectName,
-        options.projectPath,
+        params.cwd,
+        params.isDev,
+        params.projectName,
+        params.projectPath,
       ))
     ) {
       relinka("error", "Not a git repository. Please initialize git first.");

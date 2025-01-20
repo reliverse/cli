@@ -1,22 +1,60 @@
 import { relinka } from "@reliverse/relinka";
+import { destr } from "destr";
+import fs from "fs-extra";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
 import { CommonPatterns, HardcodedStrings } from "./reps-keys.js";
 
-export async function replaceTemplateStrings(
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export async function replacements(
   projectPath: string,
   webProjectTemplate: TemplateOption,
-  config: ProjectConfigReturn,
+  externalReliversePath: string,
+  config: ProjectConfigReturn & { projectDescription?: string },
+  existingRepo: boolean,
 ) {
   relinka("info-verbose", "Personalizing texts in the initialized files...");
+
+  // Try to read external .reliverse config if it exists and we're using an existing repo
+  let externalConfig: ReliverseConfig | undefined;
+  if (
+    existingRepo &&
+    externalReliversePath &&
+    (await fs.pathExists(externalReliversePath))
+  ) {
+    try {
+      const externalConfigContent = await fs.readFile(
+        externalReliversePath,
+        "utf-8",
+      );
+      const parsed = destr<ReliverseConfig>(externalConfigContent);
+      if (parsed && typeof parsed === "object") {
+        externalConfig = parsed;
+        relinka(
+          "info",
+          "Found external .reliverse config from existing repo, will use its values for replacements",
+        );
+      }
+    } catch (error) {
+      relinka(
+        "warn",
+        "Failed to parse external .reliverse config:",
+        String(error),
+      );
+    }
+  }
 
   const { projectAuthor, projectName } = extractRepoInfo(webProjectTemplate);
 
   // Replacements map
-  const replacements: Record<string, string> = {
+  const replacementsMap: Record<string, string> = {
     // Domain replacements
     [HardcodedStrings.RelivatorDomain]: config.primaryDomain,
     [`${projectName}.com`]: config.primaryDomain,
@@ -26,6 +64,11 @@ export async function replaceTemplateStrings(
     [projectName]: config.projectName,
     [HardcodedStrings.RelivatorShort]: config.projectName,
     [HardcodedStrings.RelivatorLower]: config.projectName.toLowerCase(),
+    [HardcodedStrings.RelivatorShort.toLowerCase()]:
+      config.projectName.toLowerCase(),
+    [capitalize(HardcodedStrings.RelivatorShort)]: capitalize(
+      config.projectName,
+    ),
 
     // Author replacements
     [projectAuthor]: config.cliUsername,
@@ -53,9 +96,35 @@ export async function replaceTemplateStrings(
       : `${config.cliUsername}@${config.primaryDomain}`,
   };
 
+  // Add replacements from external config if available
+  if (externalConfig) {
+    // Add any project-specific values from external config
+    if (
+      externalConfig.projectName &&
+      externalConfig.projectName !== config.projectName
+    ) {
+      replacementsMap[externalConfig.projectName] = config.projectName;
+      replacementsMap[externalConfig.projectName.toLowerCase()] =
+        config.projectName.toLowerCase();
+      replacementsMap[capitalize(externalConfig.projectName)] = capitalize(
+        config.projectName,
+      );
+    }
+    if (
+      externalConfig.projectAuthor &&
+      externalConfig.projectAuthor !== config.cliUsername
+    ) {
+      replacementsMap[externalConfig.projectAuthor] = config.cliUsername;
+    }
+    if (externalConfig.projectDescription) {
+      replacementsMap[externalConfig.projectDescription] =
+        config.projectDescription ?? "";
+    }
+  }
+
   // Filter out empty or identical replacements
   const validReplacements = Object.fromEntries(
-    Object.entries(replacements).filter(
+    Object.entries(replacementsMap).filter(
       ([key, value]) => key && value && key !== value && key.length > 1, // Avoid single-char replacements
     ),
   );

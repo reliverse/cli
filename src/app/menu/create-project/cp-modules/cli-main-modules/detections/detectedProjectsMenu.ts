@@ -334,6 +334,7 @@ export async function handleOpenProjectMenu(
         projectPath: selectedProject.path,
         shouldMaskSecretInput,
         githubUsername: username,
+        selectedTemplate: "blefnk/relivator",
       });
       if (success) {
         relinka("success", "GitHub repository created successfully");
