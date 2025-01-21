@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/cli",
-  "version": "1.4.30",
+  "version": "1.4.31",
   "author": "blefnk",
   "license": "MIT",
   "exports": "./dist-jsr/main.ts",

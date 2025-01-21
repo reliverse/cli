@@ -2,7 +2,7 @@ import path from "pathe";
 import pc from "picocolors";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.30";
+export const cliVersion = "1.4.31";
 export const cliName = "@reliverse/cli";
 export const cliDomain = "https://docs.reliverse.org";
 
