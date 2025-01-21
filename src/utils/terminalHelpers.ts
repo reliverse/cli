@@ -1,8 +1,8 @@
+import { re } from "@reliverse/relico";
 import { getExactTerminalWidth, relinka, symbols } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
-import pc from "picocolors";
 
 export const handleError = (error: unknown) =>
   error instanceof Error ? error.message : "Unknown error";
@@ -190,15 +190,15 @@ export function getCurrentWorkingDirectory(useCache = true): string {
 
 export function renderEndLine() {
   const lineLength = getExactTerminalWidth() - 2;
-  console.log(pc.dim(symbols.middle));
-  console.log(pc.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
+  console.log(re.dim(symbols.middle));
+  console.log(re.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
   console.log();
 }
 
 export function renderEndLineInput() {
   const lineLength = getExactTerminalWidth() - 2;
   console.log();
-  console.log(pc.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
+  console.log(re.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
   console.log();
 }
 

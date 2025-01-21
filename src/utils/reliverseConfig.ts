@@ -63,6 +63,25 @@ export type ProjectFeatures = {
 };
 
 /* ------------------------------------------------------------------
+ * Re-reading the .reliverse file
+ * ------------------------------------------------------------------ */
+
+export async function reReadReliverseConfig(): Promise<ReliverseConfig | null> {
+  const cwd = getCurrentWorkingDirectory();
+  const configPath = path.join(cwd, ".reliverse");
+
+  // First try normal read
+  let config = await readReliverseConfig(configPath);
+
+  // If not valid, attempt line-by-line fix
+  if (!config) {
+    config = await parseAndFixConfig(configPath);
+  }
+
+  return config;
+}
+
+/* ------------------------------------------------------------------
  * Detecting Project Framework
  * ------------------------------------------------------------------ */
 

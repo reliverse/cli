@@ -1,16 +1,16 @@
 import type { ParsedUrlQuery } from "querystring";
 
 import { spinnerTaskPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
 import { setTimeout } from "node:timers";
-import open from "open";
 import "dotenv/config";
+import open from "open";
 import os from "os";
 import path from "pathe";
-import pc from "picocolors";
 import { isWindows } from "std-env";
 import url from "url";
 
@@ -182,7 +182,7 @@ export async function auth({
       }
 
       updateMessage(
-        ` Please visit it and confirm there if you see the same code: ${pc.bold(
+        ` Please visit it and confirm there if you see the same code: ${re.bold(
           code,
         )}`,
       );

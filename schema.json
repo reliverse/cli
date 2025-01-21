@@ -96,7 +96,8 @@
         "reliverse/template-browser-extension",
         "microsoft/vscode-extension-samples",
         "microsoft/vscode-extension-template",
-        "reliverse/cli-starter-template"
+        "reliverse/cli-starter-template",
+        "blefnk/deno-cli-tutorial"
       ]
     },
     "features": {

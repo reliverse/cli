@@ -1,6 +1,6 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 import type { DeploymentService } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
@@ -28,7 +28,7 @@ export async function selectDeploymentService(
       {
         label: "...",
         value: "deno",
-        hint: pc.dim("coming soon"),
+        hint: re.dim("coming soon"),
         disabled: true,
       },
     ],

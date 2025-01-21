@@ -1,8 +1,8 @@
 import type { Vercel } from "@vercel/sdk";
 
 import { confirmPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 
@@ -16,7 +16,7 @@ export async function handleEnvironmentVariables(
 ): Promise<void> {
   if (selectedOptions.useSharedEnvVars) {
     const shouldUseShared = await confirmPrompt({
-      title: `Would you like to use shared environment variables from Vercel.com? ${pc.red("[🚨 Experimental]")}`,
+      title: `Would you like to use shared environment variables from Vercel.com? ${re.red("[🚨 Experimental]")}`,
       content:
         "Only missing variables will be uploaded from your local .env file",
       defaultValue: false,

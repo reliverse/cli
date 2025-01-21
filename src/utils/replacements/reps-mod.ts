@@ -1,6 +1,8 @@
 import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
+import { globby } from "globby";
+import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { TemplateOption } from "~/utils/projectTemplate.js";
@@ -9,8 +11,75 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
 import { CommonPatterns, HardcodedStrings } from "./reps-keys.js";
 
+/**
+ * Gets all package names from package.json dependencies
+ */
+async function getPackageNames(projectPath: string): Promise<string[]> {
+  try {
+    const pkgPath = path.join(projectPath, "package.json");
+    if (!(await fs.pathExists(pkgPath))) return [];
+
+    const pkg = await fs.readJson(pkgPath);
+    const allDeps = {
+      ...(pkg.dependencies || {}),
+      ...(pkg.devDependencies || {}),
+      ...(pkg.peerDependencies || {}),
+    };
+
+    return Object.keys(allDeps);
+  } catch (error) {
+    relinka("warn", "Failed to read package.json:", String(error));
+    return [];
+  }
+}
+
+/**
+ * Gets all import paths from the project files
+ */
+async function getImportPaths(projectPath: string): Promise<string[]> {
+  const importPaths = new Set<string>();
+
+  try {
+    // Find all JS/TS files
+    const files = await globby("**/*.{js,ts,jsx,tsx}", {
+      cwd: projectPath,
+      ignore: ["node_modules/**", "dist/**", ".next/**", "build/**"],
+    });
+
+    // Extract import paths from each file
+    for (const file of files) {
+      const content = await fs.readFile(path.join(projectPath, file), "utf-8");
+
+      // Match both static imports and dynamic imports
+      const importMatches = [
+        ...content.matchAll(/(?:import|from)\s+['"]([^'"]+)['"]/g),
+        ...content.matchAll(/import\(['"]([^'"]+)['"]\)/g),
+      ];
+
+      for (const match of importMatches) {
+        const importPath = match[1];
+        if (importPath && !importPath.startsWith(".")) {
+          // Only add package imports, not relative paths
+          importPaths.add(importPath);
+        }
+      }
+    }
+  } catch (error) {
+    relinka("warn", "Failed to gather import paths:", String(error));
+  }
+
+  return [...importPaths];
+}
+
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function capitalizeWithDashes(str: string): string {
+  return str
+    .split("-")
+    .map((word) => capitalize(word))
+    .join(" ");
 }
 
 export async function handleReplacements(
@@ -22,6 +91,12 @@ export async function handleReplacements(
   showSuccessMessage: boolean,
 ) {
   relinka("info-verbose", "Personalizing texts in the initialized files...");
+
+  // Gather package names and import paths to protect
+  const [packageNames, importPaths] = await Promise.all([
+    getPackageNames(projectPath),
+    getImportPaths(projectPath),
+  ]);
 
   // Try to read external .reliverse config if it exists and we're using an existing repo
   let externalConfig: ReliverseConfig | undefined;
@@ -67,7 +142,7 @@ export async function handleReplacements(
     [HardcodedStrings.RelivatorLower]: config.projectName.toLowerCase(),
     [HardcodedStrings.RelivatorShort.toLowerCase()]:
       config.projectName.toLowerCase(),
-    [capitalize(HardcodedStrings.RelivatorShort)]: capitalize(
+    [capitalize(HardcodedStrings.RelivatorShort)]: capitalizeWithDashes(
       config.projectName,
     ),
 
@@ -91,7 +166,7 @@ export async function handleReplacements(
       CommonPatterns.packageName(config.projectName),
 
     // Title and description replacements
-    [HardcodedStrings.RelivatorTitle]: `${config.projectName} – Your Modern Web Application`,
+    [HardcodedStrings.RelivatorTitle]: `${capitalizeWithDashes(config.projectName)} – Your Modern Web Application`,
     [HardcodedStrings.DefaultEmail]: config.cliUsername.includes("@")
       ? config.cliUsername
       : `${config.cliUsername}@${config.primaryDomain}`,
@@ -107,9 +182,8 @@ export async function handleReplacements(
       replacementsMap[externalConfig.projectName] = config.projectName;
       replacementsMap[externalConfig.projectName.toLowerCase()] =
         config.projectName.toLowerCase();
-      replacementsMap[capitalize(externalConfig.projectName)] = capitalize(
-        config.projectName,
-      );
+      replacementsMap[capitalize(externalConfig.projectName)] =
+        capitalizeWithDashes(config.projectName);
     }
     if (
       externalConfig.projectAuthor &&
@@ -163,9 +237,10 @@ export async function handleReplacements(
         ".github", // CI/deployment
       ],
       stringExclusions: [
-        "https://api.github.com", // API URLs
-        "https://github.com/features", // GitHub feature pages
         "@types/", // Type packages
+        /^(?:https?:\/\/)?[^\s/$.?#].[^\s]*\.[a-z]{2,}(?:\/[^\s]*)?$/i.source, // Protect all URLs
+        ...packageNames, // Protect all package names from package.json
+        ...importPaths, // Protect all import paths
       ],
       dryRun: false, // toggle to true for a safe "preview" run
       skipBinaryFiles: true, // skip images and other binary content

@@ -1,6 +1,6 @@
 import { inputPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { deleteLastLine, relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -16,8 +16,8 @@ export async function askUserName(
   // Determine placeholder and content based on previous memory
   const placeholder = hasPreviousName ? previousName : DEFAULT_CLI_USERNAME;
   const content = hasPreviousName
-    ? `Last used name: ${pc.cyanBright(placeholder)} (press <Enter> to use it again)`
-    : `You can press Enter to use the default name: ${pc.cyanBright(DEFAULT_CLI_USERNAME)}`;
+    ? `Last used name: ${re.cyanBright(placeholder)} (press <Enter> to use it again)`
+    : `You can press Enter to use the default name: ${re.cyanBright(DEFAULT_CLI_USERNAME)}`;
 
   // Prompt the user for a name
   const userInput = await inputPrompt({

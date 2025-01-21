@@ -1,10 +1,10 @@
 import * as p from "@clack/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import ora from "ora";
 import path from "pathe";
-import pc from "picocolors";
 
 import type { InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
@@ -43,7 +43,7 @@ export const scaffoldProject = async ({
   const srcDir = path.join(PKG_ROOT, "template/base");
 
   if (!noInstall) {
-    relinka("info", `\nUsing: ${pc.bold(pc.cyan(pkgManager))}\n`);
+    relinka("info", `\nUsing: ${re.bold(re.cyan(pkgManager))}\n`);
   } else {
     relinka("info", "");
   }
@@ -54,13 +54,13 @@ export const scaffoldProject = async ({
     if (fs.readdirSync(projectDir).length === 0) {
       if (projectName !== ".")
         spinner.info(
-          `${pc.bold(pc.cyan(projectName))} exists but is empty, continuing...\n`,
+          `${re.bold(re.cyan(projectName))} exists but is empty, continuing...\n`,
         );
     } else {
       spinner.stopAndPersist();
       const overwriteDir = await p.select({
-        message: `${pc.redBright("Warning:")} ${pc.bold(
-          pc.cyan(projectName),
+        message: `${re.redBright("Warning:")} ${re.bold(
+          re.cyan(projectName),
         )} already exists and isn't empty. How would you like to proceed?`,
         options: [
           {
@@ -100,7 +100,7 @@ export const scaffoldProject = async ({
 
       if (overwriteDir === "clear") {
         spinner.info(
-          `Emptying ${pc.bold(pc.cyan(projectName))} and creating Reliverse app...\n`,
+          `Emptying ${re.bold(re.cyan(projectName))} and creating Reliverse app...\n`,
         );
         fs.emptyDirSync(projectDir);
       }
@@ -119,9 +119,9 @@ export const scaffoldProject = async ({
   await renameTsxFiles(projectDir);
 
   const scaffoldedName =
-    projectName === "." ? "App" : pc.bold(pc.cyan(projectName));
+    projectName === "." ? "App" : re.bold(re.cyan(projectName));
 
   spinner.succeed(
-    `${scaffoldedName} ${pc.green("scaffolded successfully!")}\n`,
+    `${scaffoldedName} ${re.green("scaffolded successfully!")}\n`,
   );
 };

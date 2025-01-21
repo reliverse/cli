@@ -1,8 +1,8 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "node:path";
-import pc from "picocolors";
 
 import type { AppParams, ParamsOmitReli } from "~/app/app-types.js";
 import type { ProjectCategory } from "~/utils/schemaConfig.js";
@@ -10,7 +10,11 @@ import type { ProjectCategory } from "~/utils/schemaConfig.js";
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { getRandomMessage } from "~/app/db/messages.js";
 import { aiChatHandler } from "~/utils/aiChatHandler.js";
-import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
+import {
+  detectProjectsWithReliverse,
+  reReadReliverseConfig,
+} from "~/utils/reliverseConfig.js";
+import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
@@ -59,7 +63,7 @@ export async function showNewProjectMenu(params: AppParams): Promise<void> {
           {
             label: "Web Application",
             value: "website",
-            hint: pc.dim("Create a website with Next.js"),
+            hint: re.dim("Create a website with Next.js"),
           },
           {
             label: "VS Code Extension",
@@ -78,8 +82,8 @@ export async function showNewProjectMenu(params: AppParams): Promise<void> {
           },
           { separator: true },
           {
-            label: pc.italic(
-              pc.dim("More types of projects and frameworks coming soon 🦾"),
+            label: re.italic(
+              re.dim("More types of projects and frameworks coming soon 🦾"),
             ),
             value: UNKNOWN_VALUE,
             disabled: true,
@@ -159,10 +163,7 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
           "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
         value: "download-template",
       },
-      {
-        label: "Create config or force re-population",
-        value: "force-populate-config",
-      },
+      { label: "Re-read config and memory", value: "re-read-reliverse" },
       { label: "Test chat with Reliverse AI", value: "ai-chat-test" },
       { label: "Exit", value: "exit" },
     ],
@@ -179,6 +180,9 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
       cwd,
       skipPrompts,
     );
+  } else if (option === "re-read-reliverse") {
+    await reReadReliverseConfig();
+    await reReadReliverseMemory();
   } else if (option === "ai-chat-test") {
     await aiChatHandler(memory);
   }

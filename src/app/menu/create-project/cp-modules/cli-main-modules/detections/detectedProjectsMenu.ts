@@ -4,9 +4,9 @@ import {
   multiselectPrompt,
   confirmPrompt,
 } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { installDependencies } from "nypm";
-import pc from "picocolors";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
@@ -66,10 +66,10 @@ export async function handleOpenProjectMenu(
       label: `- ${project.name}`,
       value: project.path,
       ...(project.needsDepsInstall
-        ? { hint: pc.dim("no deps found, <enter> to install") }
+        ? { hint: re.dim("no deps found, <enter> to install") }
         : project.hasGit && project.gitStatus
           ? {
-              hint: pc.dim(
+              hint: re.dim(
                 `${project.gitStatus?.uncommittedChanges ?? 0} uncommitted changes, ${
                   project.gitStatus?.unpushedCommits ?? 0
                 } unpushed commits`,
@@ -100,7 +100,7 @@ export async function handleOpenProjectMenu(
     shouldInstallDeps = await confirmPrompt({
       title:
         "Dependencies are missing in your project. Do you want to install them?",
-      content: pc.bold(
+      content: re.bold(
         "🚨 Some features will be disabled until you install dependencies.",
       ),
     });
@@ -135,7 +135,7 @@ export async function handleOpenProjectMenu(
   const action = await selectPrompt({
     title: `Managing ${selectedProject.name}${gitStatusTitle}`,
     content: needsDepsInstall
-      ? pc.bold(
+      ? re.bold(
           "Some features were disabled because you didn't install dependencies.",
         )
       : "",
@@ -143,65 +143,65 @@ export async function handleOpenProjectMenu(
       {
         label: "- Git and Deploy Operations",
         value: "git-deploy",
-        hint: pc.dim("Commit and push changes"),
+        hint: re.dim("Commit and push changes"),
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Code Modifications ${experimental}`)
+          ? re.gray(`- Code Modifications ${experimental}`)
           : `- Code Modifications ${experimental}`,
         value: "codemods",
-        hint: pc.dim("Apply code transformations"),
+        hint: re.dim("Apply code transformations"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Integrations ${experimental}`)
+          ? re.gray(`- Integrations ${experimental}`)
           : `- Integrations ${experimental}`,
         value: "integration",
-        hint: pc.dim("Manage project integrations"),
+        hint: re.dim("Manage project integrations"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Database Operations ${experimental}`)
+          ? re.gray(`- Database Operations ${experimental}`)
           : `- Database Operations ${experimental}`,
         value: "convert-db",
-        hint: pc.dim("Convert between database types"),
+        hint: re.dim("Convert between database types"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Shadcn/UI Components ${experimental}`)
+          ? re.gray(`- Shadcn/UI Components ${experimental}`)
           : `- Shadcn/UI Components ${experimental}`,
         value: "shadcn",
-        hint: pc.dim("Manage UI components"),
+        hint: re.dim("Manage UI components"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Drizzle Schema ${experimental}`)
+          ? re.gray(`- Drizzle Schema ${experimental}`)
           : `- Drizzle Schema ${experimental}`,
         value: "drizzle-schema",
-        hint: pc.dim("Manage database schema"),
+        hint: re.dim("Manage database schema"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Cleanup Project ${experimental}`)
+          ? re.gray(`- Cleanup Project ${experimental}`)
           : `- Cleanup Project ${experimental}`,
         value: "cleanup",
-        hint: pc.dim("Clean up project files"),
+        hint: re.dim("Clean up project files"),
         disabled: needsDepsInstall,
       },
       {
         label: needsDepsInstall
-          ? pc.gray(`- Edit Configuration ${experimental}`)
+          ? re.gray(`- Edit Configuration ${experimental}`)
           : `- Edit Configuration ${experimental}`,
         value: "edit-config",
-        hint: pc.dim("Modify project settings"),
+        hint: re.dim("Modify project settings"),
         disabled: needsDepsInstall,
       },
-      { label: "👈 Exit", value: "exit", hint: pc.dim("ctrl+c anywhere") },
+      { label: "👈 Exit", value: "exit", hint: re.dim("ctrl+c anywhere") },
     ],
   });
 
@@ -253,7 +253,7 @@ export async function handleOpenProjectMenu(
         ...(showCreateGithubOption
           ? [
               {
-                label: "- Create GitHub repository",
+                label: "- Re/init git and create GitHub repository",
                 value: "github",
               },
             ]
@@ -278,6 +278,7 @@ export async function handleOpenProjectMenu(
         projectName: selectedProject.name,
         allowReInit: true,
         createCommit: true,
+        config: selectedProject.config,
       });
       if (success) {
         relinka("success", "Git repository initialized successfully");
@@ -295,6 +296,7 @@ export async function handleOpenProjectMenu(
           projectPath: selectedProject.path,
           projectName: selectedProject.name,
           message,
+          config: selectedProject.config,
         });
 
         if (success) {

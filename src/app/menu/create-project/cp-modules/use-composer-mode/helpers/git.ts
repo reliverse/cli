@@ -1,11 +1,11 @@
 import * as p from "@clack/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { execSync } from "child_process";
 import { execa } from "execa";
 import fs from "fs-extra";
 import ora from "ora";
 import path from "pathe";
-import pc from "picocolors";
 
 const isGitInstalled = (dir: string): boolean => {
   try {
@@ -72,7 +72,7 @@ export const initializeGit = async (projectDir: string) => {
     // Dir is a root git repo
     spinner.stop();
     const overwriteGit = await p.confirm({
-      message: `${pc.redBright(pc.bold("Warning:"))} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
+      message: `${re.redBright(re.bold("Warning:"))} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
       initialValue: false,
     });
 
@@ -86,7 +86,7 @@ export const initializeGit = async (projectDir: string) => {
     // Dir is inside a git worktree
     spinner.stop();
     const initializeChildGitRepo = await p.confirm({
-      message: `${pc.redBright(pc.bold("Warning:"))} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
+      message: `${re.redBright(re.bold("Warning:"))} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
       initialValue: false,
     });
     if (!initializeChildGitRepo) {
@@ -116,12 +116,12 @@ export const initializeGit = async (projectDir: string) => {
     }
     await execa("git", ["add", "."], { cwd: projectDir });
     spinner.succeed(
-      `${pc.green("Successfully initialized and staged")} ${pc.bold("git")}\n`,
+      `${re.green("Successfully initialized and staged")} ${re.bold("git")}\n`,
     );
   } catch {
     // Safeguard, should be unreachable
     spinner.fail(
-      `${pc.bold(pc.red("Failed:"))} could not initialize git. Update git to the latest version!\n`,
+      `${re.bold(re.red("Failed:"))} could not initialize git. Update git to the latest version!\n`,
     );
   }
 };

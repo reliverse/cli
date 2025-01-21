@@ -41,6 +41,7 @@ export async function handleGitInit(
   isDev: boolean,
   projectName: string,
   projectPath: string,
+  config: ReliverseConfig,
 ): Promise<boolean> {
   const gitInitialized = await initGitDir({
     cwd,
@@ -49,6 +50,7 @@ export async function handleGitInit(
     projectPath,
     allowReInit: true,
     createCommit: true,
+    config,
   });
   if (!gitInitialized) {
     relinka("error", "Failed to initialize git. Stopping git/deploy process.");
@@ -220,7 +222,9 @@ export async function promptGitDeploy({
       }
 
       // If user wants local git
-      if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
+      if (
+        !(await handleGitInit(cwd, isDev, projectName, projectPath, config))
+      ) {
         relinka("error", "Failed to initialize git locally.");
         return {
           deployService: "none",
@@ -293,7 +297,15 @@ export async function promptGitDeploy({
           } else if (userAction === "skip") {
             skipGitHub = true;
             // If skipping GitHub, initialize local git
-            if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
+            if (
+              !(await handleGitInit(
+                cwd,
+                isDev,
+                projectName,
+                projectPath,
+                config,
+              ))
+            ) {
               relinka(
                 "error",
                 "Failed to initialize local git after skipping GitHub.",
@@ -353,7 +365,15 @@ export async function promptGitDeploy({
             continue; // loop again
           } else if (userAction === "skip") {
             skipGitHub = true;
-            if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
+            if (
+              !(await handleGitInit(
+                cwd,
+                isDev,
+                projectName,
+                projectPath,
+                config,
+              ))
+            ) {
               relinka(
                 "error",
                 "Failed to initialize local git after skipping GitHub.",
@@ -401,7 +421,9 @@ export async function promptGitDeploy({
       });
 
       if (userAction === "skip") {
-        if (!(await handleGitInit(cwd, isDev, projectName, projectPath))) {
+        if (
+          !(await handleGitInit(cwd, isDev, projectName, projectPath, config))
+        ) {
           relinka("error", "Failed to initialize local git after final skip.");
           return {
             deployService: "none",

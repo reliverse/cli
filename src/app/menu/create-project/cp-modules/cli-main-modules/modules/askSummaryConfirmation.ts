@@ -1,6 +1,6 @@
 import { confirmPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 export async function askSummaryConfirmation(
   template: string,
@@ -14,7 +14,7 @@ export async function askSummaryConfirmation(
   // ${bar} - Install Dependencies: ${depsMessage}
   // ${bar} - Git Option: ${gitOption}
 
-  const bar = pc.cyanBright("│ ");
+  const bar = re.cyanBright("│ ");
 
   const message = `You have chosen the following options for your project:
 ${bar} - Template: ${template}

@@ -156,6 +156,7 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("microsoft/vscode-extension-samples"),
     Type.Literal("microsoft/vscode-extension-template"),
     Type.Literal("reliverse/cli-starter-template"),
+    Type.Literal("blefnk/deno-cli-tutorial"),
   ]),
 
   features: featuresSchema,

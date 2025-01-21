@@ -1,7 +1,7 @@
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import ora, { type Ora } from "ora";
-import pc from "picocolors";
 
 import {
   getUserPkgManager,
@@ -89,6 +89,6 @@ export const installDependencies = async ({
   // If the spinner was used to show the progress, use succeed method on it
   // If not, use the succeed on a new spinner
   (installSpinner ?? ora()).succeed(
-    pc.green("Successfully installed dependencies!\n"),
+    re.green("Successfully installed dependencies!\n"),
   );
 };

@@ -1,7 +1,7 @@
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
-import pc from "picocolors";
 
 export async function getProjectMenuOptions(
   cwd: string,
@@ -10,7 +10,7 @@ export async function getProjectMenuOptions(
     {
       label: "👈 Exit",
       value: "exit",
-      hint: pc.dim("ctrl+c anywhere"),
+      hint: re.dim("ctrl+c anywhere"),
     },
   ];
 

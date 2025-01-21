@@ -1,5 +1,5 @@
 {
-  "version": "1.4.31",
+  "version": "1.4.33",
   "language": "en",
   "ignorePaths": [
     "**/*.lock",
@@ -117,7 +117,6 @@
     "outro",
     "pagedown",
     "pageup",
-    "picocolors",
     "planetscale",
     "pmndrs",
     "polski",

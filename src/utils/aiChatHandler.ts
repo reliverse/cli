@@ -2,10 +2,10 @@ import type { CoreMessage } from "ai";
 
 import { openai } from "@ai-sdk/openai";
 import { inputPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { streamText } from "ai";
 import dotenv from "dotenv";
-import pc from "picocolors";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -24,9 +24,9 @@ const messages: CoreMessage[] = [];
 function printLineBar(text: string, indent = 2) {
   if (text === "") {
     // Just print a single bar
-    console.log(pc.dim("│"));
+    console.log(re.dim("│"));
   } else {
-    console.log(`${pc.dim("│")}${" ".repeat(indent)}${text}`);
+    console.log(`${re.dim("│")}${" ".repeat(indent)}${text}`);
   }
 }
 
@@ -137,7 +137,7 @@ export async function aiChatHandler(memory: ReliverseMemory) {
     //
     // 2) ASSISTANT RESPONSE
     //
-    console.log(`${pc.dim("ℹ")}  ${pc.bold("Reliverse:")}`);
+    console.log(`${re.dim("ℹ")}  ${re.bold("Reliverse:")}`);
 
     // Stream the assistant response with "ai" + "@ai-sdk/openai"
     try {
@@ -147,7 +147,7 @@ export async function aiChatHandler(memory: ReliverseMemory) {
       });
 
       let assistantResponse = "";
-      process.stdout.write(pc.dim("│  ")); // Initial bar with indent
+      process.stdout.write(re.dim("│  ")); // Initial bar with indent
 
       for await (const delta of result.textStream) {
         // Handle newlines by adding the bar prefix
@@ -157,7 +157,7 @@ export async function aiChatHandler(memory: ReliverseMemory) {
           if (i > 0) {
             // On each new line, print a fresh bar prefix
             console.log();
-            process.stdout.write(pc.dim("│  "));
+            process.stdout.write(re.dim("│  "));
           }
           process.stdout.write(line);
         }

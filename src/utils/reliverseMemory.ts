@@ -1,4 +1,5 @@
 import { relinka } from "@reliverse/relinka";
+import { Value } from "@sinclair/typebox/value";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import os from "os";
@@ -14,6 +15,83 @@ import type {
   ReliverseMemory,
   UserDataMemory,
 } from "./schemaMemory.js";
+
+import { memorySchema } from "./schemaMemory.js";
+
+export async function reReadReliverseMemory(): Promise<ReliverseMemory | null> {
+  try {
+    // Read encrypted data from config_keys
+    const configRows = await db.select().from(configKeysTable);
+    const configData = configRows.reduce<Record<string, string>>((acc, row) => {
+      try {
+        const decrypted = decrypt(row.value);
+        // Try to parse JSON if the value looks like JSON
+        try {
+          if (decrypted.startsWith("{") ?? decrypted.startsWith("[")) {
+            acc[row.key] = JSON.parse(decrypted) as string;
+          } else {
+            acc[row.key] = decrypted;
+          }
+        } catch {
+          acc[row.key] = decrypted;
+        }
+      } catch {
+        acc[row.key] = "";
+      }
+      return acc;
+    }, {});
+
+    // Read non-encrypted data from user_data
+    const userRows = await db.select().from(userDataTable);
+    const userData = userRows.reduce<Record<string, string>>((acc, row) => {
+      try {
+        // Try to parse JSON if the value looks like JSON
+        if (row.value.startsWith("{") ?? row.value.startsWith("[")) {
+          acc[row.key] = JSON.parse(row.value) as string;
+        } else {
+          acc[row.key] = row.value;
+        }
+      } catch {
+        acc[row.key] = row.value;
+      }
+      return acc;
+    }, {});
+
+    const memory: ReliverseMemory = {
+      // Encrypted data
+      code: configData["code"] ?? "",
+      key: configData["key"] ?? "",
+      githubKey: configData["githubKey"] ?? "",
+      vercelKey: configData["vercelKey"] ?? "",
+      openaiKey: configData["openaiKey"] ?? "",
+      // Non-encrypted data
+      name: userData["name"] ?? "",
+      email: userData["email"] ?? "",
+      githubUsername: userData["githubUsername"] ?? "",
+      vercelUsername: userData["vercelUsername"] ?? "",
+      vercelTeamId: userData["vercelTeamId"] ?? "",
+    };
+
+    // Validate against schema
+    if (Value.Check(memorySchema, memory)) {
+      return memory;
+    }
+
+    // If invalid, log the errors
+    const errors = [...Value.Errors(memorySchema, memory)].map(
+      (err) => `Path "${err.path}": ${err.message}`,
+    );
+    relinka("warn", "Invalid memory schema:", errors.join("; "));
+    return null;
+  } catch (error) {
+    relinka(
+      "error",
+      "Failed to read memory from database:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return null;
+  }
+}
 
 export async function handleReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists

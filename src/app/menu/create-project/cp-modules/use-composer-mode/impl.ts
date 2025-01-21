@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 import { CREATE_RELIVERSE_APP } from "~/app/constants.js";
 
@@ -61,7 +61,7 @@ export async function runComposerMode(
         },
         _: ({ results }) => {
           if (results.language === "javascript") {
-            p.note(pc.redBright("Wrong answer, using TypeScript instead"));
+            p.note(re.redBright("Wrong answer, using TypeScript instead"));
           }
           return undefined;
         },

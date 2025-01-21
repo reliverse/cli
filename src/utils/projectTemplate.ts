@@ -1,12 +1,12 @@
 import type { Static } from "@sinclair/typebox";
 
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
-import pc from "picocolors";
 
 import type { VSCodeTemplateOption } from "~/app/menu/menu-impl.js";
 
@@ -271,12 +271,12 @@ export const TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
     label: `Relivator ${recommended}`,
     value: "blefnk/relivator",
-    hint: pc.dim("Full-featured e-commerce template with auth, payments, etc."),
+    hint: re.dim("Full-featured e-commerce template with auth, payments, etc."),
   },
   "blefnk/next-react-ts-src-minimal": {
     label: `Next.js Only ${experimental}`,
     value: "blefnk/next-react-ts-src-minimal",
-    hint: pc.dim("Essentials only: minimal Next.js with TypeScript template"),
+    hint: re.dim("Essentials only: minimal Next.js with TypeScript template"),
   },
 } as const satisfies Partial<
   Record<TemplateOption, { label: string; value: TemplateOption; hint: string }>
@@ -286,7 +286,7 @@ export const TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS = {
   "blefnk/relivator-docker-template": {
     label: `${experimental} Relivator Docker Template`,
     value: "blefnk/relivator-docker-template",
-    hint: pc.dim("Separated frontend and backend"),
+    hint: re.dim("Separated frontend and backend"),
   },
 };
 
@@ -294,12 +294,12 @@ export const TEMP_VSCODE_TEMPLATE_OPTIONS = {
   "microsoft/vscode-extension-samples": {
     label: "VS Code Extension Sample",
     value: "microsoft/vscode-extension-samples",
-    hint: pc.dim("Official VS Code extension samples"),
+    hint: re.dim("Official VS Code extension samples"),
   },
   "microsoft/vscode-extension-template": {
     label: "VS Code Extension Template",
     value: "microsoft/vscode-extension-template",
-    hint: pc.dim("Basic VS Code extension template"),
+    hint: re.dim("Basic VS Code extension template"),
   },
 } as const satisfies Record<
   Exclude<VSCodeTemplateOption, "unknown">,
@@ -310,6 +310,6 @@ export const TEMP_BROWSER_TEMPLATE_OPTIONS = {
   "reliverse/template-browser-extension": {
     label: "Browser Extension Template",
     value: "reliverse/template-browser-extension",
-    hint: pc.dim("Browser extension starter template"),
+    hint: re.dim("Browser extension starter template"),
   },
 };

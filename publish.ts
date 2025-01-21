@@ -1,13 +1,7 @@
-// 👉 Usage example: `bun pub --bump=1.2.3`
-// - The script checks the current version in package.json.
-// - It searches for the found string throughout the project.
-// - It replaces the occurrences with the version specified in --bump.
+// 👉 usage example: `bun pub --bump=1.2.3`
 
-import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { defineCommand, runMain } from "citty";
 import { execa } from "execa";
-
-import { cliName } from "~/app/constants.js";
 
 const main = defineCommand({
   meta: {
@@ -16,12 +10,12 @@ const main = defineCommand({
   args: {
     bump: {
       type: "string",
-      description: "Specify the version to bump to",
+      description: "Bump the version",
       valueHint: "1.2.3",
     },
     dryRun: {
       type: "boolean",
-      description: "Simulate the publish process without making changes",
+      description: "Dry run the publish process",
     },
     jsr: {
       type: "boolean",
@@ -33,35 +27,37 @@ const main = defineCommand({
     },
   },
   run: async ({ args }) => {
-    await execa("bun", ["dev:schema"], { stdio: "inherit" });
-    await execa("bun", ["check"], { stdio: "inherit" });
-
     if (args.jsr) {
-      relinka("info", "Publishing the JSR version");
+      console.log("Publishing the JSR version");
       await execa("bun", ["build.publish.ts", args.bump, "--jsr"], {
         stdio: "inherit",
       });
     } else if (args.npm) {
-      relinka("info", "Publishing the NPM version");
+      console.log("Publishing the NPM version");
       await execa("bun", ["build.publish.ts", args.bump], { stdio: "inherit" });
     } else if (args.dryRun) {
-      relinka("info", "Simulating the publish process");
+      console.log("Dry run the publish process");
       await execa("bun", ["pub:jsr", "--dry-run"], { stdio: "inherit" });
       await execa("bun", ["pub:npm", "--dry-run"], { stdio: "inherit" });
     } else {
-      relinka("info", "Publishing the JSR version");
+      console.log("Publishing the JSR version");
       await execa("bun", ["build.publish.ts", args.bump, "--jsr"], {
         stdio: "inherit",
       });
-      relinka("info", "Publishing the NPM version");
+      console.log("Publishing the NPM version");
       await execa("bun", ["pub:npm", args.bump], { stdio: "inherit" });
     }
   },
 });
 
-await runMain(main).catch((error: unknown) =>
+function errorHandler(error: unknown, message: string) {
+  console.error(message);
+  console.error(error instanceof Error ? error.message : String(error));
+}
+
+await runMain(main).catch((error: unknown) => {
   errorHandler(
     error instanceof Error ? error : new Error(String(error)),
-    `If this issue is related to ${cliName} itself, please\n│  report the details at https://github.com/reliverse/cli`,
-  ),
-);
+    "If this issue is related to @reliverse/cli itself, please\n│  report the details at https://github.com/reliverse/cli",
+  );
+});

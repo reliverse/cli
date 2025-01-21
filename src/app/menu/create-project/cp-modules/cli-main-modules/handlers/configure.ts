@@ -1,9 +1,9 @@
 import { config } from "@reliverse/core";
 import { getCurrentDirname, getRootDirname } from "@reliverse/fs";
 import { confirmPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { join } from "pathe";
-import pc from "picocolors";
 
 import { siteConfig } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/app.js";
 import { configureAppts } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/appts.js";
@@ -85,7 +85,7 @@ export async function runReliverseSetup() {
 
   // Reliverse Config Setup
   const accepted = await confirmPrompt({
-    title: `${pc.bold(`${welcomeCondition} Welcome to the ${config.framework.name} 1.2.6 setup! This setup wizard will help you configure the main configuration of the app and let you choose the Next.js, ESLint, Biome, and Putout config presets.`)} \n👋 Are you ready to proceed? ${pc.dim("(💡 You can press <Cmd/Ctrl+C> anywhere to close the setup)")}`,
+    title: `${re.bold(`${welcomeCondition} Welcome to the ${config.framework.name} 1.2.6 setup! This setup wizard will help you configure the main configuration of the app and let you choose the Next.js, ESLint, Biome, and Putout config presets.`)} \n👋 Are you ready to proceed? ${re.dim("(💡 You can press <Cmd/Ctrl+C> anywhere to close the setup)")}`,
     defaultValue: true,
   });
 

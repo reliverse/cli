@@ -105,7 +105,11 @@ export async function setupGitRemote(
 
     // Push initial commit (if any) — sets upstream if it hasn’t been set
     await git.push(remoteName, "main", ["--set-upstream"]);
-    relinka("success", "Initial commit pushed to remote repository.");
+    relinka(
+      "success",
+      "Initial commit pushed to remote repository:",
+      remoteUrl,
+    );
 
     return true;
   } catch (error) {

@@ -1,6 +1,6 @@
+import { re } from "@reliverse/relico";
 import fs from "fs-extra";
 import path from "pathe";
-import pc from "picocolors";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
@@ -25,13 +25,13 @@ export async function getMainMenuOptions(
 ): Promise<MainMenuOption[]> {
   const multiConfigMsg =
     reli.length > 0
-      ? pc.dim(`multi-config mode with ${reli.length} projects`)
+      ? re.dim(`multi-config mode with ${reli.length} projects`)
       : "";
 
   // 1) Start with the base options
   const options: MainMenuOption[] = [
     {
-      label: pc.bold("✨ Create a brand new project"),
+      label: re.bold("✨ Create a brand new project"),
       hint: multiConfigMsg,
       value: "create",
     },
@@ -49,7 +49,7 @@ export async function getMainMenuOptions(
   options.push({
     label: "👈 Exit",
     value: "exit",
-    hint: pc.dim("ctrl+c anywhere"),
+    hint: re.dim("ctrl+c anywhere"),
   });
 
   // 4) Detect .reliverse projects
@@ -64,7 +64,7 @@ export async function getMainMenuOptions(
       options.splice(1, 0, {
         label: "📝 Edit project",
         value: "detected-projects",
-        hint: pc.dim(`Detected: ${detectedProjects.length}`),
+        hint: re.dim(`Detected: ${detectedProjects.length}`),
       });
     }
   }

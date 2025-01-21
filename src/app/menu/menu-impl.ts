@@ -3,8 +3,8 @@ import {
   inputPrompt,
   multiselectPrompt,
 } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
-import pc from "picocolors";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 import type {
@@ -81,22 +81,22 @@ export async function configureBrowserExtension() {
         {
           label: "Commands",
           value: "commands",
-          hint: pc.dim("Add custom commands to VS Code"),
+          hint: re.dim("Add custom commands to VS Code"),
         },
         {
           label: "WebView",
           value: "webview",
-          hint: pc.dim("Create custom UI panels"),
+          hint: re.dim("Create custom UI panels"),
         },
         {
           label: "Language Support",
           value: "language",
-          hint: pc.dim("Add support for a programming language"),
+          hint: re.dim("Add support for a programming language"),
         },
         {
           label: "Themes",
           value: "themes",
-          hint: pc.dim("Create custom color themes"),
+          hint: re.dim("Create custom color themes"),
         },
       ],
     }),
@@ -106,17 +106,17 @@ export async function configureBrowserExtension() {
         {
           label: "On Command",
           value: "onCommand",
-          hint: pc.dim("Activate when a specific command is run"),
+          hint: re.dim("Activate when a specific command is run"),
         },
         {
           label: "On Language",
           value: "onLanguage",
-          hint: pc.dim("Activate for specific file types"),
+          hint: re.dim("Activate for specific file types"),
         },
         {
           label: "On Startup",
           value: "startup",
-          hint: pc.dim("Activate when VS Code starts"),
+          hint: re.dim("Activate when VS Code starts"),
         },
       ],
     }),
@@ -169,22 +169,22 @@ export async function configureVSCodeExtension() {
         {
           label: "Commands",
           value: "commands",
-          hint: pc.dim("Add custom commands to VS Code"),
+          hint: re.dim("Add custom commands to VS Code"),
         },
         {
           label: "WebView",
           value: "webview",
-          hint: pc.dim("Create custom UI panels"),
+          hint: re.dim("Create custom UI panels"),
         },
         {
           label: "Language Support",
           value: "language",
-          hint: pc.dim("Add support for a programming language"),
+          hint: re.dim("Add support for a programming language"),
         },
         {
           label: "Themes",
           value: "themes",
-          hint: pc.dim("Create custom color themes"),
+          hint: re.dim("Create custom color themes"),
         },
       ],
     }),
@@ -194,17 +194,17 @@ export async function configureVSCodeExtension() {
         {
           label: "On Command",
           value: "onCommand",
-          hint: pc.dim("Activate when a specific command is run"),
+          hint: re.dim("Activate when a specific command is run"),
         },
         {
           label: "On Language",
           value: "onLanguage",
-          hint: pc.dim("Activate for specific file types"),
+          hint: re.dim("Activate for specific file types"),
         },
         {
           label: "On Startup",
           value: "startup",
-          hint: pc.dim("Activate when VS Code starts"),
+          hint: re.dim("Activate when VS Code starts"),
         },
       ],
     }),
@@ -242,7 +242,7 @@ export async function optionCreateVSCodeExtension(
       ...Object.values(TEMP_VSCODE_TEMPLATE_OPTIONS),
       { separator: true },
       {
-        label: pc.italic(pc.dim("More templates coming soon")),
+        label: re.italic(re.dim("More templates coming soon")),
         value: "unknown",
         disabled: true,
       },
@@ -284,7 +284,7 @@ export async function optionCreateBrowserExtension(
       ...Object.values(TEMP_BROWSER_TEMPLATE_OPTIONS),
       { separator: true },
       {
-        label: pc.italic(pc.dim("More templates coming soon")),
+        label: re.italic(re.dim("More templates coming soon")),
         value: "unknown",
         disabled: true,
       },
@@ -336,11 +336,11 @@ export async function optionCreateWebProject(
             title: "Which architecture would you prefer?",
             options: [
               {
-                label: `${pc.bold("Fullstack")} ${recommended}`,
+                label: `${re.bold("Fullstack")} ${recommended}`,
                 value: "fullstack",
               },
               {
-                label: `${pc.dim("Separated frontend and backend")} ${experimental}`,
+                label: `${re.dim("Separated frontend and backend")} ${experimental}`,
                 value: "separated",
               },
             ],
@@ -384,11 +384,11 @@ export async function optionCreateWebProject(
           {
             label: "Next.js",
             value: "nextjs",
-            hint: pc.dim("recommended for most projects"),
+            hint: re.dim("recommended for most projects"),
           },
           {
             label: "...",
-            hint: pc.dim("coming soon"),
+            hint: re.dim("coming soon"),
             value: "unknown",
             disabled: true,
           },
@@ -409,14 +409,14 @@ export async function optionCreateWebProject(
         title: "Should I continue with advanced or simple mode?",
         options: [
           {
-            label: pc.bold(pc.greenBright("Advanced")),
+            label: re.bold(re.greenBright("Advanced")),
             value: "recommended",
-            hint: pc.greenBright(pc.reset("✨ STABLE & RECOMMENDED")),
+            hint: re.greenBright(re.reset("✨ STABLE & RECOMMENDED")),
           },
           {
-            label: pc.dim(pc.red("Simple")),
+            label: re.dim(re.red("Simple")),
             value: "offline",
-            hint: pc.red("🚨 experimental, offline"),
+            hint: re.red("🚨 experimental, offline"),
           },
         ],
       });
@@ -456,7 +456,7 @@ export async function optionCreateWebProject(
           { label: "E-commerce", value: "e-commerce" },
           {
             label: "...",
-            hint: pc.dim("coming soon"),
+            hint: re.dim("coming soon"),
             value: UNKNOWN_VALUE,
             disabled: true,
           },
@@ -477,11 +477,11 @@ export async function optionCreateWebProject(
           title: "Which architecture would you prefer?",
           options: [
             {
-              label: `${pc.bold("Fullstack")} ${recommended}`,
+              label: `${re.bold("Fullstack")} ${recommended}`,
               value: "fullstack",
             },
             {
-              label: `${pc.dim("Separated frontend and backend")} ${experimental}`,
+              label: `${re.dim("Separated frontend and backend")} ${experimental}`,
               value: "separated",
             },
           ],

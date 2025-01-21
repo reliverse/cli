@@ -1,20 +1,18 @@
+import { re } from "@reliverse/relico";
 import path from "pathe";
-import pc from "picocolors";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.31";
+export const cliVersion = "1.4.33";
 export const cliName = "@reliverse/cli";
 export const cliDomain = "https://docs.reliverse.org";
 
 export const useLocalhost = false;
 export const isVerboseEnabled = false;
 
-export const FAKE_PREFIX = "fake___";
-
 export const DEFAULT_CLI_USERNAME = "johnny911";
 
-export const recommended = pc.green("🚀 Recommended");
-export const experimental = pc.red("🚨 Experimental");
+export const recommended = re.green("🚀 Recommended");
+export const experimental = re.red("🚨 Experimental");
 
 export const UNKNOWN_VALUE = "unknown";
 export const DEFAULT_DOMAIN = "https://example.com";

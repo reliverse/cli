@@ -1,6 +1,7 @@
 import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import {
@@ -9,7 +10,6 @@ import {
 } from "magicast";
 import process from "node:process";
 import { join } from "pathe";
-import pc from "picocolors";
 
 import type { ApptsConfig } from "~/types.js";
 
@@ -55,7 +55,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
   const proceed = await confirmPrompt({
     defaultValue: false,
-    title: pc.cyan(
+    title: re.cyan(
       "[⚙️  Advanced]: Do you want to configure the app metadata stored in the src/app.ts file?",
     ),
   });
@@ -175,7 +175,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
 
 async function askForHandle(currentHandle: string): Promise<string> {
   return await inputPrompt({
-    title: `${pc.bold(`Let's customize the ${config.framework.name} template to your needs. The 'src/app.ts' file holds the main configuration.`)} \n🚀 First of all, what's your username handle? (💡 Type something or just press ${pc.cyan("<enter>")} to use the suggested value)`,
+    title: `${re.bold(`Let's customize the ${config.framework.name} template to your needs. The 'src/app.ts' file holds the main configuration.`)} \n🚀 First of all, what's your username handle? (💡 Type something or just press ${re.cyan("<enter>")} to use the suggested value)`,
     placeholder: currentHandle,
     validate: (value: string): string | boolean => {
       if (value && !/^[\da-z]+$/i.test(value)) {

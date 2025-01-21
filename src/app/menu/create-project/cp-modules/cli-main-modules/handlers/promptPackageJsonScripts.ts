@@ -1,8 +1,8 @@
 import { multiselectPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { msg } from "@reliverse/relinka";
 import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
-import pc from "picocolors";
 
 import { experimental } from "~/app/constants.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
@@ -24,7 +24,7 @@ type ScriptOption = {
 const SCRIPT_DEFINITIONS = {
   latest: {
     label: "Update dependencies to latest version",
-    hint: pc.redBright(
+    hint: re.redBright(
       "may break project if dependencies have critical changes",
     ),
   },

@@ -1,7 +1,7 @@
+import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import ora from "ora";
-import pc from "picocolors";
 
 import type { PkgInstallerMap } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 import type { InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
@@ -19,7 +19,7 @@ export const installPackages = async (options: InstallPackagesOptions) => {
       const spinner = ora(`Boilerplating ${name}...`).start();
       await pkgOpts.installer(options);
       spinner.succeed(
-        pc.green(`Successfully setup boilerplate for ${pc.bold(name)}`),
+        re.green(`Successfully setup boilerplate for ${re.bold(name)}`),
       );
     }
   }

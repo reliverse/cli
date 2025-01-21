@@ -1,6 +1,5 @@
 // 👉 usage example: `bun pub --bump=1.2.3`
 
-import { relinka } from "@reliverse/relinka";
 import { parseJSONC, parseJSON5 } from "confbox";
 import { destr } from "destr";
 import { execaCommand } from "execa";
@@ -12,8 +11,7 @@ import path from "pathe";
 // TODO: implement @reliverse/bump npm library
 
 function showHelp() {
-  relinka(
-    "info",
+  console.log(
     `Usage: bun tsx build.publish.ts [newVersion] [options]
 
 Arguments:
@@ -52,7 +50,7 @@ const unknownFlags = Object.keys(argv).filter(
 );
 
 if (unknownFlags.length > 0) {
-  relinka("error", `❌ Unknown flag(s): ${unknownFlags.join(", ")}`);
+  console.error(`❌ Unknown flag(s): ${unknownFlags.join(", ")}`);
   showHelp();
   process.exit(1);
 }
@@ -65,10 +63,9 @@ async function publishNpm(dryRun: boolean) {
       await execaCommand("bun build:npm", { stdio: "inherit" });
       await execaCommand("npm publish", { stdio: "inherit" });
     }
-    relinka("success", "Published to npm successfully.");
+    console.log("success", "Published to npm successfully.");
   } catch (error) {
-    relinka(
-      "error",
+    console.error(
       "❌ Failed to publish to npm:",
       error instanceof Error ? error.message : String(error),
     );
@@ -79,19 +76,18 @@ async function publishNpm(dryRun: boolean) {
 async function publishJsr(dryRun: boolean) {
   try {
     if (dryRun) {
-      await execaCommand("bunx jsr publish --allow-dirty --dry-run", {
+      await execaCommand("bunx jsr publish --dry-run", {
         stdio: "inherit",
       });
     } else {
       await execaCommand("bun build:jsr", { stdio: "inherit" });
-      await execaCommand("bunx jsr publish --allow-dirty", {
+      await execaCommand("bunx jsr publish --allow-slow-types --allow-dirty", {
         stdio: "inherit",
       });
     }
-    relinka("success", "Published to JSR successfully.");
+    console.log("success", "Published to JSR successfully.");
   } catch (error) {
-    relinka(
-      "error",
+    console.error(
       "❌ Failed to publish to JSR:",
       error instanceof Error ? error.message : String(error),
     );
@@ -162,8 +158,7 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
           updatedFiles.push(file);
         }
       } catch (error) {
-        relinka(
-          "warn",
+        console.warn(
           `Failed to process ${file}:`,
           error instanceof Error ? error.message : String(error),
         );
@@ -171,18 +166,16 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
     }
 
     if (updatedFiles.length > 0) {
-      relinka(
-        "success",
+      console.log(
         `Version updated from ${oldVersion} to ${newVersion}`,
-        `Updated ${updatedFiles.length} files:`,
+        `Updated ${String(updatedFiles.length)} files:`,
         updatedFiles.join("\n"),
       );
     } else {
-      relinka("warn", "No files were updated with the new version");
+      console.warn("No files were updated with the new version");
     }
   } catch (error) {
-    relinka(
-      "error",
+    console.error(
       "Failed to bump versions:",
       error instanceof Error ? error.message : String(error),
     );
@@ -199,7 +192,7 @@ async function main() {
     const newVersion = argv._[0];
 
     if (!newVersion) {
-      relinka("info", "No version specified, skipping version bump");
+      console.log("No version specified, skipping version bump");
     } else {
       // Validate version format
       if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(newVersion)) {
@@ -217,13 +210,13 @@ async function main() {
       const pkg = destr<{ version: string }>(
         await fs.readFile(pkgPath, "utf-8"),
       );
-      if (!pkg?.version) {
+      if (!pkg.version) {
         throw new Error("No version field found in package.json");
       }
 
       const oldVersion = pkg.version;
       if (oldVersion === newVersion) {
-        relinka("info", `No version change required: already at ${oldVersion}`);
+        console.log(`No version change required: already at ${oldVersion}`);
       } else {
         await bumpVersions(oldVersion, newVersion);
       }
@@ -236,8 +229,7 @@ async function main() {
       await publishNpm(dryRun);
     }
   } catch (error) {
-    relinka(
-      "error",
+    console.error(
       "❌ An unexpected error occurred:",
       error instanceof Error ? error.message : String(error),
     );
@@ -245,9 +237,8 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  relinka(
-    "error",
+main().catch((error: unknown) => {
+  console.error(
     "❌ An unexpected error occurred:",
     error instanceof Error ? error.message : String(error),
   );

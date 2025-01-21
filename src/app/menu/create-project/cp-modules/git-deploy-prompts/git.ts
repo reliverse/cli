@@ -1,10 +1,10 @@
 import type { SimpleGit } from "simple-git";
 
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
+import { re } from "@reliverse/relico";
 import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
-import pc from "picocolors";
 import { simpleGit } from "simple-git";
 
 import type { GitModParams } from "~/app/app-types.js";
@@ -64,13 +64,18 @@ async function removeGitDir(effectiveDir: string): Promise<boolean> {
 async function initializeGitRepo(
   git: SimpleGit,
   dirHasGit: boolean,
+  config: ReliverseConfig,
 ): Promise<void> {
   if (!dirHasGit) {
     await git.init();
     relinka("success", "Git directory initialized");
 
     try {
-      await git.raw(["branch", "-M", "main"]);
+      let branchName = "main";
+      if (config.repoBranch !== "" && config.repoBranch !== "main") {
+        branchName = config.repoBranch;
+      }
+      await git.raw(["branch", "-M", branchName]);
     } catch (error) {
       relinka(
         "warn",
@@ -124,7 +129,11 @@ async function createGitCommit(
  * If allowReInit is true and repository exists, it will be reinitialized.
  */
 export async function initGitDir(
-  params: GitModParams & { allowReInit: boolean; createCommit: boolean },
+  params: GitModParams & {
+    allowReInit: boolean;
+    createCommit: boolean;
+    config: ReliverseConfig;
+  },
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);
 
@@ -150,7 +159,7 @@ export async function initGitDir(
         return false;
       }
       const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-      await initializeGitRepo(git, false);
+      await initializeGitRepo(git, false, params.config);
       if (params.createCommit) {
         await createGitCommit(git, effectiveDir, false);
       }
@@ -159,7 +168,7 @@ export async function initGitDir(
 
     // 4. Initialize git directory if needed
     const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-    await initializeGitRepo(git, dirHasGit);
+    await initializeGitRepo(git, dirHasGit, params.config);
 
     // 5. Create initial commit if needed
     if (params.createCommit) {
@@ -199,7 +208,7 @@ export async function initGitDir(
  * Will initialize the repository if it doesn't exist.
  */
 export async function createCommit(
-  params: GitModParams & { message?: string },
+  params: GitModParams & { message?: string; config: ReliverseConfig },
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);
 
@@ -219,7 +228,7 @@ export async function createCommit(
 
     // 3. Initialize git directory if needed
     const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-    await initializeGitRepo(git, dirHasGit);
+    await initializeGitRepo(git, dirHasGit, params.config);
 
     // 4. Create commit with specified message
     await createGitCommit(git, effectiveDir, dirHasGit, params.message);
@@ -364,7 +373,7 @@ export async function handleGithubRepo(
           options: [
             {
               value: "commit",
-              label: `${pc.greenBright("✅ Recommended")} Use existing repository and create+push new commit`,
+              label: `${re.greenBright("✅ Recommended")} Use existing repository and create+push new commit`,
             },
             {
               value: "skip",

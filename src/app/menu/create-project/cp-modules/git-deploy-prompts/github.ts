@@ -342,6 +342,7 @@ export async function createGithubRepo(
       projectName: repoName,
       allowReInit: true,
       createCommit: true,
+      config,
     });
 
     // For new repositories, determine privacy setting
