@@ -19,6 +19,7 @@ import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadTemplateOption } from "./dev-submenu/dev-mod.js";
+import { openVercelDevtools } from "./dev-submenu/dev-vercel.js";
 import {
   optionCreateBrowserExtension,
   optionCreateVSCodeExtension,
@@ -152,6 +153,13 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
   const TestsRuntimePath = path.join(cwd, "tests-runtime");
   const TestsRuntimeExists = await fs.pathExists(TestsRuntimePath);
 
+  let hasVercelToken = false;
+  let vercelToken = "";
+  if (memory.vercelKey && memory.vercelKey !== "") {
+    vercelToken = memory.vercelKey;
+    hasVercelToken = true;
+  }
+
   const option = await selectPrompt({
     title: "Dev tools menu",
     options: [
@@ -160,10 +168,21 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
         : []),
       {
         label:
-          "downloadTemplate + cd tests-runtime + composeEnvFile + promptGitDeploy",
+          "downloadTemplate + cd(tests-runtime) + composeEnvFile + promptGitDeploy",
         value: "download-template",
       },
-      { label: "Re-read config and memory", value: "re-read-reliverse" },
+      ...(hasVercelToken
+        ? [
+            {
+              label: `Open Vercel devtools ${experimental}`,
+              value: "open-vercel-devtools",
+            },
+          ]
+        : []),
+      {
+        label: `Re-read config and memory ${experimental}`,
+        value: "re-read-reliverse",
+      },
       { label: "Test chat with Reliverse AI", value: "ai-chat-test" },
       { label: "Exit", value: "exit" },
     ],
@@ -185,5 +204,7 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
     await reReadReliverseMemory();
   } else if (option === "ai-chat-test") {
     await aiChatHandler(memory);
+  } else if (option === "open-vercel-devtools") {
+    await openVercelDevtools(memory, vercelToken);
   }
 }

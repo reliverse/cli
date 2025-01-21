@@ -2,7 +2,7 @@ import { re } from "@reliverse/relico";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.33";
+export const cliVersion = "1.4.34";
 export const cliName = "@reliverse/cli";
 export const cliDomain = "https://docs.reliverse.org";
 
