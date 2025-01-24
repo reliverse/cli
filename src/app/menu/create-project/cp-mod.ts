@@ -2,7 +2,7 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import os from "os";
-import path from "path";
+import path from "pathe";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
@@ -27,7 +27,7 @@ import {
   handleDependencies,
   showSuccessAndNextSteps,
 } from "./cp-impl.js";
-import { downloadTemplate } from "./cp-modules/cli-main-modules/downloads/downloadTemplate.js";
+import { downloadRepo } from "./cp-modules/cli-main-modules/downloads/downloadRepo.js";
 
 type UnghRepoResponse = {
   repo?: {
@@ -173,12 +173,13 @@ export async function createWebProject({
         "info",
         `Now I'm downloading the '${webProjectTemplate}' template...`,
       );
-      projectPath = await downloadTemplate({
-        webProjectTemplate,
+      const { dir } = await downloadRepo({
+        repoURL: webProjectTemplate,
         projectName,
         isDev,
         cwd,
       });
+      projectPath = dir;
     } catch (error) {
       relinka("error", "Failed to download template:", String(error));
       throw error;

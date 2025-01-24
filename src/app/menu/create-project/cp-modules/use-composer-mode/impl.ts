@@ -3,6 +3,7 @@ import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
 
 import { CREATE_RELIVERSE_APP } from "~/app/constants.js";
+import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
 
 import {
   defaultOptions,
@@ -10,7 +11,6 @@ import {
   type CliResults,
   type DatabaseProvider,
 } from "./opts.js";
-import { getUserPkgManager } from "./utils/getUserPkgManager.js";
 import { IsTTYError } from "./utils/isTTYError.js";
 import { validateAppName } from "./utils/validateAppName.js";
 import { validateImportAlias } from "./utils/validateImportAlias.js";
@@ -37,7 +37,7 @@ export async function runComposerMode(
     // const isCI = process.argv.includes("--CI");
     const cliProvidedName = cliResults.appName;
 
-    const pkgManager = getUserPkgManager();
+    const pkgManager = await getUserPkgManager();
 
     const project = await p.group(
       {
@@ -129,7 +129,7 @@ export async function runComposerMode(
         ...(!cliResults.flags.noInstall && {
           install: () => {
             return p.confirm({
-              message: `Should we run '${pkgManager}${pkgManager === "yarn" ? `'?` : ` install' for you?`}`,
+              message: `Should we run '${pkgManager.packageManager}${pkgManager.packageManager === "yarn" ? `'?` : ` install' for you?`}`,
               initialValue: !defaultOptions.flags.noInstall,
             });
           },

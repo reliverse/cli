@@ -2,7 +2,7 @@ import { relinka } from "@reliverse/relinka";
 
 import { DEFAULT_APP_NAME } from "~/app/constants.js";
 import { type InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
-import { getUserPkgManager } from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
+import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
 
 import { isInsideGitRepo, isRootGitRepo } from "./git.js";
 
@@ -22,7 +22,7 @@ export const logNextSteps = async ({
   | "framework"
   | "databaseProvider"
 >) => {
-  const pkgManager = getUserPkgManager();
+  const pkgManager = await getUserPkgManager();
 
   relinka("info", "Next steps:");
   if (projectName !== ".") {
@@ -30,10 +30,10 @@ export const logNextSteps = async ({
   }
   if (noInstall) {
     // To reflect yarn's default behavior of installing packages when no additional args provided
-    if (pkgManager === "yarn") {
-      relinka("info", `  ${pkgManager}`);
+    if (pkgManager.packageManager === "yarn") {
+      relinka("info", `  ${pkgManager.packageManager}`);
     } else {
-      relinka("info", `  ${pkgManager} install`);
+      relinka("info", `  ${pkgManager.packageManager} install`);
     }
   }
 
@@ -45,10 +45,10 @@ export const logNextSteps = async ({
   }
 
   if (packages?.prisma.inUse || packages?.drizzle.inUse) {
-    if (["npm", "bun"].includes(pkgManager)) {
-      relinka("info", `  ${pkgManager} run db:push`);
+    if (["npm", "bun"].includes(pkgManager.packageManager)) {
+      relinka("info", `  ${pkgManager.packageManager} run db:push`);
     } else {
-      relinka("info", `  ${pkgManager} db:push`);
+      relinka("info", `  ${pkgManager.packageManager} db:push`);
     }
   }
 
@@ -59,10 +59,10 @@ export const logNextSteps = async ({
     );
   }
 
-  if (["npm", "bun"].includes(pkgManager)) {
-    relinka("info", `  ${pkgManager} run dev`);
+  if (["npm", "bun"].includes(pkgManager.packageManager)) {
+    relinka("info", `  ${pkgManager.packageManager} run dev`);
   } else {
-    relinka("info", `  ${pkgManager} dev`);
+    relinka("info", `  ${pkgManager.packageManager} dev`);
   }
 
   if (!(await isInsideGitRepo(projectDir)) && !isRootGitRepo(projectDir)) {

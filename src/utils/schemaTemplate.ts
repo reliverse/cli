@@ -1,7 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import fs from "fs-extra";
 import os from "os";
-import path from "path";
+import path from "pathe";
 
 import { cliVersion } from "~/app/constants.js";
 

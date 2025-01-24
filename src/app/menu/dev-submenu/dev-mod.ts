@@ -8,7 +8,7 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
-import { downloadTemplate } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadTemplate.js";
+import { downloadRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadRepo.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
@@ -26,7 +26,7 @@ export async function rmTestsRuntime(cwd: string) {
   }
 }
 
-export async function downloadTemplateOption(
+export async function downloadRepoOption(
   template: TemplateOption,
   config: ReliverseConfig,
   memory: ReliverseMemory,
@@ -36,15 +36,15 @@ export async function downloadTemplateOption(
 ) {
   const projectName = await askProjectName();
   const primaryDomain = `${projectName}.vercel.app`;
-  const projectPath = await downloadTemplate({
-    webProjectTemplate: template,
+  const { dir } = await downloadRepo({
+    repoURL: template,
     projectName,
     isDev,
     cwd,
   });
 
-  relinka("info", `Downloaded template to ${projectPath}`);
-  await cd(projectPath);
+  relinka("info", `Downloaded template to ${dir}`);
+  await cd(dir);
   pwd();
 
   const shouldMaskSecretInput = await confirmPrompt({
@@ -55,7 +55,7 @@ export async function downloadTemplateOption(
   });
 
   await composeEnvFile(
-    projectPath,
+    dir,
     FALLBACK_ENV_EXAMPLE_URL,
     shouldMaskSecretInput,
     skipPrompts,
@@ -65,7 +65,7 @@ export async function downloadTemplateOption(
   const { deployService } = await promptGitDeploy({
     projectName,
     config,
-    projectPath,
+    projectPath: dir,
     primaryDomain,
     hasDbPush: false,
     shouldRunDbPush: false,

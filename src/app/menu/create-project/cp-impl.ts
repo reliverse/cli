@@ -215,8 +215,11 @@ export async function determineShouldInstallDeps(
       return false;
     default: {
       return await confirmPrompt({
-        title: "Install dependencies now? Recommended, but may take time.",
-        content: "This allows me to run scripts provided by the template.",
+        title:
+          "Install dependencies now? Highly recommended, but may take time.",
+        content:
+          "This allows me to run scripts provided by the template. This is especially important if you provided me with a fresh database API key—you may experience Vercel build failures if you don't run db:push at least once. I can run this script after installing dependencies.",
+        defaultValue: true,
       });
     }
   }

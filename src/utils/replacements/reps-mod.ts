@@ -166,7 +166,9 @@ export async function handleReplacements(
       CommonPatterns.packageName(config.projectName),
 
     // Title and description replacements
-    [HardcodedStrings.RelivatorTitle]: `${capitalizeWithDashes(config.projectName)} – Your Modern Web Application`,
+    [HardcodedStrings.RelivatorTitle]: config.projectDescription
+      ? `${capitalizeWithDashes(config.projectName)} - ${config.projectDescription}`
+      : `${capitalizeWithDashes(config.projectName)} - A modern web application for your business needs`,
     [HardcodedStrings.DefaultEmail]: config.cliUsername.includes("@")
       ? config.cliUsername
       : `${config.cliUsername}@${config.primaryDomain}`,

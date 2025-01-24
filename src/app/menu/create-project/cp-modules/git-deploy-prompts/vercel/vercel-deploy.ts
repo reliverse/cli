@@ -151,7 +151,6 @@ export function splitFilesIntoChunks(
 export async function monitorDeployment(
   vercel: Vercel,
   deploymentId: string,
-  updateMessage: (message: string) => void,
   showDetailedLogs = false,
 ): Promise<void> {
   try {
@@ -179,7 +178,7 @@ export async function monitorDeployment(
             break;
           default:
             if (showDetailedLogs) {
-              updateMessage(message);
+              relinka("info", `${timestamp}: ${message}`);
             }
         }
       }
@@ -205,11 +204,10 @@ export async function createDeployment(
   vercel: Vercel,
   projectName: string,
   config: VercelDeploymentConfig,
-  updateMessage: (message: string) => void,
   selectedOptions: { includes: (option: string) => boolean },
   githubUsername: string,
 ): Promise<{ url: string; id: string }> {
-  updateMessage("Creating deployment from GitHub...");
+  relinka("info", "Creating deployment from GitHub...");
   const deployment = await withRateLimit(async () => {
     return await vercel.deployments.createDeployment({
       requestBody: {
@@ -252,18 +250,19 @@ export async function createDeployment(
   relinka(
     "info",
     `Deployment started. Visit ${deploymentUrl} to monitor progress.`,
+    "Please wait. Status messages will be shown every 20 seconds.",
   );
 
+  let lastMessageTime = Date.now();
   while (inProgressStates.includes(status)) {
     // Monitor logs with detailed option
     await monitorDeployment(
       vercel,
       deployment.id,
-      updateMessage,
       selectedOptions.includes("monitoring"),
     );
 
-    // Wait before checking status again
+    // Wait before checking status again (check every 5 seconds)
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Get updated status
@@ -273,7 +272,13 @@ export async function createDeployment(
       });
     });
     status = newStatus;
-    updateMessage(`Deployment status: ${status}`);
+
+    // Only show status message every 20 seconds
+    const now = Date.now();
+    if (now - lastMessageTime >= 20000) {
+      relinka("info", `Deployment status: ${status}`);
+      lastMessageTime = now;
+    }
   }
 
   if (status !== "READY") {
@@ -281,7 +286,6 @@ export async function createDeployment(
     await monitorDeployment(
       vercel,
       deployment.id,
-      updateMessage,
       selectedOptions.includes("monitoring"),
     );
     throw new Error(`Deployment failed with status: ${status}`);
@@ -291,7 +295,6 @@ export async function createDeployment(
   await monitorDeployment(
     vercel,
     deployment.id,
-    updateMessage,
     selectedOptions.includes("monitoring"),
   );
 

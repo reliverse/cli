@@ -1,5 +1,5 @@
 import { endPrompt, startPrompt } from "@reliverse/prompts";
-import { emojify } from "node-emoji";
+import { getTerminalWidth } from "@reliverse/relinka";
 
 import { cliName, cliVersion } from "~/app/constants.js";
 
@@ -14,11 +14,15 @@ export async function showStartPrompt(isDev: boolean) {
 }
 
 export async function showEndPrompt() {
+  const width = getTerminalWidth();
   await endPrompt({
-    title: emojify("ℹ  :books: https://docs.reliverse.org/reliverse/cli"),
+    title:
+      width < 100
+        ? "│  Please support the CLI: https://patreon.com/c/blefnk/membership"
+        : "│  ❤️  Please consider supporting @reliverse/cli development: https://patreon.com/c/blefnk/membership",
     titleAnimation: "glitch",
-    titleColor: "passionGradient",
+    titleColor: "dim",
     titleTypography: "bold",
-    titleAnimationDelay: 500,
+    titleAnimationDelay: 800,
   });
 }

@@ -8,9 +8,9 @@ import type {
 } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 
 import { PKG_ROOT } from "~/app/constants.js";
-import { getUserPkgManager } from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
+import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
+import { installPackages } from "~/utils/dependencies/installPackages.js";
 
-import { installPackages } from "./installPackages.js";
 import { scaffoldProject } from "./scaffoldProject.js";
 import {
   selectAppFile,
@@ -56,14 +56,14 @@ export const createProject = async ({
   framework,
   databaseProvider,
 }: CreateProjectOptions) => {
-  const pkgManager = getUserPkgManager();
+  const pkgManager = await getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
 
   // Bootstraps the base Next.js application
   await scaffoldProject({
     projectName,
     projectDir,
-    pkgManager,
+    pkgManager: pkgManager.packageManager,
     scopedAppName,
     noInstall,
     framework,
@@ -75,7 +75,7 @@ export const createProject = async ({
     projectName,
     scopedAppName,
     projectDir,
-    pkgManager,
+    pkgManager: pkgManager.packageManager,
     packages,
     noInstall,
     framework,

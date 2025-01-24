@@ -1,4 +1,3 @@
-import { spinnerTaskPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import { destr } from "destr";
 import fs from "fs-extra";
@@ -129,103 +128,93 @@ export async function generateConfigFiles(
   isDev: boolean,
   filesToGenerate: string[] = [],
 ): Promise<void> {
-  await spinnerTaskPrompt({
-    spinnerSolution: "ora",
-    initialMessage:
-      filesToGenerate.length === 0
-        ? "Generating configuration files..."
-        : `Generating the following configuration files: ${filesToGenerate.join(", ")}...`,
-    successMessage: "✅ Configuration files generated successfully!",
-    errorMessage: "❌ Failed to generate configuration files",
-    async action(updateMessage) {
-      try {
-        const shouldGenerateFile = (filename: string): boolean => {
-          return (
-            filesToGenerate.length === 0 || filesToGenerate.includes(filename)
-          );
+  try {
+    const shouldGenerateFile = (filename: string): boolean => {
+      return filesToGenerate.length === 0 || filesToGenerate.includes(filename);
+    };
+
+    // Clean up domain format
+    const cleanDomain = primaryDomain
+      .replace(/^https?:\/\//, "") // Remove protocol
+      .replace(/\/.*$/, ""); // Remove paths
+
+    if (isDev) {
+      cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+    }
+
+    const configGenerators = {
+      ".reliverse": async () => {
+        // Handle empty project author
+        const effectiveAuthor =
+          !cliUsername || cliUsername.trim() === ""
+            ? UNKNOWN_VALUE
+            : cliUsername;
+
+        const config: ReliverseConfig = {
+          ...DEFAULT_CONFIG,
+          projectName,
+          projectAuthor: effectiveAuthor,
+          projectRepository: `https://github.com/${effectiveAuthor}/${projectName}`,
+          projectState: "creating",
+          projectDomain: cleanDomain,
+          projectDeployService: deployService,
+          features: {
+            ...DEFAULT_CONFIG.features,
+            i18n: enableI18n,
+          },
         };
 
-        // Clean up domain format
-        const cleanDomain = primaryDomain
-          .replace(/^https?:\/\//, "") // Remove protocol
-          .replace(/\/.*$/, ""); // Remove paths
-
-        if (isDev) {
-          cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+        const configPath = path.join(projectPath, ".reliverse");
+        if (!overwrite && (await fs.pathExists(configPath))) {
+          relinka("info", "Reliverse config already exists, skipping...");
+          return false;
         }
 
-        const configGenerators = {
-          ".reliverse": async () => {
-            // Handle empty project author
-            const effectiveAuthor =
-              !cliUsername || cliUsername.trim() === ""
-                ? UNKNOWN_VALUE
-                : cliUsername;
+        // Write with proper formatting and comments
+        const fileContent = JSON.stringify(config, null, 2);
+        const contentWithComments = injectSectionComments(fileContent);
+        await fs.writeFile(configPath, contentWithComments, {
+          encoding: "utf-8",
+        });
+        relinka("success-verbose", "Generated .reliverse config");
+        return true;
+      },
+      "biome.json": async () => {
+        const result = await generateBiomeConfig(projectPath, overwrite);
+        return result;
+      },
+      "settings.json": async () => {
+        const result = await generateVSCodeSettings(projectPath, overwrite);
+        return result;
+      },
+    };
 
-            const config: ReliverseConfig = {
-              ...DEFAULT_CONFIG,
-              projectName,
-              projectAuthor: effectiveAuthor,
-              projectRepository: `https://github.com/${effectiveAuthor}/${projectName}`,
-              projectState: "creating",
-              projectDomain: cleanDomain,
-              projectDeployService: deployService,
-              features: {
-                ...DEFAULT_CONFIG.features,
-                i18n: enableI18n,
-              },
-            };
+    const generatedFiles: string[] = [];
+    await Promise.all(
+      Object.entries(configGenerators)
+        .filter(([filename]) => shouldGenerateFile(filename))
+        .map(async ([filename, generator]) => {
+          const wasGenerated = await generator();
+          if (wasGenerated) {
+            generatedFiles.push(filename);
+          }
+        }),
+    );
 
-            const configPath = path.join(projectPath, ".reliverse");
-            if (!overwrite && (await fs.pathExists(configPath))) {
-              relinka("info", "Reliverse config already exists, skipping...");
-              return false;
-            }
-
-            // Write with proper formatting and comments
-            const fileContent = JSON.stringify(config, null, 2);
-            const contentWithComments = injectSectionComments(fileContent);
-            await fs.writeFile(configPath, contentWithComments, {
-              encoding: "utf-8",
-            });
-            relinka("success-verbose", "Generated .reliverse config");
-            return true;
-          },
-          "biome.json": async () => {
-            const result = await generateBiomeConfig(projectPath, overwrite);
-            return result;
-          },
-          "settings.json": async () => {
-            const result = await generateVSCodeSettings(projectPath, overwrite);
-            return result;
-          },
-        };
-
-        const generatedFiles: string[] = [];
-        await Promise.all(
-          Object.entries(configGenerators)
-            .filter(([filename]) => shouldGenerateFile(filename))
-            .map(async ([filename, generator]) => {
-              const wasGenerated = await generator();
-              if (wasGenerated) {
-                generatedFiles.push(filename);
-              }
-            }),
-        );
-
-        updateMessage(
-          `✅ Configuration files generated successfully: ${generatedFiles.join(", ")}`,
-        );
-      } catch (error) {
-        relinka(
-          "error",
-          "Error generating config files:",
-          error instanceof Error ? error.message : String(error),
-        );
-        throw error;
-      }
-    },
-  });
+    if (generatedFiles.length > 0) {
+      relinka(
+        "success-verbose",
+        `Generated configuration files: ${generatedFiles.join(", ")}`,
+      );
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Error generating config files:",
+      error instanceof Error ? error.message : String(error),
+    );
+    throw error;
+  }
 }
 
 export async function generateProjectConfigs(

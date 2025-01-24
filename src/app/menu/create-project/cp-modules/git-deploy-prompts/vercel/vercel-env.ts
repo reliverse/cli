@@ -52,12 +52,10 @@ export async function handleEnvironmentVariables(
       }
     } else {
       await uploadEnvVars(vercel, projectName, envVars);
-      console.log("");
       relinka("success", "Environment variables added successfully");
     }
   } else {
     await uploadEnvVars(vercel, projectName, envVars);
-    console.log("");
     relinka("success", "Environment variables added successfully");
   }
 }

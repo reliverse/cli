@@ -11,6 +11,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { cliName } from "~/app/constants.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
+import { askMaskInput } from "~/utils/secret-inputs/askMaskInput.js";
 import { cd } from "~/utils/terminalHelpers.js";
 
 import { initGitDir } from "./git.js";
@@ -276,8 +277,15 @@ export async function getAvailableGithubRepoName(
 
 export async function ensureGithubToken(
   memory: ReliverseMemory,
-  shouldMaskSecretInput: boolean,
+  shouldMaskSecretInput: "prompt" | boolean,
 ): Promise<string> {
+  let maskInput = true;
+  if (shouldMaskSecretInput === "prompt") {
+    maskInput = await askMaskInput();
+  } else {
+    maskInput = shouldMaskSecretInput;
+  }
+
   if (memory.githubKey) {
     // Validate existing token
     try {
@@ -298,7 +306,7 @@ export async function ensureGithubToken(
     content:
       "Create one at https://github.com/settings/tokens/new \n" +
       "Set the `repo` scope and click `Generate token`",
-    mode: shouldMaskSecretInput ? "password" : "plain",
+    mode: maskInput ? "password" : "plain",
     validate: async (value: string): Promise<string | boolean> => {
       if (!value?.trim()) {
         return "Token is required";
@@ -324,13 +332,20 @@ export async function createGithubRepo(
   projectPath: string,
   isDev: boolean,
   cwd: string,
-  shouldMaskSecretInput: boolean,
+  shouldMaskSecretInput: "prompt" | boolean,
   config: ReliverseConfig,
 ): Promise<boolean> {
+  let maskInput = true;
+  if (shouldMaskSecretInput === "prompt") {
+    maskInput = await askMaskInput();
+  } else {
+    maskInput = shouldMaskSecretInput;
+  }
+
   try {
     // 1. Ensure we have a GitHub token
-    const githubKey = await ensureGithubToken(memory, shouldMaskSecretInput);
-    const octokit = createOctokitInstance(githubKey);
+    const ghToken = await ensureGithubToken(memory, maskInput);
+    const octokit = createOctokitInstance(ghToken);
 
     await cd(projectPath);
 

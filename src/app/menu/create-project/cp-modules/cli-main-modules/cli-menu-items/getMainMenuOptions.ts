@@ -8,6 +8,7 @@ import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 export type MainMenuChoice =
   | "create"
+  | "clone"
   | "detected-projects"
   | "isDevTools"
   | "exit";
@@ -34,6 +35,11 @@ export async function getMainMenuOptions(
       label: re.bold("✨ Create a brand new project"),
       hint: multiConfigMsg,
       value: "create",
+    },
+    {
+      label: re.bold("🧱 Clone an existing repo"),
+      hint: multiConfigMsg,
+      value: "clone",
     },
   ];
 

@@ -6,37 +6,8 @@ import ora, { type Ora } from "ora";
 import {
   getUserPkgManager,
   type PackageManager,
-} from "~/app/menu/create-project/cp-modules/use-composer-mode/utils/getUserPkgManager.js";
-
-const execWithSpinner = async (
-  projectDir: string,
-  pkgManager: PackageManager,
-  options: {
-    args?: string[];
-    stdout?: "pipe" | "ignore" | "inherit";
-    onDataHandle?: (spinner: Ora) => (data: Buffer) => void;
-  },
-) => {
-  const { onDataHandle, args = ["install"], stdout = "pipe" } = options;
-
-  const spinner = ora(`Running ${pkgManager} install...`).start();
-  const subprocess = execa(pkgManager, args, { cwd: projectDir, stdout });
-
-  await new Promise<void>((res, rej) => {
-    if (onDataHandle) {
-      subprocess.stdout?.on("data", onDataHandle(spinner));
-    }
-
-    void subprocess.on("error", (e) => {
-      rej(e);
-    });
-    void subprocess.on("close", () => {
-      res();
-    });
-  });
-
-  return spinner;
-};
+} from "~/utils/dependencies/getUserPkgManager.js";
+import { execaSpinner } from "~/utils/execaSpinner.js";
 
 const runInstallCommand = async (
   pkgManager: PackageManager,
@@ -49,14 +20,18 @@ const runInstallCommand = async (
         cwd: projectDir,
         stderr: "inherit",
       });
-
       return null;
+
     // When using yarn or pnpm, use the stdout stream and ora spinner to show the progress
     case "pnpm":
-      return execWithSpinner(projectDir, pkgManager, {
+      return execaSpinner(projectDir, pkgManager, {
+        args: ["install"],
+        spinnerText: "Installing dependencies with pnpm...",
+        successText: re.green(
+          "Successfully installed dependencies with pnpm!\n",
+        ),
         onDataHandle: (spinner) => (data) => {
           const text = data.toString();
-
           if (text.includes("Progress")) {
             spinner.text = text.includes("|")
               ? (text.split(" | ")[1] ?? "")
@@ -64,15 +39,29 @@ const runInstallCommand = async (
           }
         },
       });
+
     case "yarn":
-      return execWithSpinner(projectDir, pkgManager, {
+      return execaSpinner(projectDir, pkgManager, {
+        args: ["install"],
+        spinnerText: "Installing dependencies with yarn...",
+        successText: re.green(
+          "Successfully installed dependencies with yarn!\n",
+        ),
         onDataHandle: (spinner) => (data) => {
           spinner.text = data.toString();
         },
       });
+
     // When using bun, the stdout stream is ignored and the spinner is shown
     case "bun":
-      return execWithSpinner(projectDir, pkgManager, { stdout: "ignore" });
+      return execaSpinner(projectDir, pkgManager, {
+        args: ["install"],
+        stdout: "ignore",
+        spinnerText: "Installing dependencies with bun...",
+        successText: re.green(
+          "Successfully installed dependencies with bun!\n",
+        ),
+      });
   }
 };
 
@@ -82,13 +71,14 @@ export const installDependencies = async ({
   projectDir: string;
 }) => {
   relinka("info", "Installing dependencies...");
-  const pkgManager = getUserPkgManager();
+  const pkgInfo = await getUserPkgManager();
+  const pkgManager = pkgInfo.packageManager;
 
   const installSpinner = await runInstallCommand(pkgManager, projectDir);
 
   // If the spinner was used to show the progress, use succeed method on it
-  // If not, use the succeed on a new spinner
-  (installSpinner ?? ora()).succeed(
-    re.green("Successfully installed dependencies!\n"),
-  );
+  // If not (npm case), use the succeed on a new spinner
+  if (!installSpinner) {
+    ora().succeed(re.green("Successfully installed dependencies!\n"));
+  }
 };

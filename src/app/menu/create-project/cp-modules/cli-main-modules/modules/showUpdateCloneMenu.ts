@@ -5,7 +5,7 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { getRepoUrl } from "~/app/constants.js";
-import { downloadGitRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadGitRepo.js";
+import { downloadRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadRepo.js";
 import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
 
 type UpdateConfig = {
@@ -43,15 +43,15 @@ export async function showUpdateCloneMenu(isDev: boolean, cwd: string) {
       "warn",
       "Make sure to run this script from the root folder of your reliverse/cli clone.",
     );
-    const projectPath = await downloadGitRepo(
-      "test-name",
-      "blefnk/relivator",
+    const { dir } = await downloadRepo({
+      repoURL: "blefnk/relivator",
+      projectName: "test-name",
       isDev,
       cwd,
-    );
-    if (projectPath) {
+    });
+    if (dir) {
       await loadAndRunConfig(
-        path.join(projectPath, "src/prompts/tests/update-config.json"),
+        path.join(dir, "src/prompts/tests/update-config.json"),
       );
     }
   } else {

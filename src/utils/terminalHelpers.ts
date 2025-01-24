@@ -13,6 +13,7 @@ export const handleError = (error: unknown) =>
  */
 export async function cd(dir: string): Promise<void> {
   try {
+    await fs.ensureDir(dir);
     await fs.access(dir);
     process.chdir(dir);
     relinka("info-verbose", `Changed directory to: ${process.cwd()}`);

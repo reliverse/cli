@@ -2,7 +2,7 @@ import { re } from "@reliverse/relico";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.34";
+export const cliVersion = "1.4.40";
 export const cliName = "@reliverse/cli";
 export const cliDomain = "https://docs.reliverse.org";
 
@@ -11,6 +11,9 @@ export const isVerboseEnabled = false;
 
 export const DEFAULT_CLI_USERNAME = "johnny911";
 
+export const endTitle =
+  "📚 Check the docs to learn more: https://docs.reliverse.org";
+
 export const recommended = re.green("🚀 Recommended");
 export const experimental = re.red("🚨 Experimental");
 
@@ -18,6 +21,11 @@ export const UNKNOWN_VALUE = "unknown";
 export const DEFAULT_DOMAIN = "https://example.com";
 export const RELIVERSE_SCHEMA_DEV = "./schema.json";
 export const RELIVERSE_SCHEMA_URL = "https://reliverse.org/schema.json";
+
+export const RELIVERSE_TEMPLATES = {
+  relivator: "blefnk/relivator",
+  nextReactTsSrcMinimal: "blefnk/next-react-ts-src-minimal",
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

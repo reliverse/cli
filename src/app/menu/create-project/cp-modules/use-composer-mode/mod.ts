@@ -2,14 +2,15 @@ import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
+import { installDependencies } from "~/utils/dependencies/installDependencies.js";
+
 import { createProject } from "./helpers/createProject.js";
 import { initializeGit } from "./helpers/git.js";
-import { installDependencies } from "./helpers/installDependencies.js";
 import { logNextSteps } from "./helpers/logNextSteps.js";
 import { setImportAlias } from "./helpers/setImportAlias.js";
 import { runComposerMode } from "./impl.js";
 import { buildPkgInstallerMap, type CliResults } from "./opts.js";
-import { getUserPkgManager } from "./utils/getUserPkgManager.js";
 import { parseNameAndPath } from "./utils/parseNameAndPath.js";
 import { renderTitle } from "./utils/renderTitle.js";
 import {
@@ -19,7 +20,7 @@ import {
 
 export async function showComposerMode(cliResults: CliResults) {
   const npmVersion = await getNpmVersion();
-  const pkgManager = getUserPkgManager();
+  const pkgManager = await getUserPkgManager();
   await renderTitle();
   if (npmVersion) {
     renderVersionWarning(npmVersion);
@@ -52,11 +53,11 @@ export async function showComposerMode(cliResults: CliResults) {
   pkgJson.name = scopedAppName;
 
   // ? Bun doesn't support this field (yet)
-  if (pkgManager !== "bun") {
-    const { stdout } = await execa(pkgManager, ["-v"], {
+  if (pkgManager.packageManager !== "bun") {
+    const { stdout } = await execa(pkgManager.packageManager, ["-v"], {
       cwd: projectDir,
     });
-    pkgJson.packageManager = `${pkgManager}@${stdout.trim()}`;
+    pkgJson.packageManager = `${pkgManager.packageManager}@${stdout.trim()}`;
   }
 
   fs.writeJSONSync(path.join(projectDir, "package.json"), pkgJson, {

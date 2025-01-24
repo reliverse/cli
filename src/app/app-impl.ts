@@ -12,6 +12,7 @@ import type { ParamsOmitSkipPN } from "./app-types.js";
 
 import { UNKNOWN_VALUE } from "./constants.js";
 import { getRandomMessage, getWelcomeTitle } from "./db/messages.js";
+import { showCloneProjectMenu } from "./menu/create-project/cp-modules/cli-main-modules/cli-menu-items/showCloneProjectMenu.js";
 import {
   showDevToolsMenu,
   showNewProjectMenu,
@@ -64,6 +65,8 @@ export async function app(params: ParamsOmitSkipPN) {
       reli,
       skipPrompts,
     });
+  } else if (mainMenuOption === "clone") {
+    await showCloneProjectMenu({ isDev, cwd });
   } else if (mainMenuOption === "detected-projects") {
     await showOpenProjectMenu({
       projectName,

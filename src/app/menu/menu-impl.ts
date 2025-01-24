@@ -16,6 +16,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
   DEFAULT_APP_NAME,
+  endTitle,
   experimental,
   recommended,
   UNKNOWN_VALUE,
@@ -232,7 +233,6 @@ export async function optionCreateVSCodeExtension(
   isDev: boolean,
   memory: ReliverseMemory,
   config: ReliverseConfig,
-  endTitle: string,
   skipPrompts: boolean,
 ) {
   const template = (await selectPrompt({
@@ -274,7 +274,6 @@ export async function optionCreateBrowserExtension(
   isDev: boolean,
   memory: ReliverseMemory,
   config: ReliverseConfig,
-  endTitle: string,
   skipPrompts: boolean,
 ) {
   const template = (await selectPrompt({
@@ -320,7 +319,6 @@ export async function optionCreateWebProject(
   isDev: boolean,
   memory: ReliverseMemory,
   config: ReliverseConfig,
-  endTitle: string,
   isMultiConfig: boolean,
   reli: ReliverseConfig[],
   skipPrompts: boolean,

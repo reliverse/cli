@@ -18,11 +18,9 @@ import { isSpecialDomain } from "./helpers/domainHelpers.js";
 import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "./helpers/promptForDomain.js";
 import { createOctokitInstance } from "./octokit-instance.js";
+import { createVercelDeployment } from "./vercel/vercel-create.js";
 import { getVercelProjectDomain } from "./vercel/vercel-domain.js";
-import {
-  isProjectDeployed,
-  createVercelDeployment,
-} from "./vercel/vercel-mod.js";
+import { isProjectDeployed } from "./vercel/vercel-mod.js";
 
 /**
  * Collects details from a GitHub setup attempt.

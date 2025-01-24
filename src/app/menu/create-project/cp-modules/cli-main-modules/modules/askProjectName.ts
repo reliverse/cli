@@ -8,9 +8,9 @@ export async function askProjectName(): Promise<string> {
   const placeholder = generate({ exactly: 2, join: "-" });
 
   const name = await inputPrompt({
-    title: "How should I name your app?",
+    title: "How should I name your project?",
     content:
-      "This name will be used to create the project directory and throughout the project.",
+      "This name may be used to create the project directory, throughout the project, etc.",
     hint: re.dim(`Press <Enter> to use the default value (${placeholder})`),
     defaultValue: placeholder,
     placeholder: `I've just generated a random name for you: ${placeholder}`,

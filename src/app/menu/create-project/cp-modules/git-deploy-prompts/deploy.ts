@@ -6,7 +6,7 @@ import type { DeploymentService } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { createVercelDeployment } from "./vercel/vercel-mod.js";
+import { createVercelDeployment } from "./vercel/vercel-create.js";
 
 export async function selectDeploymentService(
   config: ReliverseConfig,

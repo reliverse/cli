@@ -2,6 +2,7 @@ import path from "pathe";
 
 import { DEFAULT_APP_NAME } from "~/app/constants.js";
 import { configureEslint } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/eslint.js";
+import { type PackageManager } from "~/utils/dependencies/getUserPkgManager.js";
 
 import { dbContainerInstaller } from "./installers/dbContainer.js";
 import { drizzleInstaller } from "./installers/drizzle.js";
@@ -10,7 +11,6 @@ import { nextAuthInstaller } from "./installers/nextAuth.js";
 import { prismaInstaller } from "./installers/prisma.js";
 import { tailwindInstaller } from "./installers/tailwind.js";
 import { trpcInstaller } from "./installers/trpc.js";
-import { type PackageManager } from "./utils/getUserPkgManager.js";
 
 // Turning this into a const allows the list to be iterated over for programmatically creating prompt options
 // Should increase extensibility in the future
