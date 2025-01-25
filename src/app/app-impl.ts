@@ -1,18 +1,18 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { deleteLastLines } from "@reliverse/relinka";
+import { deleteLastLine } from "@reliverse/relinka";
 import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
-import { showEndPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
-import { renderEndLine } from "~/utils/terminalHelpers.js";
+import { completePrompt } from "~/utils/terminalHelpers.js";
 
 import type { ParamsOmitSkipPN } from "./app-types.js";
 
 import { UNKNOWN_VALUE } from "./constants.js";
 import { getRandomMessage, getWelcomeTitle } from "./db/messages.js";
 import { showCloneProjectMenu } from "./menu/create-project/cp-modules/cli-main-modules/cli-menu-items/showCloneProjectMenu.js";
+import { showEndPrompt } from "./menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
 import {
   showDevToolsMenu,
   showNewProjectMenu,
@@ -40,19 +40,23 @@ export async function app(params: ParamsOmitSkipPN) {
         config,
       );
       await showEndPrompt();
-      deleteLastLines(4);
-      renderEndLine();
+      // deleteLastLines(4);
+      deleteLastLine();
+      // renderEndLine();
       process.exit(0);
     }
   }
+
+  const options = await getMainMenuOptions(cwd, isDev, reli);
 
   const mainMenuOption = await selectPrompt({
     title: cliUsername
       ? getWelcomeTitle(cliUsername)
       : getRandomMessage("welcome"),
-    options: await getMainMenuOptions(cwd, isDev, reli),
+    options,
     titleColor: "retroGradient",
     displayInstructions: true,
+    endTitle: "✋ User pressed Ctrl+C, exiting...",
   });
 
   if (mainMenuOption === "create") {
@@ -86,10 +90,33 @@ export async function app(params: ParamsOmitSkipPN) {
       memory,
       skipPrompts,
     });
+  } else if (mainMenuOption === "exit") {
+    // msg({ type: "M_BAR", title: "" });
+    // msg({ type: "M_BAR", title: "" });
+    // deleteLastLines(2);
+    // await endPrompt({
+    //   title: "✋ User pressed Ctrl+C, exiting...",
+    //   titleColor: "redBright",
+    //   titleTypography: "bold",
+    //   endTitleColor: "redBright",
+    // });
+    // deleteLastLines(4);
+    // renderEndLine();
+    console.log("completePrompt");
+    deleteLastLine();
+    console.log("completePrompt");
+    await completePrompt(
+      "select",
+      true,
+      "✋ User pressed Ctrl+C, exiting...",
+      "redBright",
+      "bold",
+      undefined,
+      true,
+      "redBright",
+      undefined,
+      false,
+    );
+    // process.exit(0);
   }
-
-  await showEndPrompt();
-  deleteLastLines(4);
-  renderEndLine();
-  process.exit(0);
 }

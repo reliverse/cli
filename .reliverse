@@ -8,7 +8,7 @@
   "projectName": "@reliverse/cli",
   "projectAuthor": "blefnk",
   "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  "projectVersion": "1.4.42",
+  "projectVersion": "1.4.44",
   "projectLicense": "MIT",
   "projectRepository": "reliverse/cli",
   "projectState": "creating",

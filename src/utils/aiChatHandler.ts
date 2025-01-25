@@ -3,7 +3,7 @@ import type { CoreMessage } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { inputPrompt } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
+import { printLineBar, relinka } from "@reliverse/relinka";
 import { streamText } from "ai";
 import dotenv from "dotenv";
 
@@ -14,21 +14,6 @@ import { updateReliverseMemory } from "./reliverseMemory.js";
 dotenv.config();
 
 const messages: CoreMessage[] = [];
-
-/**
- * Prints:  "│  <text>"  (two spaces after the bar).
- * If text is empty, it just prints "│".
- * If indent is 1, it prints "│ <text>" (one space).
- * If indent is 2, it prints "│  <text>" (two spaces), etc.
- */
-function printLineBar(text: string, indent = 2) {
-  if (text === "") {
-    // Just print a single bar
-    console.log(re.dim("│"));
-  } else {
-    console.log(`${re.dim("│")}${" ".repeat(indent)}${text}`);
-  }
-}
 
 /**
  * Ensures we have a valid OpenAI API key in either:
