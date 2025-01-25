@@ -4,7 +4,7 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 
 import type { DeploymentService } from "~/types.js";
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -69,7 +69,7 @@ export async function configureGithubRepo(
   projectName: string,
   projectPath: string,
   shouldMaskSecretInput: boolean,
-  selectedTemplate: TemplateOption,
+  selectedTemplate: RepoOption,
 ): Promise<GithubSetupResult> {
   if (!memory) {
     relinka("error", "Failed to read reliverse memory");
@@ -172,7 +172,7 @@ export async function promptGitDeploy({
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
-  selectedTemplate: TemplateOption;
+  selectedTemplate: RepoOption;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;

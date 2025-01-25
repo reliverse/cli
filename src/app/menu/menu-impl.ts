@@ -30,16 +30,16 @@ import {
   TEMP_BROWSER_TEMPLATE_OPTIONS,
   TEMP_VSCODE_TEMPLATE_OPTIONS,
   TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS,
-  type TemplateOption,
+  type RepoOption,
   TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS,
-} from "~/utils/projectTemplate.js";
+} from "~/utils/projectRepository.js";
 
 import { createWebProject } from "./create-project/cp-mod.js";
 
 /**
  * Possible template options for VS Code extensions
  */
-export type VSCodeTemplateOption =
+export type VSCodeRepoOption =
   | "microsoft/vscode-extension-samples"
   | "microsoft/vscode-extension-template"
   | "unknown";
@@ -47,7 +47,7 @@ export type VSCodeTemplateOption =
 /**
  * Possible template options for browser extensions
  */
-export type BrowserTemplateOption =
+export type BrowserRepoOption =
   | "reliverse/template-browser-extension"
   | "unknown";
 
@@ -235,7 +235,7 @@ export async function optionCreateVSCodeExtension(
   config: ReliverseConfig,
   skipPrompts: boolean,
 ) {
-  const template = (await selectPrompt({
+  const template = await selectPrompt({
     endTitle,
     title: "Which VS Code extension template would you like to use?",
     options: [
@@ -247,7 +247,7 @@ export async function optionCreateVSCodeExtension(
         disabled: true,
       },
     ],
-  })) as VSCodeTemplateOption;
+  });
 
   const vscodeExtensionConfig = await configureVSCodeExtension();
 
@@ -255,7 +255,7 @@ export async function optionCreateVSCodeExtension(
     await createWebProject({
       projectName,
       initialProjectName: projectName,
-      webProjectTemplate: template as Exclude<VSCodeTemplateOption, "unknown">,
+      selectedRepo: template as Exclude<VSCodeRepoOption, "unknown">,
       message: getRandomMessage("category"),
       isDev,
       config,
@@ -288,7 +288,7 @@ export async function optionCreateBrowserExtension(
         disabled: true,
       },
     ],
-  })) as BrowserTemplateOption;
+  })) as BrowserRepoOption;
 
   const browserExtensionConfig = await configureBrowserExtension();
 
@@ -296,7 +296,7 @@ export async function optionCreateBrowserExtension(
     await createWebProject({
       projectName,
       initialProjectName: projectName,
-      webProjectTemplate: template as Exclude<BrowserTemplateOption, "unknown">,
+      selectedRepo: template as Exclude<BrowserRepoOption, "unknown">,
       message: getRandomMessage("category"),
       isDev,
       config,
@@ -351,7 +351,7 @@ export async function optionCreateWebProject(
             architecture === "fullstack"
               ? Object.values(TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS)
               : Object.values(TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS),
-        })) as TemplateOption;
+        })) as RepoOption;
       }
 
       const settingUpMsg = `Setting up project #${reli.indexOf(multiConfig) + 1}...`;
@@ -359,7 +359,7 @@ export async function optionCreateWebProject(
       await createWebProject({
         projectName,
         initialProjectName: projectName,
-        webProjectTemplate: template,
+        selectedRepo: template,
         message: settingUpMsg,
         isDev,
         config: multiConfig,
@@ -464,9 +464,9 @@ export async function optionCreateWebProject(
     }
 
     // If user's config has a template, use it; else ask
-    let template: TemplateOption;
+    let template: RepoOption;
     if (config.projectTemplate !== UNKNOWN_VALUE) {
-      template = config.projectTemplate as TemplateOption;
+      template = config.projectTemplate as RepoOption;
     } else {
       let architecture = config.projectArchitecture;
       if (architecture === "unknown") {
@@ -493,7 +493,7 @@ export async function optionCreateWebProject(
             ? Object.values(TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS)
             : Object.values(TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS),
       });
-      template = result as TemplateOption;
+      template = result as RepoOption;
     }
 
     const settingUpMsg = isMultiConfig
@@ -504,7 +504,7 @@ export async function optionCreateWebProject(
     await createWebProject({
       projectName,
       initialProjectName: projectName,
-      webProjectTemplate: template,
+      selectedRepo: template,
       message: settingUpMsg,
       isDev,
       config,

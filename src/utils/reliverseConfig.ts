@@ -453,6 +453,14 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
       replaceEvents: false,
     },
   },
+
+  // Custom repos configuration
+  multipleRepoCloneMode: false,
+  customUserFocusedRepos: [],
+  customDevsFocusedRepos: [],
+  hideRepoSuggestions: false,
+  customReposOnNewProject: false,
+
   envComposerOpenBrowser: true,
   skipPromptsUseAutoBehavior: false,
   deployBehavior: "prompt",
@@ -567,6 +575,17 @@ export function fixLineByLine(
       continue;
     }
 
+    // Special handling for custom repository arrays
+    if (
+      propName === "customUserFocusedRepos" ||
+      propName === "customDevsFocusedRepos"
+    ) {
+      if (Array.isArray(userValue)) {
+        result[propName] = userValue.map((url) => cleanGitHubUrl(String(url)));
+        continue;
+      }
+    }
+
     const isValidStructure = Value.Check(
       createSinglePropertySchema(propName, subSchema),
       { [propName]: userValue },
@@ -635,6 +654,7 @@ export function injectSectionComments(fileContent: string): string {
     features: [comment("Project features")],
     projectFramework: [comment("Primary tech stack/framework")],
     codeStyle: [comment("Code style preferences")],
+    multipleRepoCloneMode: [comment("`Clone an existing repo` menu")],
     envComposerOpenBrowser: [
       comment("Set to false to disable opening"),
       comment("the browser while env composing"),
@@ -647,6 +667,7 @@ export function injectSectionComments(fileContent: string): string {
     ],
     existingRepoBehavior: [
       comment("What CLI should do with existing GitHub repo"),
+      comment("Applicable for the new project creation only"),
       comment("prompt | autoYes | autoYesSkipCommit | autoNo"),
     ],
   };
@@ -681,7 +702,15 @@ const TEMP_EXTENSION = ".tmp";
  * Cleans GitHub repository URLs by removing git+ prefix and .git suffix
  */
 export function cleanGitHubUrl(url: string): string {
-  return url.replace(/^git\+/, "").replace(/\.git$/, "");
+  return url
+    .trim()
+    .replace(/^git\+/, "")
+    .replace(
+      /^https?:\/\/(www\.)?(github|gitlab|bitbucket|sourcehut)\.com\//i,
+      "",
+    )
+    .replace(/^(github|gitlab|bitbucket|sourcehut)\.com\//i, "")
+    .replace(/\.git$/i, "");
 }
 
 /* ------------------------------------------------------------------
@@ -1241,7 +1270,7 @@ export async function generateReliverseConfig({
       ? cleanGitHubUrl(packageJson.repository)
       : cleanGitHubUrl(packageJson.repository.url)
     : githubUsername && projectName
-      ? `https://github.com/${githubUsername}/${projectName}`
+      ? `${githubUsername}/${projectName}`
       : UNKNOWN_VALUE;
 
   baseRules.projectDeployService = deployService;
@@ -1253,6 +1282,12 @@ export async function generateReliverseConfig({
 
   baseRules.features = await detectFeatures(projectPath, packageJson);
   baseRules.features.i18n = enableI18n ?? false;
+
+  baseRules.multipleRepoCloneMode = false;
+  baseRules.customUserFocusedRepos = [];
+  baseRules.customDevsFocusedRepos = [];
+  baseRules.hideRepoSuggestions = false;
+  baseRules.customReposOnNewProject = false;
 
   baseRules.envComposerOpenBrowser = true;
 

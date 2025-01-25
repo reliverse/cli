@@ -125,7 +125,15 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
         const content = await fs.readFile(file, "utf-8");
 
         // Handle different file types
-        if (file.endsWith(".json") || file.endsWith(".reliverse")) {
+        if (file.endsWith(".reliverse")) {
+          const parsed = parseJSONC(content);
+          if (parsed && typeof parsed === "object" && "version" in parsed) {
+            parsed.version = newVersion;
+            await fs.writeFile(file, `${JSON.stringify(parsed, null, 2)}\n`);
+            updatedFiles.push(file);
+            continue;
+          }
+        } else if (file.endsWith(".json")) {
           const parsed = destr(content);
           if (parsed && typeof parsed === "object" && "version" in parsed) {
             parsed.version = newVersion;

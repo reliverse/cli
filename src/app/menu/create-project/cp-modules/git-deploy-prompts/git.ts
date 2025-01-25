@@ -8,7 +8,7 @@ import path from "pathe";
 import { simpleGit } from "simple-git";
 
 import type { GitModParams } from "~/app/app-types.js";
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -306,7 +306,7 @@ export async function handleGithubRepo(
     config: ReliverseConfig;
     shouldMaskSecretInput: boolean;
     githubUsername: string;
-    selectedTemplate: TemplateOption;
+    selectedTemplate: RepoOption;
   },
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);

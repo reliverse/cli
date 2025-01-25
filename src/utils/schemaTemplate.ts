@@ -9,7 +9,7 @@ import { cliVersion } from "~/app/constants.js";
 // import pkg from "../../package.json" assert { type: "json" };
 // const cliVersion = pkg.version;
 
-export const templateInfoSchema = Type.Object({
+export const repoInfoSchema = Type.Object({
   id: Type.String(),
   author: Type.String(),
   name: Type.String(),
@@ -29,23 +29,23 @@ export const templateInfoSchema = Type.Object({
   }),
 });
 
-export type TemplateInfo = Static<typeof templateInfoSchema>;
+export type RepoInfo = Static<typeof repoInfoSchema>;
 
-export const templatesSchema = Type.Object(
+export const reposSchema = Type.Object(
   {
     $schema: Type.String(),
-    version: Type.String(), // CLI version when templates.json was last updated
-    templates: Type.Array(templateInfoSchema),
+    version: Type.String(), // CLI version when repos.json was last updated
+    repos: Type.Array(repoInfoSchema),
   },
   { additionalProperties: false },
 );
 
-export type TemplatesConfig = Static<typeof templatesSchema>;
+export type ReposConfig = Static<typeof reposSchema>;
 
-export const DEFAULT_TEMPLATES_CONFIG: TemplatesConfig = {
+export const DEFAULT_REPOS_CONFIG: ReposConfig = {
   $schema: "./schema.json",
   version: cliVersion,
-  templates: [],
+  repos: [],
 };
 
 /**
@@ -120,22 +120,22 @@ function convertTypeBoxToJsonSchema(schema: any): any {
 }
 
 /**
- * Generates a JSON schema file for templates
+ * Generates a JSON schema file for repos
  */
-export async function generateTemplatesJsonSchema(): Promise<void> {
-  const converted = convertTypeBoxToJsonSchema(templatesSchema);
+export async function generateReposJsonSchema(): Promise<void> {
+  const converted = convertTypeBoxToJsonSchema(reposSchema);
   const schema = {
     $schema: "http://json-schema.org/draft-07/schema#",
-    title: "Reliverse Templates Schema",
-    description: "Schema for templates.json configuration file",
+    title: "Reliverse Repos Schema",
+    description: "Schema for repos.json configuration file",
     type: "object",
     properties: converted.properties,
     required: converted.required,
   };
 
-  const templatesPath = path.join(os.homedir(), ".reliverse", "templates");
-  await fs.ensureDir(templatesPath);
-  const schemaPath = path.join(templatesPath, "schema.json");
+  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
+  await fs.ensureDir(reposPath);
+  const schemaPath = path.join(reposPath, "schema.json");
   await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2));
 }
 
@@ -143,8 +143,8 @@ export async function generateTemplatesJsonSchema(): Promise<void> {
  * Checks if schema needs to be regenerated based on CLI version
  */
 export async function shouldRegenerateSchema(): Promise<boolean> {
-  const templatesPath = path.join(os.homedir(), ".reliverse", "templates");
-  const configPath = path.join(templatesPath, "templates.json");
+  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
+  const configPath = path.join(reposPath, "repos.json");
 
   if (!(await fs.pathExists(configPath))) {
     return true;
@@ -152,7 +152,7 @@ export async function shouldRegenerateSchema(): Promise<boolean> {
 
   try {
     const content = await fs.readFile(configPath, "utf-8");
-    const config = JSON.parse(content) as TemplatesConfig;
+    const config = JSON.parse(content) as ReposConfig;
     return config.version !== cliVersion;
   } catch {
     return true;

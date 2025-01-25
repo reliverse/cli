@@ -1,0 +1,428 @@
+bun test
+GitHub logo
+
+Edit on GitHub
+
+Bun ships with a fast, built-in, Jest-compatible test runner. Tests are executed with the Bun runtime, and support the following features.
+
+    TypeScript and JSX
+    Lifecycle hooks
+    Snapshot testing
+    UI & DOM testing
+    Watch mode with --watch
+    Script pre-loading with --preload
+
+Bun aims for compatibility with Jest, but not everything is implemented. To track compatibility, see this tracking issue.
+Run tests
+
+bun test
+
+Tests are written in JavaScript or TypeScript with a Jest-like API. Refer to Writing tests for full documentation.
+math.test.ts
+
+import { expect, test } from "bun:test";
+
+test("2 + 2", () => {
+  expect(2 + 2).toBe(4);
+});
+
+The runner recursively searches the working directory for files that match the following patterns:
+
+    *.test.{js|jsx|ts|tsx}
+    *_test.{js|jsx|ts|tsx}
+    *.spec.{js|jsx|ts|tsx}
+    *_spec.{js|jsx|ts|tsx}
+
+You can filter the set of test files to run by passing additional positional arguments to bun test. Any test file with a path that matches one of the filters will run. Commonly, these filters will be file or directory names; glob patterns are not yet supported.
+
+bun test <filter> <filter> ...
+
+To filter by test name, use the -t/--test-name-pattern flag.
+
+# run all tests or test suites with "addition" in the name
+
+bun test --test-name-pattern addition
+
+To run a specific file in the test runner, make sure the path starts with ./ or / to distinguish it from a filter name.
+
+bun test ./test/specific-file.test.ts
+
+The test runner runs all tests in a single process. It loads all --preload scripts (see Lifecycle for details), then runs all tests. If a test fails, the test runner will exit with a non-zero exit code.
+CI/CD integration
+
+bun test supports a variety of CI/CD integrations.
+GitHub Actions
+
+bun test automatically detects if it's running inside GitHub Actions and will emit GitHub Actions annotations to the console directly.
+
+No configuration is needed, other than installing bun in the workflow and running bun test.
+How to install bun in a GitHub Actions workflow
+
+To use bun test in a GitHub Actions workflow, add the following step:
+
+jobs:
+  build:
+    name: build-app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies # (assuming your project has dependencies)
+        run: bun install # You can use npm/yarn/pnpm instead if you prefer
+      - name: Run tests
+        run: bun test
+
+From there, you'll get GitHub Actions annotations.
+JUnit XML reports (GitLab, etc.)
+
+To use bun test with a JUnit XML reporter, you can use the --reporter=junit in combination with --reporter-outfile.
+
+bun test --reporter=junit --reporter-outfile=./bun.xml
+
+This will continue to output to stdout/stderr as usual, and also write a JUnit XML report to the given path at the very end of the test run.
+
+JUnit XML is a popular format for reporting test results in CI/CD pipelines.
+Timeouts
+
+Use the --timeout flag to specify a per-test timeout in milliseconds. If a test times out, it will be marked as failed. The default value is 5000.
+
+# default value is 5000
+
+bun test --timeout 20
+
+Rerun tests
+
+Use the --rerun-each flag to run each test multiple times. This is useful for detecting flaky or non-deterministic test failures.
+
+bun test --rerun-each 100
+
+Bail out with --bail
+
+Use the --bail flag to abort the test run early after a pre-determined number of test failures. By default Bun will run all tests and report all failures, but sometimes in CI environments it's preferable to terminate earlier to reduce CPU usage.
+
+# bail after 1 failure
+
+bun test --bail
+
+# bail after 10 failure
+
+bun test --bail=10
+
+Watch mode
+
+Similar to bun run, you can pass the --watch flag to bun test to watch for changes and re-run tests.
+
+bun test --watch
+
+Lifecycle hooks
+
+Bun supports the following lifecycle hooks:
+Hook Description
+beforeAll Runs once before all tests.
+beforeEach Runs before each test.
+afterEach Runs after each test.
+afterAll Runs once after all tests.
+
+These hooks can be defined inside test files, or in a separate file that is preloaded with the --preload flag.
+
+$ bun test --preload ./setup.ts
+
+See Test > Lifecycle for complete documentation.
+Mocks
+
+Create mock functions with the mock function. Mocks are automatically reset between tests.
+
+import { test, expect, mock } from "bun:test";
+const random = mock(() => Math.random());
+
+test("random", () => {
+  const val = random();
+  expect(val).toBeGreaterThan(0);
+  expect(random).toHaveBeenCalled();
+  expect(random).toHaveBeenCalledTimes(1);
+});
+
+Alternatively, you can use jest.fn(), it behaves identically.
+
+import { test, expect, mock } from "bun:test";
+import { test, expect, jest } from "bun:test";
+
+const random = mock(() => Math.random());
+const random = jest.fn(() => Math.random());
+
+See Test > Mocks for complete documentation.
+Snapshot testing
+
+Snapshots are supported by bun test.
+
+// example usage of toMatchSnapshot
+import { test, expect } from "bun:test";
+
+test("snapshot", () => {
+  expect({ a: 1 }).toMatchSnapshot();
+});
+
+To update snapshots, use the --update-snapshots flag.
+
+bun test --update-snapshots
+
+See Test > Snapshots for complete documentation.
+UI & DOM testing
+
+Bun is compatible with popular UI testing libraries:
+
+    HappyDOM
+    DOM Testing Library
+    React Testing Library
+
+See Test > DOM Testing for complete documentation.
+Performance
+
+Bun's test runner is fast.
+
+Writing tests
+GitHub logo
+
+Edit on GitHub
+
+Define tests with a Jest-like API imported from the built-in bun:test module. Long term, Bun aims for complete Jest compatibility; at the moment, a limited set of expect matchers are supported.
+Basic usage
+
+To define a simple test:
+math.test.ts
+
+import { expect, test } from "bun:test";
+
+test("2 + 2", () => {
+  expect(2 + 2).toBe(4);
+});
+
+Tests can be grouped into suites with describe.
+math.test.ts
+
+import { expect, test, describe } from "bun:test";
+
+describe("arithmetic", () => {
+  test("2 + 2", () => {
+    expect(2 + 2).toBe(4);
+  });
+
+  test("2 *2", () => {
+    expect(2* 2).toBe(4);
+  });
+});
+
+Tests can be async.
+
+import { expect, test } from "bun:test";
+
+test("2 *2", async () => {
+  const result = await Promise.resolve(2* 2);
+  expect(result).toEqual(4);
+});
+
+Alternatively, use the done callback to signal completion. If you include the done callback as a parameter in your test definition, you must call it or the test will hang.
+
+import { expect, test } from "bun:test";
+
+test("2 *2", done => {
+  Promise.resolve(2* 2).then(result => {
+    expect(result).toEqual(4);
+    done();
+  });
+});
+
+Timeouts
+
+Optionally specify a per-test timeout in milliseconds by passing a number as the third argument to test.
+
+import { test } from "bun:test";
+
+test("wat", async () => {
+  const data = await slowOperation();
+  expect(data).toBe(42);
+}, 500); // test must run in <500ms
+
+In bun:test, test timeouts throw an uncatchable exception to force the test to stop running and fail. We also kill any child processes that were spawned in the test to avoid leaving behind zombie processes lurking in the background.
+🧟 Zombie process killer
+
+When a test times out and processes spawned in the test via Bun.spawn, Bun.spawnSync, or node:child_process are not killed, they will be automatically killed and a message will be logged to the console.
+test.skip
+
+Skip individual tests with test.skip. These tests will not be run.
+
+import { expect, test } from "bun:test";
+
+test.skip("wat", () => {
+  // TODO: fix this
+  expect(0.1 + 0.2).toEqual(0.3);
+});
+
+test.todo
+
+Mark a test as a todo with test.todo. These tests will not be run.
+
+import { expect, test } from "bun:test";
+
+test.todo("fix this", () => {
+  myTestFunction();
+});
+
+To run todo tests and find any which are passing, use bun test --todo.
+
+bun test --todo
+
+my.test.ts:
+✗ unimplemented feature
+  ^ this test is marked as todo but passes. Remove `.todo` or check that test is correct.
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+
+With this flag, failing todo tests will not cause an error, but todo tests which pass will be marked as failing so you can remove the todo mark or fix the test.
+test.only
+
+To run a particular test or suite of tests use test.only() or describe.only(). Once declared, running bun test --only will only execute tests/suites that have been marked with .only(). Running bun test without the --only option with test.only() declared will result in all tests in the given suite being executed up to the test with .only(). describe.only() functions the same in both execution scenarios.
+
+import { test, describe } from "bun:test";
+
+test("test #1", () => {
+  // does not run
+});
+
+test.only("test #2", () => {
+  // runs
+});
+
+describe.only("only", () => {
+  test("test #3", () => {
+    // runs
+  });
+});
+
+The following command will only execute tests #2 and #3.
+
+bun test --only
+
+The following command will only execute tests #1, #2 and #3.
+
+bun test
+
+test.if
+
+To run a test conditionally, use test.if(). The test will run if the condition is truthy. This is particularly useful for tests that should only run on specific architectures or operating systems.
+
+test.if(Math.random() > 0.5)("runs half the time", () => {
+  // ...
+});
+
+const macOS = process.arch === "darwin";
+test.if(macOS)("runs on macOS", () => {
+  // runs if macOS
+});
+
+test.skipIf
+
+To instead skip a test based on some condition, use test.skipIf() or describe.skipIf().
+
+const macOS = process.arch === "darwin";
+
+test.skipIf(macOS)("runs on non-macOS", () => {
+  // runs if *not* macOS
+});
+
+test.todoIf
+
+If instead you want to mark the test as TODO, use test.todoIf() or describe.todoIf(). Carefully choosing skipIf or todoIf can show a difference between, for example, intent of "invalid for this target" and "planned but not implemented yet."
+
+const macOS = process.arch === "darwin";
+
+// TODO: we've only implemented this for Linux so far.
+test.todoIf(macOS)("runs on posix", () => {
+  // runs if *not* macOS
+});
+
+test.each
+
+To return a function for multiple cases in a table of tests, use test.each.
+
+const cases = [
+  [1, 2, 3],
+  [3, 4, 5],
+];
+
+test.each(cases)("%p + %p should be %p", (a, b, expected) => {
+  // runs once for each test case provided
+});
+
+There are a number of options available for formatting the case label depending on its type.
+%p pretty-format
+%s String
+%d Number
+%i Integer
+%f Floating point
+%j JSON
+%o Object
+%# Index of the test case
+%% Single percent sign (%)
+Matchers
+
+Bun implements the following matchers. Full Jest compatibility is on the roadmap; track progress here.
+✅ .not
+✅ .toBe()
+✅ .toEqual()
+✅ .toBeNull()
+✅ .toBeUndefined()
+✅ .toBeNaN()
+✅ .toBeDefined()
+✅ .toBeFalsy()
+✅ .toBeTruthy()
+✅ .toContain()
+✅ .toContainAllKeys()
+✅ .toContainValue()
+✅ .toContainValues()
+✅ .toContainAllValues()
+✅ .toContainAnyValues()
+✅ .toStrictEqual()
+✅ .toThrow()
+✅ .toHaveLength()
+✅ .toHaveProperty()
+✅ .extend
+✅ .anything()
+✅ .any()
+✅ .arrayContaining()
+✅ .assertions()
+✅ .closeTo()
+✅ .hasAssertions()
+✅ .objectContaining()
+✅ .stringContaining()
+✅ .stringMatching()
+❌ .addSnapshotSerializer()
+✅ .resolves()
+✅ .rejects()
+✅ .toHaveBeenCalled()
+✅ .toHaveBeenCalledTimes()
+✅ .toHaveBeenCalledWith()
+✅ .toHaveBeenLastCalledWith()
+✅ .toHaveBeenNthCalledWith()
+✅ .toHaveReturned()
+✅ .toHaveReturnedTimes()
+❌ .toHaveReturnedWith()
+❌ .toHaveLastReturnedWith()
+❌ .toHaveNthReturnedWith()
+✅ .toBeCloseTo()
+✅ .toBeGreaterThan()
+✅ .toBeGreaterThanOrEqual()
+✅ .toBeLessThan()
+✅ .toBeLessThanOrEqual()
+✅ .toBeInstanceOf()
+✅ .toContainEqual()
+✅ .toMatch()
+✅ .toMatchObject()
+✅ .toMatchSnapshot()
+✅ .toMatchInlineSnapshot()
+✅ .toThrowErrorMatchingSnapshot()
+✅ .toThrowErrorMatchingInlineSnapshot()

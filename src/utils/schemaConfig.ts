@@ -166,6 +166,13 @@ export const reliverseConfigSchema = Type.Object({
   ignoreDependencies: Type.Array(Type.String()),
   customRules: Type.Record(Type.String(), Type.Unknown()),
 
+  // Custom repos configuration
+  multipleRepoCloneMode: Type.Boolean(),
+  customUserFocusedRepos: Type.Optional(Type.Array(Type.String())),
+  customDevsFocusedRepos: Type.Optional(Type.Array(Type.String())),
+  hideRepoSuggestions: Type.Boolean(),
+  customReposOnNewProject: Type.Boolean(),
+
   envComposerOpenBrowser: Type.Boolean(),
 
   repoBranch: Type.String(),

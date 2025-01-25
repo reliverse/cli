@@ -1,22 +1,16 @@
-import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
+import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
-import os from "os";
 import path from "pathe";
 
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { generateProjectConfigs } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
-import {
-  TEMPLATES,
-  saveTemplateToDevice,
-  type TemplateOption,
-  getTemplateInfo,
-  type Template,
-} from "~/utils/projectTemplate.js";
+import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { updateReliverseConfig } from "~/utils/reliverseConfig.js";
 import { handleReplacements } from "~/utils/replacements/reps-mod.js";
 
@@ -27,22 +21,6 @@ import {
   handleDependencies,
   showSuccessAndNextSteps,
 } from "./cp-impl.js";
-import { downloadRepo } from "./cp-modules/cli-main-modules/downloads/downloadRepo.js";
-
-type UnghRepoResponse = {
-  repo?: {
-    pushedAt: string;
-  };
-};
-
-async function checkTemplateVersion(template: Template) {
-  const [owner, repo] = template.id.split("/");
-  if (!owner || !repo) return null;
-
-  const response = await fetch(`https://ungh.cc/repos/${owner}/${repo}`);
-  const data = (await response.json()) as UnghRepoResponse;
-  return data.repo?.pushedAt ?? null;
-}
 
 /**
  * Creates a new web project from a template.
@@ -50,7 +28,7 @@ async function checkTemplateVersion(template: Template) {
  */
 export async function createWebProject({
   initialProjectName,
-  webProjectTemplate,
+  selectedRepo,
   message,
   isDev,
   config,
@@ -60,7 +38,7 @@ export async function createWebProject({
 }: {
   projectName: string;
   initialProjectName: string;
-  webProjectTemplate: TemplateOption;
+  selectedRepo: RepoOption;
   message: string;
   isDev: boolean;
   config: ReliverseConfig;
@@ -71,7 +49,7 @@ export async function createWebProject({
   relinka("info", message);
 
   // -------------------------------------------------
-  // 1) Initialize project configuration (prompt or auto)
+  // 1) Initialize project configuration
   // -------------------------------------------------
   const projectConfig = await initializeProjectConfig(
     initialProjectName,
@@ -87,129 +65,25 @@ export async function createWebProject({
     primaryDomain: initialDomain,
   } = projectConfig;
 
-  let projectPath = "";
+  // -------------------------------------------------
+  // 2) Download template
+  // -------------------------------------------------
+  const { dir: projectPath } = await handleDownload({
+    cwd,
+    isDev,
+    skipPrompts,
+    projectPath: "",
+    projectName,
+    selectedRepo,
+  });
 
   // -------------------------------------------------
-  // 2) Identify chosen template
-  // -------------------------------------------------
-  const template = TEMPLATES.find((t) => t.id === webProjectTemplate);
-  if (!template) {
-    throw new Error(
-      `Template '${webProjectTemplate}' not found in templates list.`,
-    );
-  }
-
-  // -------------------------------------------------
-  // 3) Check for local template copy
-  // -------------------------------------------------
-  const localTemplatePath = path.join(
-    os.homedir(),
-    ".reliverse",
-    "templates",
-    template.author,
-    template.name,
-  );
-
-  let useLocalTemplate = false;
-  if (await fs.pathExists(localTemplatePath)) {
-    // Get local template info
-    const localInfo = await getTemplateInfo(template.id);
-    const currentPushedAt = await checkTemplateVersion(template);
-
-    if (skipPrompts) {
-      // Auto skip => use local copy
-      useLocalTemplate = true;
-      relinka("info", "Using local template copy (auto).");
-    } else if (localInfo && currentPushedAt) {
-      const localDate = new Date(localInfo.github.pushedAt);
-      const currentDate = new Date(currentPushedAt);
-
-      if (currentDate > localDate) {
-        // Current version is newer
-        const choice = await selectPrompt({
-          title: "A newer version of the template is available",
-          options: [
-            {
-              label: "Download latest version",
-              value: "download",
-              hint: `Last updated ${currentDate.toLocaleDateString()}`,
-            },
-            {
-              label: "Use local copy",
-              value: "local",
-              hint: `Downloaded ${localDate.toLocaleDateString()}`,
-            },
-          ],
-        });
-        useLocalTemplate = choice === "local";
-      } else {
-        // Local version is up to date, use it automatically
-        useLocalTemplate = true;
-        relinka("info", "Using local template copy (up to date)...");
-      }
-    } else {
-      // Fallback to simple prompt if version check fails
-      useLocalTemplate = await confirmPrompt({
-        title: "Local copy found. Use it?",
-        content: "If no, I'll download a fresh version.",
-        defaultValue: true,
-      });
-    }
-
-    if (useLocalTemplate) {
-      projectPath = isDev
-        ? path.join(cwd, "tests-runtime", projectName)
-        : path.join(cwd, projectName);
-      await fs.copy(localTemplatePath, projectPath);
-    }
-  }
-
-  // -------------------------------------------------
-  // 4) Download template if no local copy used
-  // -------------------------------------------------
-  if (!projectPath) {
-    try {
-      relinka(
-        "info",
-        `Now I'm downloading the '${webProjectTemplate}' template...`,
-      );
-      const { dir } = await downloadRepo({
-        repoURL: webProjectTemplate,
-        projectName,
-        isDev,
-        cwd,
-      });
-      projectPath = dir;
-    } catch (error) {
-      relinka("error", "Failed to download template:", String(error));
-      throw error;
-    }
-  }
-
-  // -------------------------------------------------
-  // 5) Optionally save template to device
-  // -------------------------------------------------
-  let shouldSaveTemplate = !useLocalTemplate;
-  if (!skipPrompts && !useLocalTemplate) {
-    shouldSaveTemplate = await confirmPrompt({
-      title: "Save a copy of the template to your device?",
-      content:
-        "This is useful if you have limited internet data or plan to reuse the template soon.",
-      defaultValue: true,
-    });
-  }
-  // If skipPrompts => remain true (but only if not using local copy)
-  if (shouldSaveTemplate) {
-    await saveTemplateToDevice(template, projectPath);
-  }
-
-  // -------------------------------------------------
-  // 6) Replace placeholders in the template
+  // 3) Replace placeholders in the template
   // -------------------------------------------------
   const externalReliversePath = path.join(projectPath, ".reliverse");
   await handleReplacements(
     projectPath,
-    webProjectTemplate,
+    selectedRepo,
     externalReliversePath,
     {
       primaryDomain: initialDomain,
@@ -221,19 +95,19 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 7) Remove .reliverse file from project if exists
+  // 4) Remove .reliverse file from project if exists
   // -------------------------------------------------
   if (await fs.pathExists(externalReliversePath)) {
     await fs.remove(externalReliversePath);
   }
 
   // -------------------------------------------------
-  // 8) Setup i18n (auto or prompt-based)
+  // 5) Setup i18n (auto or prompt-based)
   // -------------------------------------------------
   const enableI18n = await setupI18nSupport(projectPath, config);
 
   // -------------------------------------------------
-  // 9) Ask about masking secrets
+  // 6) Ask about masking secrets
   // -------------------------------------------------
   let shouldMaskSecretInput = true;
   if (skipPrompts) {
@@ -246,7 +120,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 10) Compose .env files
+  // 7) Compose .env files
   // -------------------------------------------------
   await composeEnvFile(
     projectPath,
@@ -257,7 +131,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 11) Handle dependencies (install or not?)
+  // 8) Handle dependencies (install or not?)
   // -------------------------------------------------
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     projectPath,
@@ -265,7 +139,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 12) Generate or update .reliverse config
+  // 9) Generate or update .reliverse config
   // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
@@ -278,7 +152,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 13) Deployment flow
+  // 10) Deployment flow
   // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
     await handleDeployment({
@@ -294,7 +168,7 @@ export async function createWebProject({
       cwd,
       shouldMaskSecretInput,
       skipPrompts,
-      selectedTemplate: webProjectTemplate,
+      selectedTemplate: selectedRepo,
     });
 
   // If the user changed domain or deploy service, update .reliverse again
@@ -306,11 +180,11 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 14) Final success & next steps
+  // 11) Final success & next steps
   // -------------------------------------------------
   await showSuccessAndNextSteps(
     projectPath,
-    webProjectTemplate,
+    selectedRepo,
     cliUsername,
     isDeployed,
     primaryDomain,

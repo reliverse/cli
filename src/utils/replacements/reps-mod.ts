@@ -5,7 +5,7 @@ import { globby } from "globby";
 import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
@@ -84,7 +84,7 @@ function capitalizeWithDashes(str: string): string {
 
 export async function handleReplacements(
   projectPath: string,
-  webProjectTemplate: TemplateOption,
+  selectedRepo: RepoOption,
   externalReliversePath: string,
   config: ProjectConfigReturn & { projectDescription?: string },
   existingRepo: boolean,
@@ -127,7 +127,7 @@ export async function handleReplacements(
     }
   }
 
-  const { projectAuthor, projectName } = extractRepoInfo(webProjectTemplate);
+  const { projectAuthor, projectName } = extractRepoInfo(selectedRepo);
 
   // Replacements map
   const replacementsMap: Record<string, string> = {

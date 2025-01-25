@@ -5,8 +5,8 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 
 import { getRepoUrl } from "~/app/constants.js";
-import { downloadRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadRepo.js";
 import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
+import { downloadRepo } from "~/utils/downloading/downloadRepo.js";
 
 type UpdateConfig = {
   actions: {

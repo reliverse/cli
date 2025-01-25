@@ -3,15 +3,15 @@ import type { ParsedUrlQuery } from "querystring";
 import { spinnerTaskPrompt } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import { relinka } from "@reliverse/relinka";
+import { isWindows } from "@reliverse/runtime";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
-import { setTimeout } from "node:timers";
 import "dotenv/config";
+import { setTimeout } from "node:timers";
 import open from "open";
 import os from "os";
 import path from "pathe";
-import { isWindows } from "std-env";
 import url from "url";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";

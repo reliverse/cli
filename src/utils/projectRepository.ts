@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import os from "os";
 import path from "pathe";
 
-import type { VSCodeTemplateOption } from "~/app/menu/menu-impl.js";
+import type { VSCodeRepoOption } from "~/app/menu/menu-impl.js";
 
 import { experimental, recommended } from "~/app/constants.js";
 
@@ -16,16 +16,16 @@ import type { reliverseConfigSchema } from "./schemaConfig.js";
 
 import { setHiddenAttributeOnWindows } from "./filesysHelpers.js";
 import {
-  DEFAULT_TEMPLATES_CONFIG,
-  type TemplateInfo,
-  type TemplatesConfig,
-  templatesSchema,
-  generateTemplatesJsonSchema,
+  DEFAULT_REPOS_CONFIG,
+  type RepoInfo,
+  type ReposConfig,
+  reposSchema,
+  generateReposJsonSchema,
   shouldRegenerateSchema,
 } from "./schemaTemplate.js";
 
-// Extract the template type from the schema
-export type TemplateFromSchema = NonNullable<
+// Extract the repo type from the schema
+export type RepoFromSchema = NonNullable<
   Static<(typeof reliverseConfigSchema)["properties"]["projectTemplate"]>
 >;
 
@@ -34,15 +34,15 @@ export type CategoryFromSchema = NonNullable<
   Static<(typeof reliverseConfigSchema)["properties"]["projectCategory"]>
 >;
 
-export type Template = {
-  id: TemplateFromSchema;
+export type Repo = {
+  id: RepoFromSchema;
   author: string;
   name: string;
   description: string;
   category: CategoryFromSchema;
 };
 
-export const TEMPLATES: Template[] = [
+export const REPOS: Repo[] = [
   {
     id: "blefnk/relivator",
     author: "blefnk",
@@ -110,7 +110,7 @@ export const TEMPLATES: Template[] = [
   {
     id: "reliverse/template-browser-extension",
     author: "reliverse",
-    name: "template-browser-extension",
+    name: "repo-browser-extension",
     description: "Browser extension starter template",
     category: "browser",
   },
@@ -118,56 +118,54 @@ export const TEMPLATES: Template[] = [
     id: "blefnk/relivator-docker-template",
     author: "blefnk",
     name: "relivator-docker-template",
-    description: "Relivator template with Docker, PostgreSQL, and Redis",
+    description: "Relivator template with Docker",
     category: "website",
   },
 ];
 
-export type TemplateOption = Template["id"] | "unknown";
+export type RepoOption = Repo["id"] | "unknown";
 
-async function getTemplatesConfigPath(): Promise<string> {
-  const templatesPath = path.join(os.homedir(), ".reliverse", "templates");
-  await fs.ensureDir(templatesPath);
+async function getReposConfigPath(): Promise<string> {
+  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
+  await fs.ensureDir(reposPath);
 
   // Check if schema needs to be regenerated based on CLI version
   if (await shouldRegenerateSchema()) {
-    await generateTemplatesJsonSchema();
+    await generateReposJsonSchema();
   }
 
-  return path.join(templatesPath, "templates.json");
+  return path.join(reposPath, "repos.json");
 }
 
-async function readTemplatesConfig(): Promise<TemplatesConfig> {
-  const configPath = await getTemplatesConfigPath();
+async function readReposConfig(): Promise<ReposConfig> {
+  const configPath = await getReposConfigPath();
 
   if (!(await fs.pathExists(configPath))) {
-    return DEFAULT_TEMPLATES_CONFIG;
+    return DEFAULT_REPOS_CONFIG;
   }
 
   try {
     const content = await fs.readFile(configPath, "utf-8");
     const parsed = parseJSONC(content);
 
-    if (Value.Check(templatesSchema, parsed)) {
+    if (Value.Check(reposSchema, parsed)) {
       return parsed;
     }
   } catch (error) {
-    relinka("warn", "Failed to parse templates.json:", String(error));
+    relinka("warn", "Failed to parse repos.json:", String(error));
   }
 
-  return DEFAULT_TEMPLATES_CONFIG;
+  return DEFAULT_REPOS_CONFIG;
 }
 
-async function writeTemplatesConfig(config: TemplatesConfig): Promise<void> {
-  const configPath = await getTemplatesConfigPath();
+async function writeReposConfig(config: ReposConfig): Promise<void> {
+  const configPath = await getReposConfigPath();
   await fs.writeFile(configPath, JSON.stringify(config, null, 2));
 }
 
-export async function getTemplateInfo(
-  templateId: string,
-): Promise<TemplateInfo | null> {
-  const config = await readTemplatesConfig();
-  return config.templates.find((t) => t.id === templateId) ?? null;
+export async function getRepoInfo(repoId: string): Promise<RepoInfo | null> {
+  const config = await readReposConfig();
+  return config.repos.find((t) => t.id === repoId) ?? null;
 }
 
 type UnghRepoResponse = {
@@ -182,7 +180,7 @@ type UnghRepoResponse = {
   };
 };
 
-async function fetchRepoInfo(owner: string, name: string) {
+async function fetchRepoData(owner: string, name: string) {
   try {
     const response = await fetch(`https://ungh.cc/repos/${owner}/${name}`);
     const data = (await response.json()) as UnghRepoResponse;
@@ -193,50 +191,47 @@ async function fetchRepoInfo(owner: string, name: string) {
   }
 }
 
-export async function saveTemplateToDevice(
-  template: Template,
-  projectPath: string,
-) {
+export async function saveRepoToDevice(repo: Repo, projectPath: string) {
   try {
-    const templateSavePath = path.join(
+    const repoSavePath = path.join(
       os.homedir(),
       ".reliverse",
-      "templates",
-      template.author,
-      template.name,
+      "repos",
+      repo.author,
+      repo.name,
     );
-    await fs.ensureDir(path.dirname(templateSavePath));
-    await fs.copy(projectPath, templateSavePath);
+    await fs.ensureDir(path.dirname(repoSavePath));
+    await fs.copy(projectPath, repoSavePath);
 
     // Set hidden attribute for .git folder on Windows
-    const gitFolderPath = path.join(templateSavePath, ".git");
+    const gitFolderPath = path.join(repoSavePath, ".git");
     await setHiddenAttributeOnWindows(gitFolderPath);
 
     // Get GitHub repository information
-    const [owner, repo] = template.id.split("/");
-    if (!owner || !repo) {
-      throw new Error(`Invalid template ID format: ${template.id}`);
+    const [owner, repoName] = repo.id.split("/");
+    if (!owner || !repoName) {
+      throw new Error(`Invalid repo ID format: ${repo.id}`);
     }
-    const repoInfo = await fetchRepoInfo(owner, repo);
+    const repoData = await fetchRepoData(owner, repoName);
 
-    // Save template info
-    const templateInfo: TemplateInfo = {
-      id: template.id,
-      author: template.author,
-      name: template.name,
-      description: template.description,
-      category: template.category,
+    // Save repo info
+    const repoInfo: RepoInfo = {
+      id: repo.id,
+      author: repo.author,
+      name: repo.name,
+      description: repo.description,
+      category: repo.category,
       lastUpdated: new Date().toISOString(),
-      localPath: templateSavePath,
-      github: repoInfo
+      localPath: repoSavePath,
+      github: repoData
         ? {
-            stars: repoInfo.stars,
-            forks: repoInfo.forks,
-            watchers: repoInfo.watchers,
-            createdAt: repoInfo.createdAt,
-            updatedAt: repoInfo.updatedAt,
-            pushedAt: repoInfo.pushedAt,
-            defaultBranch: repoInfo.defaultBranch,
+            stars: repoData.stars,
+            forks: repoData.forks,
+            watchers: repoData.watchers,
+            createdAt: repoData.createdAt,
+            updatedAt: repoData.updatedAt,
+            pushedAt: repoData.pushedAt,
+            defaultBranch: repoData.defaultBranch,
           }
         : {
             stars: 0,
@@ -249,20 +244,18 @@ export async function saveTemplateToDevice(
           },
     };
 
-    const config = await readTemplatesConfig();
-    const existingIndex = config.templates.findIndex(
-      (t) => t.id === template.id,
-    );
+    const config = await readReposConfig();
+    const existingIndex = config.repos.findIndex((t) => t.id === repo.id);
 
     if (existingIndex >= 0) {
-      config.templates[existingIndex] = templateInfo;
+      config.repos[existingIndex] = repoInfo;
     } else {
-      config.templates.push(templateInfo);
+      config.repos.push(repoInfo);
     }
 
-    await writeTemplatesConfig(config);
+    await writeReposConfig(config);
   } catch (error) {
-    relinka("error", "Failed to save template:", String(error));
+    relinka("error", "Failed to save repo:", String(error));
     throw error;
   }
 }
@@ -271,21 +264,21 @@ export const TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS = {
   "blefnk/relivator": {
     label: `Relivator ${recommended}`,
     value: "blefnk/relivator",
-    hint: re.dim("Full-featured e-commerce template with auth, payments, etc."),
+    hint: re.dim("Full-featured e-commerce repo with auth, payments, etc."),
   },
   "blefnk/next-react-ts-src-minimal": {
     label: `Next.js Only ${experimental}`,
     value: "blefnk/next-react-ts-src-minimal",
-    hint: re.dim("Essentials only: minimal Next.js with TypeScript template"),
+    hint: re.dim("Essentials only: minimal Next.js with TypeScript repo"),
   },
 } as const satisfies Partial<
-  Record<TemplateOption, { label: string; value: TemplateOption; hint: string }>
+  Record<RepoOption, { label: string; value: RepoOption; hint: string }>
 >;
 
 export const TEMP_SEPARATED_WEBSITE_TEMPLATE_OPTIONS = {
-  "blefnk/relivator-docker-template": {
-    label: `${experimental} Relivator Docker Template`,
-    value: "blefnk/relivator-docker-template",
+  "blefnk/relivator-docker-repo": {
+    label: `${experimental} Relivator Docker Repo`,
+    value: "blefnk/relivator-docker-repo",
     hint: re.dim("Separated frontend and backend"),
   },
 };
@@ -302,14 +295,14 @@ export const TEMP_VSCODE_TEMPLATE_OPTIONS = {
     hint: re.dim("Basic VS Code extension template"),
   },
 } as const satisfies Record<
-  Exclude<VSCodeTemplateOption, "unknown">,
-  { label: string; value: VSCodeTemplateOption; hint: string }
+  Exclude<VSCodeRepoOption, "unknown">,
+  { label: string; value: VSCodeRepoOption; hint: string }
 >;
 
 export const TEMP_BROWSER_TEMPLATE_OPTIONS = {
-  "reliverse/template-browser-extension": {
-    label: "Browser Extension Template",
-    value: "reliverse/template-browser-extension",
-    hint: re.dim("Browser extension starter template"),
+  "reliverse/repo-browser-extension": {
+    label: "Browser Extension Repo",
+    value: "reliverse/repo-browser-extension",
+    hint: re.dim("Browser extension starter repo"),
   },
 };

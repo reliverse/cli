@@ -1,20 +1,42 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { re } from "@reliverse/relico";
 import { generate } from "random-words";
 
 import { isValidName } from "~/utils/validateHelpers.js";
 
-export async function askProjectName(): Promise<string> {
-  const placeholder = generate({ exactly: 2, join: "-" });
+export async function askProjectName({
+  repoName = "",
+}: {
+  repoName?: string;
+}): Promise<string> {
+  let defaultValue: string;
+
+  if (repoName) {
+    // Extract the repo name from the full path and use it as default
+    defaultValue = repoName.split("/").pop() ?? "";
+  } else {
+    // Only generate random name if no repo name is provided
+    defaultValue = generate({ exactly: 2, join: "-" });
+  }
+
+  const title = repoName
+    ? "How should I name proceeding project?"
+    : "How should I name your brand new project?";
+
+  const content = repoName
+    ? "This name will be used to create the project directory."
+    : "This name may be used to create the project directory, throughout the project, etc.";
+
+  const placeholder = repoName
+    ? `Press <Enter> to use the repository name: ${defaultValue}`
+    : `I've just generated a random name for you: ${defaultValue}`;
 
   const name = await inputPrompt({
-    title: "How should I name your project?",
-    content:
-      "This name may be used to create the project directory, throughout the project, etc.",
-    hint: re.dim(`Press <Enter> to use the default value (${placeholder})`),
-    defaultValue: placeholder,
-    placeholder: `I've just generated a random name for you: ${placeholder}`,
-    validate: (value) => isValidName(value).isValid || "Invalid project name",
+    title,
+    content,
+    placeholder,
+    defaultValue,
+    validate: (value) =>
+      isValidName(value).isValid || `Invalid project name: ${value}`,
   });
 
   return name.toString();

@@ -6,7 +6,10 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "enum": ["https://reliverse.org/schema.json", "./schema.json"]
+      "enum": [
+        "https://reliverse.org/schema.json",
+        "./schema.json"
+      ]
     },
     "projectName": {
       "anyOf": [
@@ -49,23 +52,48 @@
     },
     "projectDeployService": {
       "type": "string",
-      "enum": ["vercel", "netlify", "railway", "deno", "none"]
+      "enum": [
+        "vercel",
+        "netlify",
+        "railway",
+        "deno",
+        "none"
+      ]
     },
     "projectPackageManager": {
       "type": "string",
-      "enum": ["npm", "pnpm", "yarn", "bun"]
+      "enum": [
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun"
+      ]
     },
     "projectState": {
       "type": "string",
-      "enum": ["creating", "created"]
+      "enum": [
+        "creating",
+        "created"
+      ]
     },
     "projectCategory": {
       "type": "string",
-      "enum": ["unknown", "website", "vscode", "browser", "cli", "library"]
+      "enum": [
+        "unknown",
+        "website",
+        "vscode",
+        "browser",
+        "cli",
+        "library"
+      ]
     },
     "projectSubcategory": {
       "type": "string",
-      "enum": ["unknown", "e-commerce", "tool"]
+      "enum": [
+        "unknown",
+        "e-commerce",
+        "tool"
+      ]
     },
     "projectFramework": {
       "type": "string",
@@ -111,7 +139,11 @@
         },
         "themeMode": {
           "type": "string",
-          "enum": ["light", "dark", "dark-light"]
+          "enum": [
+            "light",
+            "dark",
+            "dark-light"
+          ]
         },
         "authentication": {
           "type": "boolean"
@@ -192,25 +224,38 @@
         },
         "indentStyle": {
           "type": "string",
-          "enum": ["space", "tab"]
+          "enum": [
+            "space",
+            "tab"
+          ]
         },
         "quoteMark": {
           "type": "string",
-          "enum": ["single", "double"]
+          "enum": [
+            "single",
+            "double"
+          ]
         },
         "semicolons": {
           "type": "boolean"
         },
         "trailingComma": {
           "type": "string",
-          "enum": ["none", "es5", "all"]
+          "enum": [
+            "none",
+            "es5",
+            "all"
+          ]
         },
         "bracketSpacing": {
           "type": "boolean"
         },
         "arrowParens": {
           "type": "string",
-          "enum": ["always", "avoid"]
+          "enum": [
+            "always",
+            "avoid"
+          ]
         },
         "tabWidth": {
           "type": "number"
@@ -226,11 +271,19 @@
         },
         "typeOrInterface": {
           "type": "string",
-          "enum": ["type", "interface", "mixed"]
+          "enum": [
+            "type",
+            "interface",
+            "mixed"
+          ]
         },
         "importOrRequire": {
           "type": "string",
-          "enum": ["import", "require", "mixed"]
+          "enum": [
+            "import",
+            "require",
+            "mixed"
+          ]
         },
         "cjsToEsm": {
           "type": "boolean"
@@ -295,7 +348,13 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["none", "turborepo", "nx", "pnpm", "bun"]
+          "enum": [
+            "none",
+            "turborepo",
+            "nx",
+            "pnpm",
+            "bun"
+          ]
         },
         "packages": {
           "type": "array",
@@ -310,7 +369,11 @@
           }
         }
       },
-      "required": ["type", "packages", "sharedPackages"]
+      "required": [
+        "type",
+        "packages",
+        "sharedPackages"
+      ]
     },
     "ignoreDependencies": {
       "type": "array",
@@ -325,6 +388,27 @@
         "^(.*)$": {}
       }
     },
+    "multipleRepoCloneMode": {
+      "type": "boolean"
+    },
+    "customUserFocusedRepos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customDevsFocusedRepos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hideRepoSuggestions": {
+      "type": "boolean"
+    },
+    "customReposOnNewProject": {
+      "type": "boolean"
+    },
     "envComposerOpenBrowser": {
       "type": "boolean"
     },
@@ -333,42 +417,79 @@
     },
     "repoPrivacy": {
       "type": "string",
-      "enum": ["unknown", "public", "private"]
+      "enum": [
+        "unknown",
+        "public",
+        "private"
+      ]
     },
     "projectArchitecture": {
       "type": "string",
-      "enum": ["unknown", "fullstack", "separated"]
+      "enum": [
+        "unknown",
+        "fullstack",
+        "separated"
+      ]
     },
     "projectRuntime": {
       "type": "string",
-      "enum": ["nodejs", "deno", "bun"]
+      "enum": [
+        "nodejs",
+        "deno",
+        "bun"
+      ]
     },
     "skipPromptsUseAutoBehavior": {
       "type": "boolean"
     },
     "deployBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoNo"
+      ]
     },
     "depsBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoNo"
+      ]
     },
     "gitBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoNo"
+      ]
     },
     "i18nBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoNo"
+      ]
     },
     "scriptsBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoNo"
+      ]
     },
     "existingRepoBehavior": {
       "type": "string",
-      "enum": ["prompt", "autoYes", "autoYesSkipCommit", "autoNo"]
+      "enum": [
+        "prompt",
+        "autoYes",
+        "autoYesSkipCommit",
+        "autoNo"
+      ]
     }
   },
   "required": [
@@ -393,6 +514,9 @@
     "monorepo",
     "ignoreDependencies",
     "customRules",
+    "multipleRepoCloneMode",
+    "hideRepoSuggestions",
+    "customReposOnNewProject",
     "envComposerOpenBrowser",
     "repoBranch",
     "repoPrivacy",

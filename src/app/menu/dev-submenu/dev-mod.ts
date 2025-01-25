@@ -3,15 +3,15 @@ import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
-import { downloadRepo } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadRepo.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
+import { downloadRepo } from "~/utils/downloading/downloadRepo.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 export async function rmTestsRuntime(cwd: string) {
@@ -27,14 +27,14 @@ export async function rmTestsRuntime(cwd: string) {
 }
 
 export async function downloadRepoOption(
-  template: TemplateOption,
+  template: RepoOption,
   config: ReliverseConfig,
   memory: ReliverseMemory,
   isDev: boolean,
   cwd: string,
   skipPrompts: boolean,
 ) {
-  const projectName = await askProjectName();
+  const projectName = await askProjectName({ repoName: "" });
   const primaryDomain = `${projectName}.vercel.app`;
   const { dir } = await downloadRepo({
     repoURL: template,

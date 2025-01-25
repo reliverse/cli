@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { relinka } from "@reliverse/relinka";
 

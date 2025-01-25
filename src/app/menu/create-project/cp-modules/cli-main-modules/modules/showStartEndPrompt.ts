@@ -1,5 +1,6 @@
 import { endPrompt, startPrompt } from "@reliverse/prompts";
 import { getTerminalWidth } from "@reliverse/relinka";
+import { isBun, isBunPM, isBunRuntime } from "@reliverse/runtime";
 
 import { cliName, cliVersion } from "~/app/constants.js";
 
@@ -11,6 +12,9 @@ export async function showStartPrompt(isDev: boolean) {
     packageVersion: cliVersion,
     isDev,
   });
+  console.log(isBunRuntime());
+  console.log(await isBunPM());
+  console.log(isBun);
 }
 
 export async function showEndPrompt() {

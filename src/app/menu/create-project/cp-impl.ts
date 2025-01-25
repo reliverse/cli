@@ -15,17 +15,17 @@ import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { Behavior, DeploymentService } from "~/types.js";
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
-import { setupI18nFiles } from "~/app/menu/create-project/cp-modules/cli-main-modules/downloads/downloadI18nFiles.js";
 import { isVSCodeInstalled } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/promptPackageJsonScripts.js";
 import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
+import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
 import { normalizeName } from "~/utils/validateHelpers.js";
 
@@ -105,10 +105,10 @@ export async function initializeProjectConfig(
     if (projectName !== UNKNOWN_VALUE) {
       projectName = normalizeName(projectName);
     } else {
-      projectName = (await askProjectName()) ?? "my-app";
+      projectName = (await askProjectName({ repoName: "" })) ?? "my-app";
     }
   } else {
-    projectName = (await askProjectName()) ?? "my-app";
+    projectName = (await askProjectName({ repoName: "" })) ?? "my-app";
   }
 
   // Ensure the project name is unique
@@ -311,7 +311,7 @@ export async function handleDeployment(params: {
   cwd: string;
   shouldMaskSecretInput: boolean;
   skipPrompts: boolean;
-  selectedTemplate: TemplateOption;
+  selectedTemplate: RepoOption;
 }): Promise<{
   deployService: DeploymentService | "none";
   primaryDomain: string;
@@ -326,7 +326,7 @@ export async function handleDeployment(params: {
  */
 export async function showSuccessAndNextSteps(
   projectPath: string,
-  webProjectTemplate: TemplateOption,
+  selectedRepo: RepoOption,
   cliUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
@@ -349,7 +349,7 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    `🎉 Template '${webProjectTemplate}' was installed at ${effectiveProjectPath}`,
+    `🎉 Template '${selectedRepo}' was installed at ${effectiveProjectPath}`,
   );
 
   const vscodeInstalled = isVSCodeInstalled();

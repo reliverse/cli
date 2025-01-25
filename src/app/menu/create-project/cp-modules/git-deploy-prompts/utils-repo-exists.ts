@@ -2,7 +2,7 @@ import { relinka } from "@reliverse/relinka";
 import { simpleGit } from "simple-git";
 
 import type { GitModParams } from "~/app/app-types.js";
-import type { TemplateOption } from "~/utils/projectTemplate.js";
+import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -18,7 +18,7 @@ export async function handleExistingRepo(
     memory: ReliverseMemory;
     config: ReliverseConfig;
     githubUsername: string;
-    selectedTemplate: TemplateOption;
+    selectedTemplate: RepoOption;
   },
   shouldCommitAndPush: boolean,
 ): Promise<boolean> {

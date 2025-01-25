@@ -5,13 +5,15 @@ import { installDependencies } from "nypm";
 import path, { dirname } from "pathe";
 import { simpleGit } from "simple-git";
 
-import { cacheDirectory } from "~/utils/cacheHelpers.js";
-import { relide } from "~/utils/debugHelpers.js";
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+
+import { initGitDir } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
+import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 
 /**
  * Defines the options for downloading a project from a remote repository.
  */
-export type DownloadRepoOptions = {
+type DownloadRepoOptions = {
   /**
    * The repository to download, such as "owner/repo" (github:owner/repo), "owner/repo#ref" (github:owner/repo#ref), or "github:owner/repo/subdir".
    */
@@ -63,14 +65,16 @@ export type DownloadRepoOptions = {
   forceClean?: boolean;
 
   /**
-   * If true, runs in offline mode (fails if the repo is not already cached locally).
+   * If true, preserves the .git directory when cloning, maintaining Git history.
+   * @default true
    */
-  offline?: boolean;
+  preserveGit?: boolean;
 
   /**
-   * If true, tries to use a cached copy of the repo when available, falling back to a live download only if needed.
+   * Configuration for the project when initializing a fresh Git repository.
+   * Only used when preserveGit is false.
    */
-  preferOffline?: boolean;
+  config?: ReliverseConfig | undefined;
 };
 
 /**
@@ -80,7 +84,7 @@ type RepoInfo = {
   name: string;
   version: string;
   gitUrl?: string;
-  subdir?: string | undefined;
+  subdir?: string;
   defaultDir?: string;
   headers?: Record<string, string>;
 };
@@ -96,7 +100,7 @@ export type DownloadResult = {
 type GitProvider = "github" | "gitlab" | "bitbucket" | "sourcehut";
 
 /* -----------------------------------------------------------------------
- *  Helper methods for URL parsing, caching, and Git operations
+ *  Helper methods for URL parsing (restored) and building final RepoInfo
  * ----------------------------------------------------------------------- */
 
 /**
@@ -145,35 +149,6 @@ function parseGitURI(input: string) {
 }
 
 /**
- * Creates a URL to download the repository and prepares any necessary HTTP headers.
- */
-function computeRepoInfo(
-  input: string,
-  defaultProvider: GitProvider,
-  auth?: string,
-  subdirectory?: string,
-): RepoInfo {
-  const { provider: parsedProvider, repo, ref, subdir } = parseGitURI(input);
-  const actualProvider = (parsedProvider ?? defaultProvider) as GitProvider;
-
-  const name = repo.replace("/", "-");
-  const headers: Record<string, string> = {};
-
-  if (auth) {
-    headers["Authorization"] = `Bearer ${auth}`;
-  }
-
-  return {
-    name,
-    version: ref,
-    subdir: subdirectory ?? subdir?.replace(/^\/+/, ""), // Use provided subdirectory or from URI
-    defaultDir: name,
-    headers,
-    gitUrl: getRepoUrl(repo, actualProvider),
-  };
-}
-
-/**
  * Gets the repository URL based on the provider.
  */
 function getRepoUrl(repo: string, provider: GitProvider): string {
@@ -190,96 +165,73 @@ function getRepoUrl(repo: string, provider: GitProvider): string {
 }
 
 /**
- * Checks if a repository has changed by comparing remote and local refs.
+ * Creates a final RepoInfo object (including `gitUrl` and optional `headers`)
+ * from the raw repo string and user options (e.g., `auth`, `subdirectory`).
  */
-async function hasRepoChanged(
-  git: ReturnType<typeof simpleGit>,
-  repoPath: string,
-  ref: string,
-): Promise<boolean> {
-  try {
-    if (!(await fs.pathExists(path.join(repoPath, ".git")))) {
-      return true;
-    }
-    await git.cwd(repoPath);
-    const localRef = await git.revparse([ref]);
-    const remoteRef = await git.revparse([`origin/${ref}`]);
-    return localRef !== remoteRef;
-  } catch {
-    return true; // If any error occurs, assume the repo has changed
-  }
-}
-
-/**
- * Clones or updates a repository in the cache directory.
- */
-async function cloneOrUpdateCache(
-  repoUrl: string,
-  cachePath: string,
-  ref: string,
-  offline: boolean,
-  preferOffline: boolean,
+function computeRepoInfo(
+  input: string,
+  defaultProvider: GitProvider,
   auth?: string,
-) {
-  const git = simpleGit();
-  const gitDirExists = await fs.pathExists(path.join(cachePath, ".git"));
-  const cacheExists = await fs.pathExists(cachePath);
+  subdirectory?: string,
+): RepoInfo {
+  const { provider: parsedProvider, repo, ref, subdir } = parseGitURI(input);
+  const actualProvider = (parsedProvider ?? defaultProvider) as GitProvider;
 
-  // Handle offline mode
-  if (offline && !gitDirExists) {
-    throw new Error("Offline mode: no cached repository available.");
+  // Generate a name from the repo segment (owner/repo => owner-repo)
+  const name = repo.replace("/", "-");
+
+  // Build any HTTP headers needed (e.g., Authorization)
+  const headers: Record<string, string> = {};
+  if (auth) {
+    headers["Authorization"] = `Bearer ${auth}`;
   }
 
-  // If preferOffline and valid cache exists, use it without checking for updates
-  if (preferOffline && gitDirExists) {
-    relide("Using preferOffline. Found existing cache => skipping network.");
-    return;
-  }
+  // Build the final repository URL
+  const gitUrl = getRepoUrl(repo, actualProvider);
 
-  // If cache exists but is not a valid git repo, remove it
-  if (cacheExists && !gitDirExists) {
-    await fs.remove(cachePath);
-  }
-
-  if (gitDirExists) {
-    // Check if repo has changed
-    const changed = await hasRepoChanged(git, cachePath, ref);
-    if (!changed) {
-      relide("Repository unchanged => using cached version");
-      return;
-    }
-    // Update existing repository
-    await git.cwd(cachePath);
-    await git.fetch(["origin", ref]);
-    await git.checkout(ref);
-    await git.pull();
-  } else {
-    // Ensure parent directory exists
-    await fs.ensureDir(path.dirname(cachePath));
-
-    // Clone new repository
-    const cloneOptions: any = {
-      "--branch": ref,
-      "--depth": 1,
-    };
-
-    if (auth) {
-      const authUrl = new URL(repoUrl);
-      authUrl.username = "oauth2";
-      authUrl.password = auth;
-      await git.clone(authUrl.toString(), cachePath, cloneOptions);
-    } else {
-      await git.clone(repoUrl, cachePath, cloneOptions);
-    }
-  }
+  return {
+    name,
+    version: ref,
+    // Use the subdir from parseGitURI if no explicit subdirectory is given
+    subdir: subdirectory ?? subdir.replace(/^\/+/, ""),
+    defaultDir: name,
+    headers,
+    gitUrl,
+  };
 }
 
 /**
- * Downloads a repository using git clone and optionally installs dependencies.
- * Supports caching, offline mode, and subdirectory extraction.
- *
- * @param options - An object of type DownloadRepoOptions specifying all download requirements.
- * @returns A promise that resolves to a DownloadResult containing the source and local directory path.
+ * Generates a new project name with an iteration number if the directory already exists.
+ * For example: "my-project" -> "my-project-1" -> "my-project-2"
+ */
+async function getUniqueProjectPath(
+  basePath: string,
+  projectName: string,
+  isDev: boolean,
+): Promise<string> {
+  let iteration = 1;
+  let currentPath = basePath;
+  let currentName = projectName;
+
+  while (await fs.pathExists(currentPath)) {
+    currentName = `${projectName}-${iteration}`;
+    currentPath = isDev
+      ? path.join(dirname(basePath), "tests-runtime", currentName)
+      : path.join(dirname(basePath), currentName);
+    iteration++;
+  }
+
+  return currentPath;
+}
+
+/* -----------------------------------------------------------------------
+ *  Main download function (no cache usage)
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Downloads a repository using git clone (shallow clone) and optionally installs dependencies.
+ * If a subdirectory is requested, clones to a temporary location, then copies just that folder.
+ * If `preserveGit` is false, removes the .git directory or filters it out.
  */
 export async function downloadRepo({
   repoURL,
@@ -292,14 +244,14 @@ export async function downloadRepo({
   subdirectory,
   force = false,
   forceClean = false,
-  offline = false,
-  preferOffline = false,
+  preserveGit = true,
+  config,
 }: DownloadRepoOptions): Promise<DownloadResult> {
-  relinka("info", `Downloading repo ${repoURL}...`);
+  relinka("info-verbose", `Downloading repo ${repoURL}...`);
 
   try {
     // 1) Decide where to create the project
-    const projectPath = isDev
+    let projectPath = isDev
       ? path.join(cwd, "tests-runtime", projectName)
       : path.join(cwd, projectName);
 
@@ -314,8 +266,15 @@ export async function downloadRepo({
         files.length === 1 && files[0] === ".reliverse";
 
       if (files.length > 0 && !hasOnlyReliverseConfig) {
-        throw new Error(
-          `Target directory ${projectPath} is not empty and contains files other than .reliverse`,
+        // Instead of throwing an error, get a new unique path
+        projectPath = await getUniqueProjectPath(
+          projectPath,
+          projectName,
+          isDev,
+        );
+        relinka(
+          "info-verbose",
+          `Directory already exists. Using new path: ${projectPath}`,
         );
       }
     }
@@ -330,6 +289,7 @@ export async function downloadRepo({
     );
 
     if (hasReliverseConfig) {
+      // If there's already a .reliverse in the parent dir, ask the user how to proceed
       if (await fs.pathExists(tempReliverseConfigPath)) {
         const choice = await selectPrompt({
           title:
@@ -353,6 +313,7 @@ export async function downloadRepo({
         }
       }
 
+      // Move the .reliverse out of the target folder so we can safely remove/copy
       await fs.move(
         path.join(projectPath, ".reliverse"),
         tempReliverseConfigPath,
@@ -361,50 +322,85 @@ export async function downloadRepo({
       await fs.ensureDir(projectPath);
     }
 
-    // 4) Parse repository info and prepare URLs
-    const { provider: parsedProvider, repo, ref } = parseGitURI(repoURL);
-    const gitProvider = (parsedProvider ?? provider) as GitProvider;
-    const cloneUrl = getRepoUrl(repo, gitProvider);
+    // 4) Parse and compute final repo info
+    const repoInfo = computeRepoInfo(repoURL, provider, auth, subdirectory);
 
-    // 5) Compute repo info for caching and subdirectory handling
-    const repoInfo = computeRepoInfo(repoURL, gitProvider, auth, subdirectory);
-
-    // 6) Set up caching
-    const cachePath = path.join(
-      cacheDirectory(),
-      gitProvider,
-      repoInfo.name,
-      repoInfo.version,
-    );
-
-    // 7) Clone or update the cache
-    await cloneOrUpdateCache(
-      cloneUrl,
-      cachePath,
-      ref,
-      offline,
-      preferOffline,
-      auth,
-    );
-
-    // 8) Copy from cache to target
-    relinka("info-verbose", `Copying files to: ${projectPath}`);
-    if (repoInfo.subdir) {
-      const sourcePath = path.join(cachePath, repoInfo.subdir);
-      if (await fs.pathExists(sourcePath)) {
-        await fs.copy(sourcePath, projectPath);
-      } else {
-        throw new Error(
-          `Subdirectory ${repoInfo.subdir} not found in repository ${repoURL}`,
-        );
-      }
-    } else {
-      await fs.copy(cachePath, projectPath, {
-        filter: (src) => !src.includes(".git"),
-      });
+    if (!repoInfo.gitUrl) {
+      throw new Error(`Invalid repository URL or provider: ${repoURL}`);
     }
 
-    // 9) Restore .reliverse if we moved it
+    // 5) Prepare final shallow clone options
+    const git = simpleGit();
+    // Only do a shallow clone if we're not preserving Git history
+    const cloneOptions = ["--branch", repoInfo.version];
+    if (!preserveGit) {
+      cloneOptions.push("--depth", "1");
+    }
+
+    // If private repo with auth, embed token in the URL
+    let finalUrl = repoInfo.gitUrl;
+    if (auth) {
+      const authUrl = new URL(repoInfo.gitUrl);
+      // For GitHub (and other providers), set username='oauth2' and password=token
+      authUrl.username = "oauth2";
+      authUrl.password = auth;
+      finalUrl = authUrl.toString();
+    }
+
+    // If a subdirectory was specified, we clone into a temporary directory first
+    let cloneTarget = projectPath;
+    if (repoInfo.subdir) {
+      cloneTarget = await fs.mkdtemp(path.join(parentDir, "gitclone-"));
+    }
+
+    // Perform the clone
+    await git.clone(finalUrl, cloneTarget, cloneOptions);
+
+    // 6) If subdirectory was specified, copy just that folder to the final location
+    if (repoInfo.subdir) {
+      const srcSubdir = path.join(cloneTarget, repoInfo.subdir);
+      if (!(await fs.pathExists(srcSubdir))) {
+        throw new Error(
+          `Subdirectory '${repoInfo.subdir}' not found in repository ${repoURL}`,
+        );
+      }
+
+      if (preserveGit) {
+        // Copy everything, including .git, from that subdir
+        await fs.copy(srcSubdir, projectPath);
+      } else {
+        // Copy everything except .git
+        await fs.copy(srcSubdir, projectPath, {
+          filter: (src) => !src.includes(`${path.sep}.git`),
+        });
+      }
+
+      // Clean up the temporary clone
+      await fs.remove(cloneTarget);
+    } else {
+      // If preserveGit is false, remove the .git directory
+      if (!preserveGit) {
+        await fs.remove(path.join(projectPath, ".git"));
+
+        // Optionally initialize a fresh Git repo
+        if (config) {
+          await initGitDir({
+            cwd,
+            isDev,
+            projectName,
+            projectPath,
+            allowReInit: true,
+            createCommit: true,
+            config,
+          });
+        }
+      } else {
+        // If preserveGit is true, hide .git folder on Windows
+        await setHiddenAttributeOnWindows(path.join(projectPath, ".git"));
+      }
+    }
+
+    // 7) Restore .reliverse if it was moved
     if (hasReliverseConfig) {
       await fs.move(
         tempReliverseConfigPath,
@@ -413,7 +409,7 @@ export async function downloadRepo({
       );
     }
 
-    // 10) Install dependencies if requested
+    // 8) Install dependencies if requested
     if (install) {
       relinka("info", "Installing dependencies...");
       await installDependencies({
@@ -422,6 +418,7 @@ export async function downloadRepo({
       });
     }
 
+    // 9) Done!
     relinka("success-verbose", "Repository downloaded successfully!");
     return {
       source: repoURL,

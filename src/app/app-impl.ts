@@ -66,7 +66,7 @@ export async function app(params: ParamsOmitSkipPN) {
       skipPrompts,
     });
   } else if (mainMenuOption === "clone") {
-    await showCloneProjectMenu({ isDev, cwd });
+    await showCloneProjectMenu({ isDev, cwd, config, memory });
   } else if (mainMenuOption === "detected-projects") {
     await showOpenProjectMenu({
       projectName,
