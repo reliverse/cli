@@ -1,6 +1,6 @@
 import { getRootDirname } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { join } from "pathe";
 

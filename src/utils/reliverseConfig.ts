@@ -1,7 +1,7 @@
 import type { TSchema } from "@sinclair/typebox";
 import type { PackageJson } from "pkg-types";
 
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
@@ -564,7 +564,7 @@ export function fixLineByLine(
   const missingKeys: string[] = [];
 
   for (const propName of Object.keys(properties)) {
-    const subSchema = properties[propName]!;
+    const subSchema = properties[propName];
     const userValue = (userConfig as any)[propName];
     const defaultValue = (defaultConfig as any)[propName];
 

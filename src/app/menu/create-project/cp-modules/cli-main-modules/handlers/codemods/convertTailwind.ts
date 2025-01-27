@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
@@ -84,7 +84,6 @@ function convertThemeToCssVariables(
     for (const [, name, value] of Array.from(colorEntries)) {
       variables.push({
         name: `--color-${name}`,
-        // @ts-expect-error fix ts error
         value: value.startsWith("#") ? convertHexToOklch(value) : value,
       });
     }
@@ -106,7 +105,6 @@ function convertThemeToCssVariables(
     const screenContent = screenMatch[1];
     const screenEntries = screenContent.matchAll(/(\w+):\s*['"]([^'"]+)['"]/g);
     for (const [, name, value] of Array.from(screenEntries)) {
-      // @ts-expect-error fix ts error
       variables.push({ name: `--breakpoint-${name}`, value });
     }
   }
@@ -302,7 +300,9 @@ Total changes: ${totalChanges}`,
   } catch (error) {
     relinka(
       "error",
-      `Failed to convert Tailwind CSS: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to convert Tailwind CSS: ${
+        error instanceof Error ? error.message : JSON.stringify(error)
+      }`,
     );
     throw error;
   }

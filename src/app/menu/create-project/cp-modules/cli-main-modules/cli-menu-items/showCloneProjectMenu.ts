@@ -4,7 +4,7 @@ import {
   confirmPrompt,
   multiselectPrompt,
 } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";

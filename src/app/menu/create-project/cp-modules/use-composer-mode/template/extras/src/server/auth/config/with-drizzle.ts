@@ -59,7 +59,6 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
-    // @ts-expect-error TODO: fix ts
     session: ({ session, user }) => ({
       ...session,
       user: {

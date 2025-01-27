@@ -1,5 +1,5 @@
 import { confirmPrompt, multiselectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { MonorepoType } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";

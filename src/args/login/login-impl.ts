@@ -1,8 +1,8 @@
 import type { ParsedUrlQuery } from "querystring";
 
 import { spinnerTaskPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { isWindows } from "@reliverse/runtime";
 import { listen } from "async-listen";
 import http from "http";

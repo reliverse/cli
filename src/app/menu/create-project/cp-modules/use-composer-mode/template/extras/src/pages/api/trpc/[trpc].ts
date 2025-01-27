@@ -13,8 +13,7 @@ export default createNextApiHandler({
   createContext: createTRPCContext,
   onError:
     env.NODE_ENV === "development"
-      ? // @ts-expect-error TODO: fix ts
-        ({ path, error }) => {
+      ? ({ path, error }) => {
           console.error(
             `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
           );

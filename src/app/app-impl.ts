@@ -1,11 +1,13 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { deleteLastLine } from "@reliverse/relinka";
+import { deleteLastLine } from "@reliverse/prompts";
+import { homedir } from "os";
+import { join } from "pathe";
 import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
+import { showBunWindowsMenu } from "~/utils/bun-windows/bw-mod.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
-import { completePrompt } from "~/utils/terminalHelpers.js";
 
 import type { ParamsOmitSkipPN } from "./app-types.js";
 
@@ -50,10 +52,10 @@ export async function app(params: ParamsOmitSkipPN) {
   const options = await getMainMenuOptions(cwd, isDev, reli);
 
   const mainMenuOption = await selectPrompt({
+    options,
     title: cliUsername
       ? getWelcomeTitle(cliUsername)
       : getRandomMessage("welcome"),
-    options,
     titleColor: "retroGradient",
     displayInstructions: true,
     endTitle: "✋ User pressed Ctrl+C, exiting...",
@@ -71,6 +73,9 @@ export async function app(params: ParamsOmitSkipPN) {
     });
   } else if (mainMenuOption === "clone") {
     await showCloneProjectMenu({ isDev, cwd, config, memory });
+  } else if (mainMenuOption === "bun-windows") {
+    const outputDir = join(homedir(), ".reliverse", "cli");
+    await showBunWindowsMenu({ outputDir });
   } else if (mainMenuOption === "detected-projects") {
     await showOpenProjectMenu({
       projectName,
@@ -102,21 +107,19 @@ export async function app(params: ParamsOmitSkipPN) {
     // });
     // deleteLastLines(4);
     // renderEndLine();
-    console.log("completePrompt");
-    deleteLastLine();
-    console.log("completePrompt");
-    await completePrompt(
-      "select",
-      true,
-      "✋ User pressed Ctrl+C, exiting...",
-      "redBright",
-      "bold",
-      undefined,
-      true,
-      "redBright",
-      undefined,
-      false,
-    );
+    // deleteLastLine();
+    // await completePrompt(
+    //   "select",
+    //   true,
+    //   "✋ User pressed Ctrl+C, exiting...",
+    //   "redBright",
+    //   "bold",
+    //   undefined,
+    //   true,
+    //   "redBright",
+    //   undefined,
+    //   false,
+    // );
     // process.exit(0);
   }
 }

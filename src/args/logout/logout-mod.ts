@@ -1,5 +1,5 @@
 import { confirmPrompt, defineCommand } from "@reliverse/prompts";
-import { deleteLastLine, msg, relinka } from "@reliverse/relinka";
+import { deleteLastLine, msg, relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import os from "os";
 import path from "pathe";

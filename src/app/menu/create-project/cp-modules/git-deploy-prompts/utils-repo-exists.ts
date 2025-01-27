@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { simpleGit } from "simple-git";
 
 import type { GitModParams } from "~/app/app-types.js";

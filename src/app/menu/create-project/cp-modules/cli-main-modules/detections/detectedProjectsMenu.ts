@@ -4,8 +4,8 @@ import {
   multiselectPrompt,
   confirmPrompt,
 } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { installDependencies } from "nypm";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";

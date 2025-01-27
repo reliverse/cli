@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";

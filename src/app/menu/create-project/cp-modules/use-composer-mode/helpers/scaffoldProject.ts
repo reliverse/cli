@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import { globby } from "globby";
 import ora from "ora";

@@ -1,5 +1,5 @@
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { IntegrationCategory, IntegrationOptions } from "~/types.js";
 
@@ -77,7 +77,7 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
     ],
   });
 
-  const options = integrationOptions[category]!;
+  const options = integrationOptions[category];
   const selectedIntegration = await selectPrompt({
     title: `Select ${category} integration:`,
     options: options.map((opt) => ({
@@ -133,7 +133,7 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
         ...INTEGRATION_CONFIGS["drizzle"],
         name: "drizzle",
         dependencies: [
-          ...INTEGRATION_CONFIGS["drizzle"]!.dependencies,
+          ...INTEGRATION_CONFIGS["drizzle"].dependencies,
           provider === "neon" ? "@neondatabase/serverless" : "postgres",
         ],
         files: [],
@@ -146,7 +146,7 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
       return;
     }
 
-    await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"]!, isDev);
+    await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"], isDev);
     return;
   }
 

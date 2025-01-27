@@ -1,5 +1,5 @@
 import { endPrompt, startPrompt } from "@reliverse/prompts";
-import { getTerminalWidth } from "@reliverse/relinka";
+import { getTerminalWidth } from "@reliverse/prompts";
 import { isBun, isBunPM, isBunRuntime } from "@reliverse/runtime";
 
 import { cliName, cliVersion } from "~/app/constants.js";

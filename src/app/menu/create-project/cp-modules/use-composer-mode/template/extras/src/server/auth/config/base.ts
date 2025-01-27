@@ -43,7 +43,6 @@ export const authConfig = {
      */
   ],
   callbacks: {
-    // @ts-expect-error TODO: fix ts
     session: ({ session, token }) => ({
       ...session,
       user: {

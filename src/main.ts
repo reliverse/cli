@@ -1,5 +1,5 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { cliVersion } from "./app/constants.js";
 

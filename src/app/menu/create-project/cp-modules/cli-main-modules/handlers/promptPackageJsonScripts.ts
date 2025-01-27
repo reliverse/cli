@@ -1,7 +1,7 @@
 import { multiselectPrompt } from "@reliverse/prompts";
+import { msg } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { msg } from "@reliverse/relinka";
-import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 
 import { experimental } from "~/app/constants.js";

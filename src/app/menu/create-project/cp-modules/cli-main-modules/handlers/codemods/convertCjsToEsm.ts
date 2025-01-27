@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";

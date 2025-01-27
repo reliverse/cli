@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { DEFAULT_APP_NAME } from "~/app/constants.js";
 import { type InstallerOptions } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";

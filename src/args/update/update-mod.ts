@@ -1,5 +1,5 @@
 import { defineCommand, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { cliName } from "~/app/constants.js";
 import {

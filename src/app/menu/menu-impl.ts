@@ -3,8 +3,8 @@ import {
   inputPrompt,
   multiselectPrompt,
 } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 
 import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 import type {

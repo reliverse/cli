@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { execSync } from "child_process";
 import { execa } from "execa";
 import fs from "fs-extra";

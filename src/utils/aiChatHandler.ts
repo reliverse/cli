@@ -2,8 +2,8 @@ import type { CoreMessage } from "ai";
 
 import { openai } from "@ai-sdk/openai";
 import { inputPrompt } from "@reliverse/prompts";
+import { printLineBar, relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { printLineBar, relinka } from "@reliverse/relinka";
 import { streamText } from "ai";
 import dotenv from "dotenv";
 

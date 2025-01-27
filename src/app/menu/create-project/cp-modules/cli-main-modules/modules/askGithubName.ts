@@ -1,5 +1,5 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 

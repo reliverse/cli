@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 
 import { CREATE_RELIVERSE_APP } from "~/app/constants.js";
 import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
@@ -105,7 +105,7 @@ export async function runComposerMode(
           });
         },
         databaseProvider: ({ results }) => {
-          if (results.database === "none") return;
+          if (results.database === "none") return undefined;
           return p.select({
             message: "What database provider would you like to use?",
             options: [

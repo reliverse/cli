@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { Value } from "@sinclair/typebox/value";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";

@@ -1,6 +1,6 @@
 import { confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 
 export async function askSummaryConfirmation(
   template: string,

@@ -1,8 +1,8 @@
 import type { Vercel } from "@vercel/sdk";
 
 import { confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 

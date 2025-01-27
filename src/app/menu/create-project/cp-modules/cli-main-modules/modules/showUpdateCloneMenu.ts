@@ -1,5 +1,5 @@
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";

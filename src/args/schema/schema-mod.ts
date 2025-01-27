@@ -1,5 +1,5 @@
 import { defineCommand } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { generateSchemaFile } from "~/utils/schemaConfig.js";
 
@@ -7,6 +7,7 @@ export default defineCommand({
   meta: {
     name: "schema",
     description: "Generate JSON schema for .reliverse configuration",
+    hidden: true,
   },
   run: async () => {
     try {
@@ -16,7 +17,7 @@ export default defineCommand({
       relinka(
         "error",
         "Failed to generate schema:",
-        error instanceof Error ? error.message : String(error),
+        error instanceof Error ? error.message : JSON.stringify(error),
       );
       process.exit(1);
     }

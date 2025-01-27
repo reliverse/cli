@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox";
 
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";

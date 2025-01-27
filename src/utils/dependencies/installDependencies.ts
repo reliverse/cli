@@ -1,5 +1,5 @@
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { execa } from "execa";
 import ora, { type Ora } from "ora";
 

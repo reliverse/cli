@@ -1,7 +1,7 @@
 import type { Octokit } from "@octokit/rest";
 
 import { selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { DeploymentService } from "~/types.js";
 import type { RepoOption } from "~/utils/projectRepository.js";

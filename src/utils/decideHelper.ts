@@ -1,5 +1,5 @@
 import { confirmPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import type { ReliverseConfig } from "./schemaConfig.js";
 

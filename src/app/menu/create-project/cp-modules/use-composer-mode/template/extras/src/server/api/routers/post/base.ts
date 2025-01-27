@@ -18,7 +18,6 @@ const posts: Post[] = [
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
-    // @ts-expect-error TODO: fix ts
     .query(({ input }) => {
       return {
         greeting: `Hello ${input.text}`,
@@ -27,7 +26,6 @@ export const postRouter = createTRPCRouter({
 
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
-    // @ts-expect-error TODO: fix ts
     .mutation(({ input }) => {
       const post: Post = {
         id: posts.length + 1,

@@ -6,7 +6,6 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
-    // @ts-expect-error TODO: fix ts
     .query(({ input }) => {
       return {
         greeting: `Hello ${input.text}`,
@@ -15,7 +14,6 @@ export const postRouter = createTRPCRouter({
 
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
-    // @ts-expect-error TODO: fix ts
     .mutation(({ ctx, input }) => {
       return ctx.db.post.create({
         data: {
@@ -24,7 +22,6 @@ export const postRouter = createTRPCRouter({
       });
     }),
 
-  // @ts-expect-error TODO: fix ts
   getLatest: publicProcedure.query(async ({ ctx }) => {
     const post = await ctx.db.post.findFirst({
       orderBy: { createdAt: "desc" },

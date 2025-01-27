@@ -1,5 +1,5 @@
 import { selectPrompt, confirmPrompt, inputPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 

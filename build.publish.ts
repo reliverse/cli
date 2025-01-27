@@ -67,7 +67,7 @@ async function publishNpm(dryRun: boolean) {
   } catch (error) {
     console.error(
       "❌ Failed to publish to npm:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
     process.exit(1);
   }
@@ -81,7 +81,7 @@ async function publishJsr(dryRun: boolean) {
       });
     } else {
       await execaCommand("bun build:jsr", { stdio: "inherit" });
-      await execaCommand("bunx jsr publish --allow-slow-types --allow-dirty", {
+      await execaCommand("bunx jsr publish --allow-dirty", {
         stdio: "inherit",
       });
     }
@@ -89,7 +89,7 @@ async function publishJsr(dryRun: boolean) {
   } catch (error) {
     console.error(
       "❌ Failed to publish to JSR:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
     process.exit(1);
   }
@@ -168,7 +168,7 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
       } catch (error) {
         console.warn(
           `Failed to process ${file}:`,
-          error instanceof Error ? error.message : String(error),
+          error instanceof Error ? error.message : JSON.stringify(error),
         );
       }
     }
@@ -185,7 +185,7 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
   } catch (error) {
     console.error(
       "Failed to bump versions:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
     throw error;
   }
@@ -239,7 +239,7 @@ async function main() {
   } catch (error) {
     console.error(
       "❌ An unexpected error occurred:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
     process.exit(1);
   }
@@ -248,7 +248,7 @@ async function main() {
 main().catch((error: unknown) => {
   console.error(
     "❌ An unexpected error occurred:",
-    error instanceof Error ? error.message : String(error),
+    error instanceof Error ? error.message : JSON.stringify(error),
   );
   process.exit(1);
 });

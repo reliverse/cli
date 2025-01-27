@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client/node";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { drizzle } from "drizzle-orm/libsql/node";
 import fs from "fs-extra";
 import os from "os";

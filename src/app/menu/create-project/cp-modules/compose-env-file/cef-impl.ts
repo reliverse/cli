@@ -3,7 +3,7 @@ import {
   multiselectPrompt,
   confirmPrompt,
 } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";

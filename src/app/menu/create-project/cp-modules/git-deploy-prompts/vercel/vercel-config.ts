@@ -1,7 +1,7 @@
 import type { Vercel } from "@vercel/sdk";
 
 import { multiselectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { experimental } from "~/app/constants.js";
 

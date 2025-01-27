@@ -1,8 +1,8 @@
 import { config } from "@reliverse/core";
 import { getCurrentDirname, getRootDirname } from "@reliverse/fs";
 import { confirmPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import { join } from "pathe";
 
 import { siteConfig } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/app.js";

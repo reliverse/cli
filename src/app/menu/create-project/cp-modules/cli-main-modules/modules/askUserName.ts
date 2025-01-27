@@ -1,6 +1,6 @@
 import { inputPrompt } from "@reliverse/prompts";
+import { deleteLastLine, relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { deleteLastLine, relinka } from "@reliverse/relinka";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 

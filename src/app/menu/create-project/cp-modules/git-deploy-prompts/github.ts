@@ -2,7 +2,7 @@ import type { Octokit } from "@octokit/rest";
 
 import { RequestError } from "@octokit/request-error";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -27,7 +27,7 @@ export async function checkGithubRepoOwnership(
     const { data: repository } = await octokit.rest.repos.get({ owner, repo });
     return {
       exists: true,
-      isOwner: repository.permissions?.admin === true,
+      isOwner: repository.permissions?.admin,
       defaultBranch: repository.default_branch,
     };
   } catch (error) {

@@ -1,8 +1,8 @@
 import type { SimpleGit } from "simple-git";
 
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
+import { deleteLastLine, relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { deleteLastLine, relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";

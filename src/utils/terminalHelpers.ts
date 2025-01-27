@@ -1,14 +1,5 @@
+import { getExactTerminalWidth, relinka, symbols } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import {
-  getExactTerminalWidth,
-  msg,
-  relinka,
-  symbols,
-  type BorderColorName,
-  type ColorName,
-  type TypographyName,
-  type VariantName,
-} from "@reliverse/relinka";
 import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
@@ -241,7 +232,7 @@ export async function isCwdEmpty(cwd: string) {
  * Ends the prompt by optionally displaying an end message and running the action if confirmed.
  * Preserves the last prompt state unless there's an endTitle.
  */
-export async function completePrompt(
+/* export async function completePrompt(
   prompt: "input" | "confirm" | "select" | "multiselect" | "toggle",
   isCtrlC: boolean,
   _endTitle = "",
@@ -290,4 +281,4 @@ export async function completePrompt(
   }
 
   return value ?? false;
-}
+} */

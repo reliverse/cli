@@ -1,6 +1,6 @@
 import { selectPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import path from "node:path";
 

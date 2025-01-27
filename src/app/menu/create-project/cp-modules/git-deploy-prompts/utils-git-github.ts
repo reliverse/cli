@@ -1,6 +1,6 @@
 import type { PackageJson } from "pkg-types";
 
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";

@@ -6,7 +6,7 @@ import {
   selectPrompt,
   confirmPrompt,
 } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { projectsDeleteProject } from "@vercel/sdk/funcs/projectsDeleteProject.js";
 import { projectsGetProjects } from "@vercel/sdk/funcs/projectsGetProjects.js";
 

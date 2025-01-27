@@ -29,7 +29,6 @@ export async function getUnusedDependencies(
     for (const match of importMatches) {
       const [, pkg] = match as RegExpMatchArray;
       if (pkg && !pkg.startsWith(".") && !pkg.startsWith("~/")) {
-        // @ts-expect-error TODO: fix ts
         imports.add(pkg.split("/")[0]); // Get root package name
       }
     }

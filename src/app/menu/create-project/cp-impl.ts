@@ -5,7 +5,7 @@ import {
   nextStepsPrompt,
   inputPrompt,
 } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";

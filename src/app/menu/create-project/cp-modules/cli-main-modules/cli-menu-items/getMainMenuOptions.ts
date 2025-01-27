@@ -1,4 +1,5 @@
 import { re } from "@reliverse/relico";
+import { isWindows, isBunPM } from "@reliverse/runtime";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -11,6 +12,7 @@ export type MainMenuChoice =
   | "clone"
   | "detected-projects"
   | "isDevTools"
+  | "bun-windows"
   | "exit";
 
 type MainMenuOption = {
@@ -24,6 +26,8 @@ export async function getMainMenuOptions(
   isDev: boolean,
   reli: ReliverseConfig[],
 ): Promise<MainMenuOption[]> {
+  // Note: The blank line issue is not in this file, but rather in the selectPrompt implementation
+  // where deleteLastLine() is called before completePrompt()
   const multiConfigMsg =
     reli.length > 0
       ? re.dim(`multi-config mode with ${reli.length} projects`)
@@ -51,14 +55,23 @@ export async function getMainMenuOptions(
     });
   }
 
-  // 3) Always add the exit option
+  // 3) Add bun-windows option if on Windows with Bun PM
+  if (isWindows && isBunPM) {
+    options.push({
+      label: "🚀 Use Bun-native @reliverse/cli",
+      value: "bun-windows",
+      // hint: re.dim("Setup Bun runtime"),
+    });
+  }
+
+  // 4) Always add the exit option
   options.push({
     label: "👈 Exit",
     value: "exit",
     hint: re.dim("ctrl+c anywhere"),
   });
 
-  // 4) Detect .reliverse projects
+  // 5) Detect .reliverse projects
   const dotReliverseSearchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
 
   if (await fs.pathExists(dotReliverseSearchPath)) {

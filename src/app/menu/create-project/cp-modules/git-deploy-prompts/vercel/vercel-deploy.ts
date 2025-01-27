@@ -1,6 +1,6 @@
 import type { Vercel } from "@vercel/sdk";
 
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { type InlinedFile } from "@vercel/sdk/models/createdeploymentop.js";
 import fs from "fs-extra";
 import path from "pathe";

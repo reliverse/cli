@@ -1,5 +1,5 @@
 import { defineCommand } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 

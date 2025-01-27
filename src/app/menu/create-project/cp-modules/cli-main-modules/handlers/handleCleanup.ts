@@ -1,6 +1,6 @@
 import { multiselectPrompt } from "@reliverse/prompts";
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";

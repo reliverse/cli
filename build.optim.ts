@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
+import { writeTSConfig, defineTSConfig } from "pkg-types";
 import { fileURLToPath } from "url";
 
 // Verbose logging
@@ -226,6 +227,17 @@ async function copySrcToOutput(): Promise<void> {
       overwrite: true,
       errorOnExist: false,
     });
+
+    // Write tsconfig.json using pkg-types
+    const tsConfig = defineTSConfig({
+      extends: "../tsconfig.json",
+      compilerOptions: {
+        allowImportingTsExtensions: true,
+      },
+      include: ["./**/*.ts"],
+    });
+    await writeTSConfig(path.join(outputDir, "tsconfig.json"), tsConfig);
+
     if (verbose) {
       console.log(`Copied 'src' to '${outputDir}'`);
     }

@@ -1,4 +1,4 @@
-import { relinka } from "@reliverse/relinka";
+import { relinka } from "@reliverse/prompts";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";
 import path from "pathe";

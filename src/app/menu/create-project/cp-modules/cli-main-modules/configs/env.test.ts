@@ -13,8 +13,12 @@ import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env
 import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 
 // Mock the prompts
-const mockSelectPrompt = mock(selectPrompt);
-const mockMultiselectPrompt = mock(multiselectPrompt);
+const mockSelectPrompt = mock(selectPrompt) as Mock<
+  (params: Parameters<typeof selectPrompt>[0]) => Promise<string>
+>;
+const mockMultiselectPrompt = mock(multiselectPrompt) as Mock<
+  (params: Parameters<typeof multiselectPrompt>[0]) => Promise<string[]>
+>;
 const mockInputPrompt = mock(inputPrompt);
 
 // Mock fs-extra module
@@ -70,9 +74,19 @@ describe("composeEnvFile", () => {
     );
 
     // Setup prompt mocks
-    mockSelectPrompt.mockImplementation(() => Promise.resolve("auto"));
+    mockSelectPrompt.mockImplementation(() => Promise.resolve("auto" as const));
     mockMultiselectPrompt.mockImplementation(() =>
       Promise.resolve(["DATABASE"] as const),
+    );
+    fsModule.default.pathExists.mockImplementation(() => Promise.resolve(true));
+    fsModule.default.readFile.mockImplementation(() =>
+      Promise.resolve(envContent.join("\n")),
+    );
+    fsModule.default.writeFile.mockImplementation(
+      (_path: string, content: string) => {
+        envContent = content.split("\n");
+        return Promise.resolve();
+      },
     );
   });
 

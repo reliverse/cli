@@ -1,8 +1,8 @@
 import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
+import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { relinka } from "@reliverse/relinka";
 import fs from "fs-extra";
 import {
   loadFile as loadFileUsingMagicast,
@@ -15,7 +15,9 @@ import type { ApptsConfig } from "~/types.js";
 
 import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
 
-export async function configureAppts({ apptsConfig }: ApptsConfig) {
+export async function configureAppts({
+  apptsConfig,
+}: ApptsConfig): Promise<void> {
   const apptsConfigPath = join(apptsConfig, "app.ts");
   const metadataConfigPath = join(apptsConfig, "constants/metadata.ts");
 
@@ -24,8 +26,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       "error",
       "Oops! It seems like the configuration file `src/app.ts` has gone missing! ⛔",
     );
-
-    return process.exit(0);
+    process.exit(0);
   }
 
   if (!(await fileExists(metadataConfigPath))) {
@@ -33,24 +34,21 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       "error",
       `Uh-oh! We couldn't find the configuration file! (${metadataConfigPath}) ⛔`,
     );
-
-    return process.exit(0);
+    process.exit(0);
   }
 
   let currentConfig: Record<string, any> = {};
 
   try {
     const mod = await loadFileUsingMagicast(metadataConfigPath);
-
     currentConfig = mod.exports["default"] ?? {};
   } catch (error) {
     relinka(
       "error",
       "Whoops! Something went wrong while loading the configuration file:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
-
-    return process.exit(0);
+    process.exit(0);
   }
 
   const proceed = await confirmPrompt({
@@ -61,7 +59,7 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
   });
 
   if (typeof proceed !== "boolean" || !proceed) {
-    return process.exit(0);
+    process.exit(0);
   }
 
   let handle = await askForHandle(metadata.author.handle ?? "blefnk");
@@ -145,18 +143,18 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
       authorUrl,
     ].some((value) => typeof value !== "string")
   ) {
-    return process.exit(0);
+    process.exit(0);
   }
 
   try {
     await updateFile(metadataConfigPath, {
-      name: name!,
-      siteNameDesc: siteNameDesc!,
-      appPublisher: appPublisher!,
-      projectVersion: projectVersion!,
-      authorEmail: authorEmail!,
-      authorFullName: authorFullName!,
-      authorUrl: authorUrl!,
+      name: name,
+      siteNameDesc: siteNameDesc,
+      appPublisher: appPublisher,
+      projectVersion: projectVersion,
+      authorEmail: authorEmail,
+      authorFullName: authorFullName,
+      authorUrl: authorUrl,
       handle: handle,
     });
 
@@ -168,9 +166,11 @@ export async function configureAppts({ apptsConfig }: ApptsConfig) {
     relinka(
       "error",
       "Error updating configuration file content:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
   }
+
+  return;
 }
 
 async function askForHandle(currentHandle: string): Promise<string> {
@@ -229,7 +229,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     relinka(
       "error",
       "Error updating configuration file content:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : JSON.stringify(error),
     );
   }
 }
