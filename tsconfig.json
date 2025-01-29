@@ -19,6 +19,7 @@
     "module": "NodeNext",
     "moduleDetection": "force",
     "moduleResolution": "nodenext",
+    "target": "ES2023",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
@@ -32,7 +33,6 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": false,
-    "target": "ES2023",
     "verbatimModuleSyntax": true
   },
   "include": [
@@ -48,7 +48,8 @@
     "build.pub.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "publish.ts"
+    "publish.ts",
+    "latest.ts"
   ],
   "exclude": ["node_modules", "dist-npm"]
 }

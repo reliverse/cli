@@ -26,7 +26,7 @@ const PUTOUT_DEFAULT_CONFIG: PutoutConfig = addConfigMetadata({
   match: {
     "*.ts": true,
     "*.tsx": true,
-    "*.js": true,
+    // "*.js": true,
     "*.jsx": true,
   },
   ignore: ["node_modules", "dist", "build", "coverage", ".next", "*.d.ts"],
@@ -41,7 +41,7 @@ const PUTOUT_MINIMAL_CONFIG: PutoutConfig = addConfigMetadata({
   match: {
     "*.ts": true,
     "*.tsx": true,
-    "*.js": true,
+    // "*.js": true,
     "*.jsx": true,
   },
   ignore: ["node_modules", "dist", "build", "coverage", ".next", "*.d.ts"],

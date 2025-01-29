@@ -13,7 +13,7 @@ import { PKG_ROOT } from "~/app/constants.js";
 /**
  * Renames all -tsx.txt files back to .tsx in the specified directory and its subdirectories.
  */
-async function renameTsxFiles(dir: string): Promise<void> {
+async function renameTxtToTsx(dir: string): Promise<void> {
   try {
     const files = await globby("**/*-tsx.txt", {
       cwd: dir,
@@ -116,7 +116,7 @@ export const scaffoldProject = async ({
   );
 
   // Convert any -tsx.txt files back to .tsx
-  await renameTsxFiles(projectDir);
+  await renameTxtToTsx(projectDir);
 
   const scaffoldedName =
     projectName === "." ? "App" : re.bold(re.cyan(projectName));

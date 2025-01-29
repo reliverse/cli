@@ -1,7 +1,7 @@
 import type { Vercel } from "@vercel/sdk";
 
 import { relinka } from "@reliverse/prompts";
-import { type InlinedFile } from "@vercel/sdk/models/createdeploymentop.js";
+import { type InlinedFile } from "@vercel/sdk/models/createdeploymentop";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -254,7 +254,7 @@ export async function createDeployment(
   );
 
   let lastMessageTime = Date.now();
-  while (inProgressStates.includes(status)) {
+  while (inProgressStates.includes(status as ReadyState)) {
     // Monitor logs with detailed option
     await monitorDeployment(
       vercel,

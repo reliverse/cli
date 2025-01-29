@@ -5,7 +5,7 @@ export default defineBuildConfig({
   entries: [
     {
       builder: "mkdist",
-      outDir: "dist-npm",
+      outDir: "dist-npm/bin",
       format: "esm",
       input: "src",
       ext: "js",
@@ -14,7 +14,7 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: false,
     esbuild: {
-      exclude: ["**/*.test.ts"],
+      exclude: ["**/*.test.ts", "**/__tests__/**"],
       target: "es2023",
       minify: true,
     },

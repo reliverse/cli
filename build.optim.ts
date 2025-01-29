@@ -1,77 +1,260 @@
+import { re } from "@reliverse/relico";
 import fs from "fs-extra";
 import { globby } from "globby";
 import path from "pathe";
-import { writeTSConfig, defineTSConfig } from "pkg-types";
+import {
+  readPackageJSON,
+  defineTSConfig,
+  definePackageJSON,
+  type PackageJson,
+} from "pkg-types";
 import { fileURLToPath } from "url";
 
-// Verbose logging
-export const verbose = false;
+// Configuration types
+type BuildConfig = {
+  verbose: boolean;
+  isJSR: boolean;
+  sourceDir: string;
+  outputDir: string;
+  filesToDelete: string[];
+  pausePublish: boolean;
+};
 
-// Parse command-line arguments to check for '--jsr' flag
-const args: string[] = process.argv.slice(2);
-const isJSR: boolean = args.includes("--jsr");
-
-// Get current directory using import.meta.url
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-
-// Directories based on the presence of '--jsr' flag
-const sourceDir: string = path.resolve(currentDir, "src");
-const outputDir: string = path.resolve(
-  currentDir,
-  isJSR ? "dist-jsr" : "dist-npm",
-);
-
-// Separate patterns for files to delete in different modes
-const arrayFilesToDelete: string[] = [
-  "**/*.test.js",
-  "**/*.test.ts",
-  "**/*.test.d.ts",
-  "types/internal.js",
-  "types/internal.d.ts",
-  "**/*.temp.js",
-  "**/*.temp.d.ts",
-];
+// Build configuration
+const config: BuildConfig = {
+  verbose: false,
+  isJSR: process.argv.includes("--jsr"),
+  sourceDir: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "src"),
+  outputDir: path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    process.argv.includes("--jsr") ? "dist-jsr" : "dist-npm",
+  ),
+  filesToDelete: [
+    "**/*.test.js",
+    "**/*.test.ts",
+    "**/*.test.d.ts",
+    "types/internal.js",
+    "types/internal.d.ts",
+    "**/*.temp.js",
+    "**/*.temp.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "!**/*.d.ts", // Keep type definitions
+    "!**/*.js", // Keep JavaScript files
+  ],
+  pausePublish: process.argv.includes("--pause-publish"),
+};
 
 /**
- * Deletes files matching the provided patterns within the base directory.
+ * Logger utility for consistent logging
+ */
+const logger = {
+  info: (message: string) => console.log(`📝 ${re.cyanBright(message)}`),
+  success: (message: string) => console.log(`✅ ${re.greenBright(message)}`),
+  error: (message: string, error?: unknown) => {
+    console.error(
+      message,
+      error instanceof Error ? error.message : JSON.stringify(error),
+    );
+  },
+  verbose: (message: string) => {
+    if (config.verbose) {
+      console.log(`📝 ${re.magentaBright(message)}`);
+    }
+  },
+};
+
+/**
+ * Creates common package.json fields
+ */
+async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
+  const originalPkg = await readPackageJSON();
+  return {
+    name: originalPkg.name,
+    author: originalPkg.author,
+    version: originalPkg.version,
+    type: "module" as const,
+    license: originalPkg.license,
+    description: originalPkg.description,
+    homepage: "https://docs.reliverse.org/cli",
+    repository: {
+      type: "git",
+      url: "git+https://github.com/reliverse/cli.git",
+    },
+    bugs: {
+      url: "https://github.com/reliverse/cli/issues",
+      email: "blefnk@gmail.com",
+    },
+    keywords: ["cli", "reliverse"],
+    dependencies: originalPkg.dependencies || {},
+  };
+}
+
+/**
+ * Filters out eslint and prettier related dev dependencies
+ */
+function filterDevDependencies(
+  devDeps: Record<string, string> | undefined,
+): Record<string, string> {
+  if (!devDeps) return {};
+
+  return Object.entries(devDeps).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      // Only keep dependencies that don't contain eslint or prettier
+      if (
+        !(
+          key.toLowerCase().includes("eslint") ||
+          key.toLowerCase().includes("prettier")
+        )
+      ) {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {},
+  );
+}
+
+/**
+ * Creates distribution package.json
+ */
+async function createDistPackageJSON(distDir: string): Promise<void> {
+  try {
+    const commonPkg = await createCommonPackageFields();
+    const originalPkg = await readPackageJSON();
+
+    if (config.isJSR) {
+      const jsrPkg = definePackageJSON({
+        ...commonPkg,
+        exports: {
+          ".": "./bin/main.ts",
+        },
+        devDependencies: filterDevDependencies(originalPkg.devDependencies),
+        jsr: {
+          type: "module",
+        },
+      });
+      await fs.writeJSON(path.join(distDir, "package.json"), jsrPkg, {
+        spaces: 2,
+      });
+    } else {
+      const npmPkg = definePackageJSON({
+        ...commonPkg,
+        main: "./bin/main.js",
+        module: "./bin/main.js",
+        exports: {
+          ".": "./bin/main.js",
+        },
+        bin: {
+          reliverse: "bin/main.js",
+        },
+        files: [
+          "bin/**/*.js", // Include all JS files in bin directory
+          "bin/**/*.d.ts", // Include type definitions
+          "package.json",
+          "README.md",
+          "LICENSE",
+        ],
+        publishConfig: {
+          access: "public",
+        },
+      });
+      await fs.writeJSON(path.join(distDir, "package.json"), npmPkg, {
+        spaces: 2,
+      });
+    }
+  } catch (error) {
+    logger.error("Failed to create package.json", error);
+    throw error;
+  }
+}
+
+/**
+ * Creates tsconfig.json for JSR distribution
+ */
+async function createTSConfig(outputDir: string): Promise<void> {
+  try {
+    const tsConfig = defineTSConfig({
+      ...(config.pausePublish ? { extends: "../tsconfig.json" } : {}),
+      compilerOptions: {
+        allowImportingTsExtensions: true,
+        jsx: "preserve",
+        lib: ["DOM", "DOM.Iterable", "ES2023"],
+        module: "NodeNext",
+        moduleDetection: "force",
+        moduleResolution: "nodenext",
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: "ES2023",
+        verbatimModuleSyntax: true,
+      },
+      include: ["./bin/**/*.ts"],
+      exclude: ["**/node_modules"],
+    });
+    await fs.writeJSON(path.join(outputDir, "tsconfig.json"), tsConfig, {
+      spaces: 2,
+    });
+  } catch (error) {
+    logger.error("Failed to create tsconfig.json", error);
+    throw error;
+  }
+}
+
+/**
+ * Copies repository files (README, LICENSE)
+ */
+async function copyRepoFiles(outputDir: string): Promise<void> {
+  try {
+    const filesToCopy = ["README.md", "LICENSE"];
+    await Promise.all(
+      filesToCopy.map(async (file) => {
+        if (await fs.pathExists(file)) {
+          await fs.copy(file, path.join(outputDir, file));
+          logger.verbose(`Copied ${file}`);
+        }
+      }),
+    );
+  } catch (error) {
+    logger.error("Failed to copy repository files", error);
+    throw error;
+  }
+}
+
+/**
+ * Deletes files matching patterns
  */
 async function deleteFiles(patterns: string[], baseDir: string): Promise<void> {
   try {
-    const files: string[] = await globby(patterns, {
+    const files = await globby(patterns, {
       cwd: baseDir,
       absolute: true,
     });
 
     if (files.length === 0) {
-      console.log("No files matched the deletion patterns.");
+      logger.verbose("No files matched the deletion patterns");
       return;
     }
 
-    for (const filePath of files) {
-      try {
-        await fs.remove(filePath);
-        if (verbose) {
-          console.log(`Deleted: ${filePath}`);
+    await Promise.all(
+      files.map(async (filePath) => {
+        try {
+          await fs.remove(filePath);
+          logger.verbose(`Deleted: ${filePath}`);
+        } catch (error) {
+          logger.error(`Failed to delete ${filePath}`, error);
         }
-      } catch (error) {
-        console.error(
-          `Error deleting file ${filePath}:`,
-          error instanceof Error ? error.message : JSON.stringify(error),
-        );
-      }
-    }
-  } catch (error) {
-    console.error(
-      "Error processing deletion patterns:",
-      error instanceof Error ? error.message : JSON.stringify(error),
+      }),
     );
+  } catch (error) {
+    logger.error("Failed to process file deletions", error);
+    throw error;
   }
 }
 
 /**
- * Replaces import paths that use '~/' with relative paths.
- * If `isJSR` is true, also replaces '.js' extensions with '.ts'.
- * @returns The updated file content with modified import paths.
+ * Replaces import paths that use '~/' with relative paths
+ * and converts `.js` imports to `.ts` if in JSR mode.
  */
 function replaceImportPaths(
   content: string,
@@ -80,19 +263,16 @@ function replaceImportPaths(
   isJSR: boolean,
 ): string {
   let updatedContent = content.replace(
-    // Matches both static and dynamic imports
+    // Matches both static and dynamic imports that start with "~"
     /(from\s+['"]|import\s*\(\s*['"])(~\/?[^'"]*)(['"]\s*\)?)/g,
-    (
-      _match: string,
-      prefix: string,
-      importPath: string,
-      suffix: string,
-    ): string => {
-      const relativePathToRoot: string = path.relative(fileDir, rootDir);
+    (_match, prefix, importPath, suffix) => {
+      // For both JSR and NPM builds, we need to look in the bin directory
+      const targetDir = path.join(rootDir, "bin");
+      const relativePathToRoot = path.relative(fileDir, targetDir);
       // Remove leading '~/' or '~' from importPath
       importPath = importPath.replace(/^~\/?/, "");
-      let newPath: string = path.join(relativePathToRoot, importPath);
-      // Replace backslashes with forward slashes
+      let newPath = path.join(relativePathToRoot, importPath);
+      // Replace backslashes with forward slashes (for Windows)
       newPath = newPath.replace(/\\/g, "/");
       // Ensure the path starts with './' or '../'
       if (!newPath.startsWith(".")) {
@@ -102,156 +282,65 @@ function replaceImportPaths(
     },
   );
 
+  // If JSR, replace .js with .ts in import statements
   if (isJSR) {
-    // Replace '.js' extensions with '.ts' in import paths
-    // @see https://jsr.io/docs/publishing-packages#relative-imports
-    updatedContent = updatedContent.replace(/(\.js)(?=['";])/g, ".ts");
-
-    if (verbose) {
-      console.log("Replaced '.js' with '.ts' in import paths.");
-    }
+    updatedContent = updatedContent.replace(/(\.js)(?=['"])/g, ".ts");
+    logger.verbose("Converted .js imports to .ts for JSR build");
   }
 
   return updatedContent;
 }
 
 /**
- * Removes comments from the given content string.
- * - Strips block comments using `strip-comments`.
- * @returns The content without unwanted comments.
+ * Recursively processes files in a directory to replace import paths if JSR is true.
  */
-// function removeComments(content: string, filePath: string): string {
-function removeComments(content: string): string {
-  // When not in JSR mode, strip all comments using strip-comments
-  // const stripped = strip(content, {
-  //   line: true,
-  //   block: true,
-  //   keepProtected: true,
-  //   preserveNewlines: false,
-  // });
+async function processFilesForJSR(dir: string): Promise<void> {
+  try {
+    const files = await fs.readdir(dir);
 
-  // if (debug) {
-  //   console.log(`\nProcessing file: ${filePath}`);
-  //   console.log("Stripped all comments.");
-  // }
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = await fs.stat(filePath);
 
-  return content; // return stripped;
-}
+      if (stat.isDirectory()) {
+        await processFilesForJSR(filePath);
+      } else if (
+        filePath.endsWith(".ts") ||
+        filePath.endsWith(".tsx") ||
+        filePath.endsWith(".d.ts") ||
+        filePath.endsWith(".js") ||
+        filePath.endsWith(".jsx") ||
+        filePath.endsWith(".mjs") ||
+        filePath.endsWith(".cjs") ||
+        filePath.endsWith(".mts") ||
+        filePath.endsWith(".cts")
+      ) {
+        try {
+          const content = await fs.readFile(filePath, "utf8");
+          const updatedContent = replaceImportPaths(
+            content,
+            path.dirname(filePath),
+            config.outputDir,
+            config.isJSR,
+          );
 
-/**
- * Processes all relevant files in the given directory
- * by replacing import paths and removing comments.
- */
-async function processFiles(dir: string): Promise<void> {
-  const files: string[] = await fs.readdir(dir);
-
-  for (const file of files) {
-    const filePath: string = path.join(dir, file);
-    const stat: fs.Stats = await fs.stat(filePath);
-
-    if (stat.isDirectory()) {
-      await processFiles(filePath);
-    } else if (
-      filePath.endsWith(".ts") ||
-      filePath.endsWith(".tsx") ||
-      filePath.endsWith(".d.ts") ||
-      filePath.endsWith(".js") ||
-      filePath.endsWith(".jsx") ||
-      filePath.endsWith(".mjs") ||
-      filePath.endsWith(".cjs") ||
-      filePath.endsWith(".mts") ||
-      filePath.endsWith(".cts")
-    ) {
-      if (verbose) {
-        console.log(`\nProcessing file: ${filePath}`);
-      }
-
-      try {
-        const content: string = await fs.readFile(filePath, "utf8");
-
-        let updatedContent: string = replaceImportPaths(
-          content,
-          path.dirname(filePath),
-          outputDir,
-          isJSR,
-        );
-
-        if (!isJSR) {
-          // updatedContent = removeComments(updatedContent, filePath);
-          updatedContent = removeComments(updatedContent);
-        }
-
-        if (content !== updatedContent) {
-          await fs.writeFile(filePath, updatedContent, "utf8");
-          if (verbose) {
-            console.log(`Updated file: ${filePath}`);
+          if (content !== updatedContent) {
+            await fs.writeFile(filePath, updatedContent, "utf8");
+            logger.verbose(`Updated imports in: ${filePath}`);
           }
+        } catch (error) {
+          logger.error(`Failed to process file ${filePath}`, error);
         }
-      } catch (error) {
-        console.error(
-          `Error processing file ${filePath}:`,
-          error instanceof Error ? error.message : JSON.stringify(error),
-        );
-      }
-    }
-  }
-}
-
-/**
- * Removes the output directory ('dist-jsr' or 'dist-npm') if it exists.
- */
-async function removeOutputDirectory(): Promise<void> {
-  try {
-    const exists: boolean = await fs.pathExists(outputDir);
-    if (exists) {
-      await fs.remove(outputDir);
-      if (verbose) {
-        console.log(`Removed existing '${outputDir}' directory.`);
       }
     }
   } catch (error) {
-    console.error(
-      `Error removing '${outputDir}' directory:`,
-      error instanceof Error ? error.message : JSON.stringify(error),
-    );
+    logger.error("Failed to recursively process files for JSR", error);
     throw error;
   }
 }
 
 /**
- * Copies the 'src' directory to the output directory when '--jsr' flag is provided.
- */
-async function copySrcToOutput(): Promise<void> {
-  try {
-    await fs.copy(sourceDir, outputDir, {
-      overwrite: true,
-      errorOnExist: false,
-    });
-
-    // Write tsconfig.json using pkg-types
-    const tsConfig = defineTSConfig({
-      extends: "../tsconfig.json",
-      compilerOptions: {
-        allowImportingTsExtensions: true,
-      },
-      include: ["./**/*.ts"],
-    });
-    await writeTSConfig(path.join(outputDir, "tsconfig.json"), tsConfig);
-
-    if (verbose) {
-      console.log(`Copied 'src' to '${outputDir}'`);
-    }
-  } catch (error) {
-    console.error(
-      `Error copying 'src' to '${outputDir}':`,
-      error instanceof Error ? error.message : JSON.stringify(error),
-    );
-    throw error;
-  }
-}
-
-/**
- * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
+ * Renames .tsx files to -tsx.txt
  */
 async function renameTsxFiles(dir: string): Promise<void> {
   try {
@@ -260,72 +349,175 @@ async function renameTsxFiles(dir: string): Promise<void> {
       absolute: true,
     });
 
-    for (const filePath of files) {
-      const newPath = filePath.replace(/\.tsx$/, "-tsx.txt");
-      await fs.rename(filePath, newPath);
-      if (verbose) {
-        console.log(`Renamed: ${filePath} -> ${newPath}`);
-      }
-    }
-  } catch (error) {
-    console.error(
-      `Error renaming .tsx files: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+    await Promise.all(
+      files.map(async (filePath) => {
+        const newPath = filePath.replace(/\.tsx$/, "-tsx.txt");
+        await fs.rename(filePath, newPath);
+        logger.verbose(`Renamed: ${filePath} -> ${newPath}`);
+      }),
     );
+  } catch (error) {
+    logger.error("Failed to rename .tsx files", error);
+    throw error;
   }
 }
 
 /**
- * Optimizes the build for production by processing files and deleting unnecessary ones.
+ * Prepares the distribution directory
  */
-async function optimizeBuildForProduction(dir: string): Promise<void> {
-  if (isJSR) {
-    console.log("Preparing JSR build by removing existing output directory...");
-    await removeOutputDirectory(); // Remove outputDir before copying
-    console.log("Copying 'src' to output directory...");
-    await copySrcToOutput();
-    console.log("Processing copied files to replace import paths...");
-    await processFiles(outputDir); // Process files after copying
-    console.log("Renaming .tsx files to -tsx.txt for JSR compatibility...");
-    await renameTsxFiles(outputDir);
-  } else {
-    console.log("Creating an optimized production build...");
-    await processFiles(dir);
-    console.log("Cleaning up unnecessary files...");
-    const filesToDelete: string[] = arrayFilesToDelete;
-    await deleteFiles(filesToDelete, dir);
-  }
-}
-
-async function getDirectorySize(dirPath: string): Promise<number> {
-  const files = await fs.readdir(dirPath);
-  let totalSize = 0;
-
-  for (const file of files) {
-    const filePath = path.join(dirPath, file);
-    const stats = await fs.stat(filePath);
-
-    if (stats.isDirectory()) {
-      totalSize += await getDirectorySize(filePath);
-    } else {
-      totalSize += stats.size;
+async function prepareDistDirectory(): Promise<void> {
+  try {
+    // Only remove the output directory if not in pause mode
+    if (!config.pausePublish && (await fs.pathExists(config.outputDir))) {
+      await fs.remove(config.outputDir);
+      logger.verbose(`Removed existing '${config.outputDir}' directory`);
     }
-  }
 
-  return totalSize;
+    // Create bin directory if it doesn't exist
+    const binDir = path.join(config.outputDir, "bin");
+    await fs.ensureDir(binDir);
+
+    // Copy source files, overwriting existing ones
+    await fs.copy(config.sourceDir, binDir, {
+      overwrite: true,
+      errorOnExist: false,
+    });
+    logger.verbose(`Copied source files to ${binDir}`);
+  } catch (error) {
+    logger.error("Failed to prepare distribution directory", error);
+    throw error;
+  }
 }
 
-await optimizeBuildForProduction(outputDir)
-  .then(() => {
-    getDirectorySize(outputDir)
-      .then((size) => {
-        console.log(`Total size of ${outputDir}: ${String(size)} bytes`);
-      })
-      .catch((error: unknown) => {
-        console.error(
-          `Error calculating directory size for ${outputDir}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-      });
-  })
-  .catch((error: unknown) => {
-    console.log(error instanceof Error ? error.message : JSON.stringify(error));
-  });
+/**
+ * Creates JSR configuration file
+ */
+async function createJsrConfig(outputDir: string): Promise<void> {
+  try {
+    const originalPkg = await readPackageJSON();
+    const jsrConfig = {
+      name: "@reliverse/cli",
+      version: originalPkg.version,
+      author: "blefnk",
+      license: "MIT",
+      exports: "./bin/main.ts",
+      publish: {
+        exclude: ["!.", "node_modules/**", ".env"],
+      },
+    };
+    await fs.writeJSON(path.join(outputDir, "jsr.jsonc"), jsrConfig, {
+      spaces: 2,
+    });
+    logger.verbose("Generated jsr.jsonc file");
+  } catch (error) {
+    logger.error("Failed to create jsr.jsonc", error);
+    throw error;
+  }
+}
+
+/**
+ * Copies JSR-specific files from root
+ */
+async function copyJsrFiles(outputDir: string): Promise<void> {
+  try {
+    // Generate .gitignore with specific content
+    await fs.writeFile(
+      path.join(outputDir, ".gitignore"),
+      "node_modules/\n.env\n",
+      "utf-8",
+    );
+    logger.verbose("Generated .gitignore file");
+
+    // Generate jsr.jsonc
+    await createJsrConfig(outputDir);
+
+    // Copy other JSR files
+    const jsrFiles = [
+      ".reliverse",
+      "bun.lockb",
+      "drizzle.config.ts",
+      "schema.json",
+    ];
+
+    await Promise.all(
+      jsrFiles.map(async (file) => {
+        if (await fs.pathExists(file)) {
+          await fs.copy(file, path.join(outputDir, file));
+          logger.verbose(`Copied JSR file: ${file}`);
+        } else {
+          logger.verbose(`JSR file not found: ${file}`);
+        }
+      }),
+    );
+  } catch (error) {
+    logger.error("Failed to copy JSR files", error);
+    throw error;
+  }
+}
+
+/**
+ * Optimizes the build for production
+ */
+async function optimizeBuildForProduction(): Promise<void> {
+  try {
+    logger.info(`Creating ${config.isJSR ? "JSR" : "NPM"} distribution...`);
+
+    // Prepare distribution directory
+    await prepareDistDirectory();
+
+    // Create package.json
+    await createDistPackageJSON(config.outputDir);
+
+    // Process files to rewrite import paths for both JSR and NPM
+    await processFilesForJSR(config.outputDir);
+
+    if (config.isJSR) {
+      // Create tsconfig.json for JSR
+      await createTSConfig(config.outputDir);
+
+      // Copy JSR-specific files
+      await copyJsrFiles(config.outputDir);
+
+      // Rename .tsx files
+      await renameTsxFiles(config.outputDir);
+    } else {
+      // Clean up test/temporary files and TypeScript files for NPM
+      await deleteFiles(config.filesToDelete, config.outputDir);
+    }
+
+    // Copy repository files
+    await copyRepoFiles(config.outputDir);
+
+    // Calculate and log directory size
+    const size = await getDirectorySize(config.outputDir);
+    logger.success(
+      `Successfully created ${config.isJSR ? "JSR" : "NPM"} distribution (${size} bytes)`,
+    );
+  } catch (error) {
+    logger.error("Build optimization failed", error);
+    process.exit(1);
+  }
+}
+
+/**
+ * Calculates directory size recursively
+ */
+async function getDirectorySize(dirPath: string): Promise<number> {
+  try {
+    const files = await fs.readdir(dirPath);
+    const sizes = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(dirPath, file);
+        const stats = await fs.stat(filePath);
+        return stats.isDirectory() ? getDirectorySize(filePath) : stats.size;
+      }),
+    );
+    return sizes.reduce((total, size) => total + size, 0);
+  } catch (error) {
+    logger.error(`Failed to calculate directory size for ${dirPath}`, error);
+    return 0;
+  }
+}
+
+// Run the build optimization
+await optimizeBuildForProduction();

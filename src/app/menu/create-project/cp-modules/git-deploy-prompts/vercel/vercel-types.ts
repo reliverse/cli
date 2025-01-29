@@ -1,6 +1,6 @@
-import type { CreateProjectEnv2Target } from "@vercel/sdk/models/createprojectenvop.js";
-import type { CreateProjectEnv2Type } from "@vercel/sdk/models/createprojectenvop.js";
-import type { GetProjectsFramework } from "@vercel/sdk/models/getprojectsop.js";
+import type { CreateProjectEnv2Target } from "@vercel/sdk/models/createprojectenvop";
+import type { CreateProjectEnv2Type } from "@vercel/sdk/models/createprojectenvop";
+import type { GetProjectsFramework } from "@vercel/sdk/models/getprojectsop";
 
 export type VercelFramework = GetProjectsFramework;
 

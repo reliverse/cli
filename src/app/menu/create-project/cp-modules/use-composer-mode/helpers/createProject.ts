@@ -32,7 +32,7 @@ type CreateProjectOptions = {
 /**
  * Renames all .tsx files to -tsx.txt in the specified directory and its subdirectories.
  */
-async function renameTsxFiles(dir: string): Promise<void> {
+async function renameTsxToTxt(dir: string): Promise<void> {
   try {
     const files = await globby("**/*.tsx", {
       cwd: dir,
@@ -113,7 +113,7 @@ export const createProject = async ({
   }
 
   // Rename all .tsx files to -tsx.txt
-  await renameTsxFiles(projectDir);
+  await renameTsxToTxt(projectDir);
 
   return projectDir;
 };

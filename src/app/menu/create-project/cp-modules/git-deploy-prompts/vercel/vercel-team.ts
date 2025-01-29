@@ -1,9 +1,9 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
-import type { GetTeamsResponseBody } from "@vercel/sdk/models/getteamsop.js";
+import type { VercelCore } from "@vercel/sdk/core";
+import type { GetTeamsResponseBody } from "@vercel/sdk/models/getteamsop";
 
 import { relinka } from "@reliverse/prompts";
-import { teamsGetTeam } from "@vercel/sdk/funcs/teamsGetTeam.js";
-import { teamsGetTeams } from "@vercel/sdk/funcs/teamsGetTeams.js";
+import { teamsGetTeam } from "@vercel/sdk/funcs/teamsGetTeam";
+import { teamsGetTeams } from "@vercel/sdk/funcs/teamsGetTeams";
 
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
 

@@ -1,10 +1,14 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
+import { globby } from "globby";
 import fetch from "node-fetch-native";
 import pLimit from "p-limit";
 import { dirname, join } from "pathe";
 import semver from "semver";
 import { fileURLToPath } from "url";
+
+/** Enable verbose logging for debugging. */
+const verbose = false;
 
 /** Emulate __dirname in ESM. */
 const __filename = fileURLToPath(import.meta.url);
@@ -163,6 +167,32 @@ async function isPackageDownloaded(
 }
 
 /**
+ * Renames all -tsx.txt files back to .tsx in the specified directory.
+ */
+async function renameTxtToTsx(dir: string): Promise<void> {
+  try {
+    const files = await globby("**/*-tsx.txt", {
+      cwd: dir,
+      absolute: true,
+    });
+
+    for (const filePath of files) {
+      const newPath = filePath.replace(/-tsx\.txt$/, ".tsx");
+      await fs.rename(filePath, newPath);
+      if (verbose) {
+        relinka("success-verbose", `Renamed: ${filePath} -> ${newPath}`);
+      }
+    }
+  } catch (error) {
+    relinka(
+      "error",
+      "Error renaming -tsx.txt files:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+/**
  * Downloads all files for a given JSR package in parallel (concurrent).
  * - scope: e.g. "luca"
  * - packageName: e.g. "flag"
@@ -170,6 +200,9 @@ async function isPackageDownloaded(
  * - outputDir: Where to save files. Defaults to "<__dirname>/output".
  * - useSinglePath: If true, writes all files directly into `outputDir`. Otherwise, uses nested structure.
  * - concurrency: Max number of parallel downloads (default: 5).
+ * - pkgIsCLI: Whether the package is a CLI tool.
+ * - msgDownloadStarted: Custom message to show when download starts.
+ * - revertTsxFiles: If true and pkgIsCLI is true, renames -tsx.txt files back to .tsx after download.
  */
 export async function downloadJsrDist(
   scope: string,
@@ -180,6 +213,7 @@ export async function downloadJsrDist(
   concurrency = 5,
   pkgIsCLI = true,
   msgDownloadStarted?: string,
+  revertTsxFiles = false,
 ): Promise<void> {
   try {
     // 1) Get package metadata
@@ -206,7 +240,7 @@ export async function downloadJsrDist(
         "success",
         `@${scope}/${packageName}@${chosenVersion} is already downloaded.`,
         pkgIsCLI
-          ? `Use "bun ${outputDir}/dist-jsr/main.ts" to use it (short command is coming soon).`
+          ? `Use "bun ${outputDir}/bin/main.ts" to use it (short command is coming soon).`
           : undefined,
       );
       return;
@@ -237,12 +271,18 @@ export async function downloadJsrDist(
     // 7) Run all downloads in parallel, up to 'concurrency' at once
     await Promise.all(tasks);
 
-    // 8) Notify user that the download is complete
+    // 8) If pkgIsCLI and revertTsxFiles is true, rename -tsx.txt files back to .tsx
+    if (pkgIsCLI && revertTsxFiles) {
+      relinka("info", "Reverting .tsx files...");
+      await renameTxtToTsx(outputDir);
+    }
+
+    // 9) Notify user that the download is complete
     relinka(
       "success",
       `All files for @${scope}/${packageName} downloaded successfully.`,
       pkgIsCLI
-        ? `Use "bun ${outputDir}/dist-jsr/main.ts" to use it (short command is coming soon).`
+        ? `Use "bun ${outputDir}/bin/main.ts" to use it (short command is coming soon).`
         : undefined,
     );
   } catch (error) {

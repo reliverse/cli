@@ -1,5 +1,5 @@
 import { Vercel } from "@vercel/sdk";
-import { VercelCore } from "@vercel/sdk/core.js";
+import { VercelCore } from "@vercel/sdk/core";
 
 // https://github.com/vercel/sdk?tab=readme-ov-file#authentication
 export function createVercelInstance(vercelKey: string): Vercel {

@@ -1,9 +1,9 @@
 import type { Vercel } from "@vercel/sdk";
-import type { VercelCore } from "@vercel/sdk/core.js";
+import type { VercelCore } from "@vercel/sdk/core";
 import type {
   GetProjectsFramework,
   GetProjectsTarget1,
-} from "@vercel/sdk/models/getprojectsop.js";
+} from "@vercel/sdk/models/getprojectsop";
 
 import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";

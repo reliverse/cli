@@ -1,5 +1,5 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
-import type { GetProjectsResponseBody } from "@vercel/sdk/models/getprojectsop.js";
+import type { VercelCore } from "@vercel/sdk/core";
+import type { GetProjectsResponseBody } from "@vercel/sdk/models/getprojectsop";
 
 import {
   multiselectPrompt,
@@ -7,8 +7,8 @@ import {
   confirmPrompt,
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
-import { projectsDeleteProject } from "@vercel/sdk/funcs/projectsDeleteProject.js";
-import { projectsGetProjects } from "@vercel/sdk/funcs/projectsGetProjects.js";
+import { projectsDeleteProject } from "@vercel/sdk/funcs/projectsDeleteProject";
+import { projectsGetProjects } from "@vercel/sdk/funcs/projectsGetProjects";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
