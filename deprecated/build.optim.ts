@@ -30,17 +30,17 @@ const config: BuildConfig = {
     process.argv.includes("--jsr") ? "dist-jsr" : "dist-npm",
   ),
   filesToDelete: [
+    // Only remove test and temporary files
     "**/*.test.js",
     "**/*.test.ts",
     "**/*.test.d.ts",
-    "types/internal.js",
-    "types/internal.d.ts",
+    "**/__tests__/**",
     "**/*.temp.js",
     "**/*.temp.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "!**/*.d.ts", // Keep type definitions
-    "!**/*.js", // Keep JavaScript files
+    // For NPM dist, remove TypeScript source files but keep JS and d.ts
+    ...(process.argv.includes("--jsr")
+      ? []
+      : ["**/*.ts", "**/*.tsx", "!**/*.d.ts"]),
   ],
   pausePublish: process.argv.includes("--pause-publish"),
 };
@@ -130,9 +130,6 @@ async function createDistPackageJSON(distDir: string): Promise<void> {
           ".": "./bin/main.ts",
         },
         devDependencies: filterDevDependencies(originalPkg.devDependencies),
-        jsr: {
-          type: "module",
-        },
       });
       await fs.writeJSON(path.join(distDir, "package.json"), jsrPkg, {
         spaces: 2,
@@ -148,13 +145,7 @@ async function createDistPackageJSON(distDir: string): Promise<void> {
         bin: {
           reliverse: "bin/main.js",
         },
-        files: [
-          "bin/**/*.js", // Include all JS files in bin directory
-          "bin/**/*.d.ts", // Include type definitions
-          "package.json",
-          "README.md",
-          "LICENSE",
-        ],
+        files: ["bin", "package.json", "README.md", "LICENSE"],
         publishConfig: {
           access: "public",
         },

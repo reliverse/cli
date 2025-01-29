@@ -21,6 +21,7 @@ Options:
   --jsr             Publish to JSR registry
   --dry-run         Perform a dry run of the publish process
   --pause-publish   Build but skip publishing step
+  --no-dist-rm      Keep dist folders after publishing (for debugging)
   -h, --help        Show help
 `,
   );
@@ -30,12 +31,13 @@ const argv = mri(process.argv.slice(2), {
   alias: {
     h: "help",
   },
-  boolean: ["jsr", "dry-run", "help", "pause-publish"],
+  boolean: ["jsr", "dry-run", "help", "pause-publish", "no-dist-rm"],
   default: {
     jsr: false,
     "dry-run": false,
     help: false,
     "pause-publish": false,
+    "no-dist-rm": false,
   },
 });
 
@@ -46,7 +48,14 @@ if (argv["help"]) {
 }
 
 // Handle flags
-const validFlags = ["jsr", "dry-run", "help", "h", "pause-publish"];
+const validFlags = [
+  "jsr",
+  "dry-run",
+  "help",
+  "h",
+  "pause-publish",
+  "no-dist-rm",
+];
 const unknownFlags = Object.keys(argv).filter(
   (key) => !validFlags.includes(key) && key !== "_",
 );
@@ -102,8 +111,10 @@ async function publishNpm(dryRun: boolean) {
       } finally {
         // Always change back to original directory
         process.chdir(currentDir);
-        // Only cleanup after successful publish and not in pause mode
-        await cleanupDistFolders();
+        // Only cleanup after successful publish and not in pause mode or no-dist-rm mode
+        if (!argv["no-dist-rm"]) {
+          await cleanupDistFolders();
+        }
       }
     } else {
       console.log("✨ Publishing paused. Build completed successfully.");
@@ -146,8 +157,10 @@ async function publishJsr(dryRun: boolean) {
         process.chdir(currentDir);
       }
       console.log("success", "Published to JSR successfully.");
-      // Only cleanup after successful publish and not in pause mode
-      await cleanupDistFolders();
+      // Only cleanup after successful publish and not in pause mode or no-dist-rm mode
+      if (!argv["no-dist-rm"]) {
+        await cleanupDistFolders();
+      }
     } else {
       console.log("✨ Publishing paused. Build completed successfully.");
     }

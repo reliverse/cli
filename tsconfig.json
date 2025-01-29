@@ -36,7 +36,6 @@
     "verbatimModuleSyntax": true
   },
   "include": [
-    "build.optim.ts",
     "build.config.ts",
     "vitest.config.ts",
     "src/**/*.js",
@@ -44,12 +43,10 @@
     "src/**/*.tsx",
     "addons/**/*.ts",
     "reset.d.ts",
-    "build.publish.ts",
-    "build.pub.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "publish.ts",
-    "latest.ts"
+    "deprecated/**/*.ts",
+    "build.setup.ts"
   ],
   "exclude": ["node_modules", "dist-npm"]
 }

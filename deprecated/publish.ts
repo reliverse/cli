@@ -55,11 +55,12 @@ async function checkDistFolders(): Promise<boolean> {
 async function main() {
   try {
     const args = mri(process.argv.slice(2), {
-      boolean: ["jsr", "npm", "dryRun", "pausePublish"],
+      boolean: ["jsr", "npm", "dryRun", "pausePublish", "noDistRm"],
       string: ["bump"],
       alias: {
         dryRun: "dry-run",
         pausePublish: "pause-publish",
+        noDistRm: "no-dist-rm",
       },
     });
 
@@ -68,35 +69,49 @@ async function main() {
       process.exit(1);
     }
 
+    // Prepare the no-dist-rm flag if it's set
+    const noDistRmFlag = args["noDistRm"] ? " --no-dist-rm" : "";
+
     if (args["jsr"]) {
       console.log("\n📦 Publishing the JSR version...");
-      await execaCommand(`bun build.publish.ts ${args["bump"]} --jsr`, {
-        stdio: "inherit",
-      });
+      await execaCommand(
+        `bun build.publish.ts ${args["bump"]} --jsr${noDistRmFlag}`,
+        { stdio: "inherit" },
+      );
     } else if (args["npm"]) {
       console.log("\n📦 Publishing the NPM version...");
-      await execaCommand(`bun build.publish.ts ${args["bump"]}`, {
-        stdio: "inherit",
-      });
+      await execaCommand(
+        `bun build.publish.ts ${args["bump"]}${noDistRmFlag}`,
+        {
+          stdio: "inherit",
+        },
+      );
     } else if (args["dryRun"]) {
       console.log("\n🔍 Performing dry run of the publish process...");
-      await execaCommand("bun pub:jsr --dry-run", { stdio: "inherit" });
-      await execaCommand("bun pub:npm --dry-run", { stdio: "inherit" });
+      await execaCommand(`bun pub:jsr --dry-run${noDistRmFlag}`, {
+        stdio: "inherit",
+      });
+      await execaCommand(`bun pub:npm --dry-run${noDistRmFlag}`, {
+        stdio: "inherit",
+      });
     } else if (args["pausePublish"]) {
       console.log("\n⏸️  Building without publishing...");
       await execaCommand(
-        `bun build.publish.ts ${args["bump"]} --jsr --pause-publish`,
+        `bun build.publish.ts ${args["bump"]} --jsr --pause-publish${noDistRmFlag}`,
         { stdio: "inherit" },
       );
-      await execaCommand("bun pub:npm --pause-publish", {
+      await execaCommand(`bun pub:npm --pause-publish${noDistRmFlag}`, {
         stdio: "inherit",
       });
     } else {
       console.log("\n📦 Publishing both JSR and NPM versions...");
-      await execaCommand(`bun build.publish.ts ${args["bump"]} --jsr`, {
+      await execaCommand(
+        `bun build.publish.ts ${args["bump"]} --jsr${noDistRmFlag}`,
+        { stdio: "inherit" },
+      );
+      await execaCommand(`bun pub:npm ${args["bump"]}${noDistRmFlag}`, {
         stdio: "inherit",
       });
-      await execaCommand(`bun pub:npm ${args["bump"]}`, { stdio: "inherit" });
     }
 
     console.log("\n✅ Publishing process completed successfully!");

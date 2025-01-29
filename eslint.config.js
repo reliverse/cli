@@ -136,7 +136,7 @@ const config = tseslint.config(
     },
   },
   {
-    files: ["**/reliverseConfig.ts"],
+    files: ["build.setup.ts", "**/reliverseConfig.ts"],
     rules: {
       "max-lines": "off",
     },
