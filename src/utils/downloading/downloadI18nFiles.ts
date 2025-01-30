@@ -46,6 +46,7 @@ export async function setupI18nFiles(projectPath: string): Promise<void> {
       const layoutContent = `
 import { dir } from "i18next";
 import { languages } from "~/config/i18n";
+import { useTranslation } from "~/utils/i18n";
 import { type Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {

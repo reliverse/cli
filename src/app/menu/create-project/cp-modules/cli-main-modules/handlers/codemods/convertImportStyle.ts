@@ -21,25 +21,25 @@ export async function convertImportStyle(
     if (targetStyle === "import") {
       // Convert require to import
       updatedContent = content
-        // Convert const/let/var { x } = require('y') to import { x } from 'y'
+        // Convert const/let/var { x } = require('y') to import { x } from "y"
         .replace(
           /(?:const|let|var)\s*{\s*([^}]+)}\s*=\s*require\(['"]([^'"]+)['"]\)/g,
-          "import { $1 } from '$2'",
+          'import { $1 } from "$2"',
         )
-        // Convert const/let/var x = require('y') to import x from 'y'
+        // Convert const/let/var x = require('y') to import x from "y"
         .replace(
           /(?:const|let|var)\s+(\w+)\s*=\s*require\(['"]([^'"]+)['"]\)/g,
-          "import $1 from '$2'",
+          'import $1 from "$2"',
         );
     } else {
       // Convert import to require
       updatedContent = content
-        // Convert import { x } from 'y' to const { x } = require('y')
+        // Convert import { x } from "y" to const { x } = require('y')
         .replace(
           /import\s*{\s*([^}]+)}\s*from\s*['"]([^'"]+)['"]/g,
           "const { $1 } = require('$2')",
         )
-        // Convert import x from 'y' to const x = require('y')
+        // Convert import x from "y" to const x = require('y')
         .replace(
           /import\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g,
           "const $1 = require('$2')",

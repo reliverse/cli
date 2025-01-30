@@ -17,15 +17,15 @@ export async function convertCjsToEsm(projectPath: string) {
 
     // Convert require statements to imports
     updatedContent = updatedContent
-      // Convert const/let/var { x } = require('y') to import { x } from 'y'
+      // Convert const/let/var { x } = require('y') to import { x } from "y"
       .replace(
         /(?:const|let|var)\s*{\s*([^}]+)}\s*=\s*require\(['"]([^'"]+)['"]\)/g,
-        "import { $1 } from '$2'",
+        'import { $1 } from "$2"',
       )
-      // Convert const/let/var x = require('y') to import x from 'y'
+      // Convert const/let/var x = require('y') to import x from "y"
       .replace(
         /(?:const|let|var)\s+(\w+)\s*=\s*require\(['"]([^'"]+)['"]\)/g,
-        "import $1 from '$2'",
+        'import $1 from "$2"',
       );
 
     // Convert module.exports to export

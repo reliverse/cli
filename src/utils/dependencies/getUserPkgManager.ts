@@ -79,7 +79,7 @@ async function detectLockFile(
     pathExists(path.join(projectPath, "yarn.lock")),
     pathExists(path.join(projectPath, "package-lock.json")),
     pathExists(path.join(projectPath, "pnpm-lock.yaml")),
-    pathExists(path.join(projectPath, "bun.lockb")),
+    pathExists(path.join(projectPath, "bun.lock")),
   ]);
 
   let result: PkgManagerInfo | null = null;

@@ -425,7 +425,7 @@ async function copyJsrFiles(outputDir: string): Promise<void> {
     // Copy other JSR files
     const jsrFiles = [
       ".reliverse",
-      "bun.lockb",
+      "bun.lock",
       "drizzle.config.ts",
       "schema.json",
     ];

@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": []
+    "ignore": [
+      "node_modules/",
+      "dist-jsr/",
+      "dist-npm/",
+      "tests-runtime/",
+      "bun.lock"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -16,7 +22,8 @@
       "node_modules/",
       "dist-jsr/",
       "dist-npm/",
-      "tests-runtime/"
+      "tests-runtime/",
+      "bun.lock"
     ],
     "indentStyle": "space",
     "attributePosition": "auto",
@@ -35,7 +42,8 @@
       "node_modules/",
       "dist-jsr/",
       "dist-npm/",
-      "tests-runtime/"
+      "tests-runtime/",
+      "bun.lock"
     ],
     "rules": {
       "recommended": true,

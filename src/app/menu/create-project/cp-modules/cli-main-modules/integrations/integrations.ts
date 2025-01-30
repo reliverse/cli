@@ -14,7 +14,7 @@ enum PackageManager {
 
 async function detectPackageManager(cwd: string): Promise<PackageManager> {
   // Check for lockfiles in order of preference
-  if (await fs.pathExists(path.join(cwd, "bun.lockb"))) {
+  if (await fs.pathExists(path.join(cwd, "bun.lock"))) {
     return PackageManager.Bun;
   }
   if (await fs.pathExists(path.join(cwd, "pnpm-lock.yaml"))) {

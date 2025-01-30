@@ -190,7 +190,7 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
         "**/package-lock.json",
         "**/pnpm-lock.yaml",
         "**/yarn.lock",
-        "**/bun.lockb",
+        "**/bun.lock",
       ],
     });
 

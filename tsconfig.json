@@ -36,7 +36,8 @@
     "verbatimModuleSyntax": true
   },
   "include": [
-    "build.config.ts",
+    "pub.config.ts",
+    "pub.setup.ts", 
     "vitest.config.ts",
     "src/**/*.js",
     "src/**/*.ts",
@@ -45,8 +46,7 @@
     "reset.d.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "deprecated/**/*.ts",
-    "build.setup.ts"
+    "deprecated/**/*.ts"
   ],
   "exclude": ["node_modules", "dist-npm"]
 }
