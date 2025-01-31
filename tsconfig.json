@@ -36,8 +36,10 @@
     "verbatimModuleSyntax": true
   },
   "include": [
+    "latest.ts",
+    "pub.setup.ts",
     "pub.config.ts",
-    "pub.setup.ts", 
+    "build.config.ts",
     "vitest.config.ts",
     "src/**/*.js",
     "src/**/*.ts",

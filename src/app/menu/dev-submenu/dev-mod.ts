@@ -8,10 +8,10 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
-import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
-import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
+import { askProjectName } from "~/utils/askProjectName.js";
 import { downloadRepo } from "~/utils/downloading/downloadRepo.js";
+import { promptGitDeploy } from "~/utils/gdp-mod.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 export async function rmTestsRuntime(cwd: string) {

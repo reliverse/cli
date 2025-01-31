@@ -1,7 +1,7 @@
 import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import { replaceImportSymbol } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/replaceImportSymbol.js";
+import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
 
 export async function askCodemodUserCodebase(cwd: string) {
   relinka("info", "The code modification process will start now.");

@@ -9,18 +9,20 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
+import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/deploy.js";
+import {
+  handleGithubRepo,
+  initGitDir,
+} from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
+import { isSpecialDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/domainHelpers.js";
+import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
+import { promptForDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/promptForDomain.js";
+import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
+import { createVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-create.js";
+import { getVercelProjectDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-domain.js";
+import { isProjectDeployed } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-mod.js";
 import { decide } from "~/utils/decideHelper.js";
 import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
-
-import { deployProject } from "./deploy.js";
-import { handleGithubRepo, initGitDir } from "./git.js";
-import { isSpecialDomain } from "./helpers/domainHelpers.js";
-import { ensureDbInitialized } from "./helpers/handlePkgJsonScripts.js";
-import { promptForDomain } from "./helpers/promptForDomain.js";
-import { createOctokitInstance } from "./octokit-instance.js";
-import { createVercelDeployment } from "./vercel/vercel-create.js";
-import { getVercelProjectDomain } from "./vercel/vercel-domain.js";
-import { isProjectDeployed } from "./vercel/vercel-mod.js";
 
 /**
  * Collects details from a GitHub setup attempt.

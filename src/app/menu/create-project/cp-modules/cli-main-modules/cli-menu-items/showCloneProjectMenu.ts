@@ -9,8 +9,8 @@ import { relinka } from "@reliverse/prompts";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
 import { ensureGithubToken } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
+import { askProjectName } from "~/utils/askProjectName.js";
 import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { cd } from "~/utils/terminalHelpers.js";

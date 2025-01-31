@@ -20,12 +20,12 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
-import { isVSCodeInstalled } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/isAppInstalled.js";
-import { promptPackageJsonScripts } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/promptPackageJsonScripts.js";
-import { askProjectName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askProjectName.js";
-import { askUserName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askUserName.js";
-import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
+import { askProjectName } from "~/utils/askProjectName.js";
+import { askUserName } from "~/utils/askUserName.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
+import { promptGitDeploy } from "~/utils/gdp-mod.js";
+import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
+import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
 import { normalizeName } from "~/utils/validateHelpers.js";
 

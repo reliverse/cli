@@ -7,10 +7,10 @@ import path from "pathe";
 
 import type { KnipConfig } from "~/types.js";
 
+import { removeComments } from "~/utils/codemods/removeComments.js";
+import { getUnusedDependencies } from "~/utils/codemods/removeUnusedDeps.js";
 import { readReliverseConfig } from "~/utils/reliverseConfig.js";
 
-import { removeComments } from "./codemods/removeComments.js";
-import { getUnusedDependencies } from "./codemods/removeUnusedDeps.js";
 import { uninstallDependencies } from "./dependencies.js";
 
 const defaultIgnoredDeps: string[] = [

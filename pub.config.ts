@@ -25,13 +25,9 @@ export type PublishConfig = {
 
   /**
    * If `true`, build only but skip publishing altogether.
+   * It also prevents dist folders from being removed.
    */
   pausePublish: boolean;
-
-  /**
-   * If `true`, do NOT remove dist folders before building.
-   */
-  noDistRm: boolean;
 
   /**
    * Where to publish: "npm", "jsr", or "npm-jsr".
@@ -42,22 +38,37 @@ export type PublishConfig = {
   /**
    * Where to emit the NPM build artifacts.
    */
-  outputDirNpm: string;
+  npmDistDir: string;
 
   /**
    * Where to emit the JSR build artifacts.
    */
-  outputDirJsr: string;
+  jsrDistDir: string;
 
   /**
-   * Where your source code resides (default "src" folder).
+   * Where the source code resides (default "src" folder).
    */
-  defaultSourceDir: string;
+  rootSrcDir: string;
+
+  /**
+   * The bundler to use for building the NPM-optimized package.
+   */
+  builderNpm: "bun" | "copy" | "mkdist" | "rollup" | "untyped";
+
+  /**
+   * The bundler to use for building the JSR-optimized package.
+   */
+  builderJsR: "bun" | "copy" | "mkdist" | "rollup" | "untyped";
 
   /**
    * If `true`, minify the build output.
    */
   shouldMinify: boolean;
+
+  /**
+   * If `true`, split the build output into multiple chunks.
+   */
+  splitting: boolean;
 
   /**
    * Type of sourcemap to generate. Can be `true`, `false`, `"linked"`, `"inline"`, or `"external"`.
@@ -75,49 +86,49 @@ export type PublishConfig = {
   format: "esm" | "cjs" | "iife";
 
   /**
-   * Tracks if an error occurred after a successful version bump.
-   * Used to prevent re-bumping on retry if the error was in a later step.
+   * Public path for the output.
    */
-  gotErrorAfterBump: boolean;
+  publicPath: string;
 
   /**
-   * If `true`, enables debug logging for path mapping.
+   * Tracks if an error occurred after a successful version bump.
+   * Used to prevent re-bumping on retry if the error was earlier.
    */
-  debugPathsMap: boolean;
+  disableBump: boolean;
 };
 
 const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Default configuration for the publishing script.
- * You can switch these to "autoMinor" or "autoMajor" if you want different defaults.
  */
-const config: PublishConfig = {
-  bump: "autoPatch", // Only "autoPatch" | "autoMinor" | "autoMajor" allowed (use --bump=1.2.3 to set a specific version)
-  gotErrorAfterBump: false, // Tracks if an error occurred after a successful version bump. Used to prevent re-bumping on retry.
+const pubConfig: PublishConfig = {
+  // Registry configuration
+  registry: "npm-jsr",
+
+  // Bumping configuration
+  bump: "autoPatch",
+  disableBump: false,
 
   // Behavior toggles
-  verbose: false,
-  noDistRm: true,
-  pausePublish: false,
+  pausePublish: true,
+  verbose: true,
   dryRun: false,
 
-  // Registry configuration
-  registry: "jsr",
-
   // Output directories
-  outputDirNpm: resolve(CURRENT_DIR, "dist-npm"),
-  outputDirJsr: resolve(CURRENT_DIR, "dist-jsr"),
-  defaultSourceDir: resolve(CURRENT_DIR, "src"),
+  npmDistDir: resolve(CURRENT_DIR, "dist-npm"),
+  jsrDistDir: resolve(CURRENT_DIR, "dist-jsr"),
+  rootSrcDir: resolve(CURRENT_DIR, "src"),
 
   // Build configuration
+  builderNpm: "mkdist",
+  builderJsR: "copy",
   shouldMinify: true,
+  splitting: false,
   sourcemap: "linked",
   target: "node",
   format: "esm",
-
-  // Debugging
-  debugPathsMap: false,
+  publicPath: "/",
 };
 
-export default config;
+export default pubConfig;

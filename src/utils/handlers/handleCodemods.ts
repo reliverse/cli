@@ -4,16 +4,16 @@ import { relinka } from "@reliverse/prompts";
 import type { MonorepoType } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
-import { convertCjsToEsm } from "./codemods/convertCjsToEsm.js";
-import { convertTypeDefinitions } from "./codemods/convertDefinitions.js";
-import { convertImportStyle } from "./codemods/convertImportStyle.js";
-import { convertJsToTs } from "./codemods/convertJsToTs.js";
-import { convertQuoteStyle } from "./codemods/convertQuoteStyle.js";
-import { convertRuntime } from "./codemods/convertRuntime.js";
-import { convertTailwindV3ToV4 } from "./codemods/convertTailwind.js";
-import { convertToMonorepo } from "./codemods/convertToMonorepo.js";
-import { replaceImportSymbol } from "./codemods/replaceImportSymbol.js";
-import { replaceWithModern } from "./codemods/replaceWithModern.js";
+import { convertCjsToEsm } from "~/utils/codemods/convertCjsToEsm.js";
+import { convertTypeDefinitions } from "~/utils/codemods/convertDefinitions.js";
+import { convertImportStyle } from "~/utils/codemods/convertImportStyle.js";
+import { convertJsToTs } from "~/utils/codemods/convertJsToTs.js";
+import { convertQuoteStyle } from "~/utils/codemods/convertQuoteStyle.js";
+import { convertRuntime } from "~/utils/codemods/convertRuntime.js";
+import { convertTailwindV3ToV4 } from "~/utils/codemods/convertTailwind.js";
+import { convertToMonorepo } from "~/utils/codemods/convertToMonorepo.js";
+import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
+import { replaceWithModern } from "~/utils/codemods/replaceWithModern.js";
 
 export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   if (!rules.codeStyle || !rules.preferredLibraries) {

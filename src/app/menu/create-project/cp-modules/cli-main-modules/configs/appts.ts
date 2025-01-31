@@ -13,7 +13,7 @@ import { join } from "pathe";
 
 import type { ApptsConfig } from "~/types.js";
 
-import metadata from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/metadata.js";
+import metadata from "~/utils/handlers/metadata.js";
 
 export async function configureAppts({
   apptsConfig,

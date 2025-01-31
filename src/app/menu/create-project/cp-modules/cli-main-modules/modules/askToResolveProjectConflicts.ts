@@ -6,10 +6,7 @@ import path from "pathe";
 import type { ConflictHandlerOptions } from "~/types.js";
 
 import { FILE_CONFLICTS } from "~/app/constants.js";
-import {
-  removeFile,
-  renameFile,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/fileUtils.js";
+import { removeFile, renameFile } from "~/utils/handlers/fileUtils.js";
 
 export const resolveProjectConflicts = async (projectPath: string) => {
   // Ask user if they want to decide what to do with each file conflict

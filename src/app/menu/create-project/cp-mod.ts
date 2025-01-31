@@ -8,9 +8,9 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
-import { generateProjectConfigs } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/generateProjectConfigs.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
+import { generateProjectConfigs } from "~/utils/handlers/generateProjectConfigs.js";
 import { updateReliverseConfig } from "~/utils/reliverseConfig.js";
 import { handleReplacements } from "~/utils/replacements/reps-mod.js";
 

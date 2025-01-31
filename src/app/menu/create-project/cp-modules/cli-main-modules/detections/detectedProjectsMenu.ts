@@ -13,26 +13,6 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental } from "~/app/constants.js";
 import { manageDrizzleSchema } from "~/app/menu/create-project/cp-modules/cli-main-modules/drizzle/manageDrizzleSchema.js";
-import {
-  convertDatabaseProvider,
-  convertPrismaToDrizzle,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/codemods/convertDatabase.js";
-import { handleCleanup } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleCleanup.js";
-import { handleCodemods } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleCodemods.js";
-import { handleConfigEditing } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleConfigEdits.js";
-import { handleIntegrations } from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/handleIntegrations.js";
-import {
-  readShadcnConfig,
-  getInstalledComponents,
-  installComponent,
-  removeComponent,
-  updateComponent,
-  applyTheme,
-  AVAILABLE_COMPONENTS,
-  THEMES,
-  selectChartsPrompt,
-  selectSidebarPrompt,
-} from "~/app/menu/create-project/cp-modules/cli-main-modules/handlers/shadcn.js";
 import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/deploy.js";
 import {
@@ -44,6 +24,26 @@ import {
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
+import {
+  convertDatabaseProvider,
+  convertPrismaToDrizzle,
+} from "~/utils/codemods/convertDatabase.js";
+import { handleCleanup } from "~/utils/handlers/handleCleanup.js";
+import { handleCodemods } from "~/utils/handlers/handleCodemods.js";
+import { handleConfigEditing } from "~/utils/handlers/handleConfigEdits.js";
+import { handleIntegrations } from "~/utils/handlers/handleIntegrations.js";
+import {
+  readShadcnConfig,
+  getInstalledComponents,
+  installComponent,
+  removeComponent,
+  updateComponent,
+  applyTheme,
+  AVAILABLE_COMPONENTS,
+  THEMES,
+  selectChartsPrompt,
+  selectSidebarPrompt,
+} from "~/utils/handlers/shadcn.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
 import { type DetectedProject } from "~/utils/reliverseConfig.js";
 
