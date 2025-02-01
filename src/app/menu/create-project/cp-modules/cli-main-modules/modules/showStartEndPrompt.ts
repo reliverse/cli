@@ -4,7 +4,10 @@ import { isBun, isBunPM, isBunRuntime } from "@reliverse/runtime";
 
 import { cliName, cliVersion } from "~/app/constants.js";
 
-export async function showStartPrompt(isDev: boolean) {
+export async function showStartPrompt(
+  isDev: boolean,
+  showRuntimeInfo: boolean,
+) {
   await startPrompt({
     titleColor: "inverse",
     clearConsole: true,
@@ -12,9 +15,12 @@ export async function showStartPrompt(isDev: boolean) {
     packageVersion: cliVersion,
     isDev,
   });
-  console.log(isBunRuntime());
-  console.log(await isBunPM());
-  console.log(isBun);
+
+  if (showRuntimeInfo) {
+    console.log("isBunRuntime:", isBunRuntime());
+    console.log("isBunPM:", await isBunPM());
+    console.log("isBun:", isBun);
+  }
 }
 
 export async function showEndPrompt() {

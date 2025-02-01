@@ -47,6 +47,10 @@
     "projectDomain": {
       "type": "string"
     },
+    "projectGitService": {
+      "type": "string",
+      "enum": ["github", "gitlab", "bitbucket", "none"]
+    },
     "projectDeployService": {
       "type": "string",
       "enum": ["vercel", "netlify", "railway", "deno", "none"]
@@ -362,7 +366,15 @@
     },
     "projectRuntime": {
       "type": "string",
-      "enum": ["nodejs", "deno", "bun"]
+      "enum": [
+        "bun",
+        "deno",
+        "edge-light",
+        "fastly",
+        "netlify",
+        "node",
+        "workerd"
+      ]
     },
     "skipPromptsUseAutoBehavior": {
       "type": "boolean"
@@ -401,6 +413,7 @@
     "projectLicense",
     "projectRepository",
     "projectDomain",
+    "projectGitService",
     "projectDeployService",
     "projectPackageManager",
     "projectState",

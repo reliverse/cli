@@ -103,30 +103,47 @@ async function cleanupDistFolders() {
   }
 }
 
+// ---------- Delete Temporary Files (with -temp postfix) ----------
+async function deleteTempFiles(dir: string) {
+  const patterns = ["**/*-temp.js", "**/*-temp.ts", "**/*-temp.d.ts"];
+  const files = await globby(patterns, {
+    cwd: dir,
+    absolute: true,
+    gitignore: true,
+  });
+  if (files.length > 0) {
+    await Promise.all(files.map((file) => fs.remove(file)));
+    logger.verbose(`Deleted temporary files:\n${files.join("\n")}`);
+  }
+}
+
 // ---------- Bump Versions in Files ----------
 async function bumpVersions(oldVersion: string, newVersion: string) {
   try {
-    const codebase = await globby("**/*.{reliverse,json,jsonc,json5,ts,tsx}", {
-      ignore: [
-        "**/node_modules/**",
-        "**/.git/**",
-        "**/dist/**",
-        "**/build/**",
-        "**/.next/**",
-        "**/coverage/**",
-        "**/.cache/**",
-        "**/tmp/**",
-        "**/.temp/**",
-        "**/package-lock.json",
-        "**/pnpm-lock.yaml",
-        "**/yarn.lock",
-        "**/bun.lock",
-      ],
-    });
+    const codebase = await globby(
+      ["**/*.{reliverse,json,jsonc,json5,ts,tsx}"],
+      {
+        ignore: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/dist/**",
+          "**/build/**",
+          "**/.next/**",
+          "**/coverage/**",
+          "**/.cache/**",
+          "**/tmp/**",
+          "**/.temp/**",
+          "**/package-lock.json",
+          "**/pnpm-lock.yaml",
+          "**/yarn.lock",
+          "**/bun.lock",
+        ],
+        gitignore: true,
+      },
+    );
 
-    const updatedFiles: string[] = [];
-
-    for (const file of codebase) {
+    // Process all files concurrently
+    const updateFile = async (file: string): Promise<string | null> => {
       try {
         const content = await fs.readFile(file, "utf-8");
         let parsed: any;
@@ -160,28 +177,30 @@ async function bumpVersions(oldVersion: string, newVersion: string) {
 
         if (updatedContent) {
           await fs.writeFile(file, updatedContent);
-          updatedFiles.push(file);
+          return file;
         } else {
-          // If there's any plain references like "1.2.3" in .ts or .tsx
-          // we do a literal replacement.
           if (content.includes(oldVersion)) {
             const replaced = content.replaceAll(oldVersion, newVersion);
             if (replaced !== content) {
               await fs.writeFile(file, replaced);
-              updatedFiles.push(file);
+              return file;
             }
           }
         }
       } catch (err) {
         logger.warn(`Failed to process ${file}: ${String(err)}`);
       }
-    }
+      return null;
+    };
+
+    const results = await Promise.all(codebase.map((file) => updateFile(file)));
+    const updatedFiles = results.filter((f): f is string => f !== null);
 
     if (updatedFiles.length > 0) {
       logger.info(
-        `Version updated from ${oldVersion} to ${newVersion} in ${
-          updatedFiles.length
-        } file(s):\n${updatedFiles.join("\n")}`,
+        `Version updated from ${oldVersion} to ${newVersion} in ${updatedFiles.length} file(s):\n${updatedFiles.join(
+          "\n",
+        )}`,
       );
     } else {
       logger.warn("No files were updated with the new version.");
@@ -214,11 +233,23 @@ function autoIncrementVersion(
 
 // ---------- setBumpDisabled ----------
 async function setBumpDisabled(value: boolean) {
-  // We store the 'disableBump' value directly in pub.config.ts
-  const configPath = path.join(CURRENT_DIR, "pub.config.ts");
+  // Try to update pub.config.ts; if it doesn't exist, fall back to pub.config.js.
+  const tsConfigPath = path.join(CURRENT_DIR, "pub.config.ts");
+  const jsConfigPath = path.join(CURRENT_DIR, "pub.config.js");
+  let configPath = tsConfigPath;
+  if (!(await fs.pathExists(configPath))) {
+    if (await fs.pathExists(jsConfigPath)) {
+      configPath = jsConfigPath;
+    } else {
+      logger.warn(
+        "No pub.config.ts or pub.config.js found to update disableBump",
+      );
+      return;
+    }
+  }
   let content = await fs.readFile(configPath, "utf-8");
 
-  // Update the disableBump value in pub.config.ts
+  // Update the disableBump value in the config file
   content = content.replace(
     /disableBump:\s*(true|false)/,
     `disableBump: ${value}`,
@@ -228,7 +259,7 @@ async function setBumpDisabled(value: boolean) {
 
 // ---------- Bump Handler ----------
 async function bumpHandler() {
-  // If disableBump or pausePublish is set, we skip version bump
+  // If disableBump or pausePublish is set, skip version bump
   if (pubConfig.disableBump || pubConfig.pausePublish) {
     logger.info(
       "Skipping version bump because a previous run already bumped the version or config paused it.",
@@ -236,8 +267,8 @@ async function bumpHandler() {
     return;
   }
 
-  // If --bump=<semver> is provided, we do a direct bump to that semver.
-  // Otherwise, we do auto-increment based on config.bump.
+  // If --bump=<semver> is provided, do a direct bump to that semver.
+  // Otherwise, auto-increment based on config.bump.
   const cliVersion = scriptFlags["bump"];
 
   const pkgPath = path.resolve("package.json");
@@ -258,7 +289,7 @@ async function bumpHandler() {
     }
     if (oldVersion !== cliVersion) {
       await bumpVersions(oldVersion, cliVersion);
-      // Mark that we have bumped (so we don't repeat if a later step fails)
+      // Mark that we have bumped so it isn’t repeated if a later step fails
       await setBumpDisabled(true);
     } else {
       logger.info(`Version is already at ${oldVersion}, no bump needed.`);
@@ -303,7 +334,7 @@ type BuildConfig = {
   publicPath: string;
   disableBump: boolean;
   builderNpm: string;
-  builderJsR: string;
+  builderJsr: string;
 };
 
 // ---------- defineConfig ----------
@@ -322,7 +353,11 @@ function defineConfig(isJSR: boolean): BuildConfig {
       "**/*.test.d.ts",
       "**/__tests__/**",
       "**/*.temp.js",
+      "**/*.temp.ts",
       "**/*.temp.d.ts",
+      "**/*-temp.js",
+      "**/*-temp.ts",
+      "**/*-temp.d.ts",
       // For NPM, remove .ts except .d.ts
       ...(isJSR ? [] : ["**/*.ts", "**/*.tsx", "!**/*.d.ts"]),
     ],
@@ -335,29 +370,36 @@ function defineConfig(isJSR: boolean): BuildConfig {
     publicPath: pubConfig.publicPath,
     disableBump: pubConfig.disableBump,
     builderNpm: pubConfig.builderNpm,
-    builderJsR: pubConfig.builderJsR,
+    builderJsr: pubConfig.builderJsr,
   };
 }
 
 // ---------- Create Common Package Fields ----------
 async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
   const originalPkg = await readPackageJSON();
+  const pkgName = originalPkg.name;
+  const pkgAuthor = originalPkg.author;
+  const pkgVersion = originalPkg.version;
+  const pkgLicense = originalPkg.license || "MIT";
+  const pkgDescription = originalPkg.description;
+  const pkgHomepage = "https://docs.reliverse.org/cli";
+
   return {
-    name: originalPkg.name,
-    author: originalPkg.author,
-    version: originalPkg.version,
-    license: originalPkg.license,
-    description: originalPkg.description,
-    homepage: "https://docs.reliverse.org/cli",
+    name: pkgName,
+    author: pkgAuthor,
+    version: pkgVersion,
+    license: pkgLicense,
+    description: pkgDescription,
+    homepage: pkgHomepage,
     repository: {
       type: "git",
-      url: "git+https://github.com/reliverse/relidler.git",
+      url: `git+https://github.com/${pkgAuthor}/${pkgName}.git`,
     },
     bugs: {
-      url: "https://github.com/reliverse/relidler/issues",
+      url: `https://github.com/${pkgAuthor}/${pkgName}/issues`,
       email: "blefnk@gmail.com",
     },
-    keywords: ["cli", "reliverse"],
+    keywords: ["cli", `${pkgAuthor}`],
     dependencies: originalPkg.dependencies || {},
     type: "module",
   };
@@ -500,9 +542,7 @@ async function convertJsToTsImports(dir: string, isJSR: boolean) {
           /(from\s*['"])([^'"]+?)\.js(?=['"])/g,
           "$1$2.ts",
         );
-        logger.verbose(
-          `Converted .js imports to .ts for JSR build in ${filePath}`,
-        );
+        logger.verbose("Converted .js imports to .ts for JSR build");
         await fs.writeFile(filePath, finalContent, "utf8");
       } else {
         await fs.writeFile(filePath, content, "utf8");
@@ -513,9 +553,10 @@ async function convertJsToTsImports(dir: string, isJSR: boolean) {
 
 // ---------- Rename TSX Files (JSR) ----------
 async function renameTsxFiles(dir: string) {
-  const files = await globby("**/*.tsx", {
+  const files = await globby(["**/*.tsx"], {
     cwd: dir,
     absolute: true,
+    gitignore: true,
   });
   await Promise.all(
     files.map(async (filePath) => {
@@ -540,7 +581,7 @@ async function prepareJsrDistDirectory(cfg: BuildConfig) {
     await fs.remove(dir);
     logger.verbose(`Removed existing '${dir}' directory`);
   }
-  // Сopy source files into the jsr dist folder
+  // Copy source files into the jsr dist folder
   if (cfg.isJSR) {
     const binDir = path.join(dir, "bin");
     await fs.ensureDir(binDir);
@@ -552,19 +593,30 @@ async function prepareJsrDistDirectory(cfg: BuildConfig) {
 // ---------- Create JSR config (jsr.jsonc, etc.) ----------
 async function createJsrConfig(outputDir: string) {
   const originalPkg = await readPackageJSON();
+  const pkgAuthor = originalPkg.author;
+  const pkgName = originalPkg.name;
+  const pkgVersion = originalPkg.version;
+  const pkgLicense = originalPkg.license || "MIT";
+  const pkgDescription = originalPkg.description;
+  const pkgHomepage = "https://docs.reliverse.org/cli";
+
   const jsrConfig = {
-    name: "@reliverse/relidler",
-    version: originalPkg.version,
-    author: "blefnk",
-    license: "MIT",
+    name: pkgName,
+    author: pkgAuthor,
+    version: pkgVersion,
+    license: pkgLicense,
+    description: pkgDescription,
+    homepage: pkgHomepage,
     exports: "./bin/main.ts",
     publish: {
       exclude: ["!.", "node_modules/**", ".env"],
     },
   };
+
   await fs.writeJSON(path.join(outputDir, "jsr.jsonc"), jsrConfig, {
     spaces: 2,
   });
+
   logger.verbose("Generated jsr.jsonc file");
 }
 
@@ -610,45 +662,125 @@ async function getDirectorySize(dirPath: string): Promise<number> {
   }
 }
 
-// ---------- Convert `~/` Paths to Relative in bin ----------
-async function convertTildePaths(distDir: string) {
+/**
+ * Computes a relative import path from a source file to a target sub-path inside a base directory.
+ *
+ * @param sourceFile - The absolute path of the file containing the import.
+ * @param subPath - The sub-path specified after the symbol prefix (e.g., 'utils/helper').
+ * @param baseDir - The base directory for resolving symbol paths.
+ * @param prefix - An optional prefix to prepend to the computed path.
+ * @returns The computed relative import path with forward slashes.
+ */
+function getRelativeImportPath(
+  sourceFile: string,
+  subPath: string,
+  baseDir: string,
+  prefix = "",
+): string {
+  const targetPath = path.join(baseDir, subPath);
+  let relativePath = path
+    .relative(path.dirname(sourceFile), targetPath)
+    .replace(/\\/g, "/");
+
+  if (!relativePath.startsWith(".") && !relativePath.startsWith("/")) {
+    relativePath = `./${relativePath}`;
+  }
+
+  return prefix ? `${prefix}${relativePath}` : relativePath;
+}
+
+/**
+ * Replaces symbol paths (e.g., '~/...') in the provided file content with relative paths based on a base directory.
+ *
+ * @param content - The content of the file.
+ * @param sourceFile - The absolute path of the file being processed.
+ * @param baseDir - The base directory for resolving symbol paths.
+ * @param symbolPrefix - The prefix used for symbol paths (default: "~/").
+ * @returns An object indicating whether changes were made and the updated content.
+ */
+function replaceSymbolPaths(
+  content: string,
+  sourceFile: string,
+  baseDir: string,
+  symbolPrefix = "~/",
+): { changed: boolean; newContent: string } {
+  // Escape special regex characters in symbolPrefix.
+  const escapedSymbol = symbolPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const symbolRegex = new RegExp(`(['"])(${escapedSymbol}[^'"]+)\\1`, "g");
+  let changed = false;
+
+  const newContent = content.replace(
+    symbolRegex,
+    (_match, quote, matchedSymbol) => {
+      const subPath = matchedSymbol.slice(symbolPrefix.length); // Remove the symbol prefix.
+      const relativeImport = getRelativeImportPath(
+        sourceFile,
+        subPath,
+        baseDir,
+      );
+      changed = true;
+      return `${quote}${relativeImport}${quote}`;
+    },
+  );
+
+  return { changed, newContent };
+}
+
+/**
+ * Converts symbol paths in JavaScript/TypeScript files within the 'bin' folder of the distribution directory.
+ *
+ * @param distDir - The distribution directory containing the 'bin' folder.
+ * @param symbolPrefix - The prefix used for symbol paths (default: "~/").
+ */
+export async function convertSymbolPaths(
+  distDir: string,
+  symbolPrefix = "~/",
+): Promise<void> {
   const binDir = path.join(distDir, "bin");
   if (!(await fs.pathExists(binDir))) {
+    logger.warn(`Directory does not exist: ${binDir}`);
     return;
   }
 
-  // Find all JS/TS-like files in bin
-  const files = await globby("**/*.{js,ts,jsx,tsx,mjs,cjs}", {
+  // Find all JS/TS files in the bin directory.
+  const filePatterns = ["**/*.{js,ts,jsx,tsx,mjs,cjs}"];
+  const files = await globby(filePatterns, {
     cwd: binDir,
     absolute: true,
+    gitignore: true,
   });
 
-  for (const file of files) {
-    const content = await fs.readFile(file, "utf8");
-
-    if (content.includes("~/")) {
-      const tildeRegex = /(['"])(~\/[^'"]+)\1/g;
-      let changed = false;
-
-      const newContent = content.replace(
-        tildeRegex,
-        (_match, quote, tildePath) => {
-          const subPath = tildePath.slice(2); // remove '~/'
-          const relativePath = path.relative(
-            path.dirname(file),
-            path.join(binDir, subPath),
-          );
-          changed = true;
-          return `${quote}${relativePath.replace(/\\/g, "/")}${quote}`;
-        },
-      );
-
-      if (changed) {
-        await fs.writeFile(file, newContent, "utf8");
-        logger.verbose(`Converted '~/' paths in: ${file}`);
-      }
-    }
+  if (files.length === 0) {
+    logger.info(`No matching files found in: ${binDir}`);
+    return;
   }
+
+  // Process all files concurrently.
+  await Promise.all(
+    files.map(async (file) => {
+      try {
+        const content = await fs.readFile(file, "utf8");
+
+        // Skip processing if the file doesn't contain the symbol prefix.
+        if (!content.includes(symbolPrefix)) return;
+
+        const { changed, newContent } = replaceSymbolPaths(
+          content,
+          file,
+          binDir,
+          symbolPrefix,
+        );
+
+        if (changed) {
+          await fs.writeFile(file, newContent, "utf8");
+          logger.verbose(`Converted symbol paths in: ${file}`);
+        }
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        logger.error(`Error processing file ${file}: ${errMsg}`);
+      }
+    }),
+  );
 }
 
 // ---------- Build Project (JSR) ----------
@@ -661,7 +793,7 @@ async function buildJsrDist() {
   // Prepare the output directory
   await prepareJsrDistDirectory(cfg);
 
-  // JSR build is just direct copy
+  // JSR build is just a direct copy of the source files
   await Promise.all([
     createDistPackageJSON(dir, true),
     convertJsToTsImports(dir, true),
@@ -675,17 +807,56 @@ async function buildJsrDist() {
   ]);
 
   // Convert ~/ paths to relative paths in the bin folder
-  await convertTildePaths(dir);
+  await convertSymbolPaths(dir);
+
+  // Delete temporary files ending with -temp.{js,ts,d.ts}
+  await deleteTempFiles(dir);
 
   // Get size summary
   const size = await getDirectorySize(dir);
   logger.success(`Successfully created JSR distribution (${size} bytes)`);
-  console.log("\n");
 }
 
-async function countFiles(dir: string, ext: string): Promise<number> {
-  const files = await fs.readdir(dir);
-  return files.filter((f) => f.endsWith(ext)).length;
+/**
+ * Recursively counts all files within a subdirectory.
+ *
+ * @param {string} rootDir - The root directory.
+ * @param {string} subfolder - The subdirectory (relative to rootDir) to count files in.
+ * @returns {Promise<number>} The number of files found.
+ */
+export async function countOutputBinFiles(
+  rootDir: string,
+  subfolder: string,
+): Promise<number> {
+  const targetDir = path.join(rootDir, subfolder);
+  let fileCount = 0;
+
+  // If the target directory doesn't exist, return 0.
+  if (!(await fs.pathExists(targetDir))) {
+    logger.error(`Directory does not exist: ${targetDir}`);
+    return fileCount;
+  }
+
+  /**
+   * Recursively traverses a directory and increments fileCount for each file found.
+   *
+   * @param {string} dir - The directory to traverse.
+   */
+  async function traverse(dir: string) {
+    const entries = await fs.readdir(dir);
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry);
+      const stats = await fs.stat(fullPath);
+      if (stats.isDirectory()) {
+        await traverse(fullPath);
+      } else if (stats.isFile()) {
+        fileCount++;
+      }
+    }
+  }
+
+  await traverse(targetDir);
+  return fileCount;
 }
 
 // ---------- Build Project (NPM) ----------
@@ -710,10 +881,8 @@ async function buildNpmDist() {
 
   if (cfg.builderNpm === "mkdist") {
     await execaCommand("bunx unbuild", { stdio: "inherit" });
-
-    logger.verbose(
-      `mkdist build completed with ${countFiles(outputDir, "bin")} output file(s).`,
-    );
+    const fileCount = await countOutputBinFiles(outputDir, "bin");
+    logger.verbose(`mkdist build completed with ${fileCount} output file(s).`);
   } else {
     // Use Bun Builder
     try {
@@ -766,8 +935,11 @@ async function buildNpmDist() {
   ]);
 
   // Convert ~/ paths to relative paths in the bin folder
-  logger.info("Converting tilde paths in built files...");
-  await convertTildePaths(outputDir);
+  logger.info("Converting symbol paths in built files...");
+  await convertSymbolPaths(outputDir);
+
+  // Delete temporary files ending with -temp.{js,ts,d.ts}
+  await deleteTempFiles(outputDir);
 
   // Get size summary
   const size = await getDirectorySize(outputDir);
@@ -837,7 +1009,7 @@ async function publishToJsr(dryRun: boolean) {
 // ---------- Main ----------
 export async function main(): Promise<void> {
   try {
-    // 1) If we are allowed to remove dist folders, check for leftover dist
+    // 1) If we are allowed to remove dist folders, check for leftover dist folders
     if (!pubConfig.pausePublish) {
       if (!(await checkDistFolders())) {
         process.exit(1);

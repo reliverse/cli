@@ -157,6 +157,7 @@ export async function generateConfigFiles(
           projectRepository: `https://github.com/${effectiveAuthor}/${projectName}`,
           projectState: "creating",
           projectDomain: cleanDomain,
+          projectGitService: "github",
           projectDeployService: deployService,
           features: {
             ...DEFAULT_CONFIG.features,

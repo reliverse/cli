@@ -78,7 +78,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: runtime conversion codemods
-  if (rules.projectRuntime === "nodejs") {
+  if (rules.projectRuntime === "node") {
     availableCodemods.push(
       {
         label: "Convert to Bun",

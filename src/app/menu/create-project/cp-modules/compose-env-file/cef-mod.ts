@@ -22,8 +22,10 @@ export async function composeEnvFile(
   fallbackEnvExampleURL: string,
   shouldMaskSecretInput: boolean,
   skipPrompts: boolean,
-  config: ReliverseConfig,
+  config: ReliverseConfig | null,
 ): Promise<void> {
+  if (config === null) return;
+
   try {
     const results = await Promise.all([
       ensureExampleExists(projectDir, fallbackEnvExampleURL),

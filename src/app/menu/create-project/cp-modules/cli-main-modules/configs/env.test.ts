@@ -9,8 +9,9 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
-import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 
 // Mock the prompts
 const mockSelectPrompt = mock(selectPrompt) as Mock<
@@ -49,13 +50,13 @@ describe("composeEnvFile", () => {
   const ENV_PATH = path.join(TEST_DIR, ".env");
   const ENV_EXAMPLE_PATH = path.join(TEST_DIR, ".env.example");
   let envContent: string[] = [];
-  let config: Awaited<ReturnType<typeof getReliverseConfig>>;
+  let config: null | ReliverseConfig = null;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Reset mocks
     mock.restore();
     envContent = [];
-    config = await getReliverseConfig();
+    config = null;
 
     // Setup default mock implementations
     const fsModule = fs as unknown as MockFsModule;

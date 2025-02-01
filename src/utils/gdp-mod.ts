@@ -22,7 +22,7 @@ import { createVercelDeployment } from "~/app/menu/create-project/cp-modules/git
 import { getVercelProjectDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-domain.js";
 import { isProjectDeployed } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-mod.js";
 import { decide } from "~/utils/decideHelper.js";
-import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
 /**
  * Collects details from a GitHub setup attempt.
@@ -107,7 +107,7 @@ export async function configureGithubRepo(
   }
 
   // Read memory again to get the new GitHub token
-  const updatedMemory = await handleReliverseMemory();
+  const updatedMemory = await getReliverseMemory();
 
   if (!updatedMemory?.githubKey) {
     relinka("error", "GitHub token still not found after setup");

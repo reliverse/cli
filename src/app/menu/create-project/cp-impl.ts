@@ -177,6 +177,27 @@ export async function setupI18nSupport(
 }
 
 /**
+ * Decides whether to install deps based on config or user input.
+ */
+export async function shouldInstallDependencies(
+  behavior: Behavior,
+): Promise<boolean> {
+  if (behavior === "autoYes") return true;
+  if (behavior === "autoNo") return false;
+
+  return await confirmPrompt({
+    title: "Would you like to install dependencies now?",
+    content:
+      "- Recommended, but may take time.\n" +
+      "- Enables execution of scripts provided by the template.\n" +
+      "- Crucial if you've provided a fresh database API key.\n" +
+      "- Avoids potential Vercel build failures by ensuring `db:push` is run at least once.\n" +
+      "- Allows running additional necessary scripts after installation.",
+    defaultValue: true,
+  });
+}
+
+/**
  * Installs dependencies and checks optional DB push script.
  */
 export async function handleDependencies(
@@ -184,7 +205,7 @@ export async function handleDependencies(
   config: ReliverseConfig,
 ) {
   const depsBehavior: Behavior = config?.depsBehavior ?? "prompt";
-  const shouldInstallDeps = await determineShouldInstallDeps(depsBehavior);
+  const shouldInstallDeps = await shouldInstallDependencies(depsBehavior);
 
   let shouldRunDbPush = false;
   if (shouldInstallDeps) {
@@ -200,29 +221,6 @@ export async function handleDependencies(
   }
 
   return { shouldInstallDeps, shouldRunDbPush };
-}
-
-/**
- * Decides whether to install deps based on config or user input.
- */
-export async function determineShouldInstallDeps(
-  depsBehavior: Behavior,
-): Promise<boolean> {
-  switch (depsBehavior) {
-    case "autoYes":
-      return true;
-    case "autoNo":
-      return false;
-    default: {
-      return await confirmPrompt({
-        title:
-          "Install dependencies now? Highly recommended, but may take time.",
-        content:
-          "This allows me to run scripts provided by the template. This is especially important if you provided me with a fresh database API key—you may experience Vercel build failures if you don't run db:push at least once. I can run this script after installing dependencies.",
-        defaultValue: true,
-      });
-    }
-  }
 }
 
 /**

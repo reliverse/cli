@@ -158,37 +158,59 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
     hasVercelToken = true;
   }
 
+  const toolsOptions = {
+    rmTestsRuntime: "rm-tests-runtime",
+    downloadTemplate: "download-template",
+    openVercelDevtools: "open-vercel-devtools",
+    reReadReliverse: "re-read-reliverse",
+    aiChatTest: "ai-chat-test",
+    exit: "exit",
+  } as const;
+
   const option = await selectPrompt({
     title: "Dev tools menu",
     options: [
-      ...(TestsRuntimeExists
-        ? [{ label: "remove tests-runtime dir", value: "rm-tests-runtime" }]
+      ...(isDev && TestsRuntimeExists
+        ? [
+            {
+              label: "remove tests-runtime dir",
+              value: toolsOptions.rmTestsRuntime,
+            },
+          ]
         : []),
-      {
-        label:
-          "downloadRepo + cd(tests-runtime) + composeEnvFile + promptGitDeploy",
-        value: "download-template",
-      },
+      ...(isDev
+        ? [
+            {
+              label:
+                "downloadRepo + cd(tests-runtime) + composeEnvFile + promptGitDeploy",
+              value: toolsOptions.downloadTemplate,
+            },
+          ]
+        : []),
       ...(hasVercelToken
         ? [
             {
               label: `Open Vercel devtools ${experimental}`,
-              value: "open-vercel-devtools",
+              value: toolsOptions.openVercelDevtools,
             },
           ]
         : []),
-      {
-        label: `Re-read config and memory ${experimental}`,
-        value: "re-read-reliverse",
-      },
-      { label: "Test chat with Reliverse AI", value: "ai-chat-test" },
-      { label: "👈 Exit", value: "exit" },
+      ...(isDev
+        ? [
+            {
+              label: `Re-read config and memory ${experimental}`,
+              value: toolsOptions.reReadReliverse,
+            },
+          ]
+        : []),
+      { label: "Test chat with Reliverse AI", value: toolsOptions.aiChatTest },
+      { label: "👈 Exit", value: toolsOptions.exit },
     ],
   });
 
-  if (option === "rm-tests-runtime") {
+  if (option === toolsOptions.rmTestsRuntime) {
     await rmTestsRuntime(cwd);
-  } else if (option === "download-template") {
+  } else if (option === toolsOptions.downloadTemplate) {
     await downloadRepoOption(
       "blefnk/relivator",
       config,
@@ -197,12 +219,12 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
       cwd,
       skipPrompts,
     );
-  } else if (option === "re-read-reliverse") {
+  } else if (option === toolsOptions.reReadReliverse) {
     await reReadReliverseConfig();
     await reReadReliverseMemory();
-  } else if (option === "ai-chat-test") {
+  } else if (option === toolsOptions.aiChatTest) {
     await aiChatHandler(memory);
-  } else if (option === "open-vercel-devtools") {
+  } else if (option === toolsOptions.openVercelDevtools) {
     await openVercelDevtools(memory, vercelToken);
   }
 }

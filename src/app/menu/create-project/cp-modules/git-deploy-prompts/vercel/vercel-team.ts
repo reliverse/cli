@@ -5,7 +5,7 @@ import { relinka } from "@reliverse/prompts";
 import { teamsGetTeam } from "@vercel/sdk/funcs/teamsGetTeam";
 import { teamsGetTeams } from "@vercel/sdk/funcs/teamsGetTeams";
 
-import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
 export type VercelTeam = {
   id: string;
@@ -49,7 +49,7 @@ export async function getPrimaryVercelTeam(
       memory.vercelTeamSlug = team.slug;
 
       // Re-read memory to ensure changes are persisted
-      await handleReliverseMemory();
+      await getReliverseMemory();
 
       return team;
     }

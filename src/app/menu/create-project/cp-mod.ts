@@ -75,6 +75,8 @@ export async function createWebProject({
     projectPath: "",
     projectName,
     selectedRepo,
+    config,
+    preserveGit: false,
   });
 
   // -------------------------------------------------

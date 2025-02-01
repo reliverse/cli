@@ -100,6 +100,12 @@ export const reliverseConfigSchema = Type.Object({
   projectLicense: Type.String(),
   projectRepository: Type.String(),
   projectDomain: Type.String(),
+  projectGitService: Type.Union([
+    Type.Literal("github"),
+    Type.Literal("gitlab"),
+    Type.Literal("bitbucket"),
+    Type.Literal("none"),
+  ]),
   projectDeployService: Type.Union([
     Type.Literal("vercel"),
     Type.Literal("netlify"),
@@ -187,9 +193,13 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("separated"),
   ]),
   projectRuntime: Type.Union([
-    Type.Literal("nodejs"),
-    Type.Literal("deno"),
     Type.Literal("bun"),
+    Type.Literal("deno"),
+    Type.Literal("edge-light"),
+    Type.Literal("fastly"),
+    Type.Literal("netlify"),
+    Type.Literal("node"),
+    Type.Literal("workerd"),
   ]),
 
   skipPromptsUseAutoBehavior: Type.Boolean(),

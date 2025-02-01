@@ -3,7 +3,7 @@ import fs from "fs-extra";
 
 import { downloadJsrDist } from "./bw-impl.js";
 
-export async function showBunWindowsMenu({ outputDir }: { outputDir: string }) {
+export async function showNativeCliMenu({ outputDir }: { outputDir: string }) {
   // @see https://jsr.io/@reliverse/cli
 
   // Check if output directory exists and is not empty
@@ -31,7 +31,7 @@ export async function showBunWindowsMenu({ outputDir }: { outputDir: string }) {
 
   const shouldUseBunRuntime = await confirmPrompt({
     title:
-      "I see you're using Windows and have Bun installed, but the process was run with the Node.js runtime. Do you want to use the Bun runtime?",
+      "I see you have Bun installed, but the process was run using the Node.js runtime. Do you want to use the Bun runtime?",
     content:
       "Press <Enter> to allow me to download the CLI from JSR and install it globally. (The download speed depends on your internet connection.)",
     defaultValue: true,
@@ -40,6 +40,13 @@ export async function showBunWindowsMenu({ outputDir }: { outputDir: string }) {
   if (!shouldUseBunRuntime) {
     return;
   }
+
+  // const shouldInstallDeps = await confirmPrompt({
+  //   title: "Do you want to install dependencies for the CLI?",
+  //   defaultValue: true,
+  // });
+
+  // TODO: on reinstall, if 'cli' folder exists, we should check if node_modules exists, move it to temp dir and just move to updated folder, finally with using `bun install`
 
   await downloadJsrDist(
     "reliverse",
@@ -50,5 +57,7 @@ export async function showBunWindowsMenu({ outputDir }: { outputDir: string }) {
     5,
     true,
     "Downloading Bun-native Reliverse CLI from JSR...",
+    true,
+    true,
   );
 }

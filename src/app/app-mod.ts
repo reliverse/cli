@@ -1,8 +1,8 @@
 import { defineCommand } from "@reliverse/prompts";
 
 import { authCheck } from "~/args/login/login-impl.js";
-import { handleReliverseConfig } from "~/utils/reliverseConfig.js";
-import { handleReliverseMemory } from "~/utils/reliverseMemory.js";
+import { getReliverseConfig } from "~/utils/reliverseConfig.js";
+import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
 
 import { app } from "./app-impl.js";
@@ -23,11 +23,11 @@ export default defineCommand({
   run: async ({ args }) => {
     const isDev = args.dev;
 
-    await showStartPrompt(isDev);
+    await showStartPrompt(isDev, false);
     const cwd = getCurrentWorkingDirectory();
 
-    const memory = await handleReliverseMemory();
-    const { config, reli } = await handleReliverseConfig(cwd, isDev);
+    const memory = await getReliverseMemory();
+    const { config, reli } = await getReliverseConfig(cwd, isDev);
 
     await authCheck(isDev, memory, useLocalhost);
     await app({ cwd, isDev, config, memory, reli });

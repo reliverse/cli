@@ -2,6 +2,7 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { globby } from "globby";
 import fetch from "node-fetch-native";
+import { installDependencies } from "nypm";
 import pLimit from "p-limit";
 import { dirname, join } from "pathe";
 import semver from "semver";
@@ -214,6 +215,8 @@ export async function downloadJsrDist(
   pkgIsCLI = true,
   msgDownloadStarted?: string,
   revertTsxFiles = false,
+  cliInstallDeps = true,
+  // cliUseExistentNodeModules = true,
 ): Promise<void> {
   try {
     // 1) Get package metadata
@@ -273,11 +276,20 @@ export async function downloadJsrDist(
 
     // 8) If pkgIsCLI and revertTsxFiles is true, rename -tsx.txt files back to .tsx
     if (pkgIsCLI && revertTsxFiles) {
-      relinka("info", "Reverting .tsx files...");
+      relinka("info-verbose", "Reverting .tsx files...");
       await renameTxtToTsx(outputDir);
     }
 
-    // 9) Notify user that the download is complete
+    // 9) If installDeps is true, install dependencies
+    if (pkgIsCLI && cliInstallDeps) {
+      relinka("info", "Installing dependencies...");
+      await installDependencies({
+        cwd: outputDir,
+        silent: false,
+      });
+    }
+
+    // 10) Notify user that the download is complete
     relinka(
       "success",
       `All files for @${scope}/${packageName} downloaded successfully.`,

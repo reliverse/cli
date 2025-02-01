@@ -43,8 +43,8 @@ export async function handleDownload({
   projectName,
   selectedRepo,
   auth,
-  preserveGit = true,
   config,
+  preserveGit = true,
   install = false,
   isCustom = false,
 }: {
@@ -157,7 +157,11 @@ export async function handleDownload({
   // -------------------------------------------------
   if (!projectPath) {
     try {
-      relinka("info", `Now I'm downloading the '${selectedRepo}' repo...`);
+      relinka(
+        "info",
+        `Now I'm downloading the '${selectedRepo}' repo...`,
+        "The download speed depends on your internet connection and GitHub limits.",
+      );
       result = await downloadRepo({
         repoURL: selectedRepo,
         projectName,
@@ -167,8 +171,20 @@ export async function handleDownload({
         preserveGit,
         ...(config ? { config } : {}),
         install,
+        returnTime: true,
+        returnSize: true,
       });
       projectPath = result.dir;
+      if (result.time) {
+        const includesGit = preserveGit
+          ? " (size includes the .git folder)."
+          : ".";
+        relinka(
+          "success",
+          `Successfully downloaded repo to ${projectPath}`,
+          `It took ${result.time} seconds to download ${result.size} MB${includesGit}`,
+        );
+      }
     } catch (error) {
       relinka("error", "Failed to download repo:", String(error));
       throw error;

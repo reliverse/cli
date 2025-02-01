@@ -19,7 +19,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 import { MEMORY_FILE } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 import {
-  handleReliverseMemory,
+  getReliverseMemory,
   updateReliverseMemory,
 } from "~/utils/reliverseMemory.js";
 
@@ -160,7 +160,7 @@ export async function auth({
       process.stdout.write("\x1b[2K\r"); // Clear the current line, so misplacement of "Waiting for user confirmation..." is overwritten
       relinka(
         "info",
-        "The following URL will be opened in your default browser:",
+        "The following URL will be opened in your default browser (use Ctrl+Click to open):",
         confirmationUrl.toString(),
       );
 
@@ -274,7 +274,7 @@ export async function authCheck(
     await auth({ isDev, useLocalhost });
 
     // Re-check authentication after auth flow
-    const updatedMemory = await handleReliverseMemory();
+    const updatedMemory = await getReliverseMemory();
 
     const authSuccess =
       updatedMemory.code &&

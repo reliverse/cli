@@ -93,7 +93,7 @@ export async function reReadReliverseMemory(): Promise<ReliverseMemory | null> {
   }
 }
 
-export async function handleReliverseMemory(): Promise<ReliverseMemory> {
+export async function getReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists
   const homeDir = os.homedir();
   const memoryFile = path.join(homeDir, MEMORY_FILE);

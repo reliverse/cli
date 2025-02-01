@@ -1,6 +1,7 @@
 import { re } from "@reliverse/relico";
-import { isWindows, isBunPM } from "@reliverse/runtime";
+import { isBunPM, isBunRuntime } from "@reliverse/runtime";
 import fs from "fs-extra";
+import { homedir } from "node:os";
 import path from "pathe";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
@@ -12,7 +13,7 @@ export type MainMenuChoice =
   | "clone"
   | "detected-projects"
   | "isDevTools"
-  | "bun-windows"
+  | "native-cli"
   | "exit";
 
 type MainMenuOption = {
@@ -26,8 +27,6 @@ export async function getMainMenuOptions(
   isDev: boolean,
   reli: ReliverseConfig[],
 ): Promise<MainMenuOption[]> {
-  // Note: The blank line issue is not in this file, but rather in the selectPrompt implementation
-  // where deleteLastLine() is called before completePrompt()
   const multiConfigMsg =
     reli.length > 0
       ? re.dim(`multi-config mode with ${reli.length} projects`)
@@ -47,20 +46,27 @@ export async function getMainMenuOptions(
     },
   ];
 
-  // 2) Conditionally add the dev tools option
-  if (isDev) {
-    options.push({
-      label: "🧰 Open developer tools",
-      value: "isDevTools",
-    });
-  }
+  // 2) Inject the dev tools option
+  options.push({
+    label: "🧰 Open developer tools",
+    value: "isDevTools",
+  });
 
-  // 3) Add bun-windows option if on Windows with Bun PM
-  if (isWindows && isBunPM) {
+  // 3) Inject native-cli option if using Bun PM
+  // TODO: possibly deprecated, bun has fixed runtime issue on windows
+  if (isBunPM && !isBunRuntime) {
+    const isNativeInstalled = await fs.pathExists(
+      path.join(homedir(), ".reliverse", "cli"),
+    );
+
+    let msg = "Use";
+    if (isNativeInstalled && isBunRuntime) {
+      msg = "Configure";
+    }
+
     options.push({
-      label: "🚀 Use Bun-native @reliverse/cli",
-      value: "bun-windows",
-      // hint: re.dim("Setup Bun runtime"),
+      label: `🚀 ${msg} Bun-native @reliverse/cli`,
+      value: "native-cli",
     });
   }
 

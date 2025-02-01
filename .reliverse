@@ -8,23 +8,24 @@
   "projectName": "@reliverse/cli",
   "projectAuthor": "blefnk",
   "projectDescription": "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  "projectVersion": "1.4.47",
+  "projectVersion": "1.4.60",
   "projectLicense": "MIT",
-  "projectRepository": "unknown/@reliverse/cli",
   "projectState": "creating",
+  "projectRepository": "https://github.com/reliverse/cli",
   "projectDomain": "https://docs.reliverse.org",
-  "projectDeployService": "vercel",
   "projectCategory": "unknown",
   "projectSubcategory": "unknown",
   "projectTemplate": "unknown",
   "projectArchitecture": "unknown",
   "repoPrivacy": "unknown",
+  "projectGitService": "github",
+  "projectDeployService": "vercel",
   "repoBranch": "main",
 
   // Primary tech stack/framework
   "projectFramework": "npm-jsr",
   "projectPackageManager": "bun",
-  "projectRuntime": "nodejs",
+  "projectRuntime": "bun",
   "preferredLibraries": {
     "stateManagement": "zustand",
     "formManagement": "react-hook-form",
@@ -41,7 +42,7 @@
     "sharedPackages": []
   },
 
-  // Dependencies to exclude from checks
+  // List dependencies to exclude from checks
   "ignoreDependencies": [],
 
   // Custom rules for Reliverse AI
@@ -96,32 +97,29 @@
     }
   },
 
-  // `Clone an existing repo` menu
+  // Settings for cloning an existing repo
   "multipleRepoCloneMode": false,
   "customUserFocusedRepos": [],
   "customDevsFocusedRepos": [],
   "hideRepoSuggestions": false,
   "customReposOnNewProject": false,
 
-  // Set to false to disable opening
-  // the browser while env composing
+  // Set to false to disable opening the browser during env composing
   "envComposerOpenBrowser": true,
 
-  // Do you want to enable auto-answering for prompts?
-  // Set this field to true to skip manual confirmations.
-  // Configure also unknown values and prompts behavior.
+  // Enable auto-answering for prompts to skip manual confirmations.
+  // Make sure you have unknown values configured above.
   "skipPromptsUseAutoBehavior": false,
 
-  // Specific prompts behavior
-  // prompt | autoYes | autoNo
+  // Prompt behavior for deployment
+  // Options: prompt | autoYes | autoNo
   "deployBehavior": "prompt",
   "depsBehavior": "prompt",
   "gitBehavior": "prompt",
   "i18nBehavior": "prompt",
   "scriptsBehavior": "prompt",
 
-  // What CLI should do with existing GitHub repo
-  // Applicable for the new project creation only
-  // prompt | autoYes | autoYesSkipCommit | autoNo
+  // Behavior for existing GitHub repos during project creation
+  // Options: prompt | autoYes | autoYesSkipCommit | autoNo
   "existingRepoBehavior": "prompt"
 }
