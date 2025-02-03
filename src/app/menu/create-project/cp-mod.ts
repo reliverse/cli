@@ -77,6 +77,7 @@ export async function createWebProject({
     selectedRepo,
     config,
     preserveGit: false,
+    isTemplateDownload: true,
   });
 
   // -------------------------------------------------

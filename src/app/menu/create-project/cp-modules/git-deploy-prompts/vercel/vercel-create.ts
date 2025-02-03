@@ -1,13 +1,18 @@
+import type { VercelCore } from "@vercel/sdk/core";
+
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
+import { projectsAddProjectDomain } from "@vercel/sdk/funcs/projectsAddProjectDomain";
+import { projectsCreateProject } from "@vercel/sdk/funcs/projectsCreateProject";
+import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { isSpecialDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/domainHelpers.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 import { withRateLimit } from "./vercel-api.js";
+import { createVercelInstance } from "./vercel-client.js";
 import {
   configureBranchProtection,
   configureResources,
@@ -15,8 +20,6 @@ import {
   getConfigurationOptions,
 } from "./vercel-config.js";
 import { createDeployment } from "./vercel-deploy.js";
-import { createVercelInstance } from "./vercel-instance.js";
-import { createVercelCoreInstance } from "./vercel-instance.js";
 import { isProjectDeployed } from "./vercel-mod.js";
 import {
   detectFramework,
@@ -24,6 +27,36 @@ import {
   saveVercelToken,
   verifyDomain,
 } from "./vercel-utils.js";
+
+export async function ensureVercelToken(
+  shouldMaskSecretInput: boolean,
+  memory: ReliverseMemory,
+): Promise<[string, VercelCore] | undefined> {
+  if (!memory?.vercelKey) {
+    const token = await inputPrompt({
+      title:
+        "Please enter your Vercel personal access token.\n(It will be securely stored on your machine):",
+      content: "Create one at https://vercel.com/account/settings/tokens",
+      mode: shouldMaskSecretInput ? "password" : "plain",
+      validate: (value: string) => {
+        if (!value?.trim()) return "Token is required";
+        return true;
+      },
+    });
+
+    if (!token) {
+      relinka("error", "No token provided");
+      return undefined;
+    }
+
+    const vercel = createVercelInstance(token);
+    await saveVercelToken(token, memory, vercel);
+    memory.vercelKey = token;
+    return [token, vercel];
+  }
+  const vercel = createVercelInstance(memory.vercelKey);
+  return [memory.vercelKey, vercel];
+}
 
 /**
  * Creates or updates a Vercel deployment
@@ -36,38 +69,26 @@ export async function createVercelDeployment(
   memory: ReliverseMemory,
   deployMode: "new" | "update",
   shouldMaskSecretInput: boolean,
-  existingGithubUsername?: string,
+  githubUsername: string,
 ): Promise<boolean> {
   try {
-    // 1. First ensure we have a valid token
-    if (!memory?.vercelKey) {
-      const token = await inputPrompt({
-        title:
-          "Please enter your Vercel personal access token.\n(It will be securely stored on your machine):",
-        content: "Create one at https://vercel.com/account/settings/tokens",
-        mode: shouldMaskSecretInput ? "password" : "plain",
-        validate: (value: string) => {
-          if (!value?.trim()) return "Token is required";
-          return true;
-        },
-      });
+    // First ensure we have a valid token
+    const [token, vercel] = await ensureVercelToken(
+      shouldMaskSecretInput,
+      memory,
+    );
+    if (!token)
+      throw new Error(
+        "Something went wrong. Vercel token not found. Please try again or notify the Reliverse CLI developers if the problem persists.",
+      );
 
-      if (!token) {
-        relinka("error", "No token provided");
-        return false;
-      }
-
-      const vercel = createVercelCoreInstance(token);
-      await saveVercelToken(token, memory, vercel);
-      memory.vercelKey = token;
-    }
-
-    // 2. Initialize Vercel client
-    const vercel = createVercelInstance(memory.vercelKey);
-
-    // 3. Now check for existing deployment
+    // Check for existing deployment
     relinka("info", "Checking for existing deployment...");
-    const { isDeployed } = await isProjectDeployed(projectName, memory);
+    const { isDeployed } = await isProjectDeployed(
+      projectName,
+      githubUsername,
+      memory,
+    );
     if (isDeployed) {
       relinka("info", `Project ${projectName} is already deployed to Vercel`);
     } else {
@@ -90,8 +111,8 @@ export async function createVercelDeployment(
     if (!isDeployed) {
       relinka("info", "Creating new project...");
       const framework = await detectFramework(projectPath);
-      const projectResponse = await withRateLimit(async () => {
-        return await vercel.projects.createProject({
+      const createProjectRes = await withRateLimit(async () => {
+        return await projectsCreateProject(vercel, {
           requestBody: {
             name: projectName,
             framework,
@@ -102,7 +123,10 @@ export async function createVercelDeployment(
           },
         });
       });
-
+      if (!createProjectRes.ok) {
+        throw createProjectRes.error;
+      }
+      const projectResponse = createProjectRes.value;
       projectId = projectResponse.id;
       relinka("success", `Project created with ID: ${projectId}`);
 
@@ -138,13 +162,15 @@ export async function createVercelDeployment(
 
         relinka("info", "Setting up custom domain...");
         try {
-          await vercel.projects.addProjectDomain({
+          const addDomainRes = await projectsAddProjectDomain(vercel, {
             idOrName: projectName,
             requestBody: {
               name: domain,
             },
           });
-
+          if (!addDomainRes.ok) {
+            throw addDomainRes.error;
+          }
           const isVerified = await verifyDomain(vercel, projectId, domain);
           if (!isVerified) {
             relinka(
@@ -168,23 +194,20 @@ export async function createVercelDeployment(
       const envVars = await getEnvVars(projectPath);
       if (envVars.length > 0) {
         await withRateLimit(async () => {
-          await vercel.projects.createProjectEnv({
+          const envRes = await projectsCreateProjectEnv(vercel, {
             idOrName: projectName,
             upsert: "true",
             requestBody: envVars,
           });
+          if (!envRes.ok) {
+            throw envRes.error;
+          }
         });
         relinka("success", "Environment variables added successfully");
       }
     }
 
     // 5. Deployment Phase
-    const githubUsername =
-      existingGithubUsername ?? (await askGithubName(memory));
-    if (!githubUsername) {
-      throw new Error("Could not determine GitHub username");
-    }
-
     const deployment = await createDeployment(
       memory,
       vercel,

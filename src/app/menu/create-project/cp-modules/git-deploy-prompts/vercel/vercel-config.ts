@@ -1,23 +1,58 @@
-import type { Vercel } from "@vercel/sdk";
+import type { VercelCore } from "@vercel/sdk/core";
+import type { UpdateProjectRequestBody } from "@vercel/sdk/models/updateprojectop";
 
 import { multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
+import { projectsUpdateProject } from "@vercel/sdk/funcs/projectsUpdateProject";
 
 import { experimental } from "~/app/constants.js";
+
+import { withRateLimit } from "./vercel-api.js";
+
+/**
+ * Updates a Vercel project with the given configuration
+ * @see https://github.com/vercel/sdk/blob/main/docs/sdks/projects/README.md#updateproject
+ */
+export async function updateProject(
+  vercel: VercelCore,
+  projectId: string,
+  config: UpdateProjectRequestBody,
+  teamId?: string,
+  teamSlug?: string,
+): Promise<void> {
+  try {
+    const res = await withRateLimit(async () => {
+      return await projectsUpdateProject(vercel, {
+        idOrName: projectId,
+        teamId,
+        slug: teamSlug,
+        requestBody: config,
+      });
+    });
+
+    if (!res.ok) {
+      throw res.error;
+    }
+  } catch (error) {
+    relinka(
+      "warn",
+      `Could not update project ${projectId}:`,
+      error instanceof Error ? error.message : String(error),
+    );
+    throw error;
+  }
+}
 
 /**
  * Enables analytics for the project
  */
 export async function enableAnalytics(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectId: string,
 ): Promise<void> {
   try {
-    await vercel.projects.updateProject({
-      idOrName: projectId,
-      requestBody: {
-        customerSupportCodeVisibility: true,
-      },
+    await updateProject(vercel, projectId, {
+      customerSupportCodeVisibility: true,
     });
     relinka("success", "Analytics enabled successfully");
   } catch (error) {
@@ -33,16 +68,13 @@ export async function enableAnalytics(
  * Configures branch protection settings
  */
 export async function configureBranchProtection(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectId: string,
 ): Promise<void> {
   try {
-    await vercel.projects.updateProject({
-      idOrName: projectId,
-      requestBody: {
-        gitForkProtection: true,
-        enablePreviewFeedback: true,
-      },
+    await updateProject(vercel, projectId, {
+      gitForkProtection: true,
+      enablePreviewFeedback: true,
     });
     relinka("success", "Branch protection configured successfully");
   } catch (error) {
@@ -58,15 +90,12 @@ export async function configureBranchProtection(
  * Configures resource settings
  */
 export async function configureResources(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectId: string,
 ): Promise<void> {
   try {
-    await vercel.projects.updateProject({
-      idOrName: projectId,
-      requestBody: {
-        serverlessFunctionRegion: "iad1",
-      },
+    await updateProject(vercel, projectId, {
+      serverlessFunctionRegion: "iad1",
     });
     relinka("success", "Resource configuration updated successfully");
   } catch (error) {

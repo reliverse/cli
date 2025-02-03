@@ -17,20 +17,20 @@ export type VercelTeam = {
  * Gets the primary Vercel team details from memory or verifies and returns from API
  */
 export async function getPrimaryVercelTeam(
-  vercelCore: VercelCore,
+  vercel: VercelCore,
   memory: { vercelTeamId?: string; vercelTeamSlug?: string },
 ): Promise<VercelTeam | undefined> {
   try {
     // First try to verify existing team from memory
     if (memory.vercelTeamId && memory.vercelTeamSlug) {
       const isTeamValid = await verifyTeam(
-        vercelCore,
+        vercel,
         memory.vercelTeamId,
         memory.vercelTeamSlug,
       );
       if (isTeamValid) {
         // Get full team details to include name
-        const teams = await getVercelTeams(vercelCore);
+        const teams = await getVercelTeams(vercel);
         const memoryTeam = teams.find(
           (team) => team.id === memory.vercelTeamId,
         );
@@ -41,7 +41,7 @@ export async function getPrimaryVercelTeam(
     }
 
     // If no valid team in memory, get first team from API
-    const teams = await getVercelTeams(vercelCore);
+    const teams = await getVercelTeams(vercel);
     if (teams?.length > 0 && teams[0]) {
       const team = teams[0];
       // Write to memory for future use
@@ -66,12 +66,12 @@ export async function getPrimaryVercelTeam(
 }
 
 export async function verifyTeam(
-  vercelCore: VercelCore,
+  vercel: VercelCore,
   teamId: string,
   teamSlug: string,
 ): Promise<boolean> {
   try {
-    const res = await teamsGetTeam(vercelCore, {
+    const res = await teamsGetTeam(vercel, {
       teamId,
       slug: teamSlug,
     });
@@ -97,9 +97,9 @@ export async function verifyTeam(
 }
 
 export async function getVercelTeams(
-  vercelCore: VercelCore,
+  vercel: VercelCore,
 ): Promise<VercelTeam[]> {
-  const res = await teamsGetTeams(vercelCore, {
+  const res = await teamsGetTeams(vercel, {
     limit: 10,
   });
 

@@ -213,7 +213,13 @@ export async function handleOpenProjectMenu(
     const shouldRunDbPush = false;
 
     if (memory?.githubKey) {
-      const githubUsername = await askGithubName(memory);
+      let githubUsername = "";
+      if (!memory.githubUsername) {
+        relinka("info", "[A] Please provide your GitHub username");
+        githubUsername = await askGithubName(memory);
+      } else {
+        githubUsername = memory.githubUsername;
+      }
       if (githubUsername) {
         const octokit = createOctokitInstance(memory.githubKey);
         const { exists, isOwner } = await checkGithubRepoOwnership(
@@ -279,6 +285,7 @@ export async function handleOpenProjectMenu(
         allowReInit: true,
         createCommit: true,
         config: selectedProject.config,
+        isTemplateDownload: false,
       });
       if (success) {
         relinka("success", "Git repository initialized successfully");
@@ -297,6 +304,7 @@ export async function handleOpenProjectMenu(
           projectName: selectedProject.name,
           message,
           config: selectedProject.config,
+          isTemplateDownload: false,
         });
 
         if (success) {
@@ -322,8 +330,14 @@ export async function handleOpenProjectMenu(
         }
       }
     } else if (gitAction === "github") {
-      const username = await askGithubName(memory);
-      if (!username) {
+      let githubUsername = "";
+      if (!memory.githubUsername) {
+        relinka("info", "[B] Please provide your GitHub username");
+        githubUsername = await askGithubName(memory);
+      } else {
+        githubUsername = memory.githubUsername;
+      }
+      if (!githubUsername) {
         throw new Error("Could not determine GitHub username");
       }
 
@@ -336,13 +350,24 @@ export async function handleOpenProjectMenu(
         projectName: selectedProject.name,
         projectPath: selectedProject.path,
         shouldMaskSecretInput,
-        githubUsername: username,
+        githubUsername,
         selectedTemplate: "blefnk/relivator",
       });
       if (success) {
         relinka("success", "GitHub repository created successfully");
       }
     } else if (gitAction === "deploy") {
+      let githubUsername = "";
+      if (!memory.githubUsername) {
+        relinka("info", "[C] Please provide your GitHub username");
+        githubUsername = await askGithubName(memory);
+      } else {
+        githubUsername = memory.githubUsername;
+      }
+      if (!githubUsername) {
+        throw new Error("Could not determine GitHub username");
+      }
+
       const dbStatus = await ensureDbInitialized(
         hasDbPush,
         shouldRunDbPush,
@@ -364,6 +389,7 @@ export async function handleOpenProjectMenu(
         memory,
         shouldMaskSecretInput,
         "update",
+        githubUsername,
       );
 
       if (deployService !== "none") {

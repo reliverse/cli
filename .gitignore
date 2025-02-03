@@ -10,3 +10,4 @@ addons/premium/
 addons/**/premium/
 internal-docs/
 tests-runtime/
+logs.txt

@@ -1,23 +1,31 @@
-import type { Vercel } from "@vercel/sdk";
+import type { VercelCore } from "@vercel/sdk/core";
 
 import { relinka } from "@reliverse/prompts";
+import { projectsGetProjectEnv } from "@vercel/sdk/funcs/projectsGetProjectEnv";
 
-import type { EnvVar, VercelEnvResponse } from "./vercel-types.js";
+import type { EnvVar } from "./vercel-types.js";
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000;
 
 /**
- * Gets environment variables from Vercel project
+ * Gets an environment variable from a Vercel project.
  */
 export async function getVercelEnvVar(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectId: string,
   envVarId: string,
 ): Promise<EnvVar | undefined> {
   try {
-    const envVars = (await vercel.projects.getProjectEnv({
+    const res = await projectsGetProjectEnv(vercel, {
       idOrName: projectId,
       id: envVarId,
-    })) as unknown as VercelEnvResponse;
-    return envVars.envs.find((env: EnvVar) => env.key === envVarId);
+    });
+    if (!res.ok) {
+      throw res.error;
+    }
+    const envVar = res.value as EnvVar;
+    return envVar;
   } catch (error) {
     relinka(
       "error",
@@ -28,11 +36,8 @@ export async function getVercelEnvVar(
   }
 }
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000;
-
 /**
- * Handles rate limit errors with retries
+ * Handles rate limit errors with retries.
  */
 export async function withRateLimit<T>(
   fn: () => Promise<T>,

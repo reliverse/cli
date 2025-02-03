@@ -34,10 +34,6 @@ export type EnvVar = {
   target?: CreateProjectEnv2Target[];
 };
 
-export type VercelEnvResponse = {
-  envs: EnvVar[];
-};
-
 export type DeploymentOptions = {
   options: string[];
   useSharedEnvVars: boolean;

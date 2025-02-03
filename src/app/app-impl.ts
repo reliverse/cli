@@ -6,7 +6,7 @@ import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
-import { showNativeCliMenu } from "~/utils/bun-windows/bw-mod.js";
+import { showNativeCliMenu } from "~/utils/native-cli/nc-mod.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
 
 import type { ParamsOmitSkipPN } from "./app-types.js";

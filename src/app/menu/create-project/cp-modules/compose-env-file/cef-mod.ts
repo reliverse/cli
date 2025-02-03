@@ -113,7 +113,8 @@ export async function composeEnvFile(
         );
       }
     } else if (response === "existing") {
-      const existingPath = await inputPrompt({
+      let existingPath: string;
+      existingPath = await inputPrompt({
         title:
           "Please provide the path to your existing .env file or directory:",
         placeholder:
@@ -124,6 +125,9 @@ export async function composeEnvFile(
           "You can provide either the .env file path or the directory containing it.\nHint: Drag-n-drop the file or directory into the terminal to insert the path.",
         contentColor: "yellowBright",
       });
+
+      // if existingPath contains `""` or `''`, remove the quotes
+      existingPath = existingPath.replace(/^["']|["']$/g, "");
 
       if (await copyFromExisting(projectDir, existingPath)) {
         await saveLastEnvFilePath(existingPath);

@@ -1,15 +1,16 @@
-import type { Vercel } from "@vercel/sdk";
+import type { VercelCore } from "@vercel/sdk/core";
 
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
+import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 
 import { getVercelEnvVar, withRateLimit } from "./vercel-api.js";
 
 export async function handleEnvironmentVariables(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectName: string,
   envVars: EnvVar[],
   selectedOptions: DeploymentOptions,
@@ -60,13 +61,16 @@ export async function handleEnvironmentVariables(
   }
 }
 
+/**
+ * Uploads environment variables to a Vercel project.
+ */
 async function uploadEnvVars(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectName: string,
   envVars: EnvVar[],
 ): Promise<void> {
   await withRateLimit(async () => {
-    await vercel.projects.createProjectEnv({
+    const res = await projectsCreateProjectEnv(vercel, {
       idOrName: projectName,
       upsert: "true",
       requestBody: envVars.map((env) => ({
@@ -74,5 +78,8 @@ async function uploadEnvVars(
         target: env.target ?? ["production", "preview", "development"],
       })),
     });
+    if (!res.ok) {
+      throw res.error;
+    }
   });
 }

@@ -65,7 +65,16 @@ async function initializeGitRepo(
   git: SimpleGit,
   dirHasGit: boolean,
   config: ReliverseConfig,
+  isTemplateDownload: boolean,
 ): Promise<void> {
+  if (isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping git repository initialization since it's a template download",
+    );
+    return;
+  }
+
   if (!dirHasGit) {
     await git.init();
     relinka("success", "Git directory initialized");
@@ -95,8 +104,17 @@ async function createGitCommit(
   git: SimpleGit,
   effectiveDir: string,
   dirHasGit: boolean,
+  isTemplateDownload: boolean,
   message?: string,
 ): Promise<void> {
+  if (isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping git commit creation since it's a template download",
+    );
+    return;
+  }
+
   const status = await git.status();
 
   if (status.files.length === 0 && !dirHasGit) {
@@ -133,8 +151,17 @@ export async function initGitDir(
     allowReInit: boolean;
     createCommit: boolean;
     config: ReliverseConfig;
+    isTemplateDownload: boolean;
   },
 ): Promise<boolean> {
+  if (params.isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping git commit since it's a template download",
+    );
+    return true;
+  }
+
   const effectiveDir = getEffectiveDir(params);
 
   try {
@@ -159,20 +186,40 @@ export async function initGitDir(
         return false;
       }
       const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-      await initializeGitRepo(git, false, params.config);
+      await initializeGitRepo(
+        git,
+        false,
+        params.config,
+        params.isTemplateDownload,
+      );
       if (params.createCommit) {
-        await createGitCommit(git, effectiveDir, false);
+        await createGitCommit(
+          git,
+          effectiveDir,
+          false,
+          params.isTemplateDownload,
+        );
       }
       return true;
     }
 
     // 4. Initialize git directory if needed
     const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-    await initializeGitRepo(git, dirHasGit, params.config);
+    await initializeGitRepo(
+      git,
+      dirHasGit,
+      params.config,
+      params.isTemplateDownload,
+    );
 
     // 5. Create initial commit if needed
     if (params.createCommit) {
-      await createGitCommit(git, effectiveDir, dirHasGit);
+      await createGitCommit(
+        git,
+        effectiveDir,
+        dirHasGit,
+        params.isTemplateDownload,
+      );
     }
 
     return true;
@@ -208,7 +255,11 @@ export async function initGitDir(
  * Will initialize the repository if it doesn't exist.
  */
 export async function createCommit(
-  params: GitModParams & { message?: string; config: ReliverseConfig },
+  params: GitModParams & {
+    message?: string;
+    config: ReliverseConfig;
+    isTemplateDownload: boolean;
+  },
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);
 
@@ -228,10 +279,21 @@ export async function createCommit(
 
     // 3. Initialize git directory if needed
     const git: SimpleGit = simpleGit({ baseDir: effectiveDir });
-    await initializeGitRepo(git, dirHasGit, params.config);
+    await initializeGitRepo(
+      git,
+      dirHasGit,
+      params.config,
+      params.isTemplateDownload,
+    );
 
     // 4. Create commit with specified message
-    await createGitCommit(git, effectiveDir, dirHasGit, params.message);
+    await createGitCommit(
+      git,
+      effectiveDir,
+      dirHasGit,
+      params.isTemplateDownload,
+      params.message,
+    );
 
     return true;
   } catch (error) {

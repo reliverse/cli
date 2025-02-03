@@ -1,7 +1,10 @@
-import type { Vercel } from "@vercel/sdk";
+import type { VercelCore } from "@vercel/sdk/core";
+import type { InlinedFile } from "@vercel/sdk/models/createdeploymentop";
 
 import { relinka } from "@reliverse/prompts";
-import { type InlinedFile } from "@vercel/sdk/models/createdeploymentop";
+import { deploymentsCreateDeployment } from "@vercel/sdk/funcs/deploymentsCreateDeployment";
+import { deploymentsGetDeployment } from "@vercel/sdk/funcs/deploymentsGetDeployment";
+import { deploymentsGetDeploymentEvents } from "@vercel/sdk/funcs/deploymentsGetDeploymentEvents";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -149,15 +152,19 @@ export function splitFilesIntoChunks(
  * Monitors deployment logs and status
  */
 export async function monitorDeployment(
-  vercel: Vercel,
+  vercel: VercelCore,
   deploymentId: string,
   showDetailedLogs = false,
 ): Promise<void> {
   try {
-    // Get deployment logs
-    const logs = await vercel.deployments.getDeploymentEvents({
+    // Get deployment logs using the standalone function
+    const logsRes = await deploymentsGetDeploymentEvents(vercel, {
       idOrUrl: deploymentId,
     });
+    if (!logsRes.ok) {
+      throw logsRes.error;
+    }
+    const logs = logsRes.value;
 
     if (Array.isArray(logs)) {
       let errors = 0;
@@ -199,17 +206,21 @@ export async function monitorDeployment(
   }
 }
 
+/**
+ * Creates a new deployment
+ */
 export async function createDeployment(
   memory: ReliverseMemory,
-  vercel: Vercel,
+  vercel: VercelCore,
   projectName: string,
   config: VercelDeploymentConfig,
   selectedOptions: { includes: (option: string) => boolean },
   githubUsername: string,
 ): Promise<{ url: string; id: string }> {
   relinka("info", "Creating deployment from GitHub...");
-  const deployment = await withRateLimit(async () => {
-    return await vercel.deployments.createDeployment({
+
+  const deploymentRes = await withRateLimit(async () => {
+    return await deploymentsCreateDeployment(vercel, {
       requestBody: {
         name: projectName,
         target: "production",
@@ -230,6 +241,10 @@ export async function createDeployment(
       },
     });
   });
+  if (!deploymentRes.ok) {
+    throw deploymentRes.error;
+  }
+  const deployment = deploymentRes.value;
 
   if (!deployment?.id || !deployment.readyState || !deployment.url) {
     throw new Error(
@@ -254,7 +269,7 @@ export async function createDeployment(
   );
 
   let lastMessageTime = Date.now();
-  while (inProgressStates.includes(status as ReadyState)) {
+  while (inProgressStates.includes(status as string)) {
     // Monitor logs with detailed option
     await monitorDeployment(
       vercel,
@@ -265,12 +280,16 @@ export async function createDeployment(
     // Wait before checking status again (check every 5 seconds)
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Get updated status
-    const { readyState: newStatus } = await withRateLimit(async () => {
-      return await vercel.deployments.getDeployment({
+    // Get updated status using the standalone function
+    const depRes = await withRateLimit(async () => {
+      return await deploymentsGetDeployment(vercel, {
         idOrUrl: deployment.id,
       });
     });
+    if (!depRes.ok) {
+      throw depRes.error;
+    }
+    const { readyState: newStatus } = depRes.value;
     status = newStatus;
 
     // Only show status message every 20 seconds
@@ -304,8 +323,11 @@ export async function createDeployment(
   };
 }
 
+/**
+ * Handles additional deployment steps such as environment variable configuration
+ */
 export async function handleDeployment(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectName: string,
   projectPath: string,
   isDeployed: boolean,

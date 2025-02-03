@@ -53,7 +53,14 @@ export async function getMainMenuOptions(
   });
 
   // 3) Inject native-cli option if using Bun PM
-  // TODO: possibly deprecated, bun has fixed runtime issue on windows
+  /**
+   * The purpose of this system was to fix the fact that when `reliverse cli` was
+   * installed using Bun - at least Windows was running the CLI in the Node.js process.
+   *
+   * However, Bun 1.2.2 has already fixed this. But this system still makes sense.
+   * The CLI compiled in JS sometimes works with lags. So our brand new system allows users to run the
+   * CLI directly using TypeScript. Thanks to this, the user will get the same experience as with `bun dev`.
+   */
   if (isBunPM && !isBunRuntime) {
     const isNativeInstalled = await fs.pathExists(
       path.join(homedir(), ".reliverse", "cli"),

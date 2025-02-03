@@ -19,7 +19,7 @@ import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadRepoOption } from "./dev-submenu/dev-mod.js";
-import { openVercelDevtools } from "./dev-submenu/dev-vercel.js";
+import { openVercelTools } from "./dev-submenu/dev-vercel.js";
 import {
   optionCreateBrowserExtension,
   optionCreateVSCodeExtension,
@@ -151,17 +151,10 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
   const TestsRuntimePath = path.join(cwd, "tests-runtime");
   const TestsRuntimeExists = await fs.pathExists(TestsRuntimePath);
 
-  let hasVercelToken = false;
-  let vercelToken = "";
-  if (memory.vercelKey && memory.vercelKey !== "") {
-    vercelToken = memory.vercelKey;
-    hasVercelToken = true;
-  }
-
   const toolsOptions = {
     rmTestsRuntime: "rm-tests-runtime",
     downloadTemplate: "download-template",
-    openVercelDevtools: "open-vercel-devtools",
+    openVercelTools: "open-vercel-tools",
     reReadReliverse: "re-read-reliverse",
     aiChatTest: "ai-chat-test",
     exit: "exit",
@@ -187,14 +180,6 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
             },
           ]
         : []),
-      ...(hasVercelToken
-        ? [
-            {
-              label: `Open Vercel devtools ${experimental}`,
-              value: toolsOptions.openVercelDevtools,
-            },
-          ]
-        : []),
       ...(isDev
         ? [
             {
@@ -203,6 +188,10 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
             },
           ]
         : []),
+      {
+        label: `Open Vercel devtools ${experimental}`,
+        value: toolsOptions.openVercelTools,
+      },
       { label: "Test chat with Reliverse AI", value: toolsOptions.aiChatTest },
       { label: "👈 Exit", value: toolsOptions.exit },
     ],
@@ -224,7 +213,7 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
     await reReadReliverseMemory();
   } else if (option === toolsOptions.aiChatTest) {
     await aiChatHandler(memory);
-  } else if (option === toolsOptions.openVercelDevtools) {
-    await openVercelDevtools(memory, vercelToken);
+  } else if (option === toolsOptions.openVercelTools) {
+    await openVercelTools(memory);
   }
 }

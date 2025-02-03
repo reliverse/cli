@@ -2,10 +2,9 @@ import { relinka } from "@reliverse/prompts";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { askGithubName } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/askGithubName.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
 
-import { createVercelCoreInstance } from "./vercel-instance.js";
+import { createVercelInstance } from "./vercel-client.js";
 import { verifyTeam } from "./vercel-team.js";
 
 export type InlinedFile = {
@@ -19,6 +18,7 @@ export type InlinedFile = {
  */
 export async function isProjectDeployed(
   projectName: string,
+  githubUsername: string,
   memory: ReliverseMemory,
 ): Promise<{
   isDeployed: boolean;
@@ -31,7 +31,6 @@ export async function isProjectDeployed(
       return { isDeployed: false };
     }
 
-    const githubUsername = await askGithubName(memory);
     if (!githubUsername) {
       relinka("error", "Could not determine GitHub username");
       return { isDeployed: false };
@@ -41,7 +40,7 @@ export async function isProjectDeployed(
     let vercelTeamSlug: string | undefined;
     if (memory.vercelKey) {
       try {
-        const vercel = createVercelCoreInstance(memory.vercelKey);
+        const vercel = createVercelInstance(memory.vercelKey);
         if (memory.vercelTeamId && memory.vercelTeamSlug) {
           const isTeamValid = await verifyTeam(
             vercel,
@@ -54,7 +53,7 @@ export async function isProjectDeployed(
         }
       } catch (err) {
         relinka(
-          "warn",
+          "error",
           "Could not verify Vercel team:",
           err instanceof Error ? err.message : String(err),
         );

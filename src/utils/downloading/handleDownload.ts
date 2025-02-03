@@ -47,6 +47,7 @@ export async function handleDownload({
   preserveGit = true,
   install = false,
   isCustom = false,
+  isTemplateDownload = false,
 }: {
   cwd: string;
   isDev: boolean;
@@ -59,7 +60,12 @@ export async function handleDownload({
   config?: ReliverseConfig | undefined;
   install?: boolean | undefined;
   isCustom?: boolean | undefined;
+  isTemplateDownload?: boolean | undefined;
 }): Promise<DownloadResult> {
+  if (isTemplateDownload) {
+    relinka("info-verbose", "Handling template downloading...");
+  }
+
   // -------------------------------------------------
   // 1) Identify chosen repo
   // -------------------------------------------------

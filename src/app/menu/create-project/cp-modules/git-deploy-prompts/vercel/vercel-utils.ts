@@ -1,4 +1,3 @@
-import type { Vercel } from "@vercel/sdk";
 import type { VercelCore } from "@vercel/sdk/core";
 import type {
   GetProjectsFramework,
@@ -7,6 +6,7 @@ import type {
 
 import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
+import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -26,11 +26,11 @@ type VercelFramework = GetProjectsFramework;
 export async function saveVercelToken(
   token: string,
   memory: ReliverseMemory,
-  vercelCore: VercelCore,
+  vercel: VercelCore,
 ): Promise<void> {
   memory.vercelKey = token;
 
-  const teams = await getVercelTeams(vercelCore);
+  const teams = await getVercelTeams(vercel);
 
   if (teams && teams.length > 0) {
     let selectedTeam: VercelTeam;
@@ -54,7 +54,7 @@ export async function saveVercelToken(
 
     // Verify team details before saving
     const isTeamValid = await verifyTeam(
-      vercelCore,
+      vercel,
       selectedTeam.id,
       selectedTeam.slug,
     );
@@ -211,19 +211,22 @@ export async function detectFramework(
 }
 
 /**
- * Verifies domain configuration
+ * Verifies domain configuration.
  */
 export async function verifyDomain(
-  vercel: Vercel,
+  vercel: VercelCore,
   projectId: string,
   domain: string,
 ): Promise<boolean> {
   try {
-    const domainResponse = await vercel.projects.getProjectDomain({
+    const res = await projectsGetProjectDomain(vercel, {
       idOrName: projectId,
       domain,
     });
-
+    if (!res.ok) {
+      throw res.error;
+    }
+    const domainResponse = res.value;
     if (domainResponse.verification && domainResponse.verification.length > 0) {
       relinka(
         "info",
@@ -234,7 +237,6 @@ export async function verifyDomain(
       }
       return false;
     }
-
     return domainResponse.verified;
   } catch (error) {
     relinka(

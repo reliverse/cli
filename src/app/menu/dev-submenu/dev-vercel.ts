@@ -5,6 +5,7 @@ import {
   multiselectPrompt,
   selectPrompt,
   confirmPrompt,
+  getTerminalHeight,
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { projectsDeleteProject } from "@vercel/sdk/funcs/projectsDeleteProject";
@@ -13,39 +14,61 @@ import { projectsGetProjects } from "@vercel/sdk/funcs/projectsGetProjects";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { withRateLimit } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-api.js";
-import { createVercelCoreInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-instance.js";
+import { createVercelInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-client.js";
+import { ensureVercelToken } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-create.js";
 import { getPrimaryVercelTeam } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-team.js";
 
-export async function openVercelDevtools(
-  memory: ReliverseMemory,
-  vercelToken: string,
-) {
-  if (vercelToken === "") {
-    relinka("error", "No Vercel token found. Please set it first.");
-    return;
+export async function openVercelTools(memory: ReliverseMemory) {
+  let vercelInstance: VercelCore | null = null;
+  let hasVercelToken = false;
+  let vercelToken = "";
+
+  if (memory.vercelKey && memory.vercelKey !== "") {
+    vercelToken = memory.vercelKey;
+    hasVercelToken = true;
   }
 
-  const vercelInstance = createVercelCoreInstance(vercelToken);
+  if (!hasVercelToken) {
+    const result = await ensureVercelToken(true, memory);
+    if (!result)
+      throw new Error(
+        "Something went wrong. Vercel token not found. Please try again or notify the Reliverse CLI developers if the problem persists.",
+      );
+    const [token, instance] = result;
+    vercelToken = token;
+    vercelInstance = instance;
+  } else {
+    vercelInstance = createVercelInstance(vercelToken);
+  }
 
   const choice = await selectPrompt({
-    title: "Vercel Devtools",
+    title: "Vercel Tools",
     options: [{ label: "Delete projects", value: "delete-projects" }],
   });
 
+  const hSize = getTerminalHeight();
+  let limit = "10";
+  if (hSize > 15) limit = "15";
+  else if (hSize > 20) limit = "20";
+  else if (hSize > 30) limit = "30";
+  else if (hSize > 40) limit = "40";
+  else if (hSize > 50) limit = "50";
+
   if (choice === "delete-projects") {
-    await deleteVercelProjects(vercelInstance, memory);
+    await deleteVercelProjects(vercelInstance, memory, limit, hSize);
   }
 }
 
 async function getVercelProjects(
-  vercelInstance: VercelCore,
+  instance: VercelCore,
+  limit: string,
   team?: { id: string; slug: string },
 ): Promise<GetProjectsResponseBody["projects"]> {
   const res = await withRateLimit(async () => {
-    return await projectsGetProjects(vercelInstance, {
+    return await projectsGetProjects(instance, {
       teamId: team?.id,
       slug: team?.slug,
-      limit: "30",
+      limit: limit,
     });
   });
 
@@ -57,17 +80,21 @@ async function getVercelProjects(
 }
 
 async function deleteVercelProjects(
-  vercelInstance: VercelCore,
+  instance: VercelCore,
   memory: ReliverseMemory,
+  limit: string,
+  hSize: number,
 ) {
-  const team = await getPrimaryVercelTeam(vercelInstance, memory);
-  const allProjects = await getVercelProjects(vercelInstance, team);
+  const team = await getPrimaryVercelTeam(instance, memory);
+  const allProjects = await getVercelProjects(instance, limit, team);
 
   const protectedNames = [
     "relivator",
     "reliverse",
     "relidocs",
     "versator",
+    "bleverse",
+    "mfpiano",
     "blefnk",
   ];
   const existingProtectedProjects = allProjects
@@ -79,16 +106,22 @@ async function deleteVercelProjects(
       !existingProtectedProjects.includes(project.name.toLowerCase()),
   );
 
+  // Create a map from project ID to project name
   const projectNames = new Map(projects.map((p) => [p.id, p.name]));
+
+  const info = `If you do not see some projects, restart the CLI with a higher terminal height (current: ${hSize})`;
 
   const projectsToDelete = await multiselectPrompt({
     title: "Delete Vercel projects (ctrl+c to exit)",
     content:
       existingProtectedProjects.length > 0
-        ? `Excluded projects: ${existingProtectedProjects.join(", ")}`
-        : "",
-    options: projects.map((project) => ({
-      label: project.name,
+        ? `${info}\nIntentionally excluded projects: ${existingProtectedProjects.join(
+            ", ",
+          )}`
+        : info,
+    // Prepend each label with its index (starting at 1)
+    options: projects.map((project, index) => ({
+      label: `${index + 1}. ${project.name}`,
       value: project.id,
     })),
   });
@@ -118,7 +151,7 @@ async function deleteVercelProjects(
     try {
       relinka("info-verbose", `Deleting project ${projectName}...`);
       const res = await withRateLimit(async () => {
-        return await projectsDeleteProject(vercelInstance, {
+        return await projectsDeleteProject(instance, {
           idOrName: projectId,
           teamId: team?.id,
           slug: team?.slug,
