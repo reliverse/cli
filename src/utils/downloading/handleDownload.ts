@@ -47,7 +47,7 @@ export async function handleDownload({
   preserveGit = true,
   install = false,
   isCustom = false,
-  isTemplateDownload = false,
+  isTemplateDownload,
 }: {
   cwd: string;
   isDev: boolean;
@@ -60,7 +60,7 @@ export async function handleDownload({
   config?: ReliverseConfig | undefined;
   install?: boolean | undefined;
   isCustom?: boolean | undefined;
-  isTemplateDownload?: boolean | undefined;
+  isTemplateDownload: boolean;
 }): Promise<DownloadResult> {
   if (isTemplateDownload) {
     relinka("info-verbose", "Handling template downloading...");
@@ -161,11 +161,12 @@ export async function handleDownload({
   // -------------------------------------------------
   // 3) Download repo if no local copy used
   // -------------------------------------------------
+  const term = isTemplateDownload ? "template" : "repo";
   if (!projectPath) {
     try {
       relinka(
         "info",
-        `Now I'm downloading the '${selectedRepo}' repo...`,
+        `Now I'm downloading the '${selectedRepo}' ${term}...`,
         "The download speed depends on your internet connection and GitHub limits.",
       );
       result = await downloadRepo({
@@ -179,20 +180,21 @@ export async function handleDownload({
         install,
         returnTime: true,
         returnSize: true,
+        isTemplateDownload,
       });
       projectPath = result.dir;
       if (result.time) {
         const includesGit = preserveGit
-          ? " (size includes the .git folder)."
+          ? " (size includes the preserved .git folder)."
           : ".";
         relinka(
           "success",
-          `Successfully downloaded repo to ${projectPath}`,
+          `Successfully downloaded ${term} to ${projectPath}`,
           `It took ${result.time} seconds to download ${result.size} MB${includesGit}`,
         );
       }
     } catch (error) {
-      relinka("error", "Failed to download repo:", String(error));
+      relinka("error", `Failed to download ${term}:`, String(error));
       throw error;
     }
   } else {
@@ -208,9 +210,8 @@ export async function handleDownload({
   let shouldSaveRepo = !useLocalRepo;
   if (!skipPrompts && !useLocalRepo) {
     shouldSaveRepo = await confirmPrompt({
-      title: "Save a copy of the repo to your device?",
-      content:
-        "This is useful if you have limited internet data or plan to reuse the repo soon.",
+      title: `Save a copy of the ${term} to your device?`,
+      content: `This is useful if you have limited internet data or plan to reuse the ${term} soon.`,
       defaultValue: true,
     });
   }

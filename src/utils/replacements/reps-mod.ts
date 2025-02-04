@@ -89,7 +89,10 @@ export async function handleReplacements(
   config: ProjectConfigReturn & { projectDescription?: string },
   existingRepo: boolean,
   showSuccessMessage: boolean,
+  isTemplateDownload: boolean,
 ) {
+  const term = isTemplateDownload ? "template" : "repo";
+
   relinka("info-verbose", "Personalizing texts in the initialized files...");
 
   // Gather package names and import paths to protect
@@ -250,12 +253,12 @@ export async function handleReplacements(
       stopOnError: false, // continue processing other files if one fails
     });
     if (showSuccessMessage) {
-      relinka("success", "Successfully personalized project files...");
+      relinka("success", `Successfully personalized ${term} files!`);
     }
   } catch (error) {
     relinka(
       "error",
-      "❌ Failed to personalize project files:",
+      `❌ Failed to personalize ${term} files:`,
       error instanceof Error ? error.message : String(error),
     );
   }

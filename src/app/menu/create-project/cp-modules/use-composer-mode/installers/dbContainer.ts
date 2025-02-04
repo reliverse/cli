@@ -28,6 +28,7 @@ export const dbContainerInstaller: Installer = ({
     projectName === "." ? parseNameAndPath(projectDir) : [projectName];
 
   // Sanitize the project name for Docker container usage
+  // @ts-expect-error TODO: fix strictNullChecks undefined
   const sanitizedProjectName = sanitizeName(projectNameParsed);
 
   fs.writeFileSync(

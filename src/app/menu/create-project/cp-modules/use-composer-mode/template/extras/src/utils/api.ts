@@ -20,7 +20,6 @@ export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${import.meta.env["VITE_API_URL"]}/trpc`,
-      // @ts-expect-error TODO: fix ts
       transformer: SuperJSON,
     }),
   ],

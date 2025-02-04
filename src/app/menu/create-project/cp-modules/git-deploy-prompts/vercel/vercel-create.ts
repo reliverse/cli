@@ -1,10 +1,10 @@
-import type { VercelCore } from "@vercel/sdk/core";
+import type { VercelCore } from "@vercel/sdk/core.js";
 
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
-import { projectsAddProjectDomain } from "@vercel/sdk/funcs/projectsAddProjectDomain";
-import { projectsCreateProject } from "@vercel/sdk/funcs/projectsCreateProject";
-import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv";
+import { projectsAddProjectDomain } from "@vercel/sdk/funcs/projectsAddProjectDomain.js";
+import { projectsCreateProject } from "@vercel/sdk/funcs/projectsCreateProject.js";
+import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv.js";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -20,7 +20,7 @@ import {
   getConfigurationOptions,
 } from "./vercel-config.js";
 import { createDeployment } from "./vercel-deploy.js";
-import { isProjectDeployed } from "./vercel-mod.js";
+import { isRepoHasDeployments } from "./vercel-mod.js";
 import {
   detectFramework,
   getEnvVars,
@@ -73,18 +73,20 @@ export async function createVercelDeployment(
 ): Promise<boolean> {
   try {
     // First ensure we have a valid token
-    const [token, vercel] = await ensureVercelToken(
-      shouldMaskSecretInput,
-      memory,
-    );
-    if (!token)
+    const result = await ensureVercelToken(shouldMaskSecretInput, memory);
+    if (!result) {
       throw new Error(
         "Something went wrong. Vercel token not found. Please try again or notify the Reliverse CLI developers if the problem persists.",
       );
+    }
+    const [token, vercel] = result;
+    if (!token) {
+      throw new Error("Something went wrong. Vercel token not found.");
+    }
 
     // Check for existing deployment
     relinka("info", "Checking for existing deployment...");
-    const { isDeployed } = await isProjectDeployed(
+    const isDeployed = await isRepoHasDeployments(
       projectName,
       githubUsername,
       memory,
@@ -109,7 +111,7 @@ export async function createVercelDeployment(
     // 1. Project Setup Phase
     let projectId: string | undefined;
     if (!isDeployed) {
-      relinka("info", "Creating new project...");
+      relinka("info", "Creating new Vercel project...");
       const framework = await detectFramework(projectPath);
       const createProjectRes = await withRateLimit(async () => {
         return await projectsCreateProject(vercel, {

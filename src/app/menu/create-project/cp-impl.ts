@@ -20,10 +20,10 @@ import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
+import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { askUserName } from "~/utils/askUserName.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
-import { promptGitDeploy } from "~/utils/gdp-mod.js";
 import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";

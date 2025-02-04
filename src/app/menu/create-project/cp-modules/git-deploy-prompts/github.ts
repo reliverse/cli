@@ -27,7 +27,7 @@ export async function checkGithubRepoOwnership(
     const { data: repository } = await octokit.rest.repos.get({ owner, repo });
     return {
       exists: true,
-      isOwner: repository.permissions?.admin,
+      isOwner: repository.permissions?.admin ?? false,
       defaultBranch: repository.default_branch,
     };
   } catch (error) {
@@ -334,7 +334,16 @@ export async function createGithubRepo(
   cwd: string,
   shouldMaskSecretInput: "prompt" | boolean,
   config: ReliverseConfig,
+  isTemplateDownload: boolean,
 ): Promise<boolean> {
+  if (isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping createGithubRepo since it's a template download",
+    );
+    return true;
+  }
+
   let maskInput = true;
   if (shouldMaskSecretInput === "prompt") {
     maskInput = await askMaskInput();
@@ -358,6 +367,7 @@ export async function createGithubRepo(
       allowReInit: true,
       createCommit: true,
       config,
+      isTemplateDownload,
     });
 
     // For new repositories, determine privacy setting

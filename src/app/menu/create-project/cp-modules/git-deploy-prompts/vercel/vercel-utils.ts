@@ -1,12 +1,12 @@
-import type { VercelCore } from "@vercel/sdk/core";
+import type { VercelCore } from "@vercel/sdk/core.js";
 import type {
   GetProjectsFramework,
   GetProjectsTarget1,
-} from "@vercel/sdk/models/getprojectsop";
+} from "@vercel/sdk/models/getprojectsop.js";
 
 import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
-import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain";
+import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
 import fs from "fs-extra";
 import path from "pathe";
 

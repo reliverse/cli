@@ -32,14 +32,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "verbatimModuleSyntax": true
   },
   "include": [
-    "latest.ts",
-    "pub.setup.ts",
-    "pub.config.ts",
     "build.config.ts",
+    "build.publish.ts",
     "vitest.config.ts",
     "src/**/*.js",
     "src/**/*.ts",
@@ -48,7 +46,7 @@
     "reset.d.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "deprecated/**/*.ts"
+    "latest.ts"
   ],
   "exclude": ["node_modules", "dist-npm"]
 }

@@ -92,7 +92,7 @@ export async function configureAppts({
     },
     {
       default: "1.2.6",
-      key: "projectVersion",
+      key: "version",
       message: "What's the current version of your app?",
     },
     {
@@ -125,7 +125,7 @@ export async function configureAppts({
     name,
     siteNameDesc,
     appPublisher,
-    projectVersion,
+    version,
     authorEmail,
     authorFullName,
     authorUrl,
@@ -137,7 +137,7 @@ export async function configureAppts({
       name,
       siteNameDesc,
       appPublisher,
-      projectVersion,
+      version,
       authorEmail,
       authorFullName,
       authorUrl,
@@ -148,12 +148,19 @@ export async function configureAppts({
 
   try {
     await updateFile(metadataConfigPath, {
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       name: name,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       siteNameDesc: siteNameDesc,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       appPublisher: appPublisher,
-      projectVersion: projectVersion,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
+      version: version,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       authorEmail: authorEmail,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       authorFullName: authorFullName,
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       authorUrl: authorUrl,
       handle: handle,
     });
@@ -214,7 +221,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     mod.exports["default"].name = config["name"];
     mod.exports["default"].siteNameDesc = config["siteNameDesc"];
     mod.exports["default"].appPublisher = config["appPublisher"];
-    mod.exports["default"].projectVersion = config["projectVersion"];
+    mod.exports["default"].version = config["version"];
     mod.exports["default"].author.email = config["authorEmail"];
     mod.exports["default"].author.fullName = config["authorFullName"];
     mod.exports["default"].author.handle = config["handle"];

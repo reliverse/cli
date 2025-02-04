@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import type { Octokit } from "@octokit/rest";
 
 import { selectPrompt } from "@reliverse/prompts";
@@ -19,9 +18,8 @@ import { isSpecialDomain } from "~/app/menu/create-project/cp-modules/git-deploy
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { promptForDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/promptForDomain.js";
 import { createOctokitInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/octokit-instance.js";
-import { createVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-create.js";
 import { getVercelProjectDomain } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-domain.js";
-import { isProjectDeployed } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-mod.js";
+import { isRepoHasDeployments } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-mod.js";
 import { decide } from "~/utils/decideHelper.js";
 import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -81,15 +79,18 @@ export async function configureGithubRepo(
     return { success: false };
   }
 
-  let githubUsername = "";
+  let githubUsername: string;
   if (!memory.githubUsername) {
     relinka("info", "Please provide your GitHub username");
-    githubUsername = await askGithubName(memory);
+    const username = await askGithubName(memory);
+    if (!username) {
+      throw new Error("GitHub username is required");
+    }
+    githubUsername = username;
   } else {
     githubUsername = memory.githubUsername;
   }
 
-  // Even if token is not found, we proceed.
   // createGithubRepo will prompt for a token if needed.
   const repoCreated = await handleGithubRepo({
     skipPrompts,
@@ -102,6 +103,7 @@ export async function configureGithubRepo(
     shouldMaskSecretInput,
     githubUsername,
     selectedTemplate,
+    isTemplateDownload: false,
   });
   if (!repoCreated) {
     relinka(
@@ -131,13 +133,13 @@ async function checkVercelDeployment(
   projectName: string,
   githubUsername: string,
   memory: ReliverseMemory,
-): Promise<{
-  isDeployed: boolean;
-  githubUsername?: string | undefined;
-  vercelUsername?: string | undefined;
-}> {
+): Promise<boolean> {
   try {
-    const result = await isProjectDeployed(projectName, githubUsername, memory);
+    const result = await isRepoHasDeployments(
+      projectName,
+      githubUsername,
+      memory,
+    );
     return result;
   } catch (error) {
     relinka(
@@ -145,7 +147,7 @@ async function checkVercelDeployment(
       "Failed to check Vercel deployment:",
       error instanceof Error ? error.message : String(error),
     );
-    return { isDeployed: false };
+    return false;
   }
 }
 
@@ -481,8 +483,10 @@ export async function promptGitDeploy({
       };
     }
 
+    const githubUsername = githubData.username;
+
     // If we get here, GitHub is set up
-    if (!githubData.success || !githubData.octokit || !githubData.username) {
+    if (!githubData.success || !githubData.octokit || !githubUsername) {
       relinka(
         "error",
         "GitHub setup did not complete successfully despite multiple attempts.",
@@ -501,9 +505,9 @@ export async function promptGitDeploy({
     let alreadyDeployed = false;
     try {
       // Check if there's an existing Vercel deployment
-      const { isDeployed } = await checkVercelDeployment(
+      const isDeployed = await checkVercelDeployment(
         projectName,
-        githubData.username,
+        githubUsername,
         memory,
       );
       alreadyDeployed = isDeployed;
@@ -588,10 +592,13 @@ export async function promptGitDeploy({
     }
 
     // Check if project is already deployed to Vercel
-    const { isDeployed: isVercelDeployed, githubUsername } =
-      await checkVercelDeployment(projectName, githubData.username, memory);
+    const isDeployed = await checkVercelDeployment(
+      projectName,
+      githubUsername,
+      memory,
+    );
 
-    if (isVercelDeployed) {
+    if (isDeployed) {
       relinka("info", `Project ${projectName} is already deployed to Vercel`);
       return {
         deployService: "vercel",
@@ -602,27 +609,7 @@ export async function promptGitDeploy({
     }
 
     // Deploy to Vercel
-    const vercelDeployed = await createVercelDeployment(
-      skipPrompts,
-      projectName,
-      projectPath,
-      primaryDomain,
-      memory,
-      "new",
-      shouldMaskSecretInput,
-      githubUsername,
-    );
-
-    if (vercelDeployed) {
-      return {
-        deployService: "vercel",
-        primaryDomain,
-        isDeployed: true,
-        allDomains: [primaryDomain],
-      };
-    }
-
-    // Attempt deployment up to 3 times
+    // Attempt up to 3 times
     let deployRetryCount = 0;
     while (deployRetryCount < 3) {
       try {

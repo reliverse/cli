@@ -344,6 +344,7 @@ export async function showCloneProjectMenu({
         config: gitPreference === "fresh" ? config : undefined,
         install: shouldInstallDeps,
         isCustom,
+        isTemplateDownload: false,
       });
       relinka("success", `🎉 ${source} was downloaded to ${dir}`);
     }
@@ -409,6 +410,7 @@ export async function showCloneProjectMenu({
       config: gitPreference === "fresh" ? config : undefined,
       install: shouldInstallDeps,
       isCustom: result.isCustom,
+      isTemplateDownload: false,
     });
     relinka(
       "success",

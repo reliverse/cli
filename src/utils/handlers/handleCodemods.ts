@@ -25,6 +25,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
 
   // Push: Tailwind v3 to v4 conversion codemod
   if (rules.preferredLibraries?.["styling"] === "tailwind") {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert Tailwind CSS v3 to v4",
       value: "tailwind-v4",
@@ -34,6 +35,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
 
   // Push: import symbol codemod if rule exists
   if (rules.codeStyle?.importSymbol?.length) {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Replace Import Symbols",
       value: "import-symbols",
@@ -42,6 +44,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   // Push: quote style codemod if it differs from current
+  // @ts-expect-error TODO: fix strictNullChecks undefined
   availableCodemods.push({
     label: "Convert Quote Style",
     value: "quote-style",
@@ -51,6 +54,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   // Push: import style codemod
   const importStyle = rules.codeStyle?.importOrRequire;
   if (importStyle && importStyle !== "mixed") {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert Import Style",
       value: "import-style",
@@ -61,6 +65,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   // Push: Definitions converter codemod
   const typeStyle = rules.codeStyle?.typeOrInterface;
   if (typeStyle && typeStyle !== "mixed") {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert Type Definitions",
       value: "type-definitions",
@@ -70,6 +75,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
 
   // Push: CJS to ESM codemod if enabled
   if (rules.codeStyle?.cjsToEsm) {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert CommonJS to ESM",
       value: "cjs-to-esm",
@@ -80,6 +86,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   // Push: runtime conversion codemods
   if (rules.projectRuntime === "node") {
     availableCodemods.push(
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       {
         label: "Convert to Bun",
         value: "nodejs-to-bun",
@@ -95,6 +102,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
 
   // Push: monorepo conversion codemod if configured
   if (rules.monorepo?.type) {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert to Monorepo",
       value: "single-to-monorepo",
@@ -107,6 +115,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
     rules.codeStyle?.modernize &&
     Object.values(rules.codeStyle.modernize).some(Boolean)
   ) {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Modernize Code",
       value: "modernize",
@@ -116,6 +125,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
 
   // Push: JS to TS codemod if enabled
   if (rules.codeStyle?.jsToTs) {
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     availableCodemods.push({
       label: "Convert JavaScript to TypeScript",
       value: "js-to-ts",

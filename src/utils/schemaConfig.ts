@@ -96,7 +96,7 @@ export const reliverseConfigSchema = Type.Object({
     Type.String({ minLength: 1 }),
   ]),
   projectDescription: Type.String(),
-  projectVersion: Type.String(),
+  version: Type.String(),
   projectLicense: Type.String(),
   projectRepository: Type.String(),
   projectDomain: Type.String(),

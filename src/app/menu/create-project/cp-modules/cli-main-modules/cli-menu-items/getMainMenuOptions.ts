@@ -61,6 +61,7 @@ export async function getMainMenuOptions(
    * The CLI compiled in JS sometimes works with lags. So our brand new system allows users to run the
    * CLI directly using TypeScript. Thanks to this, the user will get the same experience as with `bun dev`.
    */
+  // @ts-expect-error TODO: fix strictNullChecks undefined
   if (isBunPM && !isBunRuntime) {
     const isNativeInstalled = await fs.pathExists(
       path.join(homedir(), ".reliverse", "cli"),

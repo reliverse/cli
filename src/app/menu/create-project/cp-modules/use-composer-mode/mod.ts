@@ -40,6 +40,7 @@ export async function showComposerMode(cliResults: CliResults) {
 
   const projectDir = await createProject({
     projectName: appDir,
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     scopedAppName,
     packages: usePackages,
     databaseProvider,

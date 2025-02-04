@@ -9,9 +9,9 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
+import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { downloadRepo } from "~/utils/downloading/downloadRepo.js";
-import { promptGitDeploy } from "~/utils/gdp-mod.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 export async function rmTestsRuntime(cwd: string) {
@@ -41,6 +41,7 @@ export async function downloadRepoOption(
     projectName,
     isDev,
     cwd,
+    isTemplateDownload: false,
   });
 
   relinka("info", `Downloaded template to ${dir}`);

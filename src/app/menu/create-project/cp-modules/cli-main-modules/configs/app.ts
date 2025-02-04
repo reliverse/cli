@@ -40,7 +40,7 @@ export const siteConfig = {
   name: metadata.name,
   siteNameDesc: metadata.siteNameDesc,
   appPublisher: metadata.appPublisher,
-  projectVersion: metadata.projectVersion,
+  version: metadata.version,
   author: {
     email: metadata.author.email,
     fullName: metadata.author.fullName,

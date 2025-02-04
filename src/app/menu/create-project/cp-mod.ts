@@ -95,6 +95,7 @@ export async function createWebProject({
     },
     false,
     true,
+    true,
   );
 
   // -------------------------------------------------

@@ -81,6 +81,10 @@ type DownloadRepoOptions = {
    * This should be the local path to a pre-populated ".git" folder that contains the complete history.
    */
   fastCloneSource?: string;
+  /**
+   * If true, the downloaded repository is a template download.
+   */
+  isTemplateDownload: boolean;
 };
 
 /**
@@ -278,6 +282,7 @@ export async function downloadRepo({
   returnSize = false,
   returnConcurrency = false,
   fastCloneSource,
+  isTemplateDownload,
 }: DownloadRepoOptions): Promise<DownloadResult> {
   relinka("info-verbose", `Downloading repo ${repoURL}...`);
   const startTime = Date.now();
@@ -449,6 +454,7 @@ export async function downloadRepo({
                 allowReInit: true,
                 createCommit: true,
                 config,
+                isTemplateDownload,
               });
             }
           } else {

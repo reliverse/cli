@@ -1,7 +1,7 @@
-import type { VercelCore } from "@vercel/sdk/core";
+import type { VercelCore } from "@vercel/sdk/core.js";
 
 import { relinka } from "@reliverse/prompts";
-import { projectsGetProjectEnv } from "@vercel/sdk/funcs/projectsGetProjectEnv";
+import { projectsGetProjectEnv } from "@vercel/sdk/funcs/projectsGetProjectEnv.js";
 
 import type { EnvVar } from "./vercel-types.js";
 

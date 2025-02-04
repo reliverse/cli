@@ -216,6 +216,7 @@ export async function handleOpenProjectMenu(
       let githubUsername = "";
       if (!memory.githubUsername) {
         relinka("info", "[A] Please provide your GitHub username");
+        // @ts-expect-error TODO: fix strictNullChecks undefined
         githubUsername = await askGithubName(memory);
       } else {
         githubUsername = memory.githubUsername;
@@ -333,6 +334,7 @@ export async function handleOpenProjectMenu(
       let githubUsername = "";
       if (!memory.githubUsername) {
         relinka("info", "[B] Please provide your GitHub username");
+        // @ts-expect-error TODO: fix strictNullChecks undefined
         githubUsername = await askGithubName(memory);
       } else {
         githubUsername = memory.githubUsername;
@@ -352,6 +354,7 @@ export async function handleOpenProjectMenu(
         shouldMaskSecretInput,
         githubUsername,
         selectedTemplate: "blefnk/relivator",
+        isTemplateDownload: false,
       });
       if (success) {
         relinka("success", "GitHub repository created successfully");
@@ -360,6 +363,7 @@ export async function handleOpenProjectMenu(
       let githubUsername = "";
       if (!memory.githubUsername) {
         relinka("info", "[C] Please provide your GitHub username");
+        // @ts-expect-error TODO: fix strictNullChecks undefined
         githubUsername = await askGithubName(memory);
       } else {
         githubUsername = memory.githubUsername;

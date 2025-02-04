@@ -78,6 +78,10 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
   });
 
   const options = integrationOptions[category];
+  if (!options) {
+    throw new Error(`No integration options found for category: ${category}`);
+  }
+
   const selectedIntegration = await selectPrompt({
     title: `Select ${category} integration:`,
     options: options.map((opt) => ({
@@ -133,6 +137,7 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
         ...INTEGRATION_CONFIGS["drizzle"],
         name: "drizzle",
         dependencies: [
+          // @ts-expect-error TODO: fix strictNullChecks undefined
           ...INTEGRATION_CONFIGS["drizzle"].dependencies,
           provider === "neon" ? "@neondatabase/serverless" : "postgres",
         ],
@@ -143,22 +148,36 @@ export async function handleIntegrations(cwd: string, isDev: boolean) {
       };
 
       await installIntegration(cwd, config, isDev);
+      relinka(
+        "info",
+        `Selected ${selectedIntegration} for ${category} - Implementation coming soon!`,
+      );
       return;
     }
 
+    // @ts-expect-error TODO: fix strictNullChecks undefined
     await installIntegration(cwd, INTEGRATION_CONFIGS["drizzle"], isDev);
+    relinka(
+      "info",
+      `Selected ${selectedIntegration} for ${category} - Implementation coming soon!`,
+    );
     return;
   }
 
   // Handle other integrations
   const integrationKey = selectedIntegration;
-  if (INTEGRATION_CONFIGS[integrationKey]) {
-    await installIntegration(cwd, INTEGRATION_CONFIGS[integrationKey], isDev);
+  const config = INTEGRATION_CONFIGS[integrationKey];
+  if (!config) {
+    relinka(
+      "error",
+      `Integration configuration not found for ${integrationKey}`,
+    );
     return;
   }
-
+  await installIntegration(cwd, config, isDev);
   relinka(
     "info",
     `Selected ${selectedIntegration} for ${category} - Implementation coming soon!`,
   );
+  return;
 }

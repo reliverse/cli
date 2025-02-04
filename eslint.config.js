@@ -38,6 +38,8 @@ const config = tseslint.config(
       "no-relative-import-paths": noRelativeImportPaths,
     },
     rules: {
+      "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off",
+      "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
       "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/prefer-nullish-coalescing": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
@@ -79,6 +81,7 @@ const config = tseslint.config(
           ignoreRestSiblings: true,
         },
       ],
+      "no-control-regex": "off",
       "no-throw-literal": "warn",
       "no-constant-binary-expression": "off",
       "no-constant-condition": "off",
@@ -136,7 +139,7 @@ const config = tseslint.config(
     },
   },
   {
-    files: ["pub.setup.ts", "**/reliverseConfig.ts"],
+    files: ["build.publish.ts", "**/reliverseConfig.ts"],
     rules: {
       "max-lines": "off",
     },

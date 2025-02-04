@@ -17,6 +17,7 @@ const router = createBrowserRouter([
   },
 ]);
 
+// @ts-expect-error TODO: fix strictNullChecks undefined
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>

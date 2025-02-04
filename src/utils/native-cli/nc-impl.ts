@@ -79,9 +79,10 @@ function pickVersionFromMeta(meta: PackageMeta, userVersion?: string): string {
     return userVersion;
   }
 
-  const versions = Object.keys(meta.versions).filter(
-    (v) => !meta.versions[v].yanked && semver.valid(v),
-  );
+  const versions = Object.keys(meta.versions).filter((v) => {
+    const version = meta.versions[v];
+    return version && !version.yanked && semver.valid(v);
+  });
   if (versions.length === 0) {
     throw new Error(
       "No valid (non-yanked, semver) versions found for this package.",
@@ -89,6 +90,7 @@ function pickVersionFromMeta(meta: PackageMeta, userVersion?: string): string {
   }
 
   versions.sort((a, b) => semver.rcompare(a, b));
+  // @ts-expect-error TODO: fix strictNullChecks undefined
   return versions[0]; // highest semver
 }
 
@@ -216,32 +218,33 @@ export async function downloadJsrDist(
   msgDownloadStarted?: string,
   revertTsxFiles = false,
   cliInstallDeps = true,
-  // cliUseExistentNodeModules = true,
 ): Promise<void> {
   try {
-    // 1) Get package metadata
-    const pkgMeta = await getPackageMeta(scope, packageName);
+    // 1) Get package metadata and determine version if not provided
+    const meta = await getPackageMeta(scope, packageName);
+    const resolvedVersion = version || pickVersionFromMeta(meta);
 
-    // 2) Determine version to use
-    const chosenVersion = pickVersionFromMeta(pkgMeta, version);
+    // 2) Retrieve version metadata, including the file manifest
+    const versionMeta = await getVersionMeta(
+      scope,
+      packageName,
+      resolvedVersion,
+    );
+    const filePaths = Object.keys(versionMeta.manifest);
 
-    // 3) Retrieve version metadata, including the file manifest
-    const vMeta = await getVersionMeta(scope, packageName, chosenVersion);
-    const filePaths = Object.keys(vMeta.manifest);
-
-    // 4) Check if package is already downloaded
+    // 3) Check if package is already downloaded
     const isDownloaded = await isPackageDownloaded(
       filePaths,
       outputDir,
       useSinglePath,
       scope,
       packageName,
-      chosenVersion,
+      resolvedVersion,
     );
     if (isDownloaded) {
       relinka(
         "success",
-        `@${scope}/${packageName}@${chosenVersion} is already downloaded.`,
+        `@${scope}/${packageName}@${resolvedVersion} is already downloaded.`,
         pkgIsCLI
           ? `Use "bun ${outputDir}/bin/main.ts" to use it (short command is coming soon).`
           : undefined,
@@ -249,21 +252,21 @@ export async function downloadJsrDist(
       return;
     }
 
-    // 5) Notify user that we're downloading the CLI
+    // 4) Notify user that we're downloading the CLI
     relinka(
       "info",
       msgDownloadStarted ??
-        `Downloading ${scope}/${packageName}@${chosenVersion} from JSR...`,
+        `Downloading ${scope}/${packageName}@${resolvedVersion} from JSR...`,
     );
 
-    // 6) Use p-limit to control concurrency
+    // 5) Use p-limit to control concurrency
     const limit = pLimit(concurrency);
     const tasks = filePaths.map((filePath) =>
       limit(() =>
         downloadFile(
           scope,
           packageName,
-          chosenVersion,
+          resolvedVersion,
           filePath,
           outputDir,
           useSinglePath,
@@ -271,16 +274,16 @@ export async function downloadJsrDist(
       ),
     );
 
-    // 7) Run all downloads in parallel, up to 'concurrency' at once
+    // 6) Run all downloads in parallel, up to 'concurrency' at once
     await Promise.all(tasks);
 
-    // 8) If pkgIsCLI and revertTsxFiles is true, rename -tsx.txt files back to .tsx
+    // 7) If pkgIsCLI and revertTsxFiles is true, rename -tsx.txt files back to .tsx
     if (pkgIsCLI && revertTsxFiles) {
       relinka("info-verbose", "Reverting .tsx files...");
       await renameTxtToTsx(outputDir);
     }
 
-    // 9) If installDeps is true, install dependencies
+    // 8) If installDeps is true, install dependencies
     if (pkgIsCLI && cliInstallDeps) {
       relinka("info", "Installing dependencies...");
       await installDependencies({
@@ -289,7 +292,7 @@ export async function downloadJsrDist(
       });
     }
 
-    // 10) Notify user that the download is complete
+    // 9) Notify user that the download is complete
     relinka(
       "success",
       `All files for @${scope}/${packageName} downloaded successfully.`,

@@ -99,7 +99,7 @@ export async function reReadReliverseConfig(): Promise<ReliverseConfig | null> {
 
 export const PROJECT_FRAMEWORK_FILES: Record<ProjectFramework, string[]> = {
   unknown: [],
-  "npm-jsr": ["jsr.json", "jsr.jsonc", "pub.config.ts"],
+  "npm-jsr": ["jsr.json", "jsr.jsonc", "build.publish.ts"],
   astro: ["astro.config.js", "astro.config.ts", "astro.config.mjs"],
   nextjs: ["next.config.js", "next.config.ts", "next.config.mjs"],
   vite: ["vite.config.js", "vite.config.ts", "react.config.js"],
@@ -129,12 +129,14 @@ export async function detectProjectFramework(
 /**
  * Deep merges two objects recursively while preserving nested structures.
  */
-function deepMerge<T extends Record<string, any>>(
+function deepMerge<T extends Record<string, unknown>>(
   target: T,
   source: Partial<T>,
 ): T {
   const result = { ...target };
   for (const key in source) {
+    if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+
     const sourceValue = source[key];
     const targetValue = target[key];
 
@@ -147,9 +149,12 @@ function deepMerge<T extends Record<string, any>>(
         typeof targetValue === "object" &&
         !Array.isArray(targetValue)
       ) {
-        result[key] = deepMerge(targetValue, sourceValue as any);
+        result[key] = deepMerge(
+          targetValue as Record<string, unknown>,
+          sourceValue as Record<string, unknown>,
+        ) as T[Extract<keyof T, string>];
       } else {
-        result[key] = sourceValue;
+        result[key] = sourceValue as T[Extract<keyof T, string>];
       }
     }
   }
@@ -269,7 +274,7 @@ export async function migrateReliverseConfig(
     // List of keys to consider for migration
     const keysToMigrate: (keyof ReliverseConfig)[] = [
       "projectDescription",
-      "projectVersion",
+      "version",
       "projectLicense",
       "projectRepository",
       "projectCategory",
@@ -332,7 +337,7 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   projectName: UNKNOWN_VALUE,
   projectAuthor: UNKNOWN_VALUE,
   projectDescription: UNKNOWN_VALUE,
-  projectVersion: "0.1.0",
+  version: "0.1.0",
   projectLicense: "MIT",
   projectState: "creating",
   projectRepository: DEFAULT_DOMAIN,
@@ -536,14 +541,19 @@ export function fixLineByLine(
     }
 
     const isValidStructure = Value.Check(
-      createSinglePropertySchema(propName, subSchema),
+      createSinglePropertySchema(propName, subSchema!),
       { [propName]: userValue },
     );
 
     if (!isValidStructure) {
       result[propName] = defaultValue;
       changedKeys.push(propName);
-    } else if ((subSchema as any).type === "object") {
+    } else if (
+      subSchema &&
+      typeof subSchema === "object" &&
+      "type" in subSchema &&
+      subSchema["type"] === "object"
+    ) {
       const { fixedConfig, changedKeys: nestedChanges } = fixLineByLine(
         userValue,
         defaultValue,
@@ -556,7 +566,7 @@ export function fixLineByLine(
     } else {
       const originalValue = userValue;
       const validatedValue = fixSingleProperty(
-        subSchema,
+        subSchema!,
         propName,
         userValue,
         defaultValue,
@@ -896,7 +906,7 @@ export async function getDefaultReliverseConfig(
     projectName: effectiveProjectName,
     projectAuthor: effectiveProjectAuthor,
     projectDescription: packageData.description ?? UNKNOWN_VALUE,
-    projectVersion: packageData.version ?? "0.1.0",
+    version: packageData.version ?? "0.1.0",
     projectLicense: packageData.license ?? "MIT",
     projectRepository:
       typeof packageData.repository === "string"
@@ -1313,7 +1323,7 @@ export async function generateReliverseConfig({
   baseRules.projectAuthor = cliUsername;
   baseRules.projectDescription =
     packageJson?.description ?? baseRules.projectDescription ?? UNKNOWN_VALUE;
-  baseRules.projectVersion = packageJson?.version ?? baseRules.projectVersion;
+  baseRules.version = packageJson?.version ?? baseRules.version;
   baseRules.projectLicense = packageJson?.license ?? baseRules.projectLicense;
 
   const projectNameWithoutAt = projectName?.replace("@", "");

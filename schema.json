@@ -35,7 +35,7 @@
     "projectDescription": {
       "type": "string"
     },
-    "projectVersion": {
+    "version": {
       "type": "string"
     },
     "projectLicense": {
@@ -409,7 +409,7 @@
     "projectName",
     "projectAuthor",
     "projectDescription",
-    "projectVersion",
+    "version",
     "projectLicense",
     "projectRepository",
     "projectDomain",

@@ -1,9 +1,9 @@
-import type { VercelCore } from "@vercel/sdk/core";
-import type { UpdateProjectRequestBody } from "@vercel/sdk/models/updateprojectop";
+import type { VercelCore } from "@vercel/sdk/core.js";
+import type { UpdateProjectRequestBody } from "@vercel/sdk/models/updateprojectop.js";
 
 import { multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
-import { projectsUpdateProject } from "@vercel/sdk/funcs/projectsUpdateProject";
+import { projectsUpdateProject } from "@vercel/sdk/funcs/projectsUpdateProject.js";
 
 import { experimental } from "~/app/constants.js";
 

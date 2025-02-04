@@ -229,11 +229,11 @@ export async function generateProjectConfigs(
 ): Promise<void> {
   try {
     // Check which files exist
-    const existingFiles = [];
+    const existingFiles: string[] = [];
     for (const category of Object.keys(CONFIG_CATEGORIES)) {
-      for (const file of CONFIG_CATEGORIES[
-        category as keyof typeof CONFIG_CATEGORIES
-      ]) {
+      const files =
+        CONFIG_CATEGORIES[category as keyof typeof CONFIG_CATEGORIES];
+      for (const file of files) {
         const filePath = path.join(projectPath, file);
         if (await fs.pathExists(filePath)) {
           existingFiles.push(file);

@@ -84,6 +84,7 @@ function convertThemeToCssVariables(
     for (const [, name, value] of Array.from(colorEntries)) {
       variables.push({
         name: `--color-${name}`,
+        // @ts-expect-error TODO: fix strictNullChecks undefined
         value: value.startsWith("#") ? convertHexToOklch(value) : value,
       });
     }
@@ -105,6 +106,7 @@ function convertThemeToCssVariables(
     const screenContent = screenMatch[1];
     const screenEntries = screenContent.matchAll(/(\w+):\s*['"]([^'"]+)['"]/g);
     for (const [, name, value] of Array.from(screenEntries)) {
+      // @ts-expect-error TODO: fix strictNullChecks undefined
       variables.push({ name: `--breakpoint-${name}`, value });
     }
   }

@@ -1,6 +1,6 @@
 import { relinka } from "@reliverse/prompts";
-import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain";
-import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains";
+import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
+import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains.js";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 

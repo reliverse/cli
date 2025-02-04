@@ -1,10 +1,11 @@
-import type { VercelCore } from "@vercel/sdk/core";
-import type { InlinedFile } from "@vercel/sdk/models/createdeploymentop";
+import type { VercelCore } from "@vercel/sdk/core.js";
+import type { InlinedFile } from "@vercel/sdk/models/createdeploymentop.js";
 
-import { relinka } from "@reliverse/prompts";
-import { deploymentsCreateDeployment } from "@vercel/sdk/funcs/deploymentsCreateDeployment";
-import { deploymentsGetDeployment } from "@vercel/sdk/funcs/deploymentsGetDeployment";
-import { deploymentsGetDeploymentEvents } from "@vercel/sdk/funcs/deploymentsGetDeploymentEvents";
+import { relinka, relinkaAsync } from "@reliverse/prompts";
+import { deploymentsCreateDeployment } from "@vercel/sdk/funcs/deploymentsCreateDeployment.js";
+import { deploymentsGetDeployment } from "@vercel/sdk/funcs/deploymentsGetDeployment.js";
+import { deploymentsGetDeploymentEvents } from "@vercel/sdk/funcs/deploymentsGetDeploymentEvents.js";
+import { projectsCreateProject } from "@vercel/sdk/funcs/projectsCreateProject.js";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -71,7 +72,6 @@ function shouldIncludeFile(filePath: string): boolean {
     /^yarn-debug\.log/,
     /^yarn-error\.log/,
   ];
-
   return !excludePatterns.some((pattern) => pattern.test(filePath));
 }
 
@@ -81,15 +81,10 @@ function shouldIncludeFile(filePath: string): boolean {
 export async function getFiles(directory: string): Promise<InlinedFile[]> {
   const files: InlinedFile[] = [];
   const entries = await fs.readdir(directory, { withFileTypes: true });
-
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
     const relativePath = path.relative(directory, fullPath);
-
-    if (!shouldIncludeFile(relativePath)) {
-      continue;
-    }
-
+    if (!shouldIncludeFile(relativePath)) continue;
     if (entry.isDirectory()) {
       files.push(...(await getFiles(fullPath)));
     } else {
@@ -110,7 +105,6 @@ export async function getFiles(directory: string): Promise<InlinedFile[]> {
       }
     }
   }
-
   return files;
 }
 
@@ -124,72 +118,59 @@ export function splitFilesIntoChunks(
   const chunks: InlinedFile[][] = [];
   let currentChunk: InlinedFile[] = [];
   let currentSize = 0;
-
   for (const file of files) {
     const fileSize = Buffer.byteLength(
       file.data,
       file.encoding === "base64" ? "base64" : "utf8",
     );
-
     if (currentSize + fileSize > maxChunkSize && currentChunk.length > 0) {
       chunks.push(currentChunk);
       currentChunk = [];
       currentSize = 0;
     }
-
     currentChunk.push(file);
     currentSize += fileSize;
   }
-
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk);
-  }
-
+  if (currentChunk.length > 0) chunks.push(currentChunk);
   return chunks.length > 0 ? chunks : [[]];
 }
 
 /**
- * Monitors deployment logs and status
+ * Monitors deployment logs and status.
+ *
+ * Accepts `teamId` and `slug` for the proper team context.
  */
 export async function monitorDeployment(
   vercel: VercelCore,
   deploymentId: string,
+  teamId: string,
+  slug: string,
   showDetailedLogs = false,
 ): Promise<void> {
   try {
-    // Get deployment logs using the standalone function
     const logsRes = await deploymentsGetDeploymentEvents(vercel, {
       idOrUrl: deploymentId,
+      teamId,
+      slug,
     });
-    if (!logsRes.ok) {
-      throw logsRes.error;
-    }
+    if (!logsRes.ok) throw logsRes.error;
     const logs = logsRes.value;
-
     if (Array.isArray(logs)) {
       let errors = 0;
       let warnings = 0;
-
       for (const log of logs as DeploymentLog[]) {
         const timestamp = new Date(log.created).toLocaleTimeString();
         const message = `[${log.type}] ${log.text}`;
-
-        switch (log.type) {
-          case "error":
-            errors++;
-            relinka("error", `${timestamp}: ${message}`);
-            break;
-          case "warning":
-            warnings++;
-            relinka("warn", `${timestamp}: ${message}`);
-            break;
-          default:
-            if (showDetailedLogs) {
-              relinka("info", `${timestamp}: ${message}`);
-            }
+        if (log.type === "error") {
+          errors++;
+          relinka("error", `${timestamp}: ${message}`);
+        } else if (log.type === "warning") {
+          warnings++;
+          relinka("warn", `${timestamp}: ${message}`);
+        } else if (showDetailedLogs) {
+          relinka("info", `${timestamp}: ${message}`);
         }
       }
-
       if (errors > 0 || warnings > 0) {
         relinka(
           "info",
@@ -207,7 +188,11 @@ export async function monitorDeployment(
 }
 
 /**
- * Creates a new deployment
+ * Creates a new deployment.
+ *
+ * Retrieves the primary team info (teamId and slug) and then:
+ * 1. Creates/links the project using projectsCreateProject.
+ * 2. Creates the deployment using deploymentsCreateDeployment.
  */
 export async function createDeployment(
   memory: ReliverseMemory,
@@ -219,104 +204,119 @@ export async function createDeployment(
 ): Promise<{ url: string; id: string }> {
   relinka("info", "Creating deployment from GitHub...");
 
-  const deploymentRes = await withRateLimit(async () => {
-    return await deploymentsCreateDeployment(vercel, {
+  // Retrieve primary team details.
+  const vercelTeam = await getPrimaryVercelTeam(vercel, memory);
+  if (!vercelTeam) throw new Error("No Vercel team found.");
+  const teamId = vercelTeam.id;
+  const slug = vercelTeam.slug;
+
+  // Create (or link) the project.
+  const projectRes = await withRateLimit(async () => {
+    return await projectsCreateProject(vercel, {
+      teamId,
+      slug,
       requestBody: {
         name: projectName,
-        target: "production",
-        gitSource: {
+        framework: config.framework ?? "nextjs",
+        buildCommand: config.buildCommand,
+        outputDirectory: config.outputDirectory,
+        rootDirectory: config.rootDirectory,
+        devCommand: config.devCommand,
+        installCommand: config.installCommand,
+        gitRepository: {
           type: "github",
-          repo: projectName,
-          ref: "main",
-          org: githubUsername,
-        },
-        projectSettings: {
-          framework: config.framework ?? "nextjs",
-          buildCommand: config.buildCommand ?? null,
-          outputDirectory: config.outputDirectory ?? null,
-          rootDirectory: config.rootDirectory ?? null,
-          devCommand: config.devCommand ?? null,
-          installCommand: config.installCommand ?? null,
+          repo: `${githubUsername}/${projectName}`,
         },
       },
     });
   });
-  if (!deploymentRes.ok) {
-    throw deploymentRes.error;
-  }
-  const deployment = deploymentRes.value;
+  if (!projectRes.ok) throw projectRes.error;
+  const project = projectRes.value;
 
+  // Create the deployment.
+  const deploymentRes = await withRateLimit(async () => {
+    return await deploymentsCreateDeployment(vercel, {
+      teamId,
+      slug,
+      requestBody: {
+        name: projectName,
+        target: "production",
+        project: project.id,
+        gitSource: {
+          type: "github",
+          ref: "main",
+          repoId: `${githubUsername}/${projectName}`,
+        },
+      },
+    });
+  });
+  if (!deploymentRes.ok) throw deploymentRes.error;
+  const deployment = deploymentRes.value;
   if (!deployment?.id || !deployment.readyState || !deployment.url) {
     throw new Error(
-      "Failed to create deployment - invalid response from Vercel",
+      "Failed to create deployment – invalid response from Vercel",
     );
   }
 
-  // Monitor deployment progress
+  // Monitor deployment progress.
   let status = deployment.readyState;
   const inProgressStates = ["BUILDING", "INITIALIZING", "QUEUED"] as const;
-
-  const vercelTeam = await getPrimaryVercelTeam(vercel, memory);
-  const vercelSlug = vercelTeam?.slug;
-  const deploymentUrl = vercelSlug
-    ? `https://vercel.com/${vercelSlug}/${projectName}`
+  const deploymentUrl = slug
+    ? `https://vercel.com/${slug}/${projectName}`
     : "https://vercel.com";
-
   relinka(
     "info",
     `Deployment started. Visit ${deploymentUrl} to monitor progress.`,
     "Please wait. Status messages will be shown every 20 seconds.",
   );
-
   let lastMessageTime = Date.now();
   while (inProgressStates.includes(status as string)) {
-    // Monitor logs with detailed option
     await monitorDeployment(
       vercel,
       deployment.id,
+      teamId,
+      slug,
       selectedOptions.includes("monitoring"),
     );
-
-    // Wait before checking status again (check every 5 seconds)
     await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    // Get updated status using the standalone function
     const depRes = await withRateLimit(async () => {
       return await deploymentsGetDeployment(vercel, {
         idOrUrl: deployment.id,
+        teamId,
+        slug,
       });
     });
-    if (!depRes.ok) {
-      throw depRes.error;
-    }
-    const { readyState: newStatus } = depRes.value;
-    status = newStatus;
-
-    // Only show status message every 20 seconds
+    if (!depRes.ok) throw depRes.error;
+    status = depRes.value.readyState;
     const now = Date.now();
     if (now - lastMessageTime >= 20000) {
-      relinka("info", `Deployment status: ${status}`);
+      await relinkaAsync(
+        "info",
+        `Deployment status: ${status}`,
+        undefined,
+        undefined,
+        { delay: 50 },
+      );
       lastMessageTime = now;
     }
   }
-
   if (status !== "READY") {
-    // Get final logs before throwing error
     await monitorDeployment(
       vercel,
       deployment.id,
+      teamId,
+      slug,
       selectedOptions.includes("monitoring"),
     );
     throw new Error(`Deployment failed with status: ${status}`);
   }
-
-  // Show final deployment logs
   await monitorDeployment(
     vercel,
     deployment.id,
+    teamId,
+    slug,
     selectedOptions.includes("monitoring"),
   );
-
   return {
     url: deployment.url,
     id: deployment.id,
@@ -324,7 +324,7 @@ export async function createDeployment(
 }
 
 /**
- * Handles additional deployment steps such as environment variable configuration
+ * Handles additional deployment steps such as environment variable configuration.
  */
 export async function handleDeployment(
   vercel: VercelCore,
@@ -341,7 +341,6 @@ export async function handleDeployment(
       ...env,
       type: "encrypted" as const,
     }));
-
     if (envVars.length > 0) {
       await handleEnvironmentVariables(
         vercel,

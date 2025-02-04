@@ -1,4 +1,4 @@
-import { VercelCore } from "@vercel/sdk/core";
+import { VercelCore } from "@vercel/sdk/core.js";
 
 /**
  * Creates a new Vercel SDK instance with the provided token

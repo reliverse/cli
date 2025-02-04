@@ -70,7 +70,7 @@ async function initializeGitRepo(
   if (isTemplateDownload) {
     relinka(
       "info-verbose",
-      "Skipping git repository initialization since it's a template download",
+      "Skipping initializeGitRepo since it's a template download",
     );
     return;
   }
@@ -110,7 +110,7 @@ async function createGitCommit(
   if (isTemplateDownload) {
     relinka(
       "info-verbose",
-      "Skipping git commit creation since it's a template download",
+      "Skipping createGitCommit since it's a template download",
     );
     return;
   }
@@ -157,7 +157,7 @@ export async function initGitDir(
   if (params.isTemplateDownload) {
     relinka(
       "info-verbose",
-      "Skipping git commit since it's a template download",
+      "Skipping initGitDir since it's a template download",
     );
     return true;
   }
@@ -261,6 +261,14 @@ export async function createCommit(
     isTemplateDownload: boolean;
   },
 ): Promise<boolean> {
+  if (params.isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping createCommit since it's a template download",
+    );
+    return true;
+  }
+
   const effectiveDir = getEffectiveDir(params);
 
   try {
@@ -369,8 +377,17 @@ export async function handleGithubRepo(
     shouldMaskSecretInput: boolean;
     githubUsername: string;
     selectedTemplate: RepoOption;
+    isTemplateDownload: boolean;
   },
 ): Promise<boolean> {
+  if (params.isTemplateDownload) {
+    relinka(
+      "info-verbose",
+      "Skipping handleGithubRepo since it's a template download",
+    );
+    return true;
+  }
+
   const effectiveDir = getEffectiveDir(params);
 
   try {
@@ -402,6 +419,7 @@ export async function handleGithubRepo(
         params.cwd,
         params.shouldMaskSecretInput,
         params.config,
+        params.isTemplateDownload,
       );
 
       // But if repo DOES exist, then
@@ -485,6 +503,7 @@ export async function handleGithubRepo(
           params.cwd,
           params.shouldMaskSecretInput,
           params.config,
+          params.isTemplateDownload,
         );
       }
     }

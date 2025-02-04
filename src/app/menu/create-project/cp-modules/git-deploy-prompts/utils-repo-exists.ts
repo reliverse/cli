@@ -59,6 +59,7 @@ export async function handleExistingRepo(
     },
     true,
     false,
+    false,
   );
 
   if (shouldCommitAndPush) {

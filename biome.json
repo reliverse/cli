@@ -103,9 +103,16 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "style": {
+        "useConst": {
+          "level": "warn",
+          "fix": "unsafe"
+        },
+        "useTemplate": {
+          "level": "warn",
+          "fix": "safe"
+        },
         "useSingleVarDeclarator": "off",
         "useExponentiationOperator": "off",
-        "useConst": "off",
         "noInferrableTypes": "off",
         "noNonNullAssertion": "off",
         "noParameterAssign": "off",
@@ -120,6 +127,7 @@
         "useWhile": "off"
       },
       "suspicious": {
+        "noControlCharactersInRegex": "off",
         "noConfusingVoidType": "off",
         "noApproximativeNumericConstant": "off",
         "noArrayIndexKey": "off",

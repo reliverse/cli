@@ -48,6 +48,7 @@ export async function showUpdateCloneMenu(isDev: boolean, cwd: string) {
       projectName: "test-name",
       isDev,
       cwd,
+      isTemplateDownload: false,
     });
     if (dir) {
       await loadAndRunConfig(

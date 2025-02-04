@@ -1,9 +1,9 @@
-import type { VercelCore } from "@vercel/sdk/core";
+import type { VercelCore } from "@vercel/sdk/core.js";
 
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv";
+import { projectsCreateProjectEnv } from "@vercel/sdk/funcs/projectsCreateProjectEnv.js";
 
 import type { DeploymentOptions, EnvVar } from "./vercel-types.js";
 
