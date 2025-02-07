@@ -2,22 +2,20 @@ import { relinka } from "@reliverse/prompts";
 import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDomain.js";
 import { projectsGetProjectDomains } from "@vercel/sdk/funcs/projectsGetProjectDomains.js";
 
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { createVercelInstance } from "./vercel-client.js";
-
 export async function getVercelProjectDomain(
+  vercelInstance: InstanceVercel,
+  vercelToken: string,
   projectName: string,
-  memory: ReliverseMemory,
 ): Promise<{ domains: string[]; primary: string }> {
   try {
-    if (!memory?.vercelKey) {
-      throw new Error("Vercel token not found");
+    if (!vercelToken) {
+      throw new Error("No Vercel token provided");
     }
 
-    const vercel = createVercelInstance(memory.vercelKey);
-
-    const res = await projectsGetProjectDomains(vercel, {
+    const res = await projectsGetProjectDomains(vercelInstance, {
       idOrName: projectName,
     });
 
@@ -70,6 +68,7 @@ export async function getVercelProjectDomain(
 }
 
 export async function getVercelProjectDomainByName(
+  vercelInstance: InstanceVercel,
   projectName: string,
   domainName: string,
   memory: ReliverseMemory,
@@ -79,9 +78,7 @@ export async function getVercelProjectDomainByName(
       throw new Error("Vercel token not found");
     }
 
-    const vercel = createVercelInstance(memory.vercelKey);
-
-    const res = await projectsGetProjectDomain(vercel, {
+    const res = await projectsGetProjectDomain(vercelInstance, {
       idOrName: projectName,
       domain: domainName,
     });

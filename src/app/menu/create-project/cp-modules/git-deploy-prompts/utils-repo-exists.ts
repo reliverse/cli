@@ -54,7 +54,7 @@ export async function handleExistingRepo(
     "",
     {
       ...params.config,
-      cliUsername: params.githubUsername,
+      frontendUsername: params.githubUsername,
       primaryDomain: `${params.projectName}.com`,
     },
     true,

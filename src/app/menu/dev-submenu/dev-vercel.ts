@@ -1,4 +1,3 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
 import type { GetProjectsResponseBody } from "@vercel/sdk/models/getprojectsop.js";
 
 import {
@@ -14,38 +13,27 @@ import { projectsGetProjects } from "@vercel/sdk/funcs/projectsGetProjects.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { withRateLimit } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-api.js";
-import { createVercelInstance } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-client.js";
-import { ensureVercelToken } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-create.js";
 import { getPrimaryVercelTeam } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-team.js";
+import { initVercelSDK, type InstanceVercel } from "~/utils/instanceVercel.js";
 
 export async function openVercelTools(memory: ReliverseMemory) {
-  let vercelInstance: VercelCore | null = null;
-  let hasVercelToken = false;
-  let vercelToken = "";
-
-  if (memory.vercelKey && memory.vercelKey !== "") {
-    vercelToken = memory.vercelKey;
-    hasVercelToken = true;
+  // initialize Vercel SDK
+  const result = await initVercelSDK(memory, true);
+  if (!result) {
+    throw new Error(
+      "Failed to initialize Vercel SDK. Please notify the @reliverse/cli developers if the problem persists.",
+    );
   }
+  const [token, vercel] = result;
 
-  if (!hasVercelToken) {
-    const result = await ensureVercelToken(true, memory);
-    if (!result)
-      throw new Error(
-        "Something went wrong. Vercel token not found. Please try again or notify the Reliverse CLI developers if the problem persists.",
-      );
-    const [token, instance] = result;
-    vercelToken = token;
-    vercelInstance = instance;
-  } else {
-    vercelInstance = createVercelInstance(vercelToken);
-  }
-
+  // Prompt the user to select the tool
   const choice = await selectPrompt({
     title: "Vercel Tools",
     options: [{ label: "Delete projects", value: "delete-projects" }],
   });
 
+  // Limit the number of projects to
+  // delete based on the terminal size
   const hSize = getTerminalHeight();
   let limit = "10";
   if (hSize > 15) limit = "15";
@@ -54,18 +42,19 @@ export async function openVercelTools(memory: ReliverseMemory) {
   else if (hSize > 40) limit = "40";
   else if (hSize > 50) limit = "50";
 
+  // Show the list of projects
   if (choice === "delete-projects") {
-    await deleteVercelProjects(vercelInstance, memory, limit, hSize);
+    await deleteVercelProjects(vercel, memory, limit, hSize, token);
   }
 }
 
 async function getVercelProjects(
-  instance: VercelCore,
+  vercelInstance: InstanceVercel,
   limit: string,
   team?: { id: string; slug: string },
 ): Promise<GetProjectsResponseBody["projects"]> {
   const res = await withRateLimit(async () => {
-    return await projectsGetProjects(instance, {
+    return await projectsGetProjects(vercelInstance, {
       teamId: team?.id,
       slug: team?.slug,
       limit: limit,
@@ -80,13 +69,18 @@ async function getVercelProjects(
 }
 
 async function deleteVercelProjects(
-  instance: VercelCore,
+  vercelInstance: InstanceVercel,
   memory: ReliverseMemory,
   limit: string,
   hSize: number,
+  token: string,
 ) {
-  const team = await getPrimaryVercelTeam(instance, memory);
-  const allProjects = await getVercelProjects(instance, limit, team);
+  if (!token) {
+    throw new Error("No Vercel token provided");
+  }
+
+  const team = await getPrimaryVercelTeam(vercelInstance, memory);
+  const allProjects = await getVercelProjects(vercelInstance, limit, team);
 
   const protectedNames = [
     "relivator",
@@ -151,7 +145,7 @@ async function deleteVercelProjects(
     try {
       relinka("info-verbose", `Deleting project ${projectName}...`);
       const res = await withRateLimit(async () => {
-        return await projectsDeleteProject(instance, {
+        return await projectsDeleteProject(vercelInstance, {
           idOrName: projectId,
           teamId: team?.id,
           slug: team?.slug,

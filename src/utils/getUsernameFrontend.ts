@@ -7,7 +7,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 import { DEFAULT_CLI_USERNAME } from "~/app/constants.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
-export async function askUserName(
+export async function getUsernameFrontend(
   memory: ReliverseMemory,
 ): Promise<string | null> {
   const previousName = typeof memory.name === "string" ? memory.name : "";

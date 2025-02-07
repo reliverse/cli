@@ -1,9 +1,10 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
 import type { UpdateProjectRequestBody } from "@vercel/sdk/models/updateprojectop.js";
 
 import { multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { projectsUpdateProject } from "@vercel/sdk/funcs/projectsUpdateProject.js";
+
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 
 import { experimental } from "~/app/constants.js";
 
@@ -14,7 +15,7 @@ import { withRateLimit } from "./vercel-api.js";
  * @see https://github.com/vercel/sdk/blob/main/docs/sdks/projects/README.md#updateproject
  */
 export async function updateProject(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
   config: UpdateProjectRequestBody,
   teamId?: string,
@@ -22,7 +23,7 @@ export async function updateProject(
 ): Promise<void> {
   try {
     const res = await withRateLimit(async () => {
-      return await projectsUpdateProject(vercel, {
+      return await projectsUpdateProject(vercelInstance, {
         idOrName: projectId,
         teamId,
         slug: teamSlug,
@@ -47,11 +48,11 @@ export async function updateProject(
  * Enables analytics for the project
  */
 export async function enableAnalytics(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
 ): Promise<void> {
   try {
-    await updateProject(vercel, projectId, {
+    await updateProject(vercelInstance, projectId, {
       customerSupportCodeVisibility: true,
     });
     relinka("success", "Analytics enabled successfully");
@@ -68,11 +69,11 @@ export async function enableAnalytics(
  * Configures branch protection settings
  */
 export async function configureBranchProtection(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
 ): Promise<void> {
   try {
-    await updateProject(vercel, projectId, {
+    await updateProject(vercelInstance, projectId, {
       gitForkProtection: true,
       enablePreviewFeedback: true,
     });
@@ -90,11 +91,11 @@ export async function configureBranchProtection(
  * Configures resource settings
  */
 export async function configureResources(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
 ): Promise<void> {
   try {
-    await updateProject(vercel, projectId, {
+    await updateProject(vercelInstance, projectId, {
       serverlessFunctionRegion: "iad1",
     });
     relinka("success", "Resource configuration updated successfully");

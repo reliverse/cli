@@ -1,9 +1,10 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
 import type { GetTeamsResponseBody } from "@vercel/sdk/models/getteamsop.js";
 
 import { relinka } from "@reliverse/prompts";
 import { teamsGetTeam } from "@vercel/sdk/funcs/teamsGetTeam.js";
 import { teamsGetTeams } from "@vercel/sdk/funcs/teamsGetTeams.js";
+
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 
 import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -17,20 +18,20 @@ export type VercelTeam = {
  * Gets the primary Vercel team details from memory or verifies and returns from API
  */
 export async function getPrimaryVercelTeam(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   memory: { vercelTeamId?: string; vercelTeamSlug?: string },
 ): Promise<VercelTeam | undefined> {
   try {
     // First try to verify existing team from memory
     if (memory.vercelTeamId && memory.vercelTeamSlug) {
       const isTeamValid = await verifyTeam(
-        vercel,
+        vercelInstance,
         memory.vercelTeamId,
         memory.vercelTeamSlug,
       );
       if (isTeamValid) {
         // Get full team details to include name
-        const teams = await getVercelTeams(vercel);
+        const teams = await getVercelTeams(vercelInstance);
         const memoryTeam = teams.find(
           (team) => team.id === memory.vercelTeamId,
         );
@@ -41,7 +42,7 @@ export async function getPrimaryVercelTeam(
     }
 
     // If no valid team in memory, get first team from API
-    const teams = await getVercelTeams(vercel);
+    const teams = await getVercelTeams(vercelInstance);
     if (teams?.length > 0 && teams[0]) {
       const team = teams[0];
       // Write to memory for future use
@@ -58,7 +59,7 @@ export async function getPrimaryVercelTeam(
   } catch (error) {
     relinka(
       "warn",
-      "Error getting primary team:",
+      "Error getting primary Vercel team:",
       error instanceof Error ? error.message : String(error),
     );
     return undefined;
@@ -66,12 +67,12 @@ export async function getPrimaryVercelTeam(
 }
 
 export async function verifyTeam(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   teamId: string,
   teamSlug: string,
 ): Promise<boolean> {
   try {
-    const res = await teamsGetTeam(vercel, {
+    const res = await teamsGetTeam(vercelInstance, {
       teamId,
       slug: teamSlug,
     });
@@ -97,9 +98,9 @@ export async function verifyTeam(
 }
 
 export async function getVercelTeams(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
 ): Promise<VercelTeam[]> {
-  const res = await teamsGetTeams(vercel, {
+  const res = await teamsGetTeams(vercelInstance, {
     limit: 10,
   });
 

@@ -1,6 +1,7 @@
 import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
+import { ofetch } from "ofetch";
 import os from "os";
 import path from "pathe";
 
@@ -12,12 +13,12 @@ import {
 } from "~/utils/downloading/downloadRepo.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 import {
-  REPOS,
+  REPO_TEMPLATES,
   saveRepoToDevice,
   getRepoInfo,
-  type Repo,
   type RepoFromSchema,
   type CategoryFromSchema,
+  type CloneOrTemplateRepo,
 } from "~/utils/projectRepository.js";
 
 type UnghRepoResponse = {
@@ -26,13 +27,22 @@ type UnghRepoResponse = {
   };
 };
 
-async function checkRepoVersion(repo: Repo) {
+async function checkRepoVersion(
+  repo: CloneOrTemplateRepo,
+): Promise<string | null> {
   const [owner, repoName] = repo.id.split("/");
   if (!owner || !repoName) return null;
 
-  const response = await fetch(`https://ungh.cc/repos/${owner}/${repoName}`);
-  const data = (await response.json()) as UnghRepoResponse;
-  return data.repo?.pushedAt ?? null;
+  const url = `https://ungh.cc/repos/${owner}/${repoName}`;
+
+  try {
+    // ofetch automatically parses json using destr
+    const data = await ofetch<UnghRepoResponse>(url);
+    return data.repo?.pushedAt ?? null;
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return null;
+  }
 }
 
 export async function handleDownload({
@@ -69,8 +79,8 @@ export async function handleDownload({
   // -------------------------------------------------
   // 1) Identify chosen repo
   // -------------------------------------------------
-  let repo: Repo;
-  const foundRepo = REPOS.find((t) => t.id === selectedRepo);
+  let repo: CloneOrTemplateRepo;
+  const foundRepo = REPO_TEMPLATES.find((t) => t.id === selectedRepo);
   if (foundRepo && !isCustom) {
     repo = foundRepo;
   } else {

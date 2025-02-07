@@ -44,7 +44,7 @@ const TEMP_EXTENSION = ".tmp";
 
 export type GenerateReliverseConfigOptions = {
   projectName: string;
-  cliUsername: string;
+  frontendUsername: string;
   deployService: DeploymentService;
   primaryDomain: string;
   projectPath: string;
@@ -992,7 +992,7 @@ async function createReliverseConfig(
 
   await generateReliverseConfig({
     projectName: effectiveProjectName,
-    cliUsername: effectiveAuthorName,
+    frontendUsername: effectiveAuthorName,
     deployService: "vercel",
     primaryDomain: effectiveDomain,
     projectPath: cwd,
@@ -1298,7 +1298,7 @@ export async function detectFeatures(
 
 export async function generateReliverseConfig({
   projectName,
-  cliUsername,
+  frontendUsername,
   deployService,
   primaryDomain,
   projectPath,
@@ -1310,17 +1310,18 @@ export async function generateReliverseConfig({
   const packageJson = await getPackageJson(projectPath);
 
   if (isDev) {
-    cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+    frontendUsername =
+      frontendUsername === "reliverse" ? "blefnk" : frontendUsername;
   }
 
   const baseRules = await getDefaultReliverseConfig(
     projectPath,
     projectName,
-    cliUsername,
+    frontendUsername,
   );
 
   baseRules.projectName = projectName;
-  baseRules.projectAuthor = cliUsername;
+  baseRules.projectAuthor = frontendUsername;
   baseRules.projectDescription =
     packageJson?.description ?? baseRules.projectDescription ?? UNKNOWN_VALUE;
   baseRules.version = packageJson?.version ?? baseRules.version;

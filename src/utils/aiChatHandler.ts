@@ -6,6 +6,7 @@ import { printLineBar, relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import { streamText } from "ai";
 import dotenv from "dotenv";
+import { ofetch } from "ofetch";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -19,6 +20,7 @@ const messages: CoreMessage[] = [];
  * Ensures we have a valid OpenAI API key in either:
  *  1) process.env
  *  2) memory.openaiKey
+ *
  * If not found or invalid, prompts the user to provide one,
  * then stores it in memory.
  */
@@ -29,14 +31,12 @@ async function ensureOpenAIKey(memory: ReliverseMemory): Promise<string> {
   // 1) Check .env
   if (process.env["OPENAI_API_KEY"]) {
     try {
-      const result = await fetch("https://api.openai.com/v1/models", {
-        headers: { Authorization: `Bearer ${process.env["OPENAI_API_KEY"]}` },
+      await ofetch("https://api.openai.com/v1/models", {
+        headers: {
+          Authorization: `Bearer ${process.env["OPENAI_API_KEY"]}`,
+        },
       });
-      if (result.ok) {
-        return process.env["OPENAI_API_KEY"];
-      }
-      envKeyInvalid = true;
-      relinka("warn", "OpenAI key in .env file is invalid, checking memory...");
+      return process.env["OPENAI_API_KEY"];
     } catch {
       envKeyInvalid = true;
       relinka("warn", "OpenAI key in .env file is invalid, checking memory...");
@@ -46,30 +46,25 @@ async function ensureOpenAIKey(memory: ReliverseMemory): Promise<string> {
   // 2) Check memory
   if (memory.openaiKey) {
     try {
-      const result = await fetch("https://api.openai.com/v1/models", {
+      await ofetch("https://api.openai.com/v1/models", {
         headers: { Authorization: `Bearer ${memory.openaiKey}` },
       });
-      if (result.ok) {
-        // If we found a valid key in memory but had an invalid one in .env,
-        // update .env with the valid key
-        process.env["OPENAI_API_KEY"] = memory.openaiKey;
-        if (envKeyInvalid) {
-          relinka(
-            "info",
-            "Found valid key in memory, using it instead of invalid .env key",
-          );
-        }
-        return memory.openaiKey;
+      // If valid, update .env if needed.
+      process.env["OPENAI_API_KEY"] = memory.openaiKey;
+      if (envKeyInvalid) {
+        relinka(
+          "info",
+          "Found valid key in memory, using it instead of invalid .env key",
+        );
       }
-      memoryKeyInvalid = true;
-      relinka("warn", "OpenAI key in memory is invalid");
+      return memory.openaiKey;
     } catch {
       memoryKeyInvalid = true;
       relinka("warn", "OpenAI key in memory is invalid");
     }
   }
 
-  // 3) Prompt for a new one
+  // 3) Prompt for a new one.
   if (envKeyInvalid || memoryKeyInvalid) {
     relinka(
       "info",
@@ -86,15 +81,12 @@ async function ensureOpenAIKey(memory: ReliverseMemory): Promise<string> {
         return "API key is required";
       }
       try {
-        const result = await fetch("https://api.openai.com/v1/models", {
+        await ofetch("https://api.openai.com/v1/models", {
           headers: { Authorization: `Bearer ${value}` },
         });
-        if (result.ok) {
-          return true;
-        }
-        return "Invalid API key. Please check your key and try again.";
+        return true;
       } catch {
-        return "Failed to validate API key. Please check your internet connection.";
+        return "Invalid API key. Please check your key and try again.";
       }
     },
   });
@@ -124,7 +116,7 @@ export async function aiChatHandler(memory: ReliverseMemory) {
     //
     console.log(`${re.dim("ℹ")}  ${re.bold("Reliverse:")}`);
 
-    // Stream the assistant response with "ai" + "@ai-sdk/openai"
+    // Stream the assistant response
     try {
       const result = streamText({
         model: openai("gpt-3.5-turbo"),
@@ -138,13 +130,11 @@ export async function aiChatHandler(memory: ReliverseMemory) {
         // Handle newlines by adding the bar prefix
         const lines = delta.split("\n");
         for (let i = 0; i < lines.length; i++) {
-          const line = lines[i] ?? "";
           if (i > 0) {
-            // On each new line, print a fresh bar prefix
             console.log();
             process.stdout.write(re.dim("│  "));
           }
-          process.stdout.write(line);
+          process.stdout.write(lines[i] ?? "");
         }
         assistantResponse += delta;
       }

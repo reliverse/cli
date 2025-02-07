@@ -17,10 +17,10 @@ import { handleReplacements } from "~/utils/replacements/reps-mod.js";
 import {
   initializeProjectConfig,
   setupI18nSupport,
-  handleDeployment,
   handleDependencies,
   showSuccessAndNextSteps,
 } from "./cp-impl.js";
+import { promptGitDeploy } from "./cp-modules/git-deploy-prompts/gdp-mod.js";
 
 /**
  * Creates a new web project from a template.
@@ -60,7 +60,7 @@ export async function createWebProject({
     cwd,
   );
   const {
-    cliUsername,
+    frontendUsername,
     projectName,
     primaryDomain: initialDomain,
   } = projectConfig;
@@ -90,7 +90,7 @@ export async function createWebProject({
     externalReliversePath,
     {
       primaryDomain: initialDomain,
-      cliUsername,
+      frontendUsername,
       projectName,
     },
     false,
@@ -113,11 +113,11 @@ export async function createWebProject({
   // -------------------------------------------------
   // 6) Ask about masking secrets
   // -------------------------------------------------
-  let shouldMaskSecretInput = true;
+  let maskInput = true;
   if (skipPrompts) {
     relinka("info", "Auto-mode: Masking secret inputs by default.");
   } else {
-    shouldMaskSecretInput = await confirmPrompt({
+    maskInput = await confirmPrompt({
       title: "Do you want to mask secret inputs?",
       content: "Regardless, your data will be stored securely.",
     });
@@ -129,7 +129,7 @@ export async function createWebProject({
   await composeEnvFile(
     projectPath,
     FALLBACK_ENV_EXAMPLE_URL,
-    shouldMaskSecretInput,
+    maskInput,
     skipPrompts,
     config,
   );
@@ -148,7 +148,7 @@ export async function createWebProject({
   await generateProjectConfigs(
     projectPath,
     projectName,
-    cliUsername,
+    frontendUsername,
     "vercel",
     initialDomain,
     enableI18n,
@@ -159,7 +159,7 @@ export async function createWebProject({
   // 10) Deployment flow
   // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
-    await handleDeployment({
+    await promptGitDeploy({
       projectName,
       config,
       projectPath,
@@ -170,9 +170,11 @@ export async function createWebProject({
       isDev,
       memory,
       cwd,
-      shouldMaskSecretInput,
+      maskInput,
       skipPrompts,
       selectedTemplate: selectedRepo,
+      isTemplateDownload: false,
+      frontendUsername,
     });
 
   // If the user changed domain or deploy service, update .reliverse again
@@ -189,7 +191,7 @@ export async function createWebProject({
   await showSuccessAndNextSteps(
     projectPath,
     selectedRepo,
-    cliUsername,
+    frontendUsername,
     isDeployed,
     primaryDomain,
     allDomains,

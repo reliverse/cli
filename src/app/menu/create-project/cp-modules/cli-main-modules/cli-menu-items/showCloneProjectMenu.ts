@@ -9,10 +9,10 @@ import { relinka } from "@reliverse/prompts";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { ensureGithubToken } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
+import { ensureGithubToken } from "~/utils/instanceGithub.js";
 import { cd } from "~/utils/terminalHelpers.js";
 
 /**
@@ -328,9 +328,9 @@ export async function showCloneProjectMenu({
       });
 
       // Download the repository
-      let ghToken = "";
+      let githubToken = "";
       if (privacy === "private") {
-        ghToken = await ensureGithubToken(memory, "prompt");
+        githubToken = await ensureGithubToken(memory, "prompt");
       }
       const { source, dir } = await handleDownload({
         cwd,
@@ -339,7 +339,7 @@ export async function showCloneProjectMenu({
         projectPath: "",
         projectName,
         selectedRepo: repo,
-        auth: ghToken,
+        auth: githubToken,
         preserveGit: gitPreference === "preserve",
         config: gitPreference === "fresh" ? config : undefined,
         install: shouldInstallDeps,
@@ -394,9 +394,9 @@ export async function showCloneProjectMenu({
     });
 
     // Download the repository
-    let ghToken = "";
+    let githubToken = "";
     if (privacy === "private") {
-      ghToken = await ensureGithubToken(memory, "prompt");
+      githubToken = await ensureGithubToken(memory, "prompt");
     }
     const { source, dir } = await handleDownload({
       cwd,
@@ -405,7 +405,7 @@ export async function showCloneProjectMenu({
       projectPath: "",
       projectName,
       selectedRepo: result.repo,
-      auth: ghToken,
+      auth: githubToken,
       preserveGit: gitPreference === "preserve",
       config: gitPreference === "fresh" ? config : undefined,
       install: shouldInstallDeps,

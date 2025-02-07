@@ -446,6 +446,7 @@ export async function downloadRepo({
           if (!preserveGit) {
             await fs.remove(path.join(projectPath, ".git"));
             if (config) {
+              relinka("info-verbose", "[D] initGitDir");
               await initGitDir({
                 cwd,
                 isDev,

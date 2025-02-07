@@ -1,7 +1,7 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
-
 import { relinka } from "@reliverse/prompts";
 import { projectsGetProjectEnv } from "@vercel/sdk/funcs/projectsGetProjectEnv.js";
+
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 
 import type { EnvVar } from "./vercel-types.js";
 
@@ -12,12 +12,12 @@ const RETRY_DELAY = 5000;
  * Gets an environment variable from a Vercel project.
  */
 export async function getVercelEnvVar(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
   envVarId: string,
 ): Promise<EnvVar | undefined> {
   try {
-    const res = await projectsGetProjectEnv(vercel, {
+    const res = await projectsGetProjectEnv(vercelInstance, {
       idOrName: projectId,
       id: envVarId,
     });

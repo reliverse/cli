@@ -12,6 +12,7 @@ import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env
 import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { downloadRepo } from "~/utils/downloading/downloadRepo.js";
+import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { cd, pwd, rm } from "~/utils/terminalHelpers.js";
 
 export async function rmTestsRuntime(cwd: string) {
@@ -48,7 +49,7 @@ export async function downloadRepoOption(
   await cd(dir);
   pwd();
 
-  const shouldMaskSecretInput = await confirmPrompt({
+  const maskInput = await confirmPrompt({
     title:
       "Do you want to mask secret inputs (e.g., GitHub token) in the next steps?",
     content:
@@ -58,10 +59,17 @@ export async function downloadRepoOption(
   await composeEnvFile(
     dir,
     FALLBACK_ENV_EXAMPLE_URL,
-    shouldMaskSecretInput,
+    maskInput,
     skipPrompts,
     config,
   );
+
+  const frontendUsername = await getUsernameFrontend(memory);
+  if (!frontendUsername) {
+    throw new Error(
+      "Failed to determine your frontend username. Please try again or notify the CLI developers.",
+    );
+  }
 
   const { deployService } = await promptGitDeploy({
     projectName,
@@ -74,9 +82,11 @@ export async function downloadRepoOption(
     isDev: true,
     memory,
     cwd,
-    shouldMaskSecretInput: false,
+    maskInput: false,
     skipPrompts: false,
     selectedTemplate: "blefnk/relivator",
+    isTemplateDownload: false,
+    frontendUsername,
   });
 
   if (deployService === "none") {

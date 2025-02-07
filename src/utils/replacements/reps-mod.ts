@@ -150,16 +150,16 @@ export async function handleReplacements(
     ),
 
     // Author replacements
-    [projectAuthor]: config.cliUsername,
-    [HardcodedStrings.DefaultAuthor]: config.cliUsername,
+    [projectAuthor]: config.frontendUsername,
+    [HardcodedStrings.DefaultAuthor]: config.frontendUsername,
 
     // URL patterns
     [CommonPatterns.githubUrl(projectAuthor, projectName)]:
-      CommonPatterns.githubUrl(config.cliUsername, config.projectName),
+      CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
     [CommonPatterns.githubUrl(
       HardcodedStrings.DefaultAuthor,
       HardcodedStrings.RelivatorLower,
-    )]: CommonPatterns.githubUrl(config.cliUsername, config.projectName),
+    )]: CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
 
     // Package name patterns
     [CommonPatterns.packageName(projectName)]: CommonPatterns.packageName(
@@ -172,9 +172,9 @@ export async function handleReplacements(
     [HardcodedStrings.RelivatorTitle]: config.projectDescription
       ? `${capitalizeWithDashes(config.projectName)} - ${config.projectDescription}`
       : `${capitalizeWithDashes(config.projectName)} - A modern web application for your business needs`,
-    [HardcodedStrings.DefaultEmail]: config.cliUsername.includes("@")
-      ? config.cliUsername
-      : `${config.cliUsername}@${config.primaryDomain}`,
+    [HardcodedStrings.DefaultEmail]: config.frontendUsername.includes("@")
+      ? config.frontendUsername
+      : `${config.frontendUsername}@${config.primaryDomain}`,
   };
 
   // Add replacements from external config if available
@@ -192,9 +192,9 @@ export async function handleReplacements(
     }
     if (
       externalConfig.projectAuthor &&
-      externalConfig.projectAuthor !== config.cliUsername
+      externalConfig.projectAuthor !== config.frontendUsername
     ) {
-      replacementsMap[externalConfig.projectAuthor] = config.cliUsername;
+      replacementsMap[externalConfig.projectAuthor] = config.frontendUsername;
     }
     if (externalConfig.projectDescription) {
       replacementsMap[externalConfig.projectDescription] =

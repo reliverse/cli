@@ -346,7 +346,7 @@ function generateSecureString(length = 64): string {
 export async function promptAndSetMissingValues(
   missingKeys: string[],
   envPath: string,
-  shouldMaskSecretInput: boolean,
+  maskInput: boolean,
   config: ReliverseConfig,
   wasEnvCopied = false,
 ): Promise<void> {
@@ -419,7 +419,7 @@ export async function promptAndSetMissingValues(
       // If optional is true, give user a chance to skip
       if (keyConfig.optional) {
         const displayValue =
-          shouldMaskSecretInput && keyConfig.defaultValue
+          maskInput && keyConfig.defaultValue
             ? "[hidden]"
             : keyConfig.defaultValue === "generate-64-chars"
               ? "[will generate secure string]"
@@ -446,9 +446,7 @@ export async function promptAndSetMissingValues(
                 keyConfig.defaultValue === "generate-64-chars"
                   ? "generated"
                   : "default"
-              } value for ${keyConfig.key}${
-                shouldMaskSecretInput ? "" : `: ${value}`
-              }`,
+              } value for ${keyConfig.key}${maskInput ? "" : `: ${value}`}`,
             );
           }
           continue;
@@ -468,11 +466,11 @@ export async function promptAndSetMissingValues(
           title: `Enter value for ${keyConfig.key}:`,
           placeholder: defaultVal
             ? `Press Enter to use default: ${
-                shouldMaskSecretInput ? "[hidden]" : defaultVal
+                maskInput ? "[hidden]" : defaultVal
               }`
             : "Paste your value here...",
           defaultValue: defaultVal ?? "",
-          mode: shouldMaskSecretInput ? "password" : "plain",
+          mode: maskInput ? "password" : "plain",
           ...(keyConfig.instruction && {
             content: keyConfig.instruction,
             contentColor: "yellowBright",

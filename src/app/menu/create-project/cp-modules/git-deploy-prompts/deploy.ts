@@ -3,10 +3,12 @@ import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 
 import type { DeploymentService } from "~/types.js";
+import type { InstanceGithub } from "~/utils/instanceGithub.js";
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { createVercelDeployment } from "./vercel/vercel-create.js";
+import { prepareVercelProjectCreation } from "./vercel/vercel-create.js";
 
 export async function selectDeploymentService(
   config: ReliverseConfig,
@@ -16,7 +18,10 @@ export async function selectDeploymentService(
     config.projectDeployService !== "none"
   ) {
     const deployService = config.projectDeployService;
-    relinka("info", `Using configured deployment service: ${deployService}`);
+    relinka(
+      "info-verbose",
+      `Using configured deployment service: ${deployService}`,
+    );
     return deployService;
   }
 
@@ -37,13 +42,16 @@ export async function selectDeploymentService(
 }
 
 export async function deployProject(
+  githubInstance: InstanceGithub,
+  vercelInstance: InstanceVercel,
+  vercelToken: string,
+  githubToken: string,
   skipPrompts: boolean,
   projectName: string,
   config: ReliverseConfig,
   projectPath: string,
   primaryDomain: string,
   memory: ReliverseMemory,
-  shouldMaskSecretInput: boolean,
   deployMode: "new" | "update",
   githubUsername: string,
 ): Promise<{
@@ -52,7 +60,7 @@ export async function deployProject(
   isDeployed: boolean;
   allDomains: string[];
 }> {
-  relinka("info", `Preparing deployment for ${projectName} project...`);
+  relinka("info-verbose", `Preparing deployment for ${projectName} project...`);
 
   try {
     const deployService = await selectDeploymentService(config);
@@ -76,14 +84,17 @@ export async function deployProject(
       };
     }
 
-    const success = await createVercelDeployment(
+    const success = await prepareVercelProjectCreation(
+      githubInstance,
+      vercelInstance,
+      vercelToken,
+      githubToken,
       skipPrompts,
       projectName,
       projectPath,
       primaryDomain,
       memory,
       deployMode,
-      shouldMaskSecretInput,
       githubUsername,
     );
 

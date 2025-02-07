@@ -1,19 +1,27 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { globby } from "globby";
-import fetch from "node-fetch-native";
 import { installDependencies } from "nypm";
+import { ofetch } from "ofetch";
 import pLimit from "p-limit";
 import { dirname, join } from "pathe";
 import semver from "semver";
 import { fileURLToPath } from "url";
 
-/** Enable verbose logging for debugging. */
+// ────────────────────────────────────────────────
+// Configuration & Constants
+// ────────────────────────────────────────────────
+
 const verbose = false;
+const BASE_URL = "https://jsr.io";
 
 /** Emulate __dirname in ESM. */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// ────────────────────────────────────────────────
+// Type Definitions
+// ────────────────────────────────────────────────
 
 /** Package-level metadata structure returned by JSR. */
 type PackageMeta = {
@@ -35,18 +43,26 @@ type VersionMeta = {
   exports?: Record<string, string>;
 };
 
+// ────────────────────────────────────────────────
+// HTTP & JSON Helpers
+// ────────────────────────────────────────────────
+
 /**
- * Fetches JSON from the provided URL, ensuring we don't include text/html in Accept.
+ * Fetches JSON from the provided URL using ofetch.
  */
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch JSON from "${url}" (status: ${res.status})`,
-    );
+  try {
+    return await ofetch<T>(url, {
+      headers: { Accept: "application/json" },
+    });
+  } catch (error) {
+    throw new Error(`Failed to fetch JSON from "${url}" (error: ${error})`);
   }
-  return (await res.json()) as T;
 }
+
+// ────────────────────────────────────────────────
+// JSR API Helpers
+// ────────────────────────────────────────────────
 
 /**
  * Fetches the package metadata (meta.json) for @scope/packageName from JSR.
@@ -55,13 +71,14 @@ async function getPackageMeta(
   scope: string,
   packageName: string,
 ): Promise<PackageMeta> {
-  const url = `https://jsr.io/@${scope}/${packageName}/meta.json`;
+  const url = `${BASE_URL}/@${scope}/${packageName}/meta.json`;
   return fetchJson<PackageMeta>(url);
 }
 
 /**
- * Picks a suitable version from the PackageMeta. If userVersion is provided,
- * verifies it is not yanked. Otherwise, picks the highest semver-valid, non-yanked version.
+ * Picks a suitable version from the PackageMeta.
+ * If userVersion is provided, verifies that it exists and is not yanked.
+ * Otherwise, returns the highest semver-valid, non‑yanked version.
  */
 function pickVersionFromMeta(meta: PackageMeta, userVersion?: string): string {
   if (userVersion) {
@@ -79,19 +96,21 @@ function pickVersionFromMeta(meta: PackageMeta, userVersion?: string): string {
     return userVersion;
   }
 
+  // Filter valid non-yanked versions with valid semver
   const versions = Object.keys(meta.versions).filter((v) => {
-    const version = meta.versions[v];
-    return version && !version.yanked && semver.valid(v);
+    const versionInfo = meta.versions[v];
+    return versionInfo && !versionInfo.yanked && semver.valid(v);
   });
+
   if (versions.length === 0) {
     throw new Error(
       "No valid (non-yanked, semver) versions found for this package.",
     );
   }
 
+  // Pick the highest version (using semver sort)
   versions.sort((a, b) => semver.rcompare(a, b));
-  // @ts-expect-error TODO: fix strictNullChecks undefined
-  return versions[0]; // highest semver
+  return versions[0]!;
 }
 
 /**
@@ -102,13 +121,13 @@ async function getVersionMeta(
   packageName: string,
   version: string,
 ): Promise<VersionMeta> {
-  const url = `https://jsr.io/@${scope}/${packageName}/${version}_meta.json`;
+  const url = `${BASE_URL}/@${scope}/${packageName}/${version}_meta.json`;
   return fetchJson<VersionMeta>(url);
 }
 
 /**
- * Downloads a single file from the JSR registry and writes it to:
- *   output/@scope/@packageName/@version/<filePath>
+ * Downloads a single file from the JSR registry and writes it to disk.
+ * The target path structure depends on the value of useSinglePath.
  */
 async function downloadFile(
   scope: string,
@@ -119,17 +138,15 @@ async function downloadFile(
   useSinglePath: boolean,
 ): Promise<void> {
   const trimmedFilePath = filePath.replace(/^\//, "");
-  const url = `https://jsr.io/@${scope}/${packageName}/${version}/${trimmedFilePath}`;
-  const resp = await fetch(url, { headers: { Accept: "*/*" } });
+  const url = `${BASE_URL}/@${scope}/${packageName}/${version}/${trimmedFilePath}`;
 
-  if (!resp.ok) {
-    throw new Error(
-      `Failed to download "${filePath}" (status: ${resp.status})`,
-    );
-  }
-  const buffer = Buffer.from(await resp.arrayBuffer());
+  const buffer = Buffer.from(
+    await ofetch(url, {
+      headers: { Accept: "*/*" },
+      responseType: "arrayBuffer",
+    }),
+  );
 
-  // Determine the target path
   const targetFilePath = useSinglePath
     ? join(outputDir, trimmedFilePath)
     : join(outputDir, scope, packageName, version, trimmedFilePath);
@@ -142,7 +159,6 @@ async function downloadFile(
 
 /**
  * Checks if the package is already downloaded in the target directory.
- * Returns true if all expected files exist, false otherwise.
  */
 async function isPackageDownloaded(
   filePaths: string[],
@@ -178,7 +194,6 @@ async function renameTxtToTsx(dir: string): Promise<void> {
       cwd: dir,
       absolute: true,
     });
-
     for (const filePath of files) {
       const newPath = filePath.replace(/-tsx\.txt$/, ".tsx");
       await fs.rename(filePath, newPath);
@@ -195,17 +210,23 @@ async function renameTxtToTsx(dir: string): Promise<void> {
   }
 }
 
+// ────────────────────────────────────────────────
+// Main Download Function
+// ────────────────────────────────────────────────
+
 /**
- * Downloads all files for a given JSR package in parallel (concurrent).
- * - scope: e.g. "luca"
- * - packageName: e.g. "flag"
- * - version: (Optional) specific version. Otherwise picks highest semver valid.
- * - outputDir: Where to save files. Defaults to "<__dirname>/output".
- * - useSinglePath: If true, writes all files directly into `outputDir`. Otherwise, uses nested structure.
- * - concurrency: Max number of parallel downloads (default: 5).
- * - pkgIsCLI: Whether the package is a CLI tool.
- * - msgDownloadStarted: Custom message to show when download starts.
- * - revertTsxFiles: If true and pkgIsCLI is true, renames -tsx.txt files back to .tsx after download.
+ * Downloads all files for a given JSR package concurrently.
+ *
+ * @param scope - e.g. "luca"
+ * @param packageName - e.g. "flag"
+ * @param version - Specific version; if omitted, the highest valid version is chosen.
+ * @param outputDir - Where to save files. (Defaults to "<__dirname>/output")
+ * @param useSinglePath - If true, writes all files directly into outputDir; otherwise uses a nested structure.
+ * @param concurrency - Maximum number of parallel downloads (default: 5)
+ * @param pkgIsCLI - Whether the package is a CLI tool.
+ * @param msgDownloadStarted - Optional custom message when download starts.
+ * @param revertTsxFiles - If true (and pkgIsCLI), renames -tsx.txt files back to .tsx after download.
+ * @param cliInstallDeps - If true (and pkgIsCLI), installs dependencies after download.
  */
 export async function downloadJsrDist(
   scope: string,
@@ -220,11 +241,11 @@ export async function downloadJsrDist(
   cliInstallDeps = true,
 ): Promise<void> {
   try {
-    // 1) Get package metadata and determine version if not provided
+    // 1) Fetch package metadata and determine version
     const meta = await getPackageMeta(scope, packageName);
     const resolvedVersion = version || pickVersionFromMeta(meta);
 
-    // 2) Retrieve version metadata, including the file manifest
+    // 2) Get version metadata, including manifest of files to download
     const versionMeta = await getVersionMeta(
       scope,
       packageName,
@@ -232,7 +253,7 @@ export async function downloadJsrDist(
     );
     const filePaths = Object.keys(versionMeta.manifest);
 
-    // 3) Check if package is already downloaded
+    // 3) If package already exists locally, notify and exit
     const isDownloaded = await isPackageDownloaded(
       filePaths,
       outputDir,
@@ -246,20 +267,20 @@ export async function downloadJsrDist(
         "success",
         `@${scope}/${packageName}@${resolvedVersion} is already downloaded.`,
         pkgIsCLI
-          ? `Use "bun ${outputDir}/bin/main.ts" to use it (short command is coming soon).`
+          ? `Use "bun ${outputDir}/bin/main.ts" to run it (short command coming soon).`
           : undefined,
       );
       return;
     }
 
-    // 4) Notify user that we're downloading the CLI
+    // 4) Notify the user that the download is starting
     relinka(
       "info",
       msgDownloadStarted ??
         `Downloading ${scope}/${packageName}@${resolvedVersion} from JSR...`,
     );
 
-    // 5) Use p-limit to control concurrency
+    // 5) Download files concurrently using p-limit
     const limit = pLimit(concurrency);
     const tasks = filePaths.map((filePath) =>
       limit(() =>
@@ -273,17 +294,15 @@ export async function downloadJsrDist(
         ),
       ),
     );
-
-    // 6) Run all downloads in parallel, up to 'concurrency' at once
     await Promise.all(tasks);
 
-    // 7) If pkgIsCLI and revertTsxFiles is true, rename -tsx.txt files back to .tsx
+    // 6) Optionally rename -tsx.txt files back to .tsx (for CLI packages)
     if (pkgIsCLI && revertTsxFiles) {
       relinka("info-verbose", "Reverting .tsx files...");
       await renameTxtToTsx(outputDir);
     }
 
-    // 8) If installDeps is true, install dependencies
+    // 7) Optionally install dependencies (for CLI packages)
     if (pkgIsCLI && cliInstallDeps) {
       relinka("info", "Installing dependencies...");
       await installDependencies({
@@ -292,12 +311,12 @@ export async function downloadJsrDist(
       });
     }
 
-    // 9) Notify user that the download is complete
+    // 8) Notify the user of successful download
     relinka(
       "success",
       `All files for @${scope}/${packageName} downloaded successfully.`,
       pkgIsCLI
-        ? `Use "bun ${outputDir}/bin/main.ts" to use it (short command is coming soon).`
+        ? `Use "bun ${outputDir}/bin/main.ts" to run it (short command coming soon).`
         : undefined,
     );
   } catch (error) {

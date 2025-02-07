@@ -19,7 +19,7 @@ export type ParamsOmitReli = Omit<AppParams, "reli">;
  * Minimal object describing essential project info after initialization
  */
 export type ProjectConfigReturn = {
-  cliUsername: string;
+  frontendUsername: string;
   projectName: string;
   primaryDomain: string;
 };

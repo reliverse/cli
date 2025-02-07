@@ -25,7 +25,7 @@ export async function app(params: ParamsOmitSkipPN) {
   const { cwd, isDev, reli, memory, config } = params;
 
   const skipPrompts = config.skipPromptsUseAutoBehavior;
-  const cliUsername = memory.name !== "" ? memory.name : UNKNOWN_VALUE;
+  const frontendUsername = memory.name !== "" ? memory.name : UNKNOWN_VALUE;
   const projectName = isDev
     ? generate({ exactly: 2, join: "-" })
     : config.projectName;
@@ -53,8 +53,8 @@ export async function app(params: ParamsOmitSkipPN) {
 
   const mainMenuOption = await selectPrompt({
     options,
-    title: cliUsername
-      ? getWelcomeTitle(cliUsername)
+    title: frontendUsername
+      ? getWelcomeTitle(frontendUsername)
       : getRandomMessage("welcome"),
     titleColor: "retroGradient",
     displayInstructions: true,

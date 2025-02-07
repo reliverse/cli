@@ -20,7 +20,7 @@ import {
 export async function composeEnvFile(
   projectDir: string,
   fallbackEnvExampleURL: string,
-  shouldMaskSecretInput: boolean,
+  maskInput: boolean,
   skipPrompts: boolean,
   config: ReliverseConfig | null,
 ): Promise<void> {
@@ -66,7 +66,7 @@ export async function composeEnvFile(
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
-            shouldMaskSecretInput,
+            maskInput,
             config,
             true,
           );
@@ -140,7 +140,7 @@ export async function composeEnvFile(
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
-            shouldMaskSecretInput,
+            maskInput,
             config,
             true,
           );
@@ -161,7 +161,7 @@ export async function composeEnvFile(
           await promptAndSetMissingValues(
             remainingMissingKeys,
             envPath,
-            shouldMaskSecretInput,
+            maskInput,
             config,
             true,
           );
@@ -171,7 +171,7 @@ export async function composeEnvFile(
         await promptAndSetMissingValues(
           missingKeys,
           envPath,
-          shouldMaskSecretInput,
+          maskInput,
           config,
           false,
         );
@@ -181,7 +181,7 @@ export async function composeEnvFile(
       await promptAndSetMissingValues(
         missingKeys,
         envPath,
-        shouldMaskSecretInput,
+        maskInput,
         config,
         false,
       );

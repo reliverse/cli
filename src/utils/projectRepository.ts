@@ -5,6 +5,7 @@ import { re } from "@reliverse/relico";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";
+import { ofetch } from "ofetch";
 import os from "os";
 import path from "pathe";
 
@@ -24,17 +25,21 @@ import {
   shouldRegenerateSchema,
 } from "./schemaTemplate.js";
 
-// Extract the repo type from the schema
+// ────────────────────────────────────────────────
+// Type Definitions
+// ────────────────────────────────────────────────
+
+// Extract project template type from the config schema.
 export type RepoFromSchema = NonNullable<
   Static<(typeof reliverseConfigSchema)["properties"]["projectTemplate"]>
 >;
 
-// Extract the category type from the schema
+// Extract category type from the config schema.
 export type CategoryFromSchema = NonNullable<
   Static<(typeof reliverseConfigSchema)["properties"]["projectCategory"]>
 >;
 
-export type Repo = {
+export type CloneOrTemplateRepo = {
   id: RepoFromSchema;
   author: string;
   name: string;
@@ -42,7 +47,13 @@ export type Repo = {
   category: CategoryFromSchema;
 };
 
-export const REPOS: Repo[] = [
+export type RepoOption = CloneOrTemplateRepo["id"] | "unknown";
+
+// ────────────────────────────────────────────────
+// Repo Options
+// ────────────────────────────────────────────────
+
+export const REPO_TEMPLATES: CloneOrTemplateRepo[] = [
   {
     id: "blefnk/relivator",
     author: "blefnk",
@@ -123,13 +134,15 @@ export const REPOS: Repo[] = [
   },
 ];
 
-export type RepoOption = Repo["id"] | "unknown";
+// ────────────────────────────────────────────────
+// Repos Config Utilities
+// ────────────────────────────────────────────────
 
 async function getReposConfigPath(): Promise<string> {
   const reposPath = path.join(os.homedir(), ".reliverse", "repos");
   await fs.ensureDir(reposPath);
 
-  // Check if schema needs to be regenerated based on CLI version
+  // Regenerate schema if required.
   if (await shouldRegenerateSchema()) {
     await generateReposJsonSchema();
   }
@@ -139,7 +152,6 @@ async function getReposConfigPath(): Promise<string> {
 
 async function readReposConfig(): Promise<ReposConfig> {
   const configPath = await getReposConfigPath();
-
   if (!(await fs.pathExists(configPath))) {
     return DEFAULT_REPOS_CONFIG;
   }
@@ -147,14 +159,12 @@ async function readReposConfig(): Promise<ReposConfig> {
   try {
     const content = await fs.readFile(configPath, "utf-8");
     const parsed = parseJSONC(content);
-
     if (Value.Check(reposSchema, parsed)) {
       return parsed;
     }
   } catch (error) {
     relinka("warn", "Failed to parse repos.json:", String(error));
   }
-
   return DEFAULT_REPOS_CONFIG;
 }
 
@@ -168,6 +178,10 @@ export async function getRepoInfo(repoId: string): Promise<RepoInfo | null> {
   return config.repos.find((t) => t.id === repoId) ?? null;
 }
 
+// ────────────────────────────────────────────────
+// Fetch Repository Data from UNGH API
+// ────────────────────────────────────────────────
+
 type UnghRepoResponse = {
   repo: {
     stars: number;
@@ -180,10 +194,14 @@ type UnghRepoResponse = {
   };
 };
 
-async function fetchRepoData(owner: string, name: string) {
+async function fetchRepoData(
+  owner: string,
+  name: string,
+): Promise<UnghRepoResponse["repo"] | null> {
+  const url = `https://ungh.cc/repos/${owner}/${name}`;
   try {
-    const response = await fetch(`https://ungh.cc/repos/${owner}/${name}`);
-    const data = (await response.json()) as UnghRepoResponse;
+    // ofetch with generic will automatically parse json using destr
+    const data = await ofetch<UnghRepoResponse>(url);
     return data.repo;
   } catch (error) {
     relinka("warn", "Failed to fetch repo info from ungh:", String(error));
@@ -191,8 +209,16 @@ async function fetchRepoData(owner: string, name: string) {
   }
 }
 
-export async function saveRepoToDevice(repo: Repo, projectPath: string) {
+// ────────────────────────────────────────────────
+// Save Repository to Local Device
+// ────────────────────────────────────────────────
+
+export async function saveRepoToDevice(
+  repo: CloneOrTemplateRepo,
+  projectPath: string,
+): Promise<void> {
   try {
+    // Build destination path
     const repoSavePath = path.join(
       os.homedir(),
       ".reliverse",
@@ -203,18 +229,18 @@ export async function saveRepoToDevice(repo: Repo, projectPath: string) {
     await fs.ensureDir(path.dirname(repoSavePath));
     await fs.copy(projectPath, repoSavePath);
 
-    // Set hidden attribute for .git folder on Windows
+    // Set the .git folder hidden on Windows
     const gitFolderPath = path.join(repoSavePath, ".git");
     await setHiddenAttributeOnWindows(gitFolderPath);
 
-    // Get GitHub repository information
+    // Validate repo ID format
     const [owner, repoName] = repo.id.split("/");
     if (!owner || !repoName) {
       throw new Error(`Invalid repo ID format: ${repo.id}`);
     }
     const repoData = await fetchRepoData(owner, repoName);
 
-    // Save repo info
+    // Construct repository info object
     const repoInfo: RepoInfo = {
       id: repo.id,
       author: repo.author,
@@ -246,19 +272,21 @@ export async function saveRepoToDevice(repo: Repo, projectPath: string) {
 
     const config = await readReposConfig();
     const existingIndex = config.repos.findIndex((t) => t.id === repo.id);
-
     if (existingIndex >= 0) {
       config.repos[existingIndex] = repoInfo;
     } else {
       config.repos.push(repoInfo);
     }
-
     await writeReposConfig(config);
   } catch (error) {
     relinka("error", "Failed to save repo:", String(error));
     throw error;
   }
 }
+
+// ────────────────────────────────────────────────
+// Template Options for CLI Prompts
+// ────────────────────────────────────────────────
 
 export const TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS = {
   "blefnk/relivator": {

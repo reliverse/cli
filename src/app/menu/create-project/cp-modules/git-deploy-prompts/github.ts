@@ -1,5 +1,3 @@
-import type { Octokit } from "@octokit/rest";
-
 import { RequestError } from "@octokit/request-error";
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
@@ -7,24 +5,24 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
-import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { cliName } from "~/app/constants.js";
-import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
-import { askMaskInput } from "~/utils/secret-inputs/askMaskInput.js";
+import { type InstanceGithub } from "~/utils/instanceGithub.js";
 import { cd } from "~/utils/terminalHelpers.js";
 
 import { initGitDir } from "./git.js";
-import { createOctokitInstance } from "./octokit-instance.js";
 import { setupGitRemote } from "./utils-git-github.js";
 
 export async function checkGithubRepoOwnership(
-  octokit: Octokit,
+  githubInstance: InstanceGithub,
   owner: string,
   repo: string,
 ): Promise<{ exists: boolean; isOwner: boolean; defaultBranch?: string }> {
   try {
-    const { data: repository } = await octokit.rest.repos.get({ owner, repo });
+    const { data: repository } = await githubInstance.rest.repos.get({
+      owner,
+      repo,
+    });
     return {
       exists: true,
       isOwner: repository.permissions?.admin ?? false,
@@ -50,14 +48,14 @@ export async function checkGithubRepoOwnership(
  * Creates a new commit using GitHub's API
  */
 export async function createGithubCommit({
-  octokit,
+  githubInstance,
   owner,
   repo,
   message,
   files,
   branch = "main",
 }: {
-  octokit: Octokit;
+  githubInstance: InstanceGithub;
   owner: string;
   repo: string;
   message: string;
@@ -66,21 +64,21 @@ export async function createGithubCommit({
 }): Promise<boolean> {
   try {
     // Get the current branch ref
-    const { data: ref } = await octokit.rest.git.getRef({
+    const { data: ref } = await githubInstance.rest.git.getRef({
       owner,
       repo,
       ref: `heads/${branch}`,
     });
 
     // Get the current commit SHA
-    const { data: commit } = await octokit.rest.git.getCommit({
+    const { data: commit } = await githubInstance.rest.git.getCommit({
       owner,
       repo,
       commit_sha: ref.object.sha,
     });
 
     // Create a tree with all the changes
-    const { data: tree } = await octokit.rest.git.createTree({
+    const { data: tree } = await githubInstance.rest.git.createTree({
       owner,
       repo,
       base_tree: commit.tree.sha,
@@ -93,7 +91,7 @@ export async function createGithubCommit({
     });
 
     // Create a new commit
-    const { data: newCommit } = await octokit.rest.git.createCommit({
+    const { data: newCommit } = await githubInstance.rest.git.createCommit({
       owner,
       repo,
       message,
@@ -102,7 +100,7 @@ export async function createGithubCommit({
     });
 
     // Update the reference
-    await octokit.rest.git.updateRef({
+    await githubInstance.rest.git.updateRef({
       owner,
       repo,
       ref: `heads/${branch}`,
@@ -137,7 +135,7 @@ export async function createGithubCommit({
  * Creates a new commit with all local changes
  */
 export async function commitLocalChanges({
-  octokit,
+  githubInstance,
   owner,
   repo,
   directory,
@@ -145,7 +143,7 @@ export async function commitLocalChanges({
   message = `Update by ${cliName}`,
   branch = "main",
 }: {
-  octokit: InstanceType<typeof Octokit>;
+  githubInstance: InstanceGithub;
   owner: string;
   repo: string;
   directory: string;
@@ -185,7 +183,7 @@ export async function commitLocalChanges({
     }
 
     return await createGithubCommit({
-      octokit,
+      githubInstance,
       owner,
       repo,
       message,
@@ -203,7 +201,7 @@ export async function commitLocalChanges({
 }
 
 export async function getAvailableGithubRepoName(
-  octokit: Octokit,
+  githubInstance: InstanceGithub,
   owner: string,
   initialName: string,
 ): Promise<{
@@ -212,7 +210,11 @@ export async function getAvailableGithubRepoName(
   defaultBranch: string | undefined;
 }> {
   let repoName = initialName;
-  let repoStatus = await checkGithubRepoOwnership(octokit, owner, repoName);
+  let repoStatus = await checkGithubRepoOwnership(
+    githubInstance,
+    owner,
+    repoName,
+  );
 
   while (repoStatus.exists) {
     if (repoStatus.isOwner) {
@@ -262,77 +264,34 @@ export async function getAvailableGithubRepoName(
         if (!/^[a-zA-Z0-9._-]+$/.test(value)) {
           return "Repository name can only contain letters, numbers, dots, hyphens, and underscores";
         }
-        const status = await checkGithubRepoOwnership(octokit, owner, value);
+        const status = await checkGithubRepoOwnership(
+          githubInstance,
+          owner,
+          value,
+        );
         if (status.exists && !status.isOwner) {
           return `Repository "${value}" already exists. Please choose a different name`;
         }
         return true;
       },
     });
-    repoStatus = await checkGithubRepoOwnership(octokit, owner, repoName);
+    repoStatus = await checkGithubRepoOwnership(
+      githubInstance,
+      owner,
+      repoName,
+    );
   }
 
   return { name: repoName, exists: false, defaultBranch: undefined };
 }
 
-export async function ensureGithubToken(
-  memory: ReliverseMemory,
-  shouldMaskSecretInput: "prompt" | boolean,
-): Promise<string> {
-  let maskInput = true;
-  if (shouldMaskSecretInput === "prompt") {
-    maskInput = await askMaskInput();
-  } else {
-    maskInput = shouldMaskSecretInput;
-  }
-
-  if (memory.githubKey) {
-    // Validate existing token
-    try {
-      const octokit = createOctokitInstance(memory.githubKey);
-      await octokit.rest.users.getAuthenticated();
-      return memory.githubKey;
-    } catch (_error) {
-      relinka(
-        "warn",
-        "Existing GitHub token is invalid. Please provide a new one.",
-      );
-    }
-  }
-
-  const token = await inputPrompt({
-    title:
-      "Please enter your GitHub personal access token.\n(It will be securely stored on your machine):",
-    content:
-      "Create one at https://github.com/settings/tokens/new \n" +
-      "Set the `repo` scope and click `Generate token`",
-    mode: maskInput ? "password" : "plain",
-    validate: async (value: string): Promise<string | boolean> => {
-      if (!value?.trim()) {
-        return "Token is required";
-      }
-      try {
-        const octokit = createOctokitInstance(value);
-        await octokit.rest.users.getAuthenticated();
-        return true;
-      } catch (_error) {
-        return "Invalid token. Please ensure it has the correct permissions.";
-      }
-    },
-  });
-
-  await updateReliverseMemory({ githubKey: token });
-  return token;
-}
-
 export async function createGithubRepo(
-  memory: ReliverseMemory,
+  githubInstance: InstanceGithub,
   repoName: string,
   repoOwner: string,
   projectPath: string,
   isDev: boolean,
   cwd: string,
-  shouldMaskSecretInput: "prompt" | boolean,
   config: ReliverseConfig,
   isTemplateDownload: boolean,
 ): Promise<boolean> {
@@ -344,21 +303,13 @@ export async function createGithubRepo(
     return true;
   }
 
-  let maskInput = true;
-  if (shouldMaskSecretInput === "prompt") {
-    maskInput = await askMaskInput();
-  } else {
-    maskInput = shouldMaskSecretInput;
-  }
-
   try {
     // 1. Ensure we have a GitHub token
-    const ghToken = await ensureGithubToken(memory, maskInput);
-    const octokit = createOctokitInstance(ghToken);
 
     await cd(projectPath);
 
     // Initialize git and create repository
+    relinka("info-verbose", "[C] initGitDir");
     await initGitDir({
       cwd,
       isDev,
@@ -396,7 +347,7 @@ export async function createGithubRepo(
     relinka("info-verbose", "Creating repository...");
 
     try {
-      await octokit.rest.repos.createForAuthenticatedUser({
+      await githubInstance.rest.repos.createForAuthenticatedUser({
         name: repoName,
         private: privacyAction === "private",
         auto_init: false,

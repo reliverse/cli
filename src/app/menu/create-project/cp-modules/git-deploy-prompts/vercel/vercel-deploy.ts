@@ -1,154 +1,31 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
-import type { InlinedFile } from "@vercel/sdk/models/createdeploymentop.js";
-
 import { relinka, relinkaAsync } from "@reliverse/prompts";
 import { deploymentsCreateDeployment } from "@vercel/sdk/funcs/deploymentsCreateDeployment.js";
 import { deploymentsGetDeployment } from "@vercel/sdk/funcs/deploymentsGetDeployment.js";
 import { deploymentsGetDeploymentEvents } from "@vercel/sdk/funcs/deploymentsGetDeploymentEvents.js";
-import { projectsCreateProject } from "@vercel/sdk/funcs/projectsCreateProject.js";
-import fs from "fs-extra";
-import path from "pathe";
+import { simpleGit } from "simple-git";
 
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import type {
-  DeploymentLog,
-  DeploymentOptions,
-  VercelDeploymentConfig,
-} from "./vercel-types.js";
+import { type InstanceGithub } from "~/utils/instanceGithub.js";
+
+import type { DeploymentLog, VercelDeploymentConfig } from "./vercel-types.js";
 
 import { withRateLimit } from "./vercel-api.js";
-import { handleEnvironmentVariables } from "./vercel-env.js";
 import { getPrimaryVercelTeam } from "./vercel-team.js";
 
 /**
- * Checks if a file is binary
- */
-function isBinaryPath(filePath: string): boolean {
-  const binaryExtensions = [
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".ico",
-    ".webp",
-    ".mp4",
-    ".webm",
-    ".mov",
-    ".mp3",
-    ".wav",
-    ".pdf",
-    ".zip",
-    ".tar",
-    ".gz",
-    ".7z",
-    ".ttf",
-    ".woff",
-    ".woff2",
-    ".eot",
-    ".exe",
-    ".dll",
-    ".so",
-    ".dylib",
-  ];
-  return binaryExtensions.some((ext) => filePath.toLowerCase().endsWith(ext));
-}
-
-/**
- * Checks if a file should be included in deployment
- */
-function shouldIncludeFile(filePath: string): boolean {
-  const excludePatterns = [
-    /^\.git\//,
-    /^\.env/,
-    /^node_modules\//,
-    /^\.next\//,
-    /^dist\//,
-    /^\.vercel\//,
-    /^\.vscode\//,
-    /^\.idea\//,
-    /\.(log|lock)$/,
-    /^npm-debug\.log/,
-    /^yarn-debug\.log/,
-    /^yarn-error\.log/,
-  ];
-  return !excludePatterns.some((pattern) => pattern.test(filePath));
-}
-
-/**
- * Prepares files for deployment
- */
-export async function getFiles(directory: string): Promise<InlinedFile[]> {
-  const files: InlinedFile[] = [];
-  const entries = await fs.readdir(directory, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-    const relativePath = path.relative(directory, fullPath);
-    if (!shouldIncludeFile(relativePath)) continue;
-    if (entry.isDirectory()) {
-      files.push(...(await getFiles(fullPath)));
-    } else {
-      if (isBinaryPath(relativePath)) {
-        const data = await fs.readFile(fullPath, "base64");
-        files.push({
-          file: relativePath,
-          data,
-          encoding: "base64",
-        });
-      } else {
-        const data = await fs.readFile(fullPath, "utf-8");
-        files.push({
-          file: relativePath,
-          data,
-          encoding: "utf-8",
-        });
-      }
-    }
-  }
-  return files;
-}
-
-/**
- * Splits files into chunks to avoid request size limits
- */
-export function splitFilesIntoChunks(
-  files: InlinedFile[],
-  maxChunkSize = 8 * 1024 * 1024,
-): InlinedFile[][] {
-  const chunks: InlinedFile[][] = [];
-  let currentChunk: InlinedFile[] = [];
-  let currentSize = 0;
-  for (const file of files) {
-    const fileSize = Buffer.byteLength(
-      file.data,
-      file.encoding === "base64" ? "base64" : "utf8",
-    );
-    if (currentSize + fileSize > maxChunkSize && currentChunk.length > 0) {
-      chunks.push(currentChunk);
-      currentChunk = [];
-      currentSize = 0;
-    }
-    currentChunk.push(file);
-    currentSize += fileSize;
-  }
-  if (currentChunk.length > 0) chunks.push(currentChunk);
-  return chunks.length > 0 ? chunks : [[]];
-}
-
-/**
- * Monitors deployment logs and status.
- *
- * Accepts `teamId` and `slug` for the proper team context.
+ * Monitors the deployment logs until the deployment reaches a READY state.
  */
 export async function monitorDeployment(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   deploymentId: string,
   teamId: string,
   slug: string,
   showDetailedLogs = false,
 ): Promise<void> {
   try {
-    const logsRes = await deploymentsGetDeploymentEvents(vercel, {
+    const logsRes = await deploymentsGetDeploymentEvents(vercelInstance, {
       idOrUrl: deploymentId,
       teamId,
       slug,
@@ -188,64 +65,78 @@ export async function monitorDeployment(
 }
 
 /**
- * Creates a new deployment.
- *
- * Retrieves the primary team info (teamId and slug) and then:
- * 1. Creates/links the project using projectsCreateProject.
- * 2. Creates the deployment using deploymentsCreateDeployment.
+ * Creates the initial Vercel deployment for a project.
+ * This function now fixes the gitSource information by:
+ * 1. Retrieving the local HEAD commit SHA.
+ * 2. Using Octokit (via the GitHub token) to get the repository's numeric ID.
  */
-export async function createDeployment(
+export async function createInitialVercelDeployment(
+  githubInstance: InstanceGithub,
+  vercelInstance: InstanceVercel,
+  projectId: string,
   memory: ReliverseMemory,
-  vercel: VercelCore,
   projectName: string,
   config: VercelDeploymentConfig,
   selectedOptions: { includes: (option: string) => boolean },
   githubUsername: string,
+  githubToken: string,
 ): Promise<{ url: string; id: string }> {
-  relinka("info", "Creating deployment from GitHub...");
+  if (!githubToken) {
+    throw new Error(
+      "GitHub token not found in Reliverse's memory. Please restart the CLI and try again. Notify the @reliverse/cli developers if the problem persists.",
+    );
+  }
+
+  relinka("info", "Creating the initial deployment...");
+  relinka(
+    "info-verbose",
+    "Using Vercel deployment config:",
+    JSON.stringify(config),
+  );
 
   // Retrieve primary team details.
-  const vercelTeam = await getPrimaryVercelTeam(vercel, memory);
+  const vercelTeam = await getPrimaryVercelTeam(vercelInstance, memory);
   if (!vercelTeam) throw new Error("No Vercel team found.");
   const teamId = vercelTeam.id;
   const slug = vercelTeam.slug;
 
-  // Create (or link) the project.
-  const projectRes = await withRateLimit(async () => {
-    return await projectsCreateProject(vercel, {
-      teamId,
-      slug,
-      requestBody: {
-        name: projectName,
-        framework: config.framework ?? "nextjs",
-        buildCommand: config.buildCommand,
-        outputDirectory: config.outputDirectory,
-        rootDirectory: config.rootDirectory,
-        devCommand: config.devCommand,
-        installCommand: config.installCommand,
-        gitRepository: {
-          type: "github",
-          repo: `${githubUsername}/${projectName}`,
-        },
-      },
-    });
-  });
-  if (!projectRes.ok) throw projectRes.error;
-  const project = projectRes.value;
+  // Retrieve the local HEAD commit SHA.
+  const git = simpleGit();
+  let commitSha: string;
+  try {
+    commitSha = await git.revparse(["HEAD"]);
+  } catch (error) {
+    throw new Error(
+      `Failed to get local commit SHA. Ensure the repository is not empty. ${error}`,
+    );
+  }
 
-  // Create the deployment.
+  // Fetch numeric GitHub repository ID using Octokit.
+  let numericRepoId: number;
+  try {
+    const repoResp = await githubInstance.rest.repos.get({
+      owner: githubUsername,
+      repo: projectName,
+    });
+    numericRepoId = repoResp.data.id;
+  } catch (error) {
+    throw new Error(`Failed to fetch GitHub repository numeric ID. ${error}`);
+  }
+
+  // Create the deployment with a valid gitSource.
   const deploymentRes = await withRateLimit(async () => {
-    return await deploymentsCreateDeployment(vercel, {
+    return await deploymentsCreateDeployment(vercelInstance, {
       teamId,
       slug,
       requestBody: {
         name: projectName,
         target: "production",
-        project: project.id,
+        project: projectId,
         gitSource: {
           type: "github",
           ref: "main",
-          repoId: `${githubUsername}/${projectName}`,
+          repoId: numericRepoId,
+          sha: commitSha,
         },
       },
     });
@@ -254,12 +145,11 @@ export async function createDeployment(
   const deployment = deploymentRes.value;
   if (!deployment?.id || !deployment.readyState || !deployment.url) {
     throw new Error(
-      "Failed to create deployment – invalid response from Vercel",
+      "Failed to create deployment: invalid response from Vercel",
     );
   }
 
   // Monitor deployment progress.
-  let status = deployment.readyState;
   const inProgressStates = ["BUILDING", "INITIALIZING", "QUEUED"] as const;
   const deploymentUrl = slug
     ? `https://vercel.com/${slug}/${projectName}`
@@ -267,12 +157,14 @@ export async function createDeployment(
   relinka(
     "info",
     `Deployment started. Visit ${deploymentUrl} to monitor progress.`,
-    "Please wait. Status messages will be shown every 20 seconds.",
+    "Status messages will appear every 20 seconds.",
   );
+
   let lastMessageTime = Date.now();
-  while (inProgressStates.includes(status as string)) {
+  let status = deployment.readyState;
+  while (inProgressStates.includes(status)) {
     await monitorDeployment(
-      vercel,
+      vercelInstance,
       deployment.id,
       teamId,
       slug,
@@ -280,7 +172,7 @@ export async function createDeployment(
     );
     await new Promise((resolve) => setTimeout(resolve, 5000));
     const depRes = await withRateLimit(async () => {
-      return await deploymentsGetDeployment(vercel, {
+      return await deploymentsGetDeployment(vercelInstance, {
         idOrUrl: deployment.id,
         teamId,
         slug,
@@ -295,14 +187,14 @@ export async function createDeployment(
         `Deployment status: ${status}`,
         undefined,
         undefined,
-        { delay: 50 },
+        { delay: 50, useSpinner: true, spinnerDelay: 50 },
       );
       lastMessageTime = now;
     }
   }
   if (status !== "READY") {
     await monitorDeployment(
-      vercel,
+      vercelInstance,
       deployment.id,
       teamId,
       slug,
@@ -311,43 +203,11 @@ export async function createDeployment(
     throw new Error(`Deployment failed with status: ${status}`);
   }
   await monitorDeployment(
-    vercel,
+    vercelInstance,
     deployment.id,
     teamId,
     slug,
     selectedOptions.includes("monitoring"),
   );
-  return {
-    url: deployment.url,
-    id: deployment.id,
-  };
-}
-
-/**
- * Handles additional deployment steps such as environment variable configuration.
- */
-export async function handleDeployment(
-  vercel: VercelCore,
-  projectName: string,
-  projectPath: string,
-  isDeployed: boolean,
-  selectedOptions: DeploymentOptions,
-  getEnvVars: (dir: string) => Promise<{ key: string; value: string }[]>,
-): Promise<void> {
-  if (isDeployed || selectedOptions.options.includes("env")) {
-    relinka("info", "Setting up environment variables...");
-    const rawEnvVars = await getEnvVars(projectPath);
-    const envVars = rawEnvVars.map((env) => ({
-      ...env,
-      type: "encrypted" as const,
-    }));
-    if (envVars.length > 0) {
-      await handleEnvironmentVariables(
-        vercel,
-        projectName,
-        envVars,
-        selectedOptions,
-      );
-    }
-  }
+  return { url: deployment.url, id: deployment.id };
 }

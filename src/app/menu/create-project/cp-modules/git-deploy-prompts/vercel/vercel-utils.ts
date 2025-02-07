@@ -1,4 +1,3 @@
-import type { VercelCore } from "@vercel/sdk/core.js";
 import type {
   GetProjectsFramework,
   GetProjectsTarget1,
@@ -10,6 +9,7 @@ import { projectsGetProjectDomain } from "@vercel/sdk/funcs/projectsGetProjectDo
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { InstanceVercel } from "~/utils/instanceVercel.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
@@ -26,11 +26,11 @@ type VercelFramework = GetProjectsFramework;
 export async function saveVercelToken(
   token: string,
   memory: ReliverseMemory,
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
 ): Promise<void> {
   memory.vercelKey = token;
 
-  const teams = await getVercelTeams(vercel);
+  const teams = await getVercelTeams(vercelInstance);
 
   if (teams && teams.length > 0) {
     let selectedTeam: VercelTeam;
@@ -54,7 +54,7 @@ export async function saveVercelToken(
 
     // Verify team details before saving
     const isTeamValid = await verifyTeam(
-      vercel,
+      vercelInstance,
       selectedTeam.id,
       selectedTeam.slug,
     );
@@ -214,12 +214,12 @@ export async function detectFramework(
  * Verifies domain configuration.
  */
 export async function verifyDomain(
-  vercel: VercelCore,
+  vercelInstance: InstanceVercel,
   projectId: string,
   domain: string,
 ): Promise<boolean> {
   try {
-    const res = await projectsGetProjectDomain(vercel, {
+    const res = await projectsGetProjectDomain(vercelInstance, {
       idOrName: projectId,
       domain,
     });

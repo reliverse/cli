@@ -14,16 +14,15 @@ import os from "os";
 import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
-import type { Behavior, DeploymentService } from "~/types.js";
+import type { Behavior } from "~/types.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
-import { promptGitDeploy } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/gdp-mod.js";
 import { askProjectName } from "~/utils/askProjectName.js";
-import { askUserName } from "~/utils/askUserName.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
+import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
 import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
@@ -93,12 +92,18 @@ export async function initializeProjectConfig(
   cwd: string,
 ): Promise<ProjectConfigReturn> {
   // 1. Determine user (author)
-  const cliUsername =
+  const frontendUsername =
     skipPrompts &&
     config?.projectAuthor !== UNKNOWN_VALUE &&
     config?.projectAuthor !== ""
       ? config.projectAuthor
-      : ((await askUserName(memory)) ?? "");
+      : ((await getUsernameFrontend(memory)) ?? "");
+
+  if (!frontendUsername) {
+    throw new Error(
+      "Failed to determine your frontend username. Please try again or notify the CLI developers.",
+    );
+  }
 
   // 2. Determine project name
   if (skipPrompts) {
@@ -127,7 +132,7 @@ export async function initializeProjectConfig(
       ? config.projectDomain
       : `${projectName}.vercel.app`;
 
-  return { cliUsername, projectName, primaryDomain };
+  return { frontendUsername, projectName, primaryDomain };
 }
 
 /**
@@ -294,38 +299,12 @@ function getDefaultProjectPath(): string {
 }
 
 /**
- * Orchestrates final deployment steps with `promptGitDeploy`.
- */
-export async function handleDeployment(params: {
-  projectName: string;
-  config: ReliverseConfig;
-  projectPath: string;
-  primaryDomain: string;
-  hasDbPush: boolean;
-  shouldRunDbPush: boolean;
-  shouldInstallDeps: boolean;
-  isDev: boolean;
-  memory: ReliverseMemory;
-  cwd: string;
-  shouldMaskSecretInput: boolean;
-  skipPrompts: boolean;
-  selectedTemplate: RepoOption;
-}): Promise<{
-  deployService: DeploymentService | "none";
-  primaryDomain: string;
-  isDeployed: boolean;
-  allDomains: string[];
-}> {
-  return await promptGitDeploy(params);
-}
-
-/**
  * Shows success info, next steps, and handles final user actions (e.g., open in IDE).
  */
 export async function showSuccessAndNextSteps(
   projectPath: string,
   selectedRepo: RepoOption,
-  cliUsername: string,
+  frontendUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -368,7 +347,7 @@ export async function showSuccessAndNextSteps(
     await handleNextActions(
       effectiveProjectPath,
       vscodeInstalled,
-      cliUsername,
+      frontendUsername,
       isDeployed,
       primaryDomain,
       allDomains,
@@ -383,8 +362,8 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "info",
-    cliUsername !== UNKNOWN_VALUE && cliUsername !== ""
-      ? `👋 More features soon! See you, ${cliUsername}!`
+    frontendUsername !== UNKNOWN_VALUE && frontendUsername !== ""
+      ? `👋 More features soon! See you, ${frontendUsername}!`
       : "👋 All done for now!",
   );
 }
@@ -395,7 +374,7 @@ export async function showSuccessAndNextSteps(
 export async function handleNextActions(
   projectPath: string,
   vscodeInstalled: boolean,
-  cliUsername: string,
+  frontendUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -440,7 +419,7 @@ export async function handleNextActions(
   }
   relinka(
     "info",
-    cliUsername ? `See you soon, ${cliUsername}!` : "Done for now!",
+    frontendUsername ? `See you soon, ${frontendUsername}!` : "Done for now!",
   );
 }
 

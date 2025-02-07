@@ -123,7 +123,7 @@ export async function generateConfigFiles(
   projectName: string,
   deployService: DeploymentService,
   primaryDomain: string,
-  cliUsername: string,
+  frontendUsername: string,
   enableI18n: boolean,
   isDev: boolean,
   filesToGenerate: string[] = [],
@@ -139,16 +139,17 @@ export async function generateConfigFiles(
       .replace(/\/.*$/, ""); // Remove paths
 
     if (isDev) {
-      cliUsername = cliUsername === "reliverse" ? "blefnk" : cliUsername;
+      frontendUsername =
+        frontendUsername === "reliverse" ? "blefnk" : frontendUsername;
     }
 
     const configGenerators = {
       ".reliverse": async () => {
         // Handle empty project author
         const effectiveAuthor =
-          !cliUsername || cliUsername.trim() === ""
+          !frontendUsername || frontendUsername.trim() === ""
             ? UNKNOWN_VALUE
-            : cliUsername;
+            : frontendUsername;
 
         const config: ReliverseConfig = {
           ...DEFAULT_CONFIG,
@@ -221,7 +222,7 @@ export async function generateConfigFiles(
 export async function generateProjectConfigs(
   projectPath: string,
   projectName: string,
-  cliUsername: string,
+  frontendUsername: string,
   deployService: DeploymentService,
   primaryDomain: string,
   enableI18n: boolean,
@@ -253,7 +254,7 @@ export async function generateProjectConfigs(
         projectName,
         deployService,
         primaryDomain,
-        cliUsername,
+        frontendUsername,
         enableI18n,
         isDev,
       );
@@ -265,7 +266,7 @@ export async function generateProjectConfigs(
         projectName,
         deployService,
         primaryDomain,
-        cliUsername,
+        frontendUsername,
         enableI18n,
         isDev,
       );
