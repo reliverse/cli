@@ -110,7 +110,7 @@ async function removeDistFolders(): Promise<boolean> {
     }
   }
   if (existingFolders.length > 0) {
-    logger.info(
+    logger.verbose(
       `Found existing distribution folders: ${existingFolders.join(", ")}`,
       true,
     );

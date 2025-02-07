@@ -1,6 +1,6 @@
 {
   "name": "template",
-  "version": "1.4.68",
+  "version": "1.4.70",
   "type": "module",
   "private": true,
   "scripts": {

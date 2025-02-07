@@ -152,12 +152,12 @@ export async function createInitialVercelDeployment(
   // Monitor deployment progress.
   const inProgressStates = ["BUILDING", "INITIALIZING", "QUEUED"] as const;
   const deploymentUrl = slug
-    ? `https://vercel.com/${slug}/${projectName}`
+    ? `https://vercel.com/${slug}/${projectName}/${deployment.id}`
     : "https://vercel.com";
   relinka(
     "info",
-    `Deployment started. Visit ${deploymentUrl} to monitor progress.`,
-    "Status messages will appear every 20 seconds.",
+    `Deployment started. To monitor progress, visit: ${deploymentUrl}`,
+    "Status messages will appear every 10 seconds.",
   );
 
   let lastMessageTime = Date.now();
@@ -181,7 +181,7 @@ export async function createInitialVercelDeployment(
     if (!depRes.ok) throw depRes.error;
     status = depRes.value.readyState;
     const now = Date.now();
-    if (now - lastMessageTime >= 20000) {
+    if (now - lastMessageTime >= 10000) {
       await relinkaAsync(
         "info",
         `Deployment status: ${status}`,

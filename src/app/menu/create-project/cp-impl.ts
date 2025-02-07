@@ -186,9 +186,11 @@ export async function setupI18nSupport(
  */
 export async function shouldInstallDependencies(
   behavior: Behavior,
+  isDev: boolean,
 ): Promise<boolean> {
   if (behavior === "autoYes") return true;
   if (behavior === "autoNo") return false;
+  if (isDev) return false;
 
   return await confirmPrompt({
     title: "Would you like to install dependencies now?",
@@ -210,7 +212,7 @@ export async function handleDependencies(
   config: ReliverseConfig,
 ) {
   const depsBehavior: Behavior = config?.depsBehavior ?? "prompt";
-  const shouldInstallDeps = await shouldInstallDependencies(depsBehavior);
+  const shouldInstallDeps = await shouldInstallDependencies(depsBehavior, true);
 
   let shouldRunDbPush = false;
   if (shouldInstallDeps) {
@@ -347,7 +349,6 @@ export async function showSuccessAndNextSteps(
     await handleNextActions(
       effectiveProjectPath,
       vscodeInstalled,
-      frontendUsername,
       isDeployed,
       primaryDomain,
       allDomains,
@@ -356,7 +357,7 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "success",
-    "✨ One more thing you can try (experimental):",
+    "✨ One more thing you can try (highly experimental):",
     "👉 `reliverse cli` in your new project to add/remove features.",
   );
 
@@ -374,7 +375,6 @@ export async function showSuccessAndNextSteps(
 export async function handleNextActions(
   projectPath: string,
   vscodeInstalled: boolean,
-  frontendUsername: string,
   isDeployed: boolean,
   primaryDomain: string,
   allDomains: string[],
@@ -417,10 +417,6 @@ export async function handleNextActions(
   for (const action of nextActions) {
     await handleNextAction(action, projectPath, primaryDomain, allDomains);
   }
-  relinka(
-    "info",
-    frontendUsername ? `See you soon, ${frontendUsername}!` : "Done for now!",
-  );
 }
 
 /**

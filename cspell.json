@@ -1,5 +1,5 @@
 {
-  "version": "1.4.68",
+  "version": "1.4.70",
   "language": "en",
   "ignorePaths": [
     "**/*.lock",

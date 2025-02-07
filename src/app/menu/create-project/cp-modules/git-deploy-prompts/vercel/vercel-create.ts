@@ -172,8 +172,8 @@ export async function prepareVercelProjectCreation(
       githubToken,
     );
 
-    relinka("success", `Deployment URL: https://${deployment.url}`);
-    relinka("success", "✅ Deployment completed successfully!");
+    relinka("success", `Deployment preview URL: https://${deployment.url}`);
+    relinka("success-verbose", "✅ Deployment completed successfully!");
 
     return true;
   } catch (error) {

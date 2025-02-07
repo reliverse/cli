@@ -27,7 +27,7 @@ import { checkVercelDeployment } from "./vercel/vercel-check.js";
  */
 type GithubSetupResult = {
   success: boolean;
-  octokit?: InstanceGithub;
+  githubInstance?: InstanceGithub;
   username?: string;
 };
 

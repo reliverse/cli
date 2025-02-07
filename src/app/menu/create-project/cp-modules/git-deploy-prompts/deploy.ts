@@ -99,7 +99,7 @@ export async function deployProject(
     );
 
     if (success) {
-      relinka("success", "Deployment completed!");
+      relinka("success-verbose", "Deployment completed!");
       return {
         primaryDomain,
         deployService: deployService,
