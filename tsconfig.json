@@ -36,19 +36,19 @@
     "verbatimModuleSyntax": true
   },
   "include": [
-    "globals/**/*.d.ts",
+    "addons/**/*.ts",
     "build.config.ts",
     "build.publish.ts",
-    "vitest.config.ts",
+    "drizzle.config.ts",
+    "eslint.config.js",
+    "globals/**/*.d.ts",
+    "latest.ts",
+    "reliverse.ts",
+    "reset.d.ts",
     "src/**/*.js",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "addons/**/*.ts",
-    "reset.d.ts",
-    "drizzle.config.ts",
-    "eslint.config.js",
-    "latest.ts",
-    "trigger.config.ts"
+    "vitest.config.ts"
   ],
-  "exclude": ["node_modules", "dist-npm"]
+  "exclude": ["tests-runtime", "node_modules", "dist-npm"]
 }

@@ -21,6 +21,7 @@ export async function handleExistingRepo(
     selectedTemplate: RepoOption;
   },
   shouldCommitAndPush: boolean,
+  isDev: boolean,
 ): Promise<boolean> {
   const effectiveDir = getEffectiveDir(params);
 
@@ -43,7 +44,11 @@ export async function handleExistingRepo(
 
   // If we have a reliverse-tmp.jsonc file, migrate its data
   if (externalReliverseFilePath) {
-    await migrateReliverseConfig(externalReliverseFilePath, effectiveDir);
+    await migrateReliverseConfig(
+      externalReliverseFilePath,
+      effectiveDir,
+      isDev,
+    );
   }
 
   // Run replacements after reliverse-tmp.jsonc

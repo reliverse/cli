@@ -1,4 +1,3 @@
-import { config } from "@reliverse/core";
 import { getCurrentDirname, getRootDirname } from "@reliverse/fs";
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
@@ -13,6 +12,7 @@ import { configureEslint } from "~/app/menu/create-project/cp-modules/cli-main-m
 import { configureKnip } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/knip.js";
 import { configureNext } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/nextjs.js";
 import { configurePutout } from "~/app/menu/create-project/cp-modules/cli-main-modules/configs/putout.js";
+import { config } from "~/utils/handlers/reliverseCore.js";
 
 export async function runReliverseSetup() {
   const currentDirname = getCurrentDirname(import.meta.url);

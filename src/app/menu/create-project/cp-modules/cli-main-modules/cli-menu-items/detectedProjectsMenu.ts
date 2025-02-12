@@ -24,6 +24,7 @@ import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/g
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { checkVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-check.js";
 import { manageDrizzleSchema } from "~/app/menu/project-editor/tools/drizzle/manageDrizzleSchema.js";
+import { translateProjectUsingLanguine } from "~/app/menu/project-editor/tools/languine/languine-mod.js";
 import {
   convertDatabaseProvider,
   convertPrismaToDrizzle,
@@ -31,7 +32,6 @@ import {
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { handleCleanup } from "~/utils/handlers/handleCleanup.js";
 import { handleCodemods } from "~/utils/handlers/handleCodemods.js";
-import { handleConfigEditing } from "~/utils/handlers/handleConfigEdits.js";
 import { handleIntegrations } from "~/utils/handlers/handleIntegrations.js";
 import {
   readShadcnConfig,
@@ -48,6 +48,17 @@ import {
 import { initGithubSDK } from "~/utils/instanceGithub.js";
 import { initVercelSDK } from "~/utils/instanceVercel.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
+
+type ProjectMenuOption =
+  | "git-deploy"
+  | "languine"
+  | "drizzle-schema"
+  | "shadcn"
+  | "convert-db"
+  | "codemods"
+  | "integrations"
+  | "cleanup"
+  | "exit";
 
 // ──────────────────────────────────────────────
 // Main Handler Function
@@ -89,7 +100,7 @@ export async function handleOpenProjectMenu(
 
     const selectedPath = await selectPrompt({
       title: "Select a project to manage",
-      options: [...projectOptions, { label: "- Exit", value: "exit" }],
+      options: [...projectOptions, { label: "Exit", value: "exit" }],
     });
 
     if (selectedPath === "exit") return;
@@ -136,14 +147,19 @@ export async function handleOpenProjectMenu(
     : "";
 
   // (3) Show Main Action Menu.
-  const action = await selectPrompt({
+  const action = await selectPrompt<ProjectMenuOption>({
     title: `Managing ${selectedProject.name}${gitStatusInfo}`,
     content: depsWarning ? re.bold(depsWarning) : "",
     options: [
       {
-        label: "- Git and Deploy Operations",
+        label: "Git and deploy operations",
         value: "git-deploy",
         hint: re.dim("Commit and push changes"),
+      },
+      {
+        label: "Translate selected project",
+        value: "languine",
+        hint: re.dim("A powerful i18n tools"),
       },
       {
         label: selectedProject.needsDepsInstall
@@ -157,7 +173,7 @@ export async function handleOpenProjectMenu(
         label: selectedProject.needsDepsInstall
           ? re.gray(`- Integrations ${experimental}`)
           : `- Integrations ${experimental}`,
-        value: "integration",
+        value: "integrations",
         hint: re.dim("Manage project integrations"),
         disabled: selectedProject.needsDepsInstall,
       },
@@ -171,8 +187,8 @@ export async function handleOpenProjectMenu(
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Shadcn/UI Components ${experimental}`)
-          : `- Shadcn/UI Components ${experimental}`,
+          ? re.gray(`- Add shadcn/ui components ${experimental}`)
+          : `- Add shadcn/ui components ${experimental}`,
         value: "shadcn",
         hint: re.dim("Manage UI components"),
         disabled: selectedProject.needsDepsInstall,
@@ -191,14 +207,6 @@ export async function handleOpenProjectMenu(
           : `- Cleanup Project ${experimental}`,
         value: "cleanup",
         hint: re.dim("Clean up project files"),
-        disabled: selectedProject.needsDepsInstall,
-      },
-      {
-        label: selectedProject.needsDepsInstall
-          ? re.gray(`- Edit Configuration ${experimental}`)
-          : `- Edit Configuration ${experimental}`,
-        value: "edit-config",
-        hint: re.dim("Modify project settings"),
         disabled: selectedProject.needsDepsInstall,
       },
       { label: "👈 Exit", value: "exit", hint: re.dim("ctrl+c anywhere") },
@@ -248,7 +256,7 @@ export async function handleOpenProjectMenu(
       const gitOptions = [
         ...(selectedProject.hasGit
           ? [
-              { label: "- Create commit", value: "commit" },
+              { label: "Create commit", value: "commit" },
               ...(selectedProject.gitStatus?.unpushedCommits && hasGithubRepo
                 ? [
                     {
@@ -258,17 +266,17 @@ export async function handleOpenProjectMenu(
                   ]
                 : []),
             ]
-          : [{ label: "- Initialize Git repository", value: "init" }]),
+          : [{ label: "Initialize Git repository", value: "init" }]),
         ...(showCreateGithubOption
           ? [
               {
-                label: "- Re/init git and create GitHub repository",
+                label: "Re/init git and create GitHub repository",
                 value: "github",
               },
             ]
           : []),
         ...(selectedProject.hasGit && hasGithubRepo
-          ? [{ label: "- Deploy project", value: "deploy" }]
+          ? [{ label: "Deploy project", value: "deploy" }]
           : []),
         { label: "👈 Exit", value: "exit" },
       ];
@@ -402,12 +410,17 @@ export async function handleOpenProjectMenu(
       break;
     }
 
+    case "languine": {
+      await translateProjectUsingLanguine(selectedProject.path);
+      break;
+    }
+
     case "codemods": {
       await handleCodemods(selectedProject.config, selectedProject.path);
       break;
     }
 
-    case "integration": {
+    case "integrations": {
       await handleIntegrations(selectedProject.path, isDev);
       break;
     }
@@ -417,19 +430,19 @@ export async function handleOpenProjectMenu(
         title: "What kind of conversion would you like to perform?",
         options: [
           {
-            label: "- Convert from Prisma to Drizzle",
+            label: "Convert from Prisma to Drizzle",
             value: "prisma-to-drizzle",
           },
-          { label: "- Convert database provider", value: "change-provider" },
+          { label: "Convert database provider", value: "change-provider" },
         ],
       });
       if (conversionType === "prisma-to-drizzle") {
         const targetDb = await selectPrompt({
           title: "Select target database type:",
           options: [
-            { label: "- PostgreSQL", value: "postgres" },
-            { label: "- MySQL", value: "mysql" },
-            { label: "- SQLite", value: "sqlite" },
+            { label: "PostgreSQL", value: "postgres" },
+            { label: "MySQL", value: "mysql" },
+            { label: "SQLite", value: "sqlite" },
           ],
         });
         await convertPrismaToDrizzle(selectedProject.path, targetDb);
@@ -437,18 +450,18 @@ export async function handleOpenProjectMenu(
         const fromProvider = await selectPrompt({
           title: "Convert from:",
           options: [
-            { label: "- PostgreSQL", value: "postgres" },
-            { label: "- MySQL", value: "mysql" },
-            { label: "- SQLite", value: "sqlite" },
+            { label: "PostgreSQL", value: "postgres" },
+            { label: "MySQL", value: "mysql" },
+            { label: "SQLite", value: "sqlite" },
           ],
         });
         const toProviderOptions = [
-          { label: "- PostgreSQL", value: "postgres" },
-          { label: "- MySQL", value: "mysql" },
-          { label: "- SQLite", value: "sqlite" },
+          { label: "PostgreSQL", value: "postgres" },
+          { label: "MySQL", value: "mysql" },
+          { label: "SQLite", value: "sqlite" },
         ];
         if (fromProvider === "postgres") {
-          toProviderOptions.push({ label: "- LibSQL/Turso", value: "libsql" });
+          toProviderOptions.push({ label: "LibSQL/Turso", value: "libsql" });
         }
         const toProvider = await selectPrompt({
           title: "Convert to:",
@@ -468,18 +481,18 @@ export async function handleOpenProjectMenu(
     case "shadcn": {
       const shadcnConfig = await readShadcnConfig(selectedProject.path);
       if (!shadcnConfig) {
-        relinka("error", "shadcn/ui configuration not found");
+        relinka("error", "shadcn/ui configuration file not found");
         return;
       }
       const shadcnAction = await selectPrompt({
         title: "What would you like to do?",
         options: [
-          { label: "- Add Components", value: "add" },
-          { label: "- Remove Components", value: "remove" },
-          { label: "- Update Components", value: "update" },
-          { label: "- Change Theme", value: "theme" },
-          { label: "- Install sidebars", value: "sidebars" },
-          { label: "- Install charts", value: "charts" },
+          { label: "Add Components", value: "add" },
+          { label: "Remove Components", value: "remove" },
+          { label: "Update Components", value: "update" },
+          { label: "Change Theme", value: "theme" },
+          { label: "Install sidebars", value: "sidebars" },
+          { label: "Install charts", value: "charts" },
         ],
       });
       switch (shadcnAction) {
@@ -559,12 +572,7 @@ export async function handleOpenProjectMenu(
     }
 
     case "cleanup": {
-      await handleCleanup(cwd, selectedProject.path);
-      break;
-    }
-
-    case "edit-config": {
-      await handleConfigEditing(selectedProject.path);
+      await handleCleanup(cwd, selectedProject.path, isDev);
       break;
     }
 

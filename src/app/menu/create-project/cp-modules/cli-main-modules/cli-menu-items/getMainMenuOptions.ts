@@ -64,12 +64,10 @@ export async function getMainMenuOptions(
   // @ts-expect-error TODO: fix strictNullChecks undefined
   if (isBunPM && !isBunRuntime) {
     const isNativeInstalled = await fs.pathExists(cliJsrPath);
-
     let msg = "Use";
     if (isNativeInstalled && isBunRuntime) {
       msg = "Configure";
     }
-
     options.push({
       label: `🚀 ${msg} Bun-native @reliverse/cli`,
       value: "native-cli",
@@ -83,12 +81,15 @@ export async function getMainMenuOptions(
     hint: re.dim("ctrl+c anywhere"),
   });
 
-  // 5) Detect reliverse.jsonc projects
-  const dotReliverseSearchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
+  // 5) Detect reliverse-based projects
+  const reliverseConfigSearchPath = isDev
+    ? path.join(cwd, "tests-runtime")
+    : cwd;
 
-  if (await fs.pathExists(dotReliverseSearchPath)) {
+  if (await fs.pathExists(reliverseConfigSearchPath)) {
     const detectedProjects = await detectProjectsWithReliverse(
-      dotReliverseSearchPath,
+      reliverseConfigSearchPath,
+      isDev,
     );
     if (detectedProjects.length > 0) {
       // Insert the "Edit project" item right after the first item

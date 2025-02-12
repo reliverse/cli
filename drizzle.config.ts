@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit";
 
-import { memoryPath } from "~/app/constants.js";
+import { memoryPath } from "./src/app/constants.js";
 
 export default defineConfig({
   out: "./drizzle",

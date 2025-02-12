@@ -19,7 +19,12 @@ import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { cliDomainDocs, experimental, UNKNOWN_VALUE } from "~/app/constants.js";
+import {
+  cliDomainDocs,
+  experimental,
+  homeDir,
+  UNKNOWN_VALUE,
+} from "~/app/constants.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
@@ -254,9 +259,7 @@ async function moveProjectFromTestsRuntime(
      */
     function getDefaultProjectPath(): string {
       const platform = os.platform();
-      return platform === "win32"
-        ? "C:\\B\\S"
-        : path.join(os.homedir(), "Projects");
+      return platform === "win32" ? "C:\\B\\S" : path.join(homeDir, "Projects");
     }
 
     const defaultPath = getDefaultProjectPath();
@@ -346,6 +349,7 @@ export async function showSuccessAndNextSteps(
   });
 
   if (!skipPrompts) {
+    // Run all next actions concurrently
     await handleNextActions(
       effectiveProjectPath,
       vscodeInstalled,
@@ -357,8 +361,8 @@ export async function showSuccessAndNextSteps(
 
   relinka(
     "success",
-    "✨ One more thing you can try (highly experimental):",
-    "👉 `reliverse cli` in your new project to add/remove features.",
+    "✨ By the way, one more thing you can try (highly experimental):",
+    "👉 Run `reliverse cli` in your new project to add/remove features.",
   );
 
   relinka(
@@ -370,7 +374,7 @@ export async function showSuccessAndNextSteps(
 }
 
 /**
- * Lets the user select further actions: open in IDE, docs, etc.
+ * Lets the user select further actions: open in IDE, open docs, etc.
  */
 export async function handleNextActions(
   projectPath: string,
@@ -414,13 +418,16 @@ export async function handleNextActions(
     ],
   });
 
-  for (const action of nextActions) {
-    await handleNextAction(action, projectPath, primaryDomain, allDomains);
-  }
+  // Run all actions concurrently to avoid waiting on one to finish before starting the next.
+  await Promise.all(
+    nextActions.map((action) =>
+      handleNextAction(action, projectPath, primaryDomain, allDomains),
+    ),
+  );
 }
 
 /**
- * Handles user-chosen actions: open IDE, open docs, etc.
+ * Handles a single user-chosen action: open IDE, open docs, etc.
  */
 export async function handleNextAction(
   action: string,
@@ -433,13 +440,17 @@ export async function handleNextAction(
       case "ide": {
         const vscodeInstalled = isVSCodeInstalled();
         relinka(
-          "info",
+          "info-verbose",
           vscodeInstalled
             ? "Opening bootstrapped project in VSCode-based IDE..."
             : "Trying to open project in default IDE...",
         );
         try {
-          await execa("code", [projectPath]);
+          // Spawn the IDE process in detached mode so it doesn't block subsequent actions.
+          await execa("code", [projectPath], {
+            detached: true,
+            stdio: "ignore",
+          });
         } catch (error) {
           relinka(
             "error",
@@ -451,7 +462,6 @@ export async function handleNextAction(
         break;
       }
       case "deployed": {
-        // If multiple domains, let user pick
         if (allDomains && allDomains.length > 1) {
           const selectedDomain = await selectPrompt({
             title: "Select domain to open:",
@@ -461,31 +471,36 @@ export async function handleNextAction(
               ...(d === primaryDomain ? { hint: "(primary)" } : {}),
             })),
           });
-          relinka("info", `Opening deployed project at ${selectedDomain}...`);
+          relinka(
+            "info-verbose",
+            `Opening deployed project at ${selectedDomain}...`,
+          );
           await open(`https://${selectedDomain}`);
         } else {
-          relinka("info", `Opening deployed project at ${primaryDomain}...`);
+          relinka(
+            "info-verbose",
+            `Opening deployed project at ${primaryDomain}...`,
+          );
           await open(`https://${primaryDomain}`);
         }
         break;
       }
       case "patreon": {
-        relinka("info", "Opening Reliverse Patreon page...");
+        relinka("info-verbose", "Opening Reliverse Patreon page...");
         await open("https://patreon.com/c/blefnk/membership");
         break;
       }
       case "discord": {
-        relinka("info", "Opening Reliverse Discord server...");
+        relinka("info-verbose", "Opening Reliverse Discord server...");
         await open("https://discord.gg/Pb8uKbwpsJ");
         break;
       }
       case "docs": {
-        relinka("info", "Opening Reliverse documentation...");
+        relinka("info-verbose", "Opening Reliverse documentation...");
         await open(cliDomainDocs);
         break;
       }
       default:
-        // No-op
         break;
     }
   } catch (error) {

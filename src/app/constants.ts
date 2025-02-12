@@ -3,22 +3,28 @@ import os from "os";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-const homeDir = os.homedir();
-
 export const cliVersion = "1.5.0";
 export const cliName = "@reliverse/cli";
 
+// RELIVERSE JSONC CONFIG
 export const cliConfigJsonc = "reliverse.jsonc";
-export const cliConfigJsoncTemp = "reliverse-tmp.jsonc";
+export const cliConfigJsoncTmp = "reliverse-tmp.jsonc";
+export const cliConfigJsoncBak = "reliverse-bak.jsonc";
 
+// RELIVERSE TS CONFIG
 export const cliConfigTs = "reliverse.ts";
+export const cliConfigTsTmp = "reliverse-tmp.ts";
+export const cliConfigTsBak = "reliverse-bak.ts";
 
+// DOCUMENTATION WEBSITE
 export const reliverseOrgBase = "reliverse.org";
 export const reliverseOrgRoot = `https://${reliverseOrgBase}`;
 export const cliDomainRoot = `https://docs.${reliverseOrgBase}`;
 export const cliDomainDocs = `${cliDomainRoot}/cli`;
 export const cliDomainEnv = `${cliDomainRoot}/env`;
 
+// HOMEDIR OF THE CLI
+export const homeDir = os.homedir();
 export const cliHomeDir = path.join(homeDir, ".reliverse");
 export const cliHomeTmp = path.join(cliHomeDir, "temp");
 export const cliHomeRepos = path.join(cliHomeDir, "repos");
@@ -89,9 +95,3 @@ export const CONFIG_CATEGORIES = {
 export function getRepoUrl(shortName: keyof typeof REPO_URLS): string {
   return `https://github.com/${REPO_URLS[shortName]}`;
 }
-
-export const getReliverseConfigPath = (projectPath: string) =>
-  path.join(projectPath, cliConfigJsonc);
-
-export const getExternalReliverseFilePath = (projectPath: string) =>
-  path.join(projectPath, cliConfigJsonc);

@@ -8,8 +8,6 @@ import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
-import { cliConfigJsonc } from "~/app/constants.js";
-
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
 import { CommonPatterns, HardcodedStrings } from "./reps-keys.js";
 
@@ -51,7 +49,6 @@ async function getImportPaths(projectPath: string): Promise<string[]> {
     // Extract import paths from each file
     for (const file of files) {
       const content = await fs.readFile(path.join(projectPath, file), "utf-8");
-
       // Match both static imports and dynamic imports
       const importMatches = [
         ...content.matchAll(/(?:import|from)\s+['"]([^'"]+)['"]/g),
@@ -158,7 +155,7 @@ export async function handleReplacements(
     getImportPaths(projectPath),
   ]);
 
-  // Try to read external reliverse.jsonc config
+  // Try to read external reliverse config (jsonc/ts)
   // if it exists and we're using an existing repo
   let externalConfig: ReliverseConfig | undefined;
   if (
@@ -176,15 +173,11 @@ export async function handleReplacements(
         externalConfig = parsed;
         relinka(
           "info",
-          `Found external ${cliConfigJsonc} config from existing repo, will use its values for replacements`,
+          "Found external config from existing repo, will use its values for replacements",
         );
       }
     } catch (error) {
-      relinka(
-        "warn",
-        `Failed to parse external ${cliConfigJsonc} config:`,
-        String(error),
-      );
+      relinka("warn", "Failed to parse external config:", String(error));
     }
   }
 
@@ -195,46 +188,32 @@ export async function handleReplacements(
     templateUrl = HardcodedStrings.RelivatorDomain;
   }
 
-  // Replacements map
   const replacementsMap: Record<string, string> = {
-    // General replacements
     ...createCaseVariations(HardcodedStrings.GeneralTemplate, "project"),
-
-    // Domain replacements
     [HardcodedStrings.RelivatorDomain]: config.primaryDomain,
     [templateUrl]: config.primaryDomain,
     [`${inputRepoName}.vercel.app`]: `${config.projectName}.vercel.app`,
-
-    // Project name variations
     ...createCaseVariations(inputRepoName, config.projectName),
     ...createCaseVariations(
       HardcodedStrings.RelivatorShort,
       config.projectName,
     ),
-
-    // Author replacements
     ...createCaseVariations(inputRepoAuthor, config.frontendUsername),
     ...createCaseVariations(
       HardcodedStrings.DefaultAuthor,
       config.frontendUsername,
     ),
-
-    // URL patterns
     [CommonPatterns.githubUrl(inputRepoAuthor, inputRepoName)]:
       CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
     [CommonPatterns.githubUrl(
       HardcodedStrings.DefaultAuthor,
       HardcodedStrings.RelivatorLower,
     )]: CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
-
-    // Package name patterns
     [CommonPatterns.packageName(inputRepoName)]: CommonPatterns.packageName(
       config.projectName,
     ),
     [CommonPatterns.packageName(HardcodedStrings.RelivatorLower)]:
       CommonPatterns.packageName(config.projectName),
-
-    // Title and description replacements
     [HardcodedStrings.RelivatorTitle]: config.projectDescription
       ? `${capitalizeWithDashes(config.projectName)} - ${config.projectDescription}`
       : `${capitalizeWithDashes(config.projectName)} - A modern web application for your business needs`,
@@ -243,9 +222,7 @@ export async function handleReplacements(
       : `${config.frontendUsername}@${config.primaryDomain}`,
   };
 
-  // Add replacements from external config if available
   if (externalConfig) {
-    // Add any project-specific values from external config
     if (
       externalConfig.projectName &&
       externalConfig.projectName !== config.projectName
@@ -271,52 +248,51 @@ export async function handleReplacements(
   // Filter out empty or identical replacements
   const validReplacements = Object.fromEntries(
     Object.entries(replacementsMap).filter(
-      ([key, value]) => key && value && key !== value && key.length > 1, // Avoid single-char replacements
+      ([key, value]) => key && value && key !== value && key.length > 1,
     ),
   );
 
   try {
     await replaceStringsInFiles(projectPath, validReplacements, {
       verbose: true,
-      // Both extensions and exact file names are supported
       fileExtensions: [
         ".js",
         ".ts",
         ".jsx",
-        ".tsx", // JavaScript/TypeScript
+        ".tsx",
         ".json",
-        "package.json", // exact filename
-        ".jsonc", // JSON files
+        "package.json",
+        ".jsonc",
         ".md",
-        ".mdx", // Markdown
+        ".mdx",
         ".html",
         ".css",
-        ".scss", // Web files
+        ".scss",
         ".env",
-        ".env.example", // Environment files
-        "README.md", // exact filename
+        ".env.example",
+        "README.md",
       ],
       excludedDirs: [
         "node_modules",
-        ".git", // Standard excludes
+        ".git",
         "build",
         ".next",
-        "dist", // Build outputs
+        "dist",
         "coverage",
-        ".cache", // Test/cache dirs
+        ".cache",
         ".vercel",
-        ".github", // CI/deployment
+        ".github",
       ],
       stringExclusions: [
-        "@types/", // Type packages
-        /^(?:https?:\/\/)?[^\s/$.?#].[^\s]*\.[a-z]{2,}(?:\/[^\s]*)?$/i.source, // Protect all URLs
-        ...packageNames, // Protect all package names from package.json
-        ...importPaths, // Protect all import paths
+        "@types/",
+        /^(?:https?:\/\/)?[^\s/$.?#].[^\s]*\.[a-z]{2,}(?:\/[^\s]*)?$/i.source,
+        ...packageNames,
+        ...importPaths,
       ],
-      dryRun: false, // toggle to true for a safe "preview" run
-      skipBinaryFiles: true, // skip images and other binary content
-      maxConcurrency: 10, // limit concurrency
-      stopOnError: false, // continue processing other files if one fails
+      dryRun: false,
+      skipBinaryFiles: true,
+      maxConcurrency: 10,
+      stopOnError: false,
     });
     if (showSuccessMessage) {
       relinka("success", `Successfully personalized ${term} files!`);

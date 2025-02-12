@@ -11,7 +11,6 @@ import { convertImportStyle } from "~/utils/codemods/convertImportStyle.js";
 import { convertJsToTs } from "~/utils/codemods/convertJsToTs.js";
 import { convertQuoteStyle } from "~/utils/codemods/convertQuoteStyle.js";
 import { convertRuntime } from "~/utils/codemods/convertRuntime.js";
-import { convertTailwindV3ToV4 } from "~/utils/codemods/convertTailwind.js";
 import { convertToMonorepo } from "~/utils/codemods/convertToMonorepo.js";
 import { replaceImportSymbol } from "~/utils/codemods/replaceImportSymbol.js";
 import { replaceWithModern } from "~/utils/codemods/replaceWithModern.js";
@@ -23,16 +22,6 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   const availableCodemods = [];
-
-  // Push: Tailwind v3 to v4 conversion codemod
-  if (rules.preferredLibraries?.["styling"] === "tailwind") {
-    // @ts-expect-error TODO: fix strictNullChecks undefined
-    availableCodemods.push({
-      label: "Convert Tailwind CSS v3 to v4",
-      value: "tailwind-v4",
-      hint: "Update to Tailwind CSS v4 with CSS-first configuration",
-    });
-  }
 
   // Push: import symbol codemod if rule exists
   if (rules.codeStyle?.importSymbol?.length) {
@@ -145,18 +134,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   });
 
   for (const codemod of selectedCodemods) {
-    if (codemod === "tailwind-v4") {
-      const shouldConvert = await confirmPrompt({
-        title: "Convert Tailwind CSS v3 to v4?",
-        content:
-          "This will update your configuration to use the new CSS-first approach and make necessary class name changes.",
-        defaultValue: true,
-      });
-
-      if (shouldConvert) {
-        await convertTailwindV3ToV4(cwd);
-      }
-    } else if (codemod === "import-symbols") {
+    if (codemod === "import-symbols") {
       const targetSymbol = rules.codeStyle?.importSymbol;
       if (!targetSymbol) {
         continue;

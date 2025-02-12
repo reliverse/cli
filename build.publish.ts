@@ -454,7 +454,7 @@ function filterDevDependencies(
   );
 }
 
-// ---------- Create Dist Package.json ----------
+// ---------- Create Dist Package.json for Main Build ----------
 async function createPackageJSON(
   outdirRoot: string,
   isJSR: boolean,
@@ -812,7 +812,7 @@ export async function convertSymbolPaths(
   );
 }
 
-// ---------- Build JSR Distribution ----------
+// ---------- Build JSR Distribution (Main Project) ----------
 async function buildJsrDist(): Promise<void> {
   const cfg = { ...defineConfig(true), lastBuildFor: "jsr" as const };
   const outdirRoot = cfg.jsrDistDir;
@@ -904,7 +904,7 @@ async function buildJsrDist(): Promise<void> {
   logger.success(`Successfully created JSR distribution (${size} bytes)`, true);
 }
 
-// ---------- Build NPM Distribution ----------
+// ---------- Build NPM Distribution (Main Project) ----------
 async function buildNpmDist(): Promise<void> {
   const cfg = { ...defineConfig(false), lastBuildFor: "npm" as const };
   const outdirRoot = cfg.npmDistDir;
@@ -987,7 +987,7 @@ async function buildNpmDist(): Promise<void> {
   logger.success(`Successfully created NPM distribution (${size} bytes)`, true);
 }
 
-// ---------- Publish Functions ----------
+// ---------- Publish Functions (Main Project) ----------
 async function publishToJsr(dryRun: boolean): Promise<void> {
   logger.info("Publishing to JSR...", true);
 
@@ -1084,6 +1084,374 @@ async function publishToNpm(dryRun: boolean): Promise<void> {
   }
 }
 
+// =======================
+// Library Build/Publish Functions
+// =======================
+
+/**
+ * Creates a package.json for a library distribution.
+ * The generated package.json will use the library's name (e.g. "@reliverse/config")
+ * and the version from the root package.json.
+ */
+async function createLibPackageJSON(
+  libName: string,
+  outdirRoot: string,
+  isJSR: boolean,
+): Promise<void> {
+  logger.info(
+    `Generating package.json for lib ${libName} (${isJSR ? "JSR" : "NPM"})...`,
+    true,
+  );
+  const originalPkg = await readPackageJSON();
+  const { version, license, description, keywords, author } = originalPkg;
+  const commonPkg: Partial<PackageJson> = {
+    name: libName,
+    version,
+    license: license || "MIT",
+    description,
+    type: "module",
+  };
+  if (author) {
+    Object.assign(commonPkg, {
+      author,
+      repository: {
+        type: "git",
+        url: `git+https://github.com/${author}/${originalPkg.name}.git`,
+      },
+      bugs: {
+        url: `https://github.com/${author}/${originalPkg.name}/issues`,
+        email: "blefnk@gmail.com",
+      },
+      keywords: [...new Set([...(keywords || []), author])],
+    });
+  } else if (keywords && keywords.length > 0) {
+    commonPkg.keywords = keywords;
+  }
+  if (isJSR) {
+    const jsrPkg = definePackageJSON({
+      ...commonPkg,
+      exports: {
+        ".": "./bin/main.ts",
+      },
+      devDependencies: filterDevDependencies(originalPkg.devDependencies),
+    });
+    await fs.writeJSON(path.join(outdirRoot, "package.json"), jsrPkg, {
+      spaces: 2,
+    });
+  } else {
+    const npmPkg = definePackageJSON({
+      ...commonPkg,
+      main: "./bin/main.js",
+      module: "./bin/main.js",
+      exports: {
+        ".": "./bin/main.js",
+      },
+      // Use the last segment of the lib name as the binary name if needed
+      bin: {
+        [libName.split("/").pop()!]: "bin/main.js",
+      },
+      files: ["bin", "package.json", "README.md", "LICENSE"],
+      publishConfig: {
+        access: "public",
+      },
+    });
+    await fs.writeJSON(path.join(outdirRoot, "package.json"), npmPkg, {
+      spaces: 2,
+    });
+  }
+}
+
+/**
+ * Builds the NPM distribution for a given library.
+ * The build uses the provided entry file (lib’s main file) and outputs to the given directory.
+ */
+async function buildLibNpmDist(
+  libName: string,
+  entry: string,
+  outdirRoot: string,
+): Promise<void> {
+  const outdirBin = path.join(outdirRoot, "bin");
+  // Clean and ensure output directory
+  await fs.remove(outdirRoot);
+  await fs.ensureDir(outdirRoot);
+
+  const entryFile = path.resolve(entry);
+  if (!(await fs.pathExists(entryFile))) {
+    logger.error(`Lib ${libName}: entry file not found at ${entryFile}`);
+    throw new Error(`Entry file not found: ${entryFile}`);
+  }
+  logger.info(
+    `Building NPM distribution for lib ${libName} using entry ${entryFile}`,
+    true,
+  );
+  const cfg = { ...pubConfig, lastBuildFor: "npm" } as BuildPublishConfig;
+  // For simplicity, using builderNpm settings similar to main build:
+  if (cfg.builderNpm !== "bun") {
+    await execaCommand(`bunx unbuild --entry ${entryFile}`, {
+      stdio: "inherit",
+    });
+  } else {
+    try {
+      const buildResult = await bunBuild({
+        entrypoints: [entryFile],
+        outdir: outdirBin,
+        target: cfg.target,
+        format: cfg.format,
+        splitting: cfg.splitting,
+        minify: cfg.shouldMinify,
+        sourcemap: getBunSourcemapOption(cfg.sourcemap),
+        throw: true,
+        naming: {
+          entry: "[dir]/[name]-[hash].[ext]",
+          chunk: "[name]-[hash].[ext]",
+          asset: "[name]-[hash].[ext]",
+        },
+        publicPath: pubConfig.publicPath || "/",
+        define: {
+          "process.env.NODE_ENV": JSON.stringify(
+            process.env.NODE_ENV || "production",
+          ),
+        },
+        banner: "/* Bundled by @reliverse/relidler */",
+        footer: "/* End of bundle */",
+        drop: ["debugger"],
+      });
+      logger.verbose(
+        `Lib ${libName} bun build completed with ${buildResult.outputs.length} output file(s).`,
+        true,
+      );
+    } catch (err) {
+      logger.error(`Lib ${libName} build failed:`, err, true);
+      throw err;
+    }
+  }
+  // Post-build steps for NPM lib:
+  await copyReadmeLicense(outdirRoot);
+  await createLibPackageJSON(libName, outdirRoot, false);
+  await convertSymbolPaths(outdirBin, false);
+  await deleteSpecificFiles(outdirBin);
+
+  const size = await getDirectorySize(outdirRoot);
+  logger.success(
+    `Successfully created NPM distribution for lib ${libName} (${size} bytes)`,
+    true,
+  );
+}
+
+/**
+ * Builds the JSR distribution for a given library.
+ */
+async function buildLibJsrDist(
+  libName: string,
+  entry: string,
+  outdirRoot: string,
+): Promise<void> {
+  const outdirBin = path.join(outdirRoot, "bin");
+  await fs.remove(outdirRoot);
+  await fs.ensureDir(outdirRoot);
+
+  logger.info(
+    `Building JSR distribution for lib ${libName} using entry ${entry}`,
+    true,
+  );
+  const cfg = { ...pubConfig, lastBuildFor: "jsr" } as BuildPublishConfig;
+  if (cfg.builderJsr === "jsr") {
+    // For minimal JSR build, simply copy the entry file to outdir/bin
+    await fs.ensureDir(outdirBin);
+    await fs.copy(entry, path.join(outdirBin, path.basename(entry)));
+    logger.verbose(
+      `Copied ${entry} to JSR lib distribution for lib ${libName}`,
+      true,
+    );
+  } else if (cfg.builderJsr === "bun") {
+    if (!(await fs.pathExists(entry))) {
+      logger.error(`Lib ${libName}: entry file not found at ${entry}`, true);
+      throw new Error(`Entry file not found: ${entry}`);
+    }
+    try {
+      const buildResult = await bunBuild({
+        entrypoints: [entry],
+        outdir: outdirBin,
+        target: cfg.target,
+        format: cfg.format,
+        splitting: cfg.splitting,
+        minify: cfg.shouldMinify,
+        sourcemap: getBunSourcemapOption(cfg.sourcemap),
+        throw: true,
+        naming: {
+          entry: "[dir]/[name]-[hash].[ext]",
+          chunk: "[name]-[hash].[ext]",
+          asset: "[name]-[hash].[ext]",
+        },
+        publicPath: pubConfig.publicPath || "/",
+        define: {
+          "process.env.NODE_ENV": JSON.stringify(
+            process.env.NODE_ENV || "production",
+          ),
+        },
+        banner: "/* Bundled by @reliverse/relidler */",
+        footer: "/* End of bundle */",
+        drop: ["debugger"],
+      });
+      logger.verbose(
+        `Lib ${libName} bun build completed with ${buildResult.outputs.length} output file(s).`,
+        true,
+      );
+    } catch (err) {
+      logger.error(`Lib ${libName} build failed:`, err, true);
+      throw err;
+    }
+  } else {
+    await execaCommand(`bunx unbuild --entry ${entry}`, { stdio: "inherit" });
+  }
+  // Post-build steps for JSR lib:
+  await copyReadmeLicense(outdirRoot);
+  await createLibPackageJSON(libName, outdirRoot, true);
+  await createTSConfig(outdirRoot, true);
+  await copyJsrFiles(outdirRoot);
+  await renameTsxFiles(outdirBin);
+  await convertJsToTsImports(outdirBin, true);
+  await convertSymbolPaths(outdirBin, true);
+  await deleteSpecificFiles(outdirBin);
+
+  const size = await getDirectorySize(outdirRoot);
+  logger.success(
+    `Successfully created JSR distribution for lib ${libName} (${size} bytes)`,
+    true,
+  );
+}
+
+/**
+ * Publishes a library distribution (NPM variant).
+ */
+async function publishLibToNpm(
+  libOutDir: string,
+  dryRun: boolean,
+  libName: string,
+): Promise<void> {
+  const originalDir = process.cwd();
+  try {
+    process.chdir(libOutDir);
+    logger.info(`Publishing lib ${libName} to NPM from ${libOutDir}`, true);
+    const command = ["bun publish", dryRun ? "--dry-run" : ""]
+      .filter(Boolean)
+      .join(" ");
+    await execaCommand(command, { stdio: "inherit" });
+    logger.success(
+      `Successfully ${dryRun ? "validated" : "published"} lib ${libName} to NPM`,
+      true,
+    );
+  } finally {
+    process.chdir(originalDir);
+    logger.info(`Restored working directory to: ${originalDir}`, true);
+  }
+}
+
+/**
+ * Publishes a library distribution (JSR variant).
+ */
+async function publishLibToJsr(
+  libOutDir: string,
+  dryRun: boolean,
+  libName: string,
+): Promise<void> {
+  const originalDir = process.cwd();
+  try {
+    process.chdir(libOutDir);
+    logger.info(`Publishing lib ${libName} to JSR from ${libOutDir}`, true);
+    const command = [
+      "bunx jsr publish",
+      dryRun ? "--dry-run" : "",
+      pubConfig.allowDirty ? "--allow-dirty" : "",
+      pubConfig.jsrSlowTypes ? "--allow-slow-types" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    await execaCommand(command, { stdio: "inherit" });
+    logger.success(
+      `Successfully ${dryRun ? "validated" : "published"} lib ${libName} to JSR`,
+      true,
+    );
+  } finally {
+    process.chdir(originalDir);
+    logger.info(`Restored working directory to: ${originalDir}`, true);
+  }
+}
+
+/**
+ * Processes all libraries defined in build.libs.jsonc.
+ * For each lib, it creates a folder inside dist-lib (using the lib’s name)
+ * and builds both the NPM and JSR distributions (in subfolders "npm" and "jsr").
+ * Finally, it publishes them to the appropriate registries.
+ */
+type LibEntry = {
+  main: string;
+  [key: string]: unknown;
+};
+async function buildLibsDist(): Promise<void> {
+  const libsFile = path.resolve(CURRENT_DIR, "build.libs.jsonc");
+  if (!(await fs.pathExists(libsFile))) {
+    logger.verbose(
+      "No build.libs.jsonc file found, skipping libs build.",
+      true,
+    );
+    return;
+  }
+  logger.info("build.libs.jsonc detected, processing libraries...", true);
+
+  const libsContent = await fs.readFile(libsFile, "utf8");
+  // Cast the parsed JSON to a record with LibEntry values.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const libsJson = parseJSONC(libsContent) as Record<string, LibEntry>;
+  const libs = Object.entries(libsJson);
+  const dry = !!pubConfig.dryRun;
+
+  for (const [libName, config] of libs) {
+    // Check if the "main" property exists.
+    if (!config.main) {
+      logger.warn(
+        `Library ${libName} is missing "main" property. Skipping...`,
+        true,
+      );
+      continue;
+    }
+    // For a scoped package like "@reliverse/config", use the part after "/" as folder name.
+    let folderName = libName;
+    if (libName.startsWith("@")) {
+      const parts = libName.split("/");
+      if (parts.length > 1) folderName = parts[1]!;
+    }
+    const libBaseDir = path.resolve(CURRENT_DIR, "dist-lib", folderName);
+    // Create separate subfolders for NPM and JSR builds.
+    const npmOutDir = path.join(libBaseDir, "npm");
+    const jsrOutDir = path.join(libBaseDir, "jsr");
+
+    // Build NPM and JSR distributions for the library.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    await buildLibNpmDist(libName, config.main!, npmOutDir);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    await buildLibJsrDist(libName, config.main!, jsrOutDir);
+
+    // Publish based on the registry configuration.
+    if (pubConfig.registry === "npm-jsr") {
+      logger.info(`Publishing lib ${libName} to both NPM and JSR...`, true);
+      await publishLibToNpm(npmOutDir, dry, libName);
+      await publishLibToJsr(jsrOutDir, dry, libName);
+    } else if (pubConfig.registry === "npm") {
+      logger.info(`Publishing lib ${libName} to NPM only...`, true);
+      await publishLibToNpm(npmOutDir, dry, libName);
+    } else if (pubConfig.registry === "jsr") {
+      logger.info(`Publishing lib ${libName} to JSR only...`, true);
+      await publishLibToJsr(jsrOutDir, dry, libName);
+    } else {
+      logger.warn(
+        `Registry "${pubConfig.registry}" not recognized for lib ${libName}. Skipping publishing for this lib.`,
+        true,
+      );
+    }
+  }
+}
+
 // ---------- Main ----------
 export async function main(): Promise<void> {
   try {
@@ -1113,6 +1481,10 @@ export async function main(): Promise<void> {
       await buildNpmDist();
       await buildJsrDist();
     }
+
+    // Process libraries if build.libs.jsonc exists
+    await buildLibsDist();
+
     if (!pubConfig.pausePublish) {
       await removeDistFolders();
       await setBumpDisabled(false);

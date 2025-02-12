@@ -1,5 +1,5 @@
 import { inputPrompt } from "@reliverse/prompts";
-import { deleteLastLine, relinka } from "@reliverse/prompts";
+import { deleteLastLine } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
@@ -40,18 +40,10 @@ export async function getUsernameFrontend(
     }
     await updateReliverseMemory({ name: DEFAULT_CLI_USERNAME });
     deleteLastLine();
-    relinka(
-      "info",
-      "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
-    );
     return DEFAULT_CLI_USERNAME;
   }
 
   // User provided a new name, save it to memory
   await updateReliverseMemory({ name: trimmedInput });
-  relinka(
-    "info",
-    "In the next prompts, GitHub and Vercel names may also be asked, depending on if you require deployment.",
-  );
   return trimmedInput;
 }

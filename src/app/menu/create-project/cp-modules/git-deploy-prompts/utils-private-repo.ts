@@ -11,7 +11,7 @@ import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
   cliConfigJsonc,
-  cliConfigJsoncTemp,
+  cliConfigJsoncTmp,
   cliHomeTmp,
 } from "~/app/constants.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
@@ -142,7 +142,7 @@ export async function archiveExistingRepoContent(
       {
         name: cliConfigJsonc,
         required: false,
-        targetName: cliConfigJsoncTemp,
+        targetName: cliConfigJsoncTmp,
         hidden: true,
       },
     ];

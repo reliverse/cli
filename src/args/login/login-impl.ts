@@ -244,7 +244,7 @@ export async function auth({
               "Local server closed due to authentication failure.",
             );
           });
-          // Throwing will trigger spinner error handling
+          // Throwing will trigger the spinner error handling
           throw error;
         }
       }

@@ -3,17 +3,17 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
+import type { DeploymentService, VSCodeSettings } from "~/types.js";
+
+import { CONFIG_CATEGORIES, UNKNOWN_VALUE } from "~/app/constants.js";
 import {
-  cliConfigJsonc,
-  CONFIG_CATEGORIES,
-  UNKNOWN_VALUE,
-} from "~/app/constants.js";
-import { type DeploymentService, type VSCodeSettings } from "~/types.js";
-import {
-  DEFAULT_CONFIG,
-  injectSectionComments,
+  generateReliverseConfig,
+  getReliverseConfigPath,
 } from "~/utils/reliverseConfig.js";
-import { type ReliverseConfig } from "~/utils/schemaConfig.js";
+
+// ------------------------------------------------------------------
+// Helper Functions for Additional Config Files
+// ------------------------------------------------------------------
 
 async function generateBiomeConfig(
   projectPath: string,
@@ -82,7 +82,6 @@ async function generateVSCodeSettings(
     try {
       const content = await fs.readFile(settingsPath, "utf-8");
       const existingSettings = destr(content);
-
       if (existingSettings && typeof existingSettings === "object") {
         const defaultCodeActions: VSCodeSettings["editor.codeActionsOnSave"] = {
           "quickfix.biome": "explicit",
@@ -121,6 +120,10 @@ async function generateVSCodeSettings(
   );
 }
 
+// ------------------------------------------------------------------
+// Main Config Files Generation
+// ------------------------------------------------------------------
+
 export async function generateConfigFiles(
   projectPath: string,
   overwrite: boolean,
@@ -140,58 +143,43 @@ export async function generateConfigFiles(
     // Clean up domain format
     const cleanDomain = primaryDomain
       .replace(/^https?:\/\//, "") // Remove protocol
-      .replace(/\/.*$/, ""); // Remove paths
+      .replace(/\/.*$/, ""); // Remove any trailing path
 
     if (isDev) {
       frontendUsername =
         frontendUsername === "reliverse" ? "blefnk" : frontendUsername;
     }
 
-    const configGenerators = {
-      [cliConfigJsonc]: async () => {
-        // Handle empty project author
-        const effectiveAuthor =
-          !frontendUsername || frontendUsername.trim() === ""
-            ? UNKNOWN_VALUE
-            : frontendUsername;
+    // Use the unified helper to determine the active config file name.
+    const { configPath } = await getReliverseConfigPath(projectPath);
+    const mainConfigFileName = path.basename(configPath);
 
-        const config: ReliverseConfig = {
-          ...DEFAULT_CONFIG,
+    // The main config generator now simply delegates to the unified generateReliverseConfig.
+    const configGenerators: Record<string, () => Promise<boolean>> = {
+      [mainConfigFileName]: async () => {
+        await generateReliverseConfig({
           projectName,
-          projectAuthor: effectiveAuthor,
-          projectRepository: `https://github.com/${effectiveAuthor}/${projectName}`,
-          projectState: "creating",
-          projectDomain: cleanDomain,
-          projectGitService: "github",
-          projectDeployService: deployService,
-          features: {
-            ...DEFAULT_CONFIG.features,
-            i18n: enableI18n,
-          },
-        };
-
-        const configPath = path.join(projectPath, cliConfigJsonc);
-        if (!overwrite && (await fs.pathExists(configPath))) {
-          relinka("info", "Reliverse config already exists, skipping...");
-          return false;
-        }
-
-        // Write with proper formatting and comments
-        const fileContent = JSON.stringify(config, null, 2);
-        const contentWithComments = injectSectionComments(fileContent);
-        await fs.writeFile(configPath, contentWithComments, {
-          encoding: "utf-8",
+          frontendUsername:
+            !frontendUsername || frontendUsername.trim() === ""
+              ? UNKNOWN_VALUE
+              : frontendUsername,
+          deployService,
+          primaryDomain: cleanDomain,
+          projectPath,
+          githubUsername: UNKNOWN_VALUE,
+          enableI18n,
+          overwrite,
+          isDev,
         });
-        relinka("success-verbose", `Generated ${cliConfigJsonc} config`);
         return true;
       },
       "biome.json": async () => {
-        const result = await generateBiomeConfig(projectPath, overwrite);
-        return result;
+        await generateBiomeConfig(projectPath, overwrite);
+        return true;
       },
       "settings.json": async () => {
-        const result = await generateVSCodeSettings(projectPath, overwrite);
-        return result;
+        await generateVSCodeSettings(projectPath, overwrite);
+        return true;
       },
     };
 
@@ -233,7 +221,7 @@ export async function generateProjectConfigs(
   isDev: boolean,
 ): Promise<void> {
   try {
-    // Check which files exist
+    // Check which files exist based on categories defined in CONFIG_CATEGORIES.
     const existingFiles: string[] = [];
     for (const category of Object.keys(CONFIG_CATEGORIES)) {
       const files =

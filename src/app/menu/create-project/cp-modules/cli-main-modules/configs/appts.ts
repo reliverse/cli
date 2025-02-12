@@ -1,4 +1,3 @@
-import { config } from "@reliverse/core";
 import { fileExists } from "@reliverse/fs";
 import { confirmPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
@@ -14,6 +13,7 @@ import { join } from "pathe";
 import type { ApptsConfig } from "~/types.js";
 
 import metadata from "~/utils/handlers/metadata.js";
+import { config } from "~/utils/handlers/reliverseCore.js";
 
 export async function configureAppts({
   apptsConfig,

@@ -6,10 +6,16 @@ import { getUserPkgManager, isBunPM, runtimeInfo } from "@reliverse/runtime";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
-import destr, { safeDestr } from "destr";
+import { safeDestr } from "destr";
 import fs from "fs-extra";
+import { pathToFileURL } from "node:url";
 import path from "pathe";
-import { readPackageJSON } from "pkg-types";
+import {
+  readPackageJSON,
+  readTSConfig,
+  writePackageJSON,
+  writeTSConfig,
+} from "pkg-types";
 
 import type { DeploymentService } from "~/types.js";
 
@@ -21,23 +27,20 @@ import {
   cliName,
   cliDomainDocs,
   cliConfigJsonc,
+  cliConfigTs,
+  cliConfigJsoncTmp,
+  cliConfigJsoncBak,
+  cliConfigTsTmp,
+  cliConfigTsBak,
 } from "~/app/constants.js";
 import { getBiomeConfig } from "~/utils/configHandler.js";
-
 import {
   reliverseConfigSchema,
   type ProjectFramework,
   type ReliverseConfig,
-} from "./schemaConfig.js";
+} from "~/utils/schemaConfig.js";
+
 import { getCurrentWorkingDirectory } from "./terminalHelpers.js";
-
-/* ------------------------------------------------------------------
- * Constants & Utility Extensions
- * ------------------------------------------------------------------ */
-
-// Extensions for backup and temp files
-const BACKUP_EXTENSION = ".backup";
-const TEMP_EXTENSION = ".tmp";
 
 /* ------------------------------------------------------------------
  * TypeScript Types
@@ -50,9 +53,9 @@ export type GenerateReliverseConfigOptions = {
   primaryDomain: string;
   projectPath: string;
   githubUsername: string;
+  isDev: boolean;
   overwrite?: boolean;
   enableI18n?: boolean;
-  isDev?: boolean;
 };
 
 export type ProjectFeatures = {
@@ -72,23 +75,70 @@ export type ProjectFeatures = {
 };
 
 /* ------------------------------------------------------------------
- * Re-reading the reliverse.jsonc File
+ * Helper Functions
  * ------------------------------------------------------------------ */
 
 /**
- * Attempts to read the reliverse.jsonc config from the current working directory.
+ * Helper to choose the proper config file.
+ * If a tsconfig.json exists then TS reliverse config is used;
+ * otherwise, JSONC reliverse config is returned.
+ */
+export async function getReliverseConfigPath(
+  projectPath: string,
+): Promise<{ configPath: string; isTS: boolean }> {
+  const tsconfigPath = path.join(projectPath, "tsconfig.json");
+  if (await fs.pathExists(tsconfigPath)) {
+    const configPath = path.join(projectPath, cliConfigTs);
+    return { configPath, isTS: true };
+  } else {
+    const configPath = path.join(projectPath, cliConfigJsonc);
+    return { configPath, isTS: false };
+  }
+}
+
+/**
+ * Returns the backup and temporary file paths for a given config file.
+ * For a TS config the backup and temp files come from cliConfigTsBak and cliConfigTsTmp;
+ * for a JSONC config they come from cliConfigJsoncBak and cliConfigJsoncTmp.
+ */
+function getBackupAndTempPaths(configPath: string): {
+  backupPath: string;
+  tempPath: string;
+} {
+  const configDir = path.dirname(configPath);
+  if (configPath.endsWith(cliConfigTs)) {
+    return {
+      backupPath: path.join(configDir, cliConfigTsBak),
+      tempPath: path.join(configDir, cliConfigTsTmp),
+    };
+  } else {
+    return {
+      backupPath: path.join(configDir, cliConfigJsoncBak),
+      tempPath: path.join(configDir, cliConfigJsoncTmp),
+    };
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Experimental Functions (not used yet)
+ * ------------------------------------------------------------------ */
+
+/**
+ * Attempts to re-read the reliverse config from the current working directory.
  * If the file is not valid, it attempts a line-by-line fix.
  */
-export async function reReadReliverseConfig(): Promise<ReliverseConfig | null> {
+export async function reReadReliverseConfig(
+  isDev: boolean,
+): Promise<ReliverseConfig | null> {
   const cwd = getCurrentWorkingDirectory();
-  const configPath = path.join(cwd, cliConfigJsonc);
+  const { configPath } = await getReliverseConfigPath(cwd);
 
   // First try normal read
-  let config = await readReliverseConfig(configPath);
+  let config = await readReliverseConfig(configPath, isDev);
 
   // If not valid, attempt a line-by-line fix
   if (!config) {
-    config = await parseAndFixConfig(configPath);
+    config = await parseAndFixConfig(configPath, isDev);
   }
 
   return config;
@@ -169,56 +219,41 @@ function deepMerge<T extends Record<string, unknown>>(
 export async function updateReliverseConfig(
   projectPath: string,
   updates: Partial<ReliverseConfig>,
+  isDev: boolean,
 ): Promise<boolean> {
-  const configPath = path.join(projectPath, cliConfigJsonc);
-  const backupPath = configPath + BACKUP_EXTENSION;
-  const tempPath = configPath + TEMP_EXTENSION;
+  const { configPath } = await getReliverseConfigPath(projectPath);
+  const { backupPath, tempPath } = getBackupAndTempPaths(configPath);
 
   try {
     let existingConfig: ReliverseConfig = {} as ReliverseConfig;
     let existingContent = "";
 
-    // Read and validate existing config if it exists
     if (await fs.pathExists(configPath)) {
       existingContent = await fs.readFile(configPath, "utf-8");
       const parsed = parseJSONC(existingContent);
       if (Value.Check(reliverseConfigSchema, parsed)) {
         existingConfig = parsed;
       } else {
-        relinka("warn", "Invalid reliverse.jsonc schema, starting fresh");
+        relinka("warn", "Invalid config schema, starting fresh");
       }
     }
 
-    // Merge updates with the existing config
     const mergedConfig = deepMerge(existingConfig, updates);
 
-    // Validate final config
     if (!Value.Check(reliverseConfigSchema, mergedConfig)) {
       const issues = [...Value.Errors(reliverseConfigSchema, mergedConfig)].map(
         (err) => `Path "${err.path}": ${err.message}`,
       );
-      relinka(
-        "error",
-        "Invalid reliverse.jsonc config after merge:",
-        issues.join("; "),
-      );
+      relinka("error", "Invalid config after merge:", issues.join("; "));
       return false;
     }
 
-    // Create a backup if the file exists
     if (await fs.pathExists(configPath)) {
       await fs.copy(configPath, backupPath);
     }
 
-    // Write to a temporary file first (atomic write)
-    let fileContent = JSON.stringify(mergedConfig, null, 2);
-    fileContent = injectSectionComments(fileContent);
-    await fs.writeFile(tempPath, fileContent);
+    await writeReliverseConfig(configPath, mergedConfig, isDev);
 
-    // Rename temp file to actual config file
-    await fs.rename(tempPath, configPath);
-
-    // Remove backup on success
     if (await fs.pathExists(backupPath)) {
       await fs.remove(backupPath);
     }
@@ -226,8 +261,7 @@ export async function updateReliverseConfig(
     relinka("success", "Reliverse config updated successfully");
     return true;
   } catch (error) {
-    relinka("error", "Failed to update reliverse.jsonc config:", String(error));
-    // Attempt to restore from backup if write failed
+    relinka("error", "Failed to update config:", String(error));
     if (
       (await fs.pathExists(backupPath)) &&
       !(await fs.pathExists(configPath))
@@ -243,7 +277,6 @@ export async function updateReliverseConfig(
         );
       }
     }
-    // Clean up temporary file if it exists
     if (await fs.pathExists(tempPath)) {
       await fs.remove(tempPath);
     }
@@ -252,27 +285,26 @@ export async function updateReliverseConfig(
 }
 
 /**
- * Migrates an external reliverse.jsonc file into the current project config.
+ * Migrates an external reliverse config file into the current project config.
  * Only migrates fields that exist in the current schema.
  */
 export async function migrateReliverseConfig(
   externalReliverseFilePath: string,
   projectPath: string,
+  isDev: boolean,
 ) {
   try {
     const content = await fs.readFile(externalReliverseFilePath, "utf-8");
     const parsed = parseJSONC(content);
 
     if (!parsed || typeof parsed !== "object") {
-      throw new Error("Invalid JSONC format in reliverse-tmp.jsonc");
+      throw new Error("Invalid JSONC format in external config file");
     }
 
     const tempConfig = parsed as Partial<ReliverseConfig>;
     const migratedFields: string[] = [];
-    // Declare validConfig as a partial record keyed by ReliverseConfig keys.
     const validConfig = {} as Partial<Record<keyof ReliverseConfig, unknown>>;
 
-    // List of keys to consider for migration
     const keysToMigrate: (keyof ReliverseConfig)[] = [
       "projectDescription",
       "version",
@@ -301,31 +333,25 @@ export async function migrateReliverseConfig(
 
     for (const key of keysToMigrate) {
       if (tempConfig[key] !== undefined) {
-        // Using the type assertion to assign the value into our validConfig.
         validConfig[key] = tempConfig[key];
         migratedFields.push(String(key));
       }
     }
 
-    // Update the reliverse.jsonc config with migrated data
     const success = await updateReliverseConfig(
       projectPath,
       validConfig as Partial<ReliverseConfig>,
+      isDev,
     );
 
     if (success) {
-      relinka("success", "Successfully migrated reliverse.jsonc config");
+      relinka("success", "Successfully migrated config");
       relinka("success-verbose", "Migrated fields:", migratedFields.join(", "));
     }
 
-    // Clean up external file after migration
     await fs.remove(externalReliverseFilePath);
   } catch (error) {
-    relinka(
-      "warn",
-      "Failed to migrate data from reliverse-tmp.jsonc:",
-      String(error),
-    );
+    relinka("warn", "Failed to migrate external config:", String(error));
   }
 }
 
@@ -530,7 +556,6 @@ export function fixLineByLine(
       continue;
     }
 
-    // Special handling for repository arrays
     if (
       propName === "customUserFocusedRepos" ||
       propName === "customDevsFocusedRepos"
@@ -594,15 +619,12 @@ export function fixLineByLine(
  * Comment Injection
  * ------------------------------------------------------------------ */
 
-type CommentSections = Partial<Record<keyof ReliverseConfig, string[]>>;
-
 export function injectSectionComments(fileContent: string): string {
   const comment = (text: string) => (text ? `// ${text}` : "");
-
-  const commentSections: CommentSections = {
+  const commentSections: Partial<Record<keyof ReliverseConfig, string[]>> = {
     $schema: [
       comment(`RELIVERSE CONFIG (${cliDomainDocs})`),
-      comment(`This jsonc file is generated by ${cliName}`),
+      comment(`This config file is generated by ${cliName}`),
       comment("Restart the CLI to apply your config changes"),
     ],
     projectName: [comment("General project information")],
@@ -633,15 +655,20 @@ export function injectSectionComments(fileContent: string): string {
     ],
   };
 
+  // Regex matches an optional quote around the key.
+  // It captures optional quote characters in group 2 and 3.
   for (const [section, lines] of Object.entries(commentSections)) {
     if (!lines?.length) continue;
     const combinedComments = lines
       .map((line, idx) => (idx === 0 ? line : `  ${line}`))
       .join("\n");
-
+    const regex = new RegExp(
+      `(\\s+)(["']?)${section.replace("$", "\\$")}(\\2):`,
+      "g",
+    );
     fileContent = fileContent.replace(
-      new RegExp(`(\\s+)"${section.replace("$", "\\$")}":`, "g"),
-      `\n\n  ${combinedComments}\n  "${section}":`,
+      regex,
+      `\n\n  ${combinedComments}\n  $2${section}$3:`,
     );
   }
 
@@ -658,7 +685,7 @@ export function injectSectionComments(fileContent: string): string {
  * ------------------------------------------------------------------ */
 
 /**
- * Parses the reliverse.jsonc file and validates it against the schema.
+ * Parses the config file and validates it against the schema.
  * Returns both the parsed object and any errors (if present).
  */
 async function parseReliverseFile(configPath: string): Promise<{
@@ -695,6 +722,90 @@ async function parseReliverseFile(configPath: string): Promise<{
   }
 }
 
+// Checks if a key is a valid JavaScript identifier.
+function isValidIdentifier(key: string): boolean {
+  // Precompiled regex for performance.
+  const identifierRegex = /^[A-Za-z_$][0-9A-Za-z_$]*$/;
+  return identifierRegex.test(key);
+}
+
+// Recursively converts an object to a code string for an object literal.
+function objectToCodeString(obj: any, indentLevel = 0): string {
+  const indent = "  ".repeat(indentLevel);
+  const indentNext = "  ".repeat(indentLevel + 1);
+
+  if (obj === null) return "null";
+  if (typeof obj === "string") return JSON.stringify(obj);
+  if (typeof obj === "number" || typeof obj === "boolean") return String(obj);
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return "[]";
+    const items = obj.map((item) => objectToCodeString(item, indentLevel + 1));
+    return `[\n${items.map((item) => `${indentNext}${item}`).join(",\n")}\n${indent}]`;
+  }
+  if (typeof obj === "object") {
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return "{}";
+    const lines = keys.map((key) => {
+      const formattedKey = isValidIdentifier(key) ? key : JSON.stringify(key);
+      const valueStr = objectToCodeString(obj[key], indentLevel + 1);
+      return `${indentNext}${formattedKey}: ${valueStr}`;
+    });
+    return `{\n${lines.join(",\n")}\n${indent}}`;
+  }
+  return String(obj);
+}
+
+// Updates tsconfig.json's "include" array to ensure "reliverse.ts" is present.
+async function updateTsConfigInclude(projectDir: string): Promise<void> {
+  const tsconfigPath = path.join(projectDir, "tsconfig.json");
+  if (!(await fs.pathExists(tsconfigPath))) return;
+  try {
+    const tsconfig = await readTSConfig(projectDir);
+    tsconfig.include = Array.isArray(tsconfig.include) ? tsconfig.include : [];
+    if (!tsconfig.include.includes("reliverse.ts")) {
+      tsconfig.include.push("reliverse.ts");
+      await writeTSConfig(tsconfigPath, tsconfig);
+      relinka(
+        "success-verbose",
+        "Updated tsconfig.json to include reliverse.ts",
+      );
+    }
+  } catch (err) {
+    relinka(
+      "warn",
+      "Failed to update tsconfig.json:",
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+}
+
+// Adds a dependency to the package.json devDependencies.
+async function addDevDependency(
+  projectDir: string,
+  depName: string,
+  version: string,
+): Promise<void> {
+  const pkgJsonPath = path.join(projectDir, "package.json");
+  try {
+    const pkg = await readPackageJSON(projectDir);
+    pkg.devDependencies = pkg.devDependencies || {};
+    if (!pkg.devDependencies[depName]) {
+      pkg.devDependencies[depName] = version;
+      await writePackageJSON(pkgJsonPath, pkg);
+      relinka(
+        "success-verbose",
+        `Added ${depName}@${version} to devDependencies`,
+      );
+    }
+  } catch (err) {
+    relinka(
+      "error",
+      "Failed to update package.json devDependencies:",
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+}
+
 /**
  * Writes the given ReliverseConfig to the config file.
  * Uses an atomic write (via a temporary file) and creates a backup.
@@ -702,62 +813,138 @@ async function parseReliverseFile(configPath: string): Promise<{
 export async function writeReliverseConfig(
   configPath: string,
   config: ReliverseConfig,
+  isDev: boolean,
 ): Promise<void> {
-  const backupPath = configPath + BACKUP_EXTENSION;
-  const tempPath = configPath + TEMP_EXTENSION;
+  if (configPath.endsWith(".ts")) {
+    const { backupPath, tempPath } = getBackupAndTempPaths(configPath);
+    try {
+      if (await fs.pathExists(configPath)) {
+        await fs.copy(configPath, backupPath);
+      }
+      // Generate the object literal as a TS object literal string.
+      const objectLiteral = objectToCodeString(config, 0);
+      // Inject section comments into the object literal.
+      const objectLiteralWithComments = injectSectionComments(objectLiteral);
+      // Adjust import path based on whether the config is at the project root.
+      const isRoot = path.dirname(configPath) === process.cwd();
+      const importPath = isDev
+        ? isRoot
+          ? "../../src/utils/schemaConfig.js"
+          : "./src/utils/schemaConfig.js"
+        : "@reliverse/config";
 
+      const fileContent = `import { defineConfig } from "${importPath}";
+
+export default defineConfig(${objectLiteralWithComments});
+`;
+      await fs.writeFile(tempPath, fileContent, "utf-8");
+      await fs.rename(tempPath, configPath);
+      // Update tsconfig.json to include "reliverse.ts"
+      await updateTsConfigInclude(path.dirname(configPath));
+      // Add "@reliverse/config" to devDependencies if !isDev
+      if (!isDev) {
+        await addDevDependency(
+          path.dirname(configPath),
+          "@reliverse/config",
+          "1.0.0",
+        );
+      }
+      if (await fs.pathExists(backupPath)) {
+        await fs.remove(backupPath);
+      }
+      relinka("success-verbose", "TS config written successfully");
+      return;
+    } catch (error) {
+      relinka("error", "Failed to write TS config:", String(error));
+      if (
+        (await fs.pathExists(backupPath)) &&
+        !(await fs.pathExists(configPath))
+      ) {
+        try {
+          await fs.copy(backupPath, configPath);
+          relinka("warn", "Restored TS config from backup after failed write");
+        } catch (restoreError) {
+          relinka(
+            "error",
+            "Failed to restore TS config from backup:",
+            String(restoreError),
+          );
+        }
+      }
+      if (await fs.pathExists(tempPath)) {
+        await fs.remove(tempPath);
+      }
+      throw error;
+    }
+  }
+
+  // JSONC branch:
+  const valid = Value.Check(reliverseConfigSchema, config);
+  if (!valid) {
+    const issues = [...Value.Errors(reliverseConfigSchema, config)].map(
+      (err) => `Path "${err.path}": ${err.message}`,
+    );
+    relinka("error", "Invalid config:", issues.join("; "));
+    throw new Error(`Invalid config: ${issues.join("; ")}`);
+  }
+  let fileContent = JSON.stringify(config, null, 2);
+  fileContent = injectSectionComments(fileContent);
+  const { backupPath, tempPath } = getBackupAndTempPaths(configPath);
+  if (await fs.pathExists(configPath)) {
+    await fs.copy(configPath, backupPath);
+  }
+  await fs.writeFile(tempPath, fileContent);
+  await fs.rename(tempPath, configPath);
+  if (await fs.pathExists(backupPath)) {
+    await fs.remove(backupPath);
+  }
+  relinka("success-verbose", "Config written successfully");
+}
+
+/**
+ * Helper for TS config reading.
+ * Uses a query parameter to bust the module cache.
+ */
+export async function readReliverseConfigTs(
+  configPath: string,
+): Promise<ReliverseConfig | null> {
   try {
-    const valid = Value.Check(reliverseConfigSchema, config);
-    if (!valid) {
-      const issues = [...Value.Errors(reliverseConfigSchema, config)].map(
-        (err) => `Path "${err.path}": ${err.message}`,
-      );
-      relinka("error", "Invalid reliverse.jsonc config:", issues.join("; "));
-      throw new Error(`Invalid reliverse.jsonc config: ${issues.join("; ")}`);
+    const moduleUrl = `${pathToFileURL(configPath).href}?update=${Date.now()}`;
+    const configModule = await import(moduleUrl);
+    const config = configModule.default;
+    if (Value.Check(reliverseConfigSchema, config)) {
+      return config;
+    } else {
+      relinka("warn", "TS config does not match the schema.");
+      return null;
     }
-
-    let fileContent = JSON.stringify(config, null, 2);
-    fileContent = injectSectionComments(fileContent);
-
-    if (await fs.pathExists(configPath)) {
-      await fs.copy(configPath, backupPath);
-    }
-
-    await fs.writeFile(tempPath, fileContent);
-    await fs.rename(tempPath, configPath);
-
-    if (await fs.pathExists(backupPath)) {
-      await fs.remove(backupPath);
-    }
-
-    relinka("success-verbose", "Config written successfully");
   } catch (error) {
-    if (
-      (await fs.pathExists(backupPath)) &&
-      !(await fs.pathExists(configPath))
-    ) {
-      await fs.copy(backupPath, configPath);
-      relinka("warn", "Restored config from backup after failed write");
-    }
-    if (await fs.pathExists(tempPath)) {
-      await fs.remove(tempPath);
-    }
-    throw error;
+    relinka(
+      "error",
+      "Failed to import TS config:",
+      error instanceof Error ? error.message : String(error),
+    );
+    return null;
   }
 }
 
 /**
- * Reads and validates the reliverse.jsonc config file.
+ * Reads and validates the config file.
  * If errors are detected, it attempts to merge missing or invalid fields with defaults.
  */
 export async function readReliverseConfig(
   configPath: string,
+  isDev: boolean,
 ): Promise<ReliverseConfig | null> {
+  if (configPath.endsWith(".ts")) {
+    return await readReliverseConfigTs(configPath);
+  }
+
   if (!(await fs.pathExists(configPath))) {
     return null;
   }
 
-  const backupPath = configPath + BACKUP_EXTENSION;
+  const { backupPath } = getBackupAndTempPaths(configPath);
   const parseResult = await parseReliverseFile(configPath);
   if (!parseResult) {
     return null;
@@ -772,7 +959,7 @@ export async function readReliverseConfig(
   );
   relinka(
     "warn-verbose",
-    "Detected invalid fields in reliverse.jsonc:",
+    "Detected invalid fields in config:",
     errors.join("; "),
   );
 
@@ -780,7 +967,7 @@ export async function readReliverseConfig(
     parseResult.parsed as Partial<ReliverseConfig>,
   );
   if (Value.Check(reliverseConfigSchema, merged)) {
-    await writeReliverseConfig(configPath, merged);
+    await writeReliverseConfig(configPath, merged, isDev);
     relinka("info", "Merged missing or invalid fields into config");
     return merged;
   } else {
@@ -803,11 +990,12 @@ export async function readReliverseConfig(
  * ------------------------------------------------------------------ */
 
 /**
- * Reads the reliverse.jsonc file, fixes invalid lines based on the schema,
+ * Reads the config file, fixes invalid lines based on the schema,
  * writes back the fixed config, and returns the fixed config.
  */
 async function parseAndFixConfig(
   configPath: string,
+  isDev: boolean,
 ): Promise<ReliverseConfig | null> {
   try {
     const raw = await fs.readFile(configPath, "utf-8");
@@ -826,11 +1014,11 @@ async function parseAndFixConfig(
       );
 
       if (Value.Check(reliverseConfigSchema, fixedConfig)) {
-        await writeReliverseConfig(configPath, fixedConfig);
+        await writeReliverseConfig(configPath, fixedConfig, isDev);
         const originalInvalidPaths = originalErrors.map((err) => err.path);
         relinka(
           "info",
-          "Your reliverse.jsonc config has been fixed. Please ensure it aligns with your project.",
+          "Your config has been fixed. Please ensure it aligns with your project.",
           `Changed keys: ${changedKeys.join(", ") || "(none)"}`,
         );
         relinka(
@@ -853,7 +1041,7 @@ async function parseAndFixConfig(
   } catch (error) {
     relinka(
       "warn",
-      "Failed to parse/fix reliverse.jsonc line-by-line:",
+      "Failed to parse/fix config line-by-line:",
       error instanceof Error ? error.message : String(error),
     );
   }
@@ -878,7 +1066,6 @@ export async function getDefaultReliverseConfig(
       ? (packageJson.author?.name ?? projectAuthor)
       : (packageJson?.author ?? projectAuthor ?? UNKNOWN_VALUE);
 
-  // Handle dev mode author replacement
   if (effectiveProjectAuthor === "reliverse") {
     effectiveProjectAuthor = "blefnk";
   }
@@ -946,13 +1133,15 @@ async function checkProjectFiles(projectPath: string): Promise<{
   hasNodeModules: boolean;
   hasGit: boolean;
 }> {
-  const [hasReliverse, hasPackageJson, hasNodeModules, hasGit] =
-    await Promise.all([
-      fs.pathExists(path.join(projectPath, cliConfigJsonc)),
-      fs.pathExists(path.join(projectPath, "package.json")),
-      fs.pathExists(path.join(projectPath, "node_modules")),
-      fs.pathExists(path.join(projectPath, ".git")),
-    ]);
+  const jsoncConfig = path.join(projectPath, cliConfigJsonc);
+  const tsConfig = path.join(projectPath, cliConfigTs);
+  const hasReliverse =
+    (await fs.pathExists(jsoncConfig)) || (await fs.pathExists(tsConfig));
+  const [hasPackageJson, hasNodeModules, hasGit] = await Promise.all([
+    fs.pathExists(path.join(projectPath, "package.json")),
+    fs.pathExists(path.join(projectPath, "node_modules")),
+    fs.pathExists(path.join(projectPath, ".git")),
+  ]);
 
   return { hasReliverse, hasPackageJson, hasNodeModules, hasGit };
 }
@@ -1004,8 +1193,8 @@ async function createReliverseConfig(
   relinka(
     "info-verbose",
     defaultRules
-      ? "Created reliverse.jsonc configuration based on detected project settings."
-      : "Created initial reliverse.jsonc configuration. Please review and adjust as needed.",
+      ? "Created config based on detected project settings."
+      : "Created initial config. Please review and adjust as needed.",
   );
 }
 
@@ -1014,11 +1203,12 @@ async function createReliverseConfig(
  * ------------------------------------------------------------------ */
 
 /**
- * Reads all `*reliverse.jsonc` files in the `reli` folder, parses and
- * fixes them if needed. Returns an array of valid ReliverseConfigs.
+ * Reads all reliverse config files (both JSONC and TS) in the `reli` folder,
+ * parses and fixes them if needed. Returns an array of valid ReliverseConfigs.
  */
 export async function readReliverseConfigsInReliFolder(
   cwd: string,
+  isDev: boolean,
 ): Promise<ReliverseConfig[]> {
   const reliFolderPath = path.join(cwd, "reli");
   const results: ReliverseConfig[] = [];
@@ -1028,17 +1218,16 @@ export async function readReliverseConfigsInReliFolder(
   }
 
   const dirItems = await fs.readdir(reliFolderPath);
-  const reliverseFiles = dirItems.filter((item) =>
-    item.endsWith(cliConfigJsonc),
+  const reliverseFiles = dirItems.filter(
+    (item) => item === cliConfigJsonc || item === cliConfigTs,
   );
 
-  // Process each file concurrently
   const configs = await Promise.all(
     reliverseFiles.map(async (file) => {
       const filePath = path.join(reliFolderPath, file);
-      let config = await readReliverseConfig(filePath);
+      let config = await readReliverseConfig(filePath, isDev);
       if (!config) {
-        config = await parseAndFixConfig(filePath);
+        config = await parseAndFixConfig(filePath, isDev);
       }
       if (!config) {
         relinka("warn", `Skipping invalid config file: ${filePath}`);
@@ -1046,7 +1235,6 @@ export async function readReliverseConfigsInReliFolder(
       return config;
     }),
   );
-
   return configs.filter((cfg): cfg is ReliverseConfig => cfg !== null);
 }
 
@@ -1182,6 +1370,7 @@ export async function getPackageJsonSafe(
 
 export async function detectProject(
   projectPath: string,
+  isDev: boolean,
 ): Promise<DetectedProject | null> {
   try {
     const { hasReliverse, hasPackageJson, hasNodeModules, hasGit } =
@@ -1189,12 +1378,10 @@ export async function detectProject(
 
     if (!hasReliverse || !hasPackageJson) return null;
 
-    const configContent = await fs.readFile(
-      path.join(projectPath, cliConfigJsonc),
-      "utf-8",
-    );
-    const parsedConfig = parseJSONC(configContent);
-    const config = destr<ReliverseConfig>(parsedConfig);
+    const { configPath } = await getReliverseConfigPath(projectPath);
+    if (!(await fs.pathExists(configPath))) return null;
+    const config = await readReliverseConfig(configPath, isDev);
+    if (!config) return null;
 
     return {
       name: path.basename(projectPath),
@@ -1206,9 +1393,7 @@ export async function detectProject(
   } catch (error) {
     relinka(
       "warn",
-      `Error processing ${projectPath}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      `Error processing ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,
     );
     return null;
   }
@@ -1216,23 +1401,23 @@ export async function detectProject(
 
 export async function detectProjectsWithReliverse(
   cwd: string,
+  isDev: boolean,
 ): Promise<DetectedProject[]> {
   const detected: DetectedProject[] = [];
 
-  const rootProject = await detectProject(cwd);
+  const rootProject = await detectProject(cwd, isDev);
   if (rootProject) {
     detected.push(rootProject);
   }
 
   try {
     const items = await fs.readdir(cwd, { withFileTypes: true });
-    // Process directories concurrently
     const subProjects = await Promise.all(
       items
         .filter((item) => item.isDirectory())
         .map(async (item) => {
           const projectPath = path.join(cwd, item.name);
-          return await detectProject(projectPath);
+          return await detectProject(projectPath, isDev);
         }),
     );
     for (const project of subProjects) {
@@ -1243,9 +1428,7 @@ export async function detectProjectsWithReliverse(
   } catch (error) {
     relinka(
       "warn",
-      `Error reading directory ${cwd}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      `Error reading directory ${cwd}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 
@@ -1311,12 +1494,10 @@ export async function generateReliverseConfig({
   isDev,
 }: GenerateReliverseConfigOptions): Promise<void> {
   const packageJson = await getPackageJson(projectPath);
-
   if (isDev) {
     frontendUsername =
       frontendUsername === "reliverse" ? "blefnk" : frontendUsername;
   }
-
   const baseRules = await getDefaultReliverseConfig(
     projectPath,
     projectName,
@@ -1331,7 +1512,6 @@ export async function generateReliverseConfig({
   baseRules.projectLicense = packageJson?.license ?? baseRules.projectLicense;
 
   const projectNameWithoutAt = projectName?.replace("@", "");
-
   baseRules.projectRepository = packageJson?.repository
     ? typeof packageJson.repository === "string"
       ? cleanGitHubUrl(packageJson.repository)
@@ -1358,7 +1538,6 @@ export async function generateReliverseConfig({
   baseRules.customReposOnNewProject = false;
 
   baseRules.envComposerOpenBrowser = true;
-
   baseRules.gitBehavior = "prompt";
   baseRules.deployBehavior = "prompt";
   baseRules.depsBehavior = "prompt";
@@ -1394,34 +1573,28 @@ export async function generateReliverseConfig({
     },
   };
 
-  const configPath = path.join(projectPath, cliConfigJsonc);
+  const { configPath } = await getReliverseConfigPath(projectPath);
   let existingContent: ReliverseConfig | null = null;
-
   if (!overwrite && (await fs.pathExists(configPath))) {
     try {
-      const content = await fs.readFile(configPath, "utf-8");
-      existingContent = destr<ReliverseConfig>(content);
+      existingContent = await readReliverseConfig(configPath, isDev);
     } catch {
-      // ignore errors
+      // fallback if reading fails
     }
   }
-
   const effectiveConfig = {
     ...DEFAULT_CONFIG,
     ...existingContent,
     ...baseRules,
   };
-
-  // Update schema URL if in dev mode
   if (isDev) {
     effectiveConfig.$schema = RELIVERSE_SCHEMA_DEV;
   }
-
-  await writeReliverseConfig(configPath, effectiveConfig);
+  await writeReliverseConfig(configPath, effectiveConfig, isDev);
 }
 
 /* ------------------------------------------------------------------
- * The Core Logic: Handle or Verify `reliverse.jsonc` + MULTI-CONFIG
+ * The Core Logic: Handle or Verify Config + MULTI-CONFIG
  * ------------------------------------------------------------------ */
 
 export async function getReliverseConfig(
@@ -1430,23 +1603,33 @@ export async function getReliverseConfig(
 ): Promise<{ config: ReliverseConfig; reli: ReliverseConfig[] }> {
   const githubUsername = UNKNOWN_VALUE;
 
-  // 1. Detect multi-config folder "reli"
   const reliFolderPath = path.join(cwd, "reli");
-  const hasReliFolder = await fs.pathExists(reliFolderPath);
-  let reliConfigs: ReliverseConfig[] = [];
+  const results: ReliverseConfig[] = [];
+  if (await fs.pathExists(reliFolderPath)) {
+    const dirItems = await fs.readdir(reliFolderPath);
+    const reliverseFiles = dirItems.filter(
+      (item) => item === cliConfigJsonc || item === cliConfigTs,
+    );
 
-  if (hasReliFolder) {
-    reliConfigs = await readReliverseConfigsInReliFolder(cwd);
-    if (reliConfigs.length > 0) {
-      relinka(
-        "info-verbose",
-        `[🚨 Experimental] Detected ${reliConfigs.length} reliverse configs in reli folder...`,
-      );
-    }
+    const configs = await Promise.all(
+      reliverseFiles.map(async (file) => {
+        const filePath = path.join(reliFolderPath, file);
+        let config = await readReliverseConfig(filePath, isDev);
+        if (!config) {
+          config = await parseAndFixConfig(filePath, isDev);
+        }
+        if (!config) {
+          relinka("warn", `Skipping invalid config file: ${filePath}`);
+        }
+        return config;
+      }),
+    );
+    results.push(
+      ...configs.filter((cfg): cfg is ReliverseConfig => cfg !== null),
+    );
   }
 
-  // 2. Handle single reliverse.jsonc file in the root
-  const configPath = path.join(cwd, cliConfigJsonc);
+  const { configPath } = await getReliverseConfigPath(cwd);
   if (!(await fs.pathExists(configPath))) {
     await createReliverseConfig(cwd, githubUsername, isDev);
   } else {
@@ -1454,31 +1637,28 @@ export async function getReliverseConfig(
     if (!content || content === "{}") {
       await createReliverseConfig(cwd, githubUsername, isDev);
     } else {
-      const validConfig = await readReliverseConfig(configPath);
+      const validConfig = await readReliverseConfig(configPath, isDev);
       if (!validConfig) {
-        const fixed = await parseAndFixConfig(configPath);
+        const fixed = await parseAndFixConfig(configPath, isDev);
         if (!fixed) {
           relinka(
             "warn",
-            "Could not fix existing reliverse.jsonc config. Using fallback defaults.",
+            "Could not fix existing config. Using fallback defaults.",
           );
         }
       }
     }
   }
-
-  const mainConfig = await readReliverseConfig(configPath);
+  const mainConfig = await readReliverseConfig(configPath, isDev);
   if (!mainConfig) {
     relinka(
       "warn",
-      "Using fallback default config because reliverse.jsonc could not be validated.",
+      "Using fallback default config because the config could not be validated.",
     );
-    return { config: { ...DEFAULT_CONFIG }, reli: reliConfigs };
+    return { config: { ...DEFAULT_CONFIG }, reli: results };
   }
-
   if (isDev) {
     mainConfig.$schema = RELIVERSE_SCHEMA_DEV;
   }
-
-  return { config: mainConfig, reli: reliConfigs };
+  return { config: mainConfig, reli: results };
 }

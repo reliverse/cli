@@ -79,7 +79,7 @@ export const REPO_TEMPLATES: CloneOrTemplateRepo[] = [
     id: "blefnk/create-t3-app",
     author: "blefnk",
     name: "create-t3-app",
-    description: "Type-safe Next.js template with tRPC, Prisma, and Tailwind",
+    description: "Type-safe Next.js template with tRPC, Drizzle, and Tailwind",
     category: "website",
   },
   {

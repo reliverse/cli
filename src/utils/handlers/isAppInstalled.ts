@@ -1,11 +1,12 @@
 import fs from "fs-extra";
 import os from "node:os";
 
+import { homeDir } from "~/app/constants.js";
+
 type Platform = "darwin" | "linux" | "win32";
 
 export function isVSCodeInstalled(): boolean {
   const platform = os.platform() as Platform;
-  const homeDir = os.homedir();
 
   const commonVSCodeInstallPaths = {
     darwin: [

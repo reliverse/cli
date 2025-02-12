@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/main.ts", "{build,eslint}.config.{js,ts}"],
-  "project": ["src/**/*.ts", "{build,eslint}.config.{js,ts}"],
-  "ignore": ["tests-runtime/"]
+  "entry": ["src/main.ts", "{build,eslint}.{config,publish}.{js,ts}"],
+  "project": [
+    "{src,addons}/**/*.ts",
+    "{build,eslint}.{config,publish}.{js,ts}"
+  ],
+  "ignore": ["tests-runtime/"],
+  "ignoreDependencies": ["@reliverse/fs"]
 }

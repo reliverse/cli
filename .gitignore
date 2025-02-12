@@ -2,6 +2,7 @@
 .venv/
 dist-jsr/
 dist-npm/
+dist-lib/
 .DS_Store
 merged.txt
 .eslintcache
@@ -11,5 +12,4 @@ addons/**/premium/
 internal-docs/
 tests-runtime/
 logs.txt
-
-.trigger
+*.logs

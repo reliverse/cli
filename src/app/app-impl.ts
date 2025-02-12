@@ -2,8 +2,8 @@ import { selectPrompt } from "@reliverse/prompts";
 import { deleteLastLine } from "@reliverse/prompts";
 import { generate } from "random-words";
 
+import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/detectedProjectsMenu.js";
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
-import { handleOpenProjectMenu } from "~/app/menu/project-editor/detectedProjectsMenu.js";
 import { showNativeCliMenu } from "~/utils/native-cli/nc-mod.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
 
@@ -29,7 +29,7 @@ export async function app(params: ParamsOmitSkipPN) {
     : config.projectName;
 
   if (!isDev) {
-    const rootProject = await detectProject(cwd);
+    const rootProject = await detectProject(cwd, isDev);
     if (rootProject) {
       await handleOpenProjectMenu(
         [rootProject],

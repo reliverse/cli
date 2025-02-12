@@ -1,3 +1,5 @@
+import { reliverseOrgBase } from "~/app/constants.js";
+
 const specialDomains = [
   // Vercel domains
   ".vercel.app",
@@ -11,9 +13,9 @@ const specialDomains = [
   "example.com",
 
   // Project specific domains
-  ".bleverse.com",
+  `.${reliverseOrgBase}`,
   ".relivator.com",
-  ".reliverse.org",
+  ".bleverse.com",
 ];
 
 // Helper function to check if domain is special

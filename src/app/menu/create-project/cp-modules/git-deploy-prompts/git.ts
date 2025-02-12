@@ -365,6 +365,7 @@ export async function handleGithubRepo(
     githubInstance: InstanceGithub;
     githubToken: string;
     githubUsername: string;
+    isDev: boolean;
   },
 ): Promise<boolean> {
   if (params.isTemplateDownload) {
@@ -448,7 +449,7 @@ export async function handleGithubRepo(
     }
 
     if (choice === "commit" || choice === "skip") {
-      await handleExistingRepo(params, choice === "commit");
+      await handleExistingRepo(params, choice === "commit", params.isDev);
       // Continue with other operations.
     } else if (choice === "new") {
       // User wants to create a new repository under a new name.

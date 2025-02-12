@@ -49,6 +49,16 @@ async function checkDistFolders(): Promise<boolean> {
   return true;
 }
 
+async function installSpecificDependencies(trpc: boolean) {
+  if (!trpc) return;
+
+  console.log("\n📦 Installing specific TRPC versions...");
+  await execaCommand(
+    "bun add @trpc/client@next @trpc/next@next @trpc/react-query@next @trpc/server@next",
+    { stdio: "inherit" },
+  );
+}
+
 async function updateDependencies() {
   try {
     // Check for dist folders first
@@ -59,13 +69,9 @@ async function updateDependencies() {
     console.log("🔄 Updating all dependencies to their latest versions...");
     await execaCommand("bun update --latest", { stdio: "inherit" });
 
-    console.log("\n📦 Installing specific TRPC versions...");
-    await execaCommand(
-      "bun add @trpc/client@next @trpc/next@next @trpc/react-query@next @trpc/server@next",
-      { stdio: "inherit" },
-    );
+    await installSpecificDependencies(false);
 
-    console.log("\n✅ All dependencies updated successfully!");
+    console.log("\n✅ All dependencies are up-to-date!");
   } catch (error) {
     console.error(
       "\n❌ Failed to update dependencies:",

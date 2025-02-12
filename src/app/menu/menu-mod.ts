@@ -16,6 +16,7 @@ import {
 } from "~/utils/reliverseConfig.js";
 import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 
+import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/cli-menu-items/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadRepoOption } from "./dev-submenu/dev-mod.js";
 import { openVercelTools } from "./dev-submenu/dev-vercel.js";
@@ -24,7 +25,6 @@ import {
   optionCreateVSCodeExtension,
   optionCreateWebProject,
 } from "./menu-impl.js";
-import { handleOpenProjectMenu } from "./project-editor/detectedProjectsMenu.js";
 
 async function handleProjectCategory(params: AppParams) {
   const { cwd, isDev, memory, config, reli, skipPrompts } = params;
@@ -134,7 +134,10 @@ export async function showOpenProjectMenu(params: AppParams) {
 
   const searchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
   if (await fs.pathExists(searchPath)) {
-    const detectedProjects = await detectProjectsWithReliverse(searchPath);
+    const detectedProjects = await detectProjectsWithReliverse(
+      searchPath,
+      isDev,
+    );
     await handleOpenProjectMenu(
       detectedProjects,
       isDev,
@@ -209,7 +212,7 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
       skipPrompts,
     );
   } else if (option === toolsOptions.reReadReliverse) {
-    await reReadReliverseConfig();
+    await reReadReliverseConfig(isDev);
     await reReadReliverseMemory();
   } else if (option === toolsOptions.aiChatTest) {
     await aiChatHandler(memory);

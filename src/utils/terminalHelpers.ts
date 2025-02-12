@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
 
-import { cliConfigJsonc } from "~/app/constants.js";
+import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 
 export const handleError = (error: unknown) =>
   error instanceof Error ? error.message : "Unknown error";
@@ -209,15 +209,15 @@ export function renderEndLineInput() {
 
 /**
  * Checks if the current working directory is empty.
- * Ignores certain paths like reliverse.jsonc, node_modules, .git, package.json, and reli.
- * This means the directory will be considered "empty" even if it contains any of the ignored files/directories.
+ * Ignores certain paths like config files, node_modules, .git, package.json, and reli.
  */
 export async function isCwdEmpty(cwd: string) {
   const IGNORED_PATHS = [
     ".git",
-    cliConfigJsonc,
     "node_modules",
     "package.json",
+    cliConfigJsonc,
+    cliConfigTs,
     "reli",
   ];
 
@@ -227,60 +227,3 @@ export async function isCwdEmpty(cwd: string) {
   );
   return significantFiles.length === 0;
 }
-
-/**
- * TEMP
- *
- * Ends the prompt by optionally displaying an end message and running the action if confirmed.
- * Preserves the last prompt state unless there's an endTitle.
- */
-/* export async function completePrompt(
-  prompt: "input" | "confirm" | "select" | "multiselect" | "toggle",
-  isCtrlC: boolean,
-  _endTitle = "",
-  _endTitleColor: ColorName = "dim",
-  _titleTypography: TypographyName = "none",
-  _titleVariant: VariantName | undefined = undefined,
-  _border = true,
-  borderColor: BorderColorName = "dim",
-  action?: () => Promise<void>,
-  value?: boolean,
-): Promise<boolean> {
-  if (action && value) {
-    await action();
-  }
-
-  if (prompt === "input") {
-    renderEndLineInput();
-    return value ?? false;
-  }
-
-  if (isCtrlC) {
-    renderEndLine();
-    // if (endTitle !== "") {
-    //   await endPrompt({
-    //     title: endTitle,
-    //     titleColor: endTitleColor,
-    //     titleTypography,
-    //     ...(titleVariant ? { titleVariant } : {}),
-    //     border,
-    //   });
-    // } else {
-    //   await endPrompt({
-    //     title: " ",
-    //     titleColor: endTitleColor,
-    //     titleTypography,
-    //     ...(titleVariant ? { titleVariant } : {}),
-    //     border,
-    //     borderColor,
-    //   });
-    // }
-  } else {
-    msg({
-      type: "M_BAR",
-      borderColor,
-    });
-  }
-
-  return value ?? false;
-} */

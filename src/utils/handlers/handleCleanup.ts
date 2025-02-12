@@ -1,13 +1,15 @@
-import { multiselectPrompt } from "@reliverse/prompts";
-import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
-import { relinka } from "@reliverse/prompts";
+import {
+  multiselectPrompt,
+  confirmPrompt,
+  selectPrompt,
+  relinka,
+} from "@reliverse/prompts";
 import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
 import type { KnipConfig } from "~/types.js";
 
-import { cliConfigJsonc } from "~/app/constants.js";
 import { removeComments } from "~/utils/codemods/removeComments.js";
 import { getUnusedDependencies } from "~/utils/codemods/removeUnusedDeps.js";
 import { readReliverseConfig } from "~/utils/reliverseConfig.js";
@@ -15,10 +17,14 @@ import { readReliverseConfig } from "~/utils/reliverseConfig.js";
 import { uninstallDependencies } from "./dependencies.js";
 
 const defaultIgnoredDeps: string[] = [
-  // TODO: We should add here any default dependencies that should always be ignored
+  // TODO: add default dependencies to ignore
 ];
 
-export async function handleCleanup(cwd: string, configPath: string) {
+export async function handleCleanup(
+  cwd: string,
+  configPath: string,
+  isDev: boolean,
+) {
   const ignoredDeps = new Set<string>(defaultIgnoredDeps);
 
   // Try to read Knip config for ignoreDependencies
@@ -40,16 +46,16 @@ export async function handleCleanup(cwd: string, configPath: string) {
     );
   }
 
-  // Read ignoreDependencies from reliverse.jsonc if exists
+  // Read ignoreDependencies from the active config file
   try {
-    const rules = await readReliverseConfig(configPath);
+    const rules = await readReliverseConfig(configPath, isDev);
     if (rules?.ignoreDependencies) {
       rules.ignoreDependencies.forEach((dep) => ignoredDeps.add(dep));
     }
   } catch (error) {
     relinka(
       "warn-verbose",
-      `Error reading ${cliConfigJsonc}:`,
+      `Error reading ${configPath}:`,
       error instanceof Error ? error.message : String(error),
     );
   }

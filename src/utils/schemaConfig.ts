@@ -260,6 +260,13 @@ export type ProjectArchitecture = Exclude<
 >;
 
 /**
+ * A helper to define a Reliverse configuration in the reliverse.ts file
+ */
+export function defineConfig<T extends ReliverseConfig>(config: T): T {
+  return config;
+}
+
+/**
  * Converts a TypeBox schema to a JSON Schema
  */
 function convertTypeBoxToJsonSchema(schema: any): any {

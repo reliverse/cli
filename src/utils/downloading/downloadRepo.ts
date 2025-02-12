@@ -7,9 +7,10 @@ import { simpleGit } from "simple-git";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
-import { cliConfigJsonc, getReliverseConfigPath } from "~/app/constants.js";
+import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 import { initGitDir } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
+import { getReliverseConfigPath } from "~/utils/reliverseConfig.js";
 
 /**
  * Defines the options for downloading a project from a remote repository.
@@ -318,16 +319,18 @@ export async function downloadRepo({
     }
     await fs.ensureDir(projectPath);
 
-    // 3) Handle reliverse.jsonc file
+    // 3) Handle reliverse config file
     const parentDir = dirname(projectPath);
-    const tempReliverseConfigPath = getReliverseConfigPath(parentDir);
-    const hasReliverseConfig = await fs.pathExists(
-      getReliverseConfigPath(projectPath),
-    );
+    const { configPath: tempReliverseConfigPath } =
+      await getReliverseConfigPath(parentDir);
+    const { configPath: projectReliverseConfigPath } =
+      await getReliverseConfigPath(projectPath);
+
+    const hasReliverseConfig = await fs.pathExists(projectReliverseConfigPath);
     if (hasReliverseConfig) {
       if (await fs.pathExists(tempReliverseConfigPath)) {
         const choice = await selectPrompt({
-          title: `${cliConfigJsonc} already exists in parent directory. What would you like to do?`,
+          title: `${projectReliverseConfigPath} already exists in parent directory. What would you like to do?`,
           options: [
             { value: "delete", label: "Delete existing file" },
             { value: "backup", label: "Create backup" },
@@ -336,20 +339,35 @@ export async function downloadRepo({
         if (choice === "delete") {
           await fs.remove(tempReliverseConfigPath);
         } else {
-          let backupPath = path.join(parentDir, "reliverse-bak.jsonc");
+          let backupPath = path.join(
+            parentDir,
+            projectReliverseConfigPath.endsWith(cliConfigJsonc)
+              ? "reliverse-bak.jsonc"
+              : "reliverse-bak.ts",
+          );
           let iteration = 1;
           while (await fs.pathExists(backupPath)) {
             backupPath = path.join(
               parentDir,
-              `reliverse-bak-${iteration}.jsonc`,
+              `${projectReliverseConfigPath.endsWith(cliConfigJsonc) ? "reliverse-bak-" : "reliverse-bak-"}${iteration}.${
+                projectReliverseConfigPath.endsWith(cliConfigJsonc)
+                  ? "jsonc"
+                  : "ts"
+              }`,
             );
             iteration++;
           }
           await fs.move(tempReliverseConfigPath, backupPath);
         }
       }
+      // Move the file from projectPath to the parent directory
       await fs.move(
-        path.join(projectPath, cliConfigJsonc),
+        path.join(
+          projectPath,
+          projectReliverseConfigPath.endsWith(cliConfigJsonc)
+            ? cliConfigJsonc
+            : cliConfigTs,
+        ),
         tempReliverseConfigPath,
       );
       await fs.remove(projectPath);
@@ -476,13 +494,11 @@ export async function downloadRepo({
       }
     }
 
-    // 8) Restore reliverse.jsonc if it was moved
+    // 8) Restore config if it was moved
     if (hasReliverseConfig) {
-      await fs.move(
-        tempReliverseConfigPath,
-        getReliverseConfigPath(projectPath),
-        { overwrite: true },
-      );
+      await fs.move(tempReliverseConfigPath, projectReliverseConfigPath, {
+        overwrite: true,
+      });
     }
 
     // 9) Install dependencies if requested
