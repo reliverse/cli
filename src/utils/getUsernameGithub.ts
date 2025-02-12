@@ -17,7 +17,7 @@ export async function getUsernameGithub(
     title: `What's your GitHub username?`,
     content:
       "If you don't have a GitHub account, you can create one for free at https://github.com/signup",
-    hint: `Press <Enter> if your GitHub username matches your frontend username: ${frontendUsername}`,
+    hint: `Leave empty if your GitHub username matches your frontend username and you want to use it: ${frontendUsername}`,
     defaultValue: frontendUsername ?? "",
     validate: (value?: string) => {
       const trimmed = value?.trim();

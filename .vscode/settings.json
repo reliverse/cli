@@ -31,9 +31,6 @@
       ]
     }
   },
-  "files.associations": {
-    "*.reliverse": "jsonc"
-  },
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

@@ -1,10 +1,11 @@
-import { selectPrompt, inputPrompt, confirmPrompt } from "@reliverse/prompts";
+import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
-import open from "open";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+
+import { cliDomainEnv } from "~/app/constants.js";
 
 import {
   promptAndSetMissingValues,
@@ -187,20 +188,11 @@ export async function composeEnvFile(
       );
     }
 
-    if (!skipPrompts) {
-      // Offer to open documentation
-      const shouldOpenDocs = await confirmPrompt({
-        title:
-          "You can always check the Reliverse Docs to learn more about env variables. Open it now?",
-        titleColor: "blueBright",
-        defaultValue: false,
-      });
-
-      if (shouldOpenDocs) {
-        relinka("info-verbose", "Opening https://docs.reliverse.org/env");
-        await open("https://docs.reliverse.org/env");
-      }
-    }
+    relinka(
+      "info",
+      "You can always check the Reliverse Docs to learn more about env variables:",
+      cliDomainEnv,
+    );
   } catch (err) {
     relinka("error", "Failed to compose env file:", getErrorMessage(err));
   }

@@ -2,11 +2,11 @@ import { confirmPrompt, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
-import os from "os";
 import path from "pathe";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
+import { cliHomeRepos } from "~/app/constants.js";
 import {
   downloadRepo,
   type DownloadResult,
@@ -103,13 +103,7 @@ export async function handleDownload({
   // -------------------------------------------------
   // 2) Check for local repo copy
   // -------------------------------------------------
-  const localRepoPath = path.join(
-    os.homedir(),
-    ".reliverse",
-    "repos",
-    repo.author,
-    repo.name,
-  );
+  const localRepoPath = path.join(cliHomeRepos, repo.author, repo.name);
 
   let useLocalRepo = false;
   if (await fs.pathExists(localRepoPath)) {

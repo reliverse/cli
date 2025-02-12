@@ -5,8 +5,8 @@ import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import fs from "fs-extra";
 import {
-  loadFile as loadFileUsingMagicast,
-  writeFile as writeFileUsingMagicast,
+  loadFile as magicastFileLoad,
+  writeFile as magicastFileWrite,
 } from "magicast";
 import process from "node:process";
 import { join } from "pathe";
@@ -40,7 +40,7 @@ export async function configureAppts({
   let currentConfig: Record<string, any> = {};
 
   try {
-    const mod = await loadFileUsingMagicast(metadataConfigPath);
+    const mod = await magicastFileLoad(metadataConfigPath);
     currentConfig = mod.exports["default"] ?? {};
   } catch (error) {
     relinka(
@@ -213,7 +213,7 @@ async function askForText(
 
 async function updateFile(filePath: string, config: Record<string, string>) {
   try {
-    const mod = await loadFileUsingMagicast(filePath);
+    const mod = await magicastFileLoad(filePath);
 
     mod.exports["default"] = mod.exports["default"] ?? {};
     mod.exports["default"].author = mod.exports["default"].author ?? {};
@@ -228,7 +228,7 @@ async function updateFile(filePath: string, config: Record<string, string>) {
     mod.exports["default"].author.handleAt = `@${config["handle"]}`;
     mod.exports["default"].author.url = config["authorUrl"];
 
-    await writeFileUsingMagicast(mod, filePath);
+    await magicastFileWrite(mod, filePath);
 
     // Adding a blank new line at the end of the file
     await fs.appendFile(filePath, "\n");

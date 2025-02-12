@@ -29,7 +29,7 @@ export async function handleExistingRepo(
     `Using existing repo: ${params.githubUsername}/${params.projectName}`,
   );
 
-  const { success: repoSuccess, externalReliversePath } =
+  const { success: repoSuccess, externalReliverseFilePath } =
     await handleExistingRepoContent(
       params.memory,
       params.githubUsername,
@@ -41,12 +41,12 @@ export async function handleExistingRepo(
     throw new Error("Failed to handle existing repository content");
   }
 
-  // If we have a temp.reliverse file, migrate its data
-  if (externalReliversePath) {
-    await migrateReliverseConfig(externalReliversePath, effectiveDir);
+  // If we have a reliverse-tmp.jsonc file, migrate its data
+  if (externalReliverseFilePath) {
+    await migrateReliverseConfig(externalReliverseFilePath, effectiveDir);
   }
 
-  // Run replacements after temp.reliverse
+  // Run replacements after reliverse-tmp.jsonc
   // migration (even if migration failed)
   await handleReplacements(
     effectiveDir,

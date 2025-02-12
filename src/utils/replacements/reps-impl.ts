@@ -7,29 +7,31 @@ import path from "pathe";
  * Utility to extract author and project name from template URL
  */
 export function extractRepoInfo(templateUrl: string): {
-  projectAuthor: string;
-  projectName: string;
+  inputRepoAuthor: string;
+  inputRepoName: string;
 } {
   // Ensure the template URL has the correct github: prefix
   const formattedTemplateUrl = templateUrl.startsWith("github:")
     ? templateUrl
     : `github:${templateUrl}`;
 
-  // This matches github:userName/repoName
-  const match = /^github:([^/]+)\/([^/]+)$/.exec(formattedTemplateUrl);
+  // Extract author and project name from the URL
+  // Example: github:user/project or github:user/project.git
+  const match = /^github:(?:https?:\/\/github\.com\/)?([^/]+)\/([^/]+)/.exec(
+    formattedTemplateUrl,
+  );
 
   if (!match) {
-    throw new Error(`Invalid GitHub URL format: "${templateUrl}"`);
+    return { inputRepoAuthor: "", inputRepoName: "" };
   }
 
-  const [, projectAuthor, projectName] = match;
-  return {
-    projectAuthor: projectAuthor ?? "",
+  const [, repoAuthor, repoName] = match;
+  const inputRepoAuthor = repoAuthor ?? "";
+  const inputRepoName = repoName?.replace(".git", "") ?? "";
 
-    // Remove .git if present. For example, if someone provides github:user/my-project.git,
-    // we want to use my-project as the actual project name rather than my-project.git
-    // when doing replacements or generating new file contents.
-    projectName: projectName?.replace(".git", "") ?? "",
+  return {
+    inputRepoAuthor,
+    inputRepoName,
   };
 }
 

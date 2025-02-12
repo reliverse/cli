@@ -1,13 +1,15 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import path from "pathe";
 
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
+import {
+  FALLBACK_ENV_EXAMPLE_URL,
+  getExternalReliverseFilePath,
+} from "~/app/constants.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { generateProjectConfigs } from "~/utils/handlers/generateProjectConfigs.js";
@@ -83,11 +85,11 @@ export async function createWebProject({
   // -------------------------------------------------
   // 3) Replace placeholders in the template
   // -------------------------------------------------
-  const externalReliversePath = path.join(projectPath, ".reliverse");
+  const externalReliverseFilePath = getExternalReliverseFilePath(projectPath);
   await handleReplacements(
     projectPath,
     selectedRepo,
-    externalReliversePath,
+    externalReliverseFilePath,
     {
       primaryDomain: initialDomain,
       frontendUsername,
@@ -99,10 +101,10 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 4) Remove .reliverse file from project if exists
+  // 4) Remove reliverse.jsonc file from project if exists
   // -------------------------------------------------
-  if (await fs.pathExists(externalReliversePath)) {
-    await fs.remove(externalReliversePath);
+  if (await fs.pathExists(externalReliverseFilePath)) {
+    await fs.remove(externalReliverseFilePath);
   }
 
   // -------------------------------------------------
@@ -143,7 +145,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 9) Generate or update .reliverse config
+  // 9) Generate or update reliverse.jsonc config
   // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
@@ -177,7 +179,7 @@ export async function createWebProject({
       frontendUsername,
     });
 
-  // If the user changed domain or deploy service, update .reliverse again
+  // If the user changed domain or deploy service, update reliverse.jsonc again
   if (deployService !== "vercel" || primaryDomain !== initialDomain) {
     await updateReliverseConfig(projectPath, {
       projectDeployService: deployService,

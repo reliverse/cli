@@ -9,6 +9,7 @@ export const hardcodedSchema = Type.Object({
   RelivatorDomain: Type.Literal("relivator.com"),
   DefaultAuthor: Type.Literal("blefnk"),
   DefaultEmail: Type.Literal("onboarding@resend.dev"),
+  GeneralTemplate: Type.Literal("template"),
 });
 
 export const urlPatternsSchema = Type.Object({
@@ -28,6 +29,7 @@ export const HardcodedStrings: Hardcoded = {
   RelivatorDomain: "relivator.com",
   DefaultAuthor: "blefnk",
   DefaultEmail: "onboarding@resend.dev",
+  GeneralTemplate: "template",
 } as const;
 
 export const CommonPatterns: UrlPatterns = {

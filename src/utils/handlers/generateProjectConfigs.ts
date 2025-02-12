@@ -3,7 +3,11 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { CONFIG_CATEGORIES, UNKNOWN_VALUE } from "~/app/constants.js";
+import {
+  cliConfigJsonc,
+  CONFIG_CATEGORIES,
+  UNKNOWN_VALUE,
+} from "~/app/constants.js";
 import { type DeploymentService, type VSCodeSettings } from "~/types.js";
 import {
   DEFAULT_CONFIG,
@@ -144,7 +148,7 @@ export async function generateConfigFiles(
     }
 
     const configGenerators = {
-      ".reliverse": async () => {
+      [cliConfigJsonc]: async () => {
         // Handle empty project author
         const effectiveAuthor =
           !frontendUsername || frontendUsername.trim() === ""
@@ -166,7 +170,7 @@ export async function generateConfigFiles(
           },
         };
 
-        const configPath = path.join(projectPath, ".reliverse");
+        const configPath = path.join(projectPath, cliConfigJsonc);
         if (!overwrite && (await fs.pathExists(configPath))) {
           relinka("info", "Reliverse config already exists, skipping...");
           return false;
@@ -178,7 +182,7 @@ export async function generateConfigFiles(
         await fs.writeFile(configPath, contentWithComments, {
           encoding: "utf-8",
         });
-        relinka("success-verbose", "Generated .reliverse config");
+        relinka("success-verbose", `Generated ${cliConfigJsonc} config`);
         return true;
       },
       "biome.json": async () => {

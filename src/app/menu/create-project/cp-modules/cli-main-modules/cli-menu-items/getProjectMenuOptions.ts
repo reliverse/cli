@@ -1,7 +1,8 @@
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import fs from "fs-extra";
-import path from "pathe";
+
+import { getReliverseConfigPath } from "~/app/constants.js";
 
 export async function getProjectMenuOptions(
   cwd: string,
@@ -15,19 +16,19 @@ export async function getProjectMenuOptions(
   ];
 
   try {
-    // Check if .reliverse exists and has content
-    const rulesPath = path.join(cwd, ".reliverse");
+    // Check if reliverse.jsonc file exists and has content
+    const rulesPath = getReliverseConfigPath(cwd);
     const rulesFileExists = await fs.pathExists(rulesPath);
 
     if (rulesFileExists) {
-      relinka("info-verbose", "Using existing .reliverse file");
+      relinka("info-verbose", "Using existing reliverse.jsonc file");
     }
   } catch (error) {
     // Only show warning for non-initialization errors
     if (error instanceof Error && !error.message.includes("JSON Parse error")) {
       relinka(
         "warn",
-        "Error processing .reliverse file. Using basic menu options.",
+        "Error processing reliverse.jsonc file. Using basic menu options.",
       );
       relinka(
         "warn-verbose",

@@ -16,6 +16,8 @@ import {
 import semver from "semver";
 import { fileURLToPath } from "url";
 
+import { cliConfigJsonc, cliDomainDocs } from "~/app/constants.js";
+
 import {
   pubConfig,
   getBunSourcemapOption,
@@ -174,15 +176,12 @@ async function bumpVersions(
     ): Promise<boolean> => {
       try {
         // Handle JSON-like files
-        if (/\.(json|jsonc|json5|reliverse)$/.test(filePath)) {
+        if (/\.(json|jsonc|json5)$/.test(filePath)) {
           let parsed: { version?: string } | null = null;
 
           if (filePath.endsWith(".json")) {
             parsed = destr(content);
-          } else if (
-            filePath.endsWith(".jsonc") ||
-            filePath.endsWith(".reliverse") // TODO: current implementation doesn't work for `.reliverse` (JSONC)
-          ) {
+          } else if (filePath.endsWith(".jsonc")) {
             parsed = parseJSONC(content);
           } else if (filePath.endsWith(".json5")) {
             parsed = parseJSON5(content);
@@ -406,7 +405,7 @@ function defineConfig(isJSR: boolean): BuildPublishConfig {
 async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
   const originalPkg = await readPackageJSON();
   const { name, author, version, license, description, keywords } = originalPkg;
-  const pkgHomepage = "https://docs.reliverse.org/cli";
+  const pkgHomepage = cliDomainDocs;
   const commonFields: Partial<PackageJson> = {
     name,
     version,
@@ -642,7 +641,7 @@ async function renameTsxFiles(dir: string): Promise<void> {
 async function createJsrConfig(outdirRoot: string): Promise<void> {
   const originalPkg = await readPackageJSON();
   const { author, name, version, license, description } = originalPkg;
-  const pkgHomepage = "https://docs.reliverse.org/cli";
+  const pkgHomepage = cliDomainDocs;
   const jsrConfig = {
     name,
     author,
@@ -672,7 +671,7 @@ async function copyJsrFiles(outdirRoot: string): Promise<void> {
   await createJsrConfig(outdirRoot);
 
   const jsrFiles = [
-    ".reliverse",
+    cliConfigJsonc,
     "bun.lock",
     "drizzle.config.ts",
     "schema.json",

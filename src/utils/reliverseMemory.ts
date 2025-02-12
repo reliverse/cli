@@ -2,10 +2,9 @@ import { relinka } from "@reliverse/prompts";
 import { Value } from "@sinclair/typebox/value";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
-import os from "os";
 import path from "pathe";
 
-import { MEMORY_FILE } from "~/app/constants.js";
+import { memoryPath } from "~/app/constants.js";
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
 import { configKeysTable, userDataTable } from "~/app/db/schema.js";
@@ -95,10 +94,8 @@ export async function reReadReliverseMemory(): Promise<ReliverseMemory | null> {
 
 export async function getReliverseMemory(): Promise<ReliverseMemory> {
   // Ensure directory exists
-  const homeDir = os.homedir();
-  const memoryFile = path.join(homeDir, MEMORY_FILE);
-  if (!(await fs.pathExists(path.dirname(memoryFile)))) {
-    await fs.ensureDir(path.dirname(memoryFile));
+  if (!(await fs.pathExists(path.dirname(memoryPath)))) {
+    await fs.ensureDir(path.dirname(memoryPath));
   }
 
   try {

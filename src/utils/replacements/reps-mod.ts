@@ -8,6 +8,8 @@ import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
+import { cliConfigJsonc } from "~/app/constants.js";
+
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
 import { CommonPatterns, HardcodedStrings } from "./reps-keys.js";
 
@@ -71,6 +73,43 @@ async function getImportPaths(projectPath: string): Promise<string[]> {
   return [...importPaths];
 }
 
+/**
+ * Gets the repository URL from package.json
+ */
+async function getRepositoryUrl(projectPath: string): Promise<string> {
+  try {
+    const pkgPath = path.join(projectPath, "package.json");
+    if (!(await fs.pathExists(pkgPath))) return "";
+
+    const pkg = await fs.readJson(pkgPath);
+
+    // If repository field exists, use it
+    if (pkg.repository) {
+      if (typeof pkg.repository === "string") {
+        // If it's a shorthand GitHub URL (user/repo), expand it
+        if (!pkg.repository.includes("://")) {
+          return `https://github.com/${pkg.repository}`;
+        }
+        return pkg.repository;
+      }
+      if (typeof pkg.repository === "object" && pkg.repository.url) {
+        return pkg.repository.url;
+      }
+    }
+
+    // If no repository field, try to construct from package name for scoped packages
+    if (pkg.name?.startsWith("@")) {
+      const [scope, name] = pkg.name.slice(1).split("/");
+      return `https://github.com/${scope}/${name}`;
+    }
+
+    return "";
+  } catch (error) {
+    relinka("warn", "Failed to read package.json:", String(error));
+    return "";
+  }
+}
+
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -82,10 +121,28 @@ function capitalizeWithDashes(str: string): string {
     .join(" ");
 }
 
+/**
+ * Creates case-sensitive variations of string replacements
+ * @param oldValue - Original string to be replaced
+ * @param newValue - New string to replace with
+ * @returns Record of case-sensitive string replacements
+ */
+function createCaseVariations(
+  oldValue: string,
+  newValue: string,
+): Record<string, string> {
+  return {
+    [oldValue.toLowerCase()]: newValue.toLowerCase(),
+    [capitalize(oldValue)]: capitalize(newValue),
+    [oldValue.toUpperCase()]: newValue.toUpperCase(),
+    [capitalizeWithDashes(oldValue)]: capitalizeWithDashes(newValue),
+  };
+}
+
 export async function handleReplacements(
   projectPath: string,
   selectedRepo: RepoOption,
-  externalReliversePath: string,
+  externalReliverseFilePath: string,
   config: ProjectConfigReturn & { projectDescription?: string },
   existingRepo: boolean,
   showSuccessMessage: boolean,
@@ -101,16 +158,17 @@ export async function handleReplacements(
     getImportPaths(projectPath),
   ]);
 
-  // Try to read external .reliverse config if it exists and we're using an existing repo
+  // Try to read external reliverse.jsonc config
+  // if it exists and we're using an existing repo
   let externalConfig: ReliverseConfig | undefined;
   if (
     existingRepo &&
-    externalReliversePath &&
-    (await fs.pathExists(externalReliversePath))
+    externalReliverseFilePath &&
+    (await fs.pathExists(externalReliverseFilePath))
   ) {
     try {
       const externalConfigContent = await fs.readFile(
-        externalReliversePath,
+        externalReliverseFilePath,
         "utf-8",
       );
       const parsed = destr<ReliverseConfig>(externalConfigContent);
@@ -118,43 +176,51 @@ export async function handleReplacements(
         externalConfig = parsed;
         relinka(
           "info",
-          "Found external .reliverse config from existing repo, will use its values for replacements",
+          `Found external ${cliConfigJsonc} config from existing repo, will use its values for replacements`,
         );
       }
     } catch (error) {
       relinka(
         "warn",
-        "Failed to parse external .reliverse config:",
+        `Failed to parse external ${cliConfigJsonc} config:`,
         String(error),
       );
     }
   }
 
-  const { projectAuthor, projectName } = extractRepoInfo(selectedRepo);
+  const { inputRepoAuthor, inputRepoName } = extractRepoInfo(selectedRepo);
+
+  let templateUrl = await getRepositoryUrl(projectPath);
+  if (!templateUrl) {
+    templateUrl = HardcodedStrings.RelivatorDomain;
+  }
 
   // Replacements map
   const replacementsMap: Record<string, string> = {
+    // General replacements
+    ...createCaseVariations(HardcodedStrings.GeneralTemplate, "project"),
+
     // Domain replacements
     [HardcodedStrings.RelivatorDomain]: config.primaryDomain,
-    [`${projectName}.com`]: config.primaryDomain,
-    [`${projectName}.vercel.app`]: `${config.projectName}.vercel.app`,
+    [templateUrl]: config.primaryDomain,
+    [`${inputRepoName}.vercel.app`]: `${config.projectName}.vercel.app`,
 
     // Project name variations
-    [projectName]: config.projectName,
-    [HardcodedStrings.RelivatorShort]: config.projectName,
-    [HardcodedStrings.RelivatorLower]: config.projectName.toLowerCase(),
-    [HardcodedStrings.RelivatorShort.toLowerCase()]:
-      config.projectName.toLowerCase(),
-    [capitalize(HardcodedStrings.RelivatorShort)]: capitalizeWithDashes(
+    ...createCaseVariations(inputRepoName, config.projectName),
+    ...createCaseVariations(
+      HardcodedStrings.RelivatorShort,
       config.projectName,
     ),
 
     // Author replacements
-    [projectAuthor]: config.frontendUsername,
-    [HardcodedStrings.DefaultAuthor]: config.frontendUsername,
+    ...createCaseVariations(inputRepoAuthor, config.frontendUsername),
+    ...createCaseVariations(
+      HardcodedStrings.DefaultAuthor,
+      config.frontendUsername,
+    ),
 
     // URL patterns
-    [CommonPatterns.githubUrl(projectAuthor, projectName)]:
+    [CommonPatterns.githubUrl(inputRepoAuthor, inputRepoName)]:
       CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
     [CommonPatterns.githubUrl(
       HardcodedStrings.DefaultAuthor,
@@ -162,7 +228,7 @@ export async function handleReplacements(
     )]: CommonPatterns.githubUrl(config.frontendUsername, config.projectName),
 
     // Package name patterns
-    [CommonPatterns.packageName(projectName)]: CommonPatterns.packageName(
+    [CommonPatterns.packageName(inputRepoName)]: CommonPatterns.packageName(
       config.projectName,
     ),
     [CommonPatterns.packageName(HardcodedStrings.RelivatorLower)]:

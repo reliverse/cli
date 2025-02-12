@@ -4,6 +4,8 @@ import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
 
+import { cliConfigJsonc } from "~/app/constants.js";
+
 export const handleError = (error: unknown) =>
   error instanceof Error ? error.message : "Unknown error";
 
@@ -207,13 +209,13 @@ export function renderEndLineInput() {
 
 /**
  * Checks if the current working directory is empty.
- * Ignores certain paths like .reliverse, node_modules, .git, package.json, and reli.
+ * Ignores certain paths like reliverse.jsonc, node_modules, .git, package.json, and reli.
  * This means the directory will be considered "empty" even if it contains any of the ignored files/directories.
  */
 export async function isCwdEmpty(cwd: string) {
   const IGNORED_PATHS = [
     ".git",
-    ".reliverse",
+    cliConfigJsonc,
     "node_modules",
     "package.json",
     "reli",

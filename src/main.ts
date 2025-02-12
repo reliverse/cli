@@ -1,13 +1,13 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import { cliVersion } from "./app/constants.js";
+import { cliDomainDocs, cliVersion } from "./app/constants.js";
 
 const main = defineCommand({
   meta: {
     name: "reliverse",
     version: cliVersion,
-    description: "https://docs.reliverse.org",
+    description: cliDomainDocs,
   },
   subCommands: {
     cli: () => import("./app/app-mod.js").then((r) => r.default),

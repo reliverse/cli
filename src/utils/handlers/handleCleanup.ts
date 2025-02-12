@@ -7,6 +7,7 @@ import path from "pathe";
 
 import type { KnipConfig } from "~/types.js";
 
+import { cliConfigJsonc } from "~/app/constants.js";
 import { removeComments } from "~/utils/codemods/removeComments.js";
 import { getUnusedDependencies } from "~/utils/codemods/removeUnusedDeps.js";
 import { readReliverseConfig } from "~/utils/reliverseConfig.js";
@@ -39,7 +40,7 @@ export async function handleCleanup(cwd: string, configPath: string) {
     );
   }
 
-  // Read ignoreDependencies from .reliverse if exists
+  // Read ignoreDependencies from reliverse.jsonc if exists
   try {
     const rules = await readReliverseConfig(configPath);
     if (rules?.ignoreDependencies) {
@@ -48,7 +49,7 @@ export async function handleCleanup(cwd: string, configPath: string) {
   } catch (error) {
     relinka(
       "warn-verbose",
-      "Error reading .reliverse:",
+      `Error reading ${cliConfigJsonc}:`,
       error instanceof Error ? error.message : String(error),
     );
   }

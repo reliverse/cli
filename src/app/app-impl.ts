@@ -1,17 +1,15 @@
 import { selectPrompt } from "@reliverse/prompts";
 import { deleteLastLine } from "@reliverse/prompts";
-import { homedir } from "os";
-import { join } from "pathe";
 import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
-import { handleOpenProjectMenu } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
+import { handleOpenProjectMenu } from "~/app/menu/project-editor/detectedProjectsMenu.js";
 import { showNativeCliMenu } from "~/utils/native-cli/nc-mod.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
 
 import type { ParamsOmitSkipPN } from "./app-types.js";
 
-import { UNKNOWN_VALUE } from "./constants.js";
+import { cliJsrPath, UNKNOWN_VALUE } from "./constants.js";
 import { getRandomMessage, getWelcomeTitle } from "./db/messages.js";
 import { showCloneProjectMenu } from "./menu/create-project/cp-modules/cli-main-modules/cli-menu-items/showCloneProjectMenu.js";
 import { showEndPrompt } from "./menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";
@@ -74,7 +72,7 @@ export async function app(params: ParamsOmitSkipPN) {
   } else if (mainMenuOption === "clone") {
     await showCloneProjectMenu({ isDev, cwd, config, memory });
   } else if (mainMenuOption === "native-cli") {
-    const outputDir = join(homedir(), ".reliverse", "cli");
+    const outputDir = cliJsrPath;
     await showNativeCliMenu({ outputDir });
   } else if (mainMenuOption === "detected-projects") {
     await showOpenProjectMenu({

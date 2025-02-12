@@ -16,7 +16,7 @@ export async function getUsernameFrontend(
   // Determine placeholder and content based on previous memory
   const placeholder = hasPreviousName ? previousName : DEFAULT_CLI_USERNAME;
   const content = hasPreviousName
-    ? `Last used name: ${re.cyanBright(placeholder)} (press <Enter> to use it again)`
+    ? `Last used name: ${re.cyanBright(placeholder)} (just press <Enter> to use it again)`
     : `You can press Enter to use the default name: ${re.cyanBright(DEFAULT_CLI_USERNAME)}`;
 
   // Prompt the user for a name

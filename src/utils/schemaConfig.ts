@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import {
+  cliDomainDocs,
   RELIVERSE_SCHEMA_DEV,
   RELIVERSE_SCHEMA_URL,
   UNKNOWN_VALUE,
@@ -353,7 +354,7 @@ export async function generateJsonSchema(outputPath: string): Promise<void> {
   const schema = {
     $schema: "http://json-schema.org/draft-07/schema#",
     title: "Reliverse Configuration Schema",
-    description: "Schema for .reliverse configuration files",
+    description: cliDomainDocs,
     type: "object",
     properties: converted.properties,
     required: converted.required,

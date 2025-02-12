@@ -2,7 +2,7 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import fs from "fs-extra";
-import path from "node:path";
+import path from "pathe";
 
 import type { AppParams, ParamsOmitReli } from "~/app/app-types.js";
 import type { ProjectCategory } from "~/utils/schemaConfig.js";
@@ -16,7 +16,6 @@ import {
 } from "~/utils/reliverseConfig.js";
 import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 
-import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/detections/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadRepoOption } from "./dev-submenu/dev-mod.js";
 import { openVercelTools } from "./dev-submenu/dev-vercel.js";
@@ -25,6 +24,7 @@ import {
   optionCreateVSCodeExtension,
   optionCreateWebProject,
 } from "./menu-impl.js";
+import { handleOpenProjectMenu } from "./project-editor/detectedProjectsMenu.js";
 
 async function handleProjectCategory(params: AppParams) {
   const { cwd, isDev, memory, config, reli, skipPrompts } = params;

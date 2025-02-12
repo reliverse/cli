@@ -1,15 +1,10 @@
 import { defineConfig } from "drizzle-kit";
-import os from "os";
-import path from "pathe";
 
-const homeDir = os.homedir();
-const dbPath = path.join(homeDir, ".reliverse", "reliverse.db");
+import { memoryPath } from "~/app/constants.js";
 
 export default defineConfig({
   out: "./drizzle",
-  schema: "./src/app/db/schema.ts",
   dialect: "sqlite",
-  dbCredentials: {
-    url: `file:${dbPath}`,
-  },
+  schema: "./src/app/db/schema.ts",
+  dbCredentials: { url: `file:${memoryPath}` },
 });

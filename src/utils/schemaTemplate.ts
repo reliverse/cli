@@ -1,9 +1,8 @@
 import { Type, type Static } from "@sinclair/typebox";
 import fs from "fs-extra";
-import os from "os";
 import path from "pathe";
 
-import { cliVersion } from "~/app/constants.js";
+import { cliHomeRepos, cliVersion } from "~/app/constants.js";
 
 // Import package.json with type assertion
 // import pkg from "../../package.json" assert { type: "json" };
@@ -133,9 +132,8 @@ export async function generateReposJsonSchema(): Promise<void> {
     required: converted.required,
   };
 
-  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
-  await fs.ensureDir(reposPath);
-  const schemaPath = path.join(reposPath, "schema.json");
+  await fs.ensureDir(cliHomeRepos);
+  const schemaPath = path.join(cliHomeRepos, "schema.json");
   await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2));
 }
 
@@ -143,8 +141,7 @@ export async function generateReposJsonSchema(): Promise<void> {
  * Checks if schema needs to be regenerated based on CLI version
  */
 export async function shouldRegenerateSchema(): Promise<boolean> {
-  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
-  const configPath = path.join(reposPath, "repos.json");
+  const configPath = path.join(cliHomeRepos, "repos.json");
 
   if (!(await fs.pathExists(configPath))) {
     return true;

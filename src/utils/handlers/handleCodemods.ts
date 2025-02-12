@@ -4,6 +4,7 @@ import { relinka } from "@reliverse/prompts";
 import type { MonorepoType } from "~/types.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
+import { cliConfigJsonc } from "~/app/constants.js";
 import { convertCjsToEsm } from "~/utils/codemods/convertCjsToEsm.js";
 import { convertTypeDefinitions } from "~/utils/codemods/convertDefinitions.js";
 import { convertImportStyle } from "~/utils/codemods/convertImportStyle.js";
@@ -17,7 +18,7 @@ import { replaceWithModern } from "~/utils/codemods/replaceWithModern.js";
 
 export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   if (!rules.codeStyle || !rules.preferredLibraries) {
-    relinka("error", "Missing required configuration in .reliverse");
+    relinka("error", `Missing required configuration in ${cliConfigJsonc}`);
     return;
   }
 
@@ -134,7 +135,7 @@ export async function handleCodemods(rules: ReliverseConfig, cwd: string) {
   }
 
   if (availableCodemods.length === 0) {
-    relinka("info", "No codemods available in .reliverse");
+    relinka("info", `No codemods available in ${cliConfigJsonc}`);
     return;
   }
 

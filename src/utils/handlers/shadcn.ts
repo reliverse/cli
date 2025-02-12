@@ -5,7 +5,7 @@ import path from "pathe";
 
 import type { ShadcnConfig, Theme } from "~/types.js";
 
-import { pmx } from "~/app/menu/create-project/cp-modules/cli-main-modules/detections/detectPackageManager.js";
+import { pmx } from "~/utils/getPackageManager.js";
 
 const COMPONENT_DEPENDENCIES: Record<string, string[]> = {
   "alert-dialog": ["button"],

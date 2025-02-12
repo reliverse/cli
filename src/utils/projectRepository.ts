@@ -6,12 +6,11 @@ import { Value } from "@sinclair/typebox/value";
 import { parseJSONC } from "confbox";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
-import os from "os";
 import path from "pathe";
 
 import type { VSCodeRepoOption } from "~/app/menu/menu-impl.js";
 
-import { experimental, recommended } from "~/app/constants.js";
+import { cliHomeRepos, experimental, recommended } from "~/app/constants.js";
 
 import type { reliverseConfigSchema } from "./schemaConfig.js";
 
@@ -139,15 +138,14 @@ export const REPO_TEMPLATES: CloneOrTemplateRepo[] = [
 // ────────────────────────────────────────────────
 
 async function getReposConfigPath(): Promise<string> {
-  const reposPath = path.join(os.homedir(), ".reliverse", "repos");
-  await fs.ensureDir(reposPath);
+  await fs.ensureDir(cliHomeRepos);
 
   // Regenerate schema if required.
   if (await shouldRegenerateSchema()) {
     await generateReposJsonSchema();
   }
 
-  return path.join(reposPath, "repos.json");
+  return path.join(cliHomeRepos, "repos.json");
 }
 
 async function readReposConfig(): Promise<ReposConfig> {
@@ -219,13 +217,7 @@ export async function saveRepoToDevice(
 ): Promise<void> {
   try {
     // Build destination path
-    const repoSavePath = path.join(
-      os.homedir(),
-      ".reliverse",
-      "repos",
-      repo.author,
-      repo.name,
-    );
+    const repoSavePath = path.join(cliHomeRepos, repo.author, repo.name);
     await fs.ensureDir(path.dirname(repoSavePath));
     await fs.copy(projectPath, repoSavePath);
 

@@ -106,7 +106,3 @@ export function getRandomMessage(
   }
   return "";
 }
-
-// export const randomEndMessage = [
-// "https://docs.reliverse.org/reliverse/cli",
-// ];

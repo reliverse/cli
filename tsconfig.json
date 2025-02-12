@@ -36,6 +36,7 @@
     "verbatimModuleSyntax": true
   },
   "include": [
+    "globals/**/*.d.ts",
     "build.config.ts",
     "build.publish.ts",
     "vitest.config.ts",
@@ -46,7 +47,8 @@
     "reset.d.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "latest.ts"
+    "latest.ts",
+    "trigger.config.ts"
   ],
   "exclude": ["node_modules", "dist-npm"]
 }

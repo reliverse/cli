@@ -2,21 +2,15 @@ import { createClient } from "@libsql/client/node";
 import { relinka } from "@reliverse/prompts";
 import { drizzle } from "drizzle-orm/libsql/node";
 import fs from "fs-extra";
-import os from "os";
-import path from "pathe";
 
-// Use .reliverse directory in user's home directory
-const homeDir = os.homedir();
-const reliverseDir = path.join(homeDir, ".reliverse");
-const dbPath = path.join(reliverseDir, "reliverse.db");
+import { memoryPath, cliHomeDir } from "~/app/constants.js";
 
 // Ensure the directory exists
-await fs.ensureDir(reliverseDir);
+await fs.ensureDir(cliHomeDir);
 
 const client = createClient({
-  url: `file:${dbPath}`,
+  url: `file:${memoryPath}`,
 });
-
 const db = drizzle(client);
 
 // Initialize database schema

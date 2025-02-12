@@ -1,8 +1,10 @@
 import fs from "fs-extra";
 import os from "node:os";
 
+type Platform = "darwin" | "linux" | "win32";
+
 export function isVSCodeInstalled(): boolean {
-  const platform = os.platform();
+  const platform = os.platform() as Platform;
   const homeDir = os.homedir();
 
   const commonVSCodeInstallPaths = {
@@ -17,8 +19,7 @@ export function isVSCodeInstalled(): boolean {
     ],
   };
 
-  const pathsToCheck =
-    commonVSCodeInstallPaths[platform as "darwin" | "linux" | "win32"] ?? [];
+  const pathsToCheck = commonVSCodeInstallPaths[platform] ?? [];
 
   return pathsToCheck.some((vsCodePath: string) =>
     fs.pathExistsSync(vsCodePath),

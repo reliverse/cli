@@ -1,11 +1,11 @@
 import { re } from "@reliverse/relico";
 import { isBunPM, isBunRuntime } from "@reliverse/runtime";
 import fs from "fs-extra";
-import { homedir } from "node:os";
 import path from "pathe";
 
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
+import { cliJsrPath } from "~/app/constants.js";
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 export type MainMenuChoice =
@@ -63,9 +63,7 @@ export async function getMainMenuOptions(
    */
   // @ts-expect-error TODO: fix strictNullChecks undefined
   if (isBunPM && !isBunRuntime) {
-    const isNativeInstalled = await fs.pathExists(
-      path.join(homedir(), ".reliverse", "cli"),
-    );
+    const isNativeInstalled = await fs.pathExists(cliJsrPath);
 
     let msg = "Use";
     if (isNativeInstalled && isBunRuntime) {
@@ -85,7 +83,7 @@ export async function getMainMenuOptions(
     hint: re.dim("ctrl+c anywhere"),
   });
 
-  // 5) Detect .reliverse projects
+  // 5) Detect reliverse.jsonc projects
   const dotReliverseSearchPath = isDev ? path.join(cwd, "tests-runtime") : cwd;
 
   if (await fs.pathExists(dotReliverseSearchPath)) {

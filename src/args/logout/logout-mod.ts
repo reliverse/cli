@@ -1,15 +1,13 @@
 import { confirmPrompt, defineCommand } from "@reliverse/prompts";
 import { deleteLastLine, msg, relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import os from "os";
-import path from "pathe";
+
+import { memoryPath } from "~/app/constants.js";
 
 import { deleteMemory } from "./logout-impl.js";
 
 const isConfigExists = async () => {
-  const homeDir = os.homedir();
-  const filePath = path.join(homeDir, ".reliverse/reliverse.db");
-  if (await fs.pathExists(filePath)) {
+  if (await fs.pathExists(memoryPath)) {
     return true;
   }
   return false;

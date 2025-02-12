@@ -19,7 +19,7 @@ import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { experimental, UNKNOWN_VALUE } from "~/app/constants.js";
+import { cliDomainDocs, experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { askProjectName } from "~/utils/askProjectName.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
@@ -249,6 +249,16 @@ async function moveProjectFromTestsRuntime(
       return null;
     }
 
+    /**
+     * Chooses a default path based on OS for test -> permanent move.
+     */
+    function getDefaultProjectPath(): string {
+      const platform = os.platform();
+      return platform === "win32"
+        ? "C:\\B\\S"
+        : path.join(os.homedir(), "Projects");
+    }
+
     const defaultPath = getDefaultProjectPath();
     const targetDir = await inputPrompt({
       title: "Where should I move the project?",
@@ -288,16 +298,6 @@ async function moveProjectFromTestsRuntime(
     relinka("error", "Failed to move project:", String(error));
     return null;
   }
-}
-
-/**
- * Chooses a default path based on OS for test -> permanent move.
- */
-function getDefaultProjectPath(): string {
-  const platform = os.platform();
-  return platform === "win32"
-    ? "C:\\B\\S"
-    : path.join(os.homedir(), "Projects");
 }
 
 /**
@@ -481,7 +481,7 @@ export async function handleNextAction(
       }
       case "docs": {
         relinka("info", "Opening Reliverse documentation...");
-        await open("https://docs.reliverse.org");
+        await open(cliDomainDocs);
         break;
       }
       default:

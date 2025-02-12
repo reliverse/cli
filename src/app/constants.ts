@@ -1,18 +1,36 @@
 import { re } from "@reliverse/relico";
+import os from "os";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.4.70";
+const homeDir = os.homedir();
+
+export const cliVersion = "1.5.0";
 export const cliName = "@reliverse/cli";
-export const cliDomain = "https://docs.reliverse.org";
+
+export const cliConfigJsonc = "reliverse.jsonc";
+export const cliConfigJsoncTemp = "reliverse-tmp.jsonc";
+
+export const cliConfigTs = "reliverse.ts";
+
+export const reliverseOrgBase = "reliverse.org";
+export const reliverseOrgRoot = `https://${reliverseOrgBase}`;
+export const cliDomainRoot = `https://docs.${reliverseOrgBase}`;
+export const cliDomainDocs = `${cliDomainRoot}/cli`;
+export const cliDomainEnv = `${cliDomainRoot}/env`;
+
+export const cliHomeDir = path.join(homeDir, ".reliverse");
+export const cliHomeTmp = path.join(cliHomeDir, "temp");
+export const cliHomeRepos = path.join(cliHomeDir, "repos");
+export const memoryPath = path.join(cliHomeDir, "memory.db");
+export const cliJsrPath = path.join(cliHomeDir, "cli");
 
 export const useLocalhost = false;
 export const isVerboseEnabled = false;
 
 export const DEFAULT_CLI_USERNAME = "johnny911";
 
-export const endTitle =
-  "📚 Check the docs to learn more: https://docs.reliverse.org";
+export const endTitle = `📚 Check the docs to learn more: ${cliDomainDocs}`;
 
 export const recommended = re.green("🚀 Recommended");
 export const experimental = re.red("🚨 Experimental");
@@ -20,7 +38,7 @@ export const experimental = re.red("🚨 Experimental");
 export const UNKNOWN_VALUE = "unknown";
 export const DEFAULT_DOMAIN = "https://example.com";
 export const RELIVERSE_SCHEMA_DEV = "./schema.json";
-export const RELIVERSE_SCHEMA_URL = "https://reliverse.org/schema.json";
+export const RELIVERSE_SCHEMA_URL = `${reliverseOrgRoot}/schema.json`;
 
 export const RELIVERSE_TEMPLATES = {
   relivator: "blefnk/relivator",
@@ -56,13 +74,12 @@ export const REPO_URLS = {
   "microsoft/vscode-extension-template": "microsoft/vscode-extension-template",
 } as const;
 
-export const MEMORY_FILE = ".reliverse/reliverse.db";
 export const DEFAULT_APP_NAME = "my-reliverse-app";
 export const CREATE_RELIVERSE_APP = "reliverse";
 
 // Configuration file categories for generation
 export const CONFIG_CATEGORIES = {
-  core: [".reliverse", ".reliverse"],
+  core: [cliConfigJsonc, cliConfigTs],
   linting: ["biome.json"],
   ide: [".vscode/settings.json"],
   git: [".gitignore"],
@@ -72,3 +89,9 @@ export const CONFIG_CATEGORIES = {
 export function getRepoUrl(shortName: keyof typeof REPO_URLS): string {
   return `https://github.com/${REPO_URLS[shortName]}`;
 }
+
+export const getReliverseConfigPath = (projectPath: string) =>
+  path.join(projectPath, cliConfigJsonc);
+
+export const getExternalReliverseFilePath = (projectPath: string) =>
+  path.join(projectPath, cliConfigJsonc);

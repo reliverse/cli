@@ -1,16 +1,14 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import os from "os";
-import path from "pathe";
+
+import { memoryPath } from "~/app/constants.js";
 
 export async function deleteMemory() {
-  const homeDir = os.homedir();
-  const filePath = path.join(homeDir, ".reliverse/reliverse.db");
+  relinka("info-verbose", `Deleting config file: ${memoryPath}`);
 
-  relinka("info-verbose", `Deleting config file: ${filePath}`);
   try {
-    if (await fs.pathExists(filePath)) {
-      await fs.remove(filePath);
+    if (await fs.pathExists(memoryPath)) {
+      await fs.remove(memoryPath);
       relinka("success-verbose", "Config file deleted successfully");
     } else {
       relinka("info-verbose", "Config file not found");

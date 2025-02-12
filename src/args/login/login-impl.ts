@@ -3,20 +3,17 @@ import type { ParsedUrlQuery } from "querystring";
 import { spinnerTaskPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { isWindows } from "@reliverse/runtime";
 import { listen } from "async-listen";
 import http from "http";
 import { customAlphabet } from "nanoid";
 import "dotenv/config";
 import { setTimeout } from "node:timers";
 import open from "open";
-import os from "os";
-import path from "pathe";
 import url from "url";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { MEMORY_FILE } from "~/app/constants.js";
+import { cliDomainDocs, memoryPath } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
 import {
   getReliverseMemory,
@@ -46,7 +43,7 @@ export async function auth({
 
   await spinnerTaskPrompt({
     initialMessage: "Waiting for user confirmation...",
-    successMessage: "https://docs.reliverse.org",
+    successMessage: cliDomainDocs,
     errorMessage: "Authentication failed!",
     spinnerSolution: "ora",
     spinnerType: "arc",
@@ -202,11 +199,6 @@ export async function auth({
         5 * 60 * 1000,
       );
 
-      const homeDir = os.homedir();
-      const configFilePath = isWindows
-        ? path.join(homeDir, MEMORY_FILE)
-        : `~/${MEMORY_FILE}`;
-
       try {
         const authData = await authPromise;
         clearTimeout(authTimeout);
@@ -224,7 +216,7 @@ export async function auth({
           relinka(
             "info-verbose",
             "Wrote key to config file. To view it, type:",
-            `code ~/${configFilePath}`,
+            `code ${memoryPath}`,
           );
           relinka(
             "info-verbose",

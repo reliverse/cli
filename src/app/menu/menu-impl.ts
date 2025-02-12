@@ -6,7 +6,6 @@ import {
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 
-import type { CliResults } from "~/app/menu/create-project/cp-modules/use-composer-mode/opts.js";
 import type {
   ProjectArchitecture,
   ProjectSubcategory,
@@ -15,7 +14,6 @@ import type {
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
-  DEFAULT_APP_NAME,
   endTitle,
   experimental,
   recommended,
@@ -25,7 +23,6 @@ import {
   randomProjectFrameworkTitle,
   getRandomMessage,
 } from "~/app/db/messages.js";
-import { showComposerMode } from "~/app/menu/create-project/cp-modules/use-composer-mode/mod.js";
 import {
   TEMP_BROWSER_TEMPLATE_OPTIONS,
   TEMP_VSCODE_TEMPLATE_OPTIONS,
@@ -397,51 +394,6 @@ export async function optionCreateWebProject(
         return;
       }
       projectFramework = result;
-    }
-
-    let shouldContinueWithRecommended = "recommended";
-    if (!skipPrompts) {
-      // Let user pick "advanced" vs. "simple" (offline) approach
-      shouldContinueWithRecommended = await selectPrompt({
-        endTitle,
-        title: "Should I continue with advanced or simple mode?",
-        options: [
-          {
-            label: re.bold(re.greenBright("Advanced")),
-            value: "recommended",
-            hint: re.greenBright(re.reset("✨ STABLE & RECOMMENDED")),
-          },
-          {
-            label: re.dim(re.red("Simple")),
-            value: "offline",
-            hint: re.red("🚨 experimental, offline"),
-          },
-        ],
-      });
-    }
-
-    if (shouldContinueWithRecommended === "offline") {
-      const cliResults: CliResults = {
-        appName: DEFAULT_APP_NAME,
-        packages: [],
-        flags: {
-          noGit: false,
-          noInstall: false,
-          default: false,
-          importAlias: "",
-          framework: true,
-          CI: false,
-          tailwind: false,
-          trpc: false,
-          prisma: false,
-          drizzle: false,
-          nextAuth: false,
-          dbProvider: "postgres",
-        },
-        databaseProvider: "postgres",
-      };
-      await showComposerMode(cliResults);
-      return;
     }
 
     // Prompt for website subcategory

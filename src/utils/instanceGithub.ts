@@ -81,10 +81,14 @@ export async function ensureGithubToken(
       const octokit = initOctokitSDK(memory.githubKey);
       await octokit.rest.users.getAuthenticated();
       return memory.githubKey.trim();
-    } catch (_error) {
+    } catch (error) {
       relinka(
         "warn",
         "Existing GitHub token is invalid. Please provide a new one.",
+      );
+      relinka(
+        "warn-verbose",
+        error instanceof Error ? error.message : String(error),
       );
     }
   }
@@ -97,19 +101,6 @@ export async function ensureGithubToken(
       "Create one at https://github.com/settings/tokens/new\n" +
       "Ensure you select the `repo` scope, then click `Generate token`.",
     mode: maskInput ? "password" : "plain",
-    validate: async (value: string): Promise<string | boolean> => {
-      const trimmedValue = value.trim();
-      if (!trimmedValue) {
-        return "A token is required";
-      }
-      try {
-        const octokit = initOctokitSDK(trimmedValue);
-        await octokit.rest.users.getAuthenticated();
-        return true;
-      } catch (_error) {
-        return "Invalid token. Please ensure it has the correct permissions (e.g. repo scope).";
-      }
-    },
   });
 
   // Save the new token persistently.

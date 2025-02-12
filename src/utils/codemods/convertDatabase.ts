@@ -269,8 +269,8 @@ export async function convertDatabaseProvider(
       "src/database/index.ts",
     ];
 
-    for (const dbPath of dbClientPaths) {
-      const fullPath = path.join(cwd, dbPath);
+    for (const memoryPath of dbClientPaths) {
+      const fullPath = path.join(cwd, memoryPath);
       if (await fs.pathExists(fullPath)) {
         let content = await fs.readFile(fullPath, "utf-8");
 

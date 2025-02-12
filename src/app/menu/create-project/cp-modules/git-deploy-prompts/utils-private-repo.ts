@@ -1,7 +1,6 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { homedir } from "node:os";
 import path from "pathe";
 import { simpleGit } from "simple-git";
 import tar from "tar-stream";
@@ -10,6 +9,11 @@ import { gzip } from "zlib";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
+import {
+  cliConfigJsonc,
+  cliConfigJsoncTemp,
+  cliHomeTmp,
+} from "~/app/constants.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 
 const gzipAsync = promisify(gzip);
@@ -41,13 +45,8 @@ async function createArchive(
 export async function archiveExistingRepoContent(
   repoUrl: string,
   projectPath: string,
-): Promise<{ success: boolean; externalReliversePath?: string }> {
-  const tempDir = path.join(
-    homedir(),
-    ".reliverse",
-    "temp",
-    Date.now().toString(),
-  );
+): Promise<{ success: boolean; externalReliverseFilePath?: string }> {
+  const tempDir = path.join(cliHomeTmp, Date.now().toString());
   try {
     // Create temp directory
     await fs.ensureDir(tempDir);
@@ -141,14 +140,14 @@ export async function archiveExistingRepoContent(
       { name: "README.md", required: false },
       { alternatives: ["LICENSE", "LICENSE.md"], required: false },
       {
-        name: ".reliverse",
+        name: cliConfigJsonc,
         required: false,
-        targetName: "temp.reliverse",
+        targetName: cliConfigJsoncTemp,
         hidden: true,
       },
     ];
 
-    let externalReliversePath: string | undefined;
+    let externalReliverseFilePath: string | undefined;
 
     for (const file of filesToCopy) {
       if (file.name) {
@@ -163,9 +162,9 @@ export async function archiveExistingRepoContent(
             relinka("info", `Copied ${file.name} from existing repository`);
           }
 
-          // Store temp.reliverse path if found
-          if (file.name === ".reliverse") {
-            externalReliversePath = targetPath;
+          // Store reliverse-tmp.jsonc path if found
+          if (file.name === cliConfigJsonc) {
+            externalReliverseFilePath = targetPath;
           }
         }
       } else if (file.alternatives) {
@@ -182,7 +181,7 @@ export async function archiveExistingRepoContent(
 
     return {
       success: true,
-      ...(externalReliversePath && { externalReliversePath }),
+      ...(externalReliverseFilePath && { externalReliverseFilePath }),
     };
   } catch (error) {
     relinka(
@@ -206,14 +205,12 @@ export async function handleExistingRepoContent(
   repoOwner: string,
   repoName: string,
   projectPath: string,
-): Promise<{ success: boolean; externalReliversePath?: string }> {
+): Promise<{ success: boolean; externalReliverseFilePath?: string }> {
   try {
     // Clone repo to temp dir and copy files
     const repoUrl = `https://oauth2:${memory.githubKey}@github.com/${repoOwner}/${repoName}.git`;
-    const { success, externalReliversePath } = await archiveExistingRepoContent(
-      repoUrl,
-      projectPath,
-    );
+    const { success, externalReliverseFilePath } =
+      await archiveExistingRepoContent(repoUrl, projectPath);
 
     if (!success) {
       throw new Error("Failed to retrieve repository git data");
@@ -222,7 +219,7 @@ export async function handleExistingRepoContent(
     relinka("success", "Retrieved repository git directory data");
     return {
       success: true,
-      ...(externalReliversePath && { externalReliversePath }),
+      ...(externalReliverseFilePath && { externalReliverseFilePath }),
     };
   } catch (error) {
     relinka(
