@@ -3,8 +3,11 @@ import os from "os";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.5.1";
+export const cliVersion = "1.5.6";
 export const cliName = "@reliverse/cli";
+
+// GENERAL CONFIG NAMES
+export const tsconfigJson = "tsconfig.json";
 
 // RELIVERSE JSONC CONFIG
 export const cliConfigJsonc = "reliverse.jsonc";

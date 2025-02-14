@@ -1,7 +1,7 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 async function detectCurrentImportSymbol(
   projectPath: string,
@@ -10,7 +10,7 @@ async function detectCurrentImportSymbol(
   const commonSymbols = ["@", "~", "#", "$", "@src", "@app"];
 
   // Find files in the specified project folder
-  const files = await globby("**/*.{js,jsx,ts,tsx}", {
+  const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: path.resolve(projectPath),
   });
 
@@ -70,7 +70,7 @@ export async function replaceImportSymbol(
   );
 
   // Find files in the specified project folder
-  const files = await globby("**/*.{js,jsx,ts,tsx}", {
+  const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: path.resolve(projectPath),
   });
 

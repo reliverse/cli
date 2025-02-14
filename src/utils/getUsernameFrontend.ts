@@ -9,7 +9,11 @@ import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
 export async function getUsernameFrontend(
   memory: ReliverseMemory,
+  shouldAskIfExists: boolean,
 ): Promise<string | null> {
+  if (!shouldAskIfExists && memory.name && memory.name !== "")
+    return memory.name;
+
   const previousName = typeof memory.name === "string" ? memory.name : "";
   const hasPreviousName = previousName !== "";
 

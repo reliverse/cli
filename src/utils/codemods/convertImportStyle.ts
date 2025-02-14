@@ -1,7 +1,7 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 export async function convertImportStyle(
   projectPath: string,
@@ -9,7 +9,7 @@ export async function convertImportStyle(
 ) {
   relinka("info", `Converting to ${targetStyle} style in ${projectPath}`);
 
-  const files = await globby("**/*.{js,jsx,ts,tsx}", {
+  const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: path.resolve(projectPath),
   });
 

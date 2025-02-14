@@ -1,8 +1,8 @@
 import { relinka } from "@reliverse/prompts";
 import { destr } from "destr";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
 import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
@@ -41,7 +41,7 @@ async function getImportPaths(projectPath: string): Promise<string[]> {
 
   try {
     // Find all JS/TS files
-    const files = await globby("**/*.{js,ts,jsx,tsx}", {
+    const files = await glob("**/*.{js,ts,jsx,tsx}", {
       cwd: projectPath,
       ignore: ["node_modules/**", "dist/**", ".next/**", "build/**"],
     });

@@ -13,7 +13,7 @@ _Make sure you have [Node.js](https://nodejs.org), [Git](https://git-scm.com/dow
 
 - Install: `bun i -g @reliverse/cli`
 - Use: `reliverse cli`
-- Update: `bun -g update --latest`
+- Update: `reliverse update`
 
 ## Project Features
 

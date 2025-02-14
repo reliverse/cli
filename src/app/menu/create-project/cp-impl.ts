@@ -102,7 +102,7 @@ export async function initializeProjectConfig(
     config?.projectAuthor !== UNKNOWN_VALUE &&
     config?.projectAuthor !== ""
       ? config.projectAuthor
-      : ((await getUsernameFrontend(memory)) ?? "");
+      : ((await getUsernameFrontend(memory, true)) ?? "");
 
   if (!frontendUsername) {
     throw new Error(

@@ -2,8 +2,8 @@ import type { PackageJson } from "pkg-types";
 
 import { destr } from "destr";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 export async function getUnusedDependencies(
   cwd: string,
@@ -19,7 +19,7 @@ export async function getUnusedDependencies(
   };
 
   // Get all JS/TS files
-  const files = await globby("**/*.{js,jsx,ts,tsx}", { cwd });
+  const files = await glob("**/*.{js,jsx,ts,tsx}", { cwd });
   const imports = new Set<string>();
 
   // Collect all imports

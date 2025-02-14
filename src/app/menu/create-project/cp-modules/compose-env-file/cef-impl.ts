@@ -128,7 +128,7 @@ function parseEnvKeys(envContents: string): Record<string, string> {
 
   for (const line of lines) {
     // Simplistic parse: KEY=VALUE
-    // It will also handle lines like KEY="VALUE" or KEY='VALUE'
+    // It handles lines like KEY="VALUE" or KEY='VALUE'
     const [rawKey, ...rest] = line.split("=");
     if (!rawKey) continue;
     const key = rawKey.trim();

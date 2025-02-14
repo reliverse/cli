@@ -23,8 +23,8 @@ import {
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { checkVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-check.js";
-import { manageDrizzleSchema } from "~/app/menu/project-editor/tools/drizzle/manageDrizzleSchema.js";
-import { translateProjectUsingLanguine } from "~/app/menu/project-editor/tools/languine/languine-mod.js";
+import { manageDrizzleSchema } from "~/app/menu/project-editor/cli-addons/drizzle/manageDrizzleSchema.js";
+import { useAddonLanguine } from "~/app/menu/project-editor/cli-addons/languine/languine-mod.js";
 import {
   convertDatabaseProvider,
   convertPrismaToDrizzle,
@@ -71,7 +71,7 @@ export async function handleOpenProjectMenu(
   maskInput: boolean,
   config: ReliverseConfig,
 ): Promise<void> {
-  const frontendUsername = await getUsernameFrontend(memory);
+  const frontendUsername = await getUsernameFrontend(memory, false);
   if (!frontendUsername) {
     throw new Error(
       "Failed to determine your frontend username. Please try again or notify the CLI developers.",
@@ -85,7 +85,7 @@ export async function handleOpenProjectMenu(
     selectedProject = projects[0];
   } else {
     const projectOptions = projects.map((project) => ({
-      label: `- ${project.name}`,
+      label: project.name,
       value: project.path,
       ...(project.needsDepsInstall
         ? { hint: re.dim("no deps found, <enter> to install") }
@@ -117,9 +117,9 @@ export async function handleOpenProjectMenu(
   if (selectedProject.needsDepsInstall) {
     const shouldInstall = await confirmPrompt({
       title:
-        "Dependencies are missing in your project. Do you want to install them?",
+        "Dependencies are missing from your project. Would you like to install them?",
       content: re.bold(
-        "🚨 Some features will be disabled until you install dependencies.",
+        "🚨 Note: Certain addons will be disabled until the dependencies are installed.",
       ),
     });
     if (shouldInstall) {
@@ -143,99 +143,107 @@ export async function handleOpenProjectMenu(
     ? ` (${selectedProject.gitStatus?.uncommittedChanges ?? 0} uncommitted changes, ${selectedProject.gitStatus?.unpushedCommits ?? 0} unpushed commits)`
     : "";
   const depsWarning = selectedProject.needsDepsInstall
-    ? "Some features were disabled because dependencies are not installed."
+    ? "Some addons were disabled because dependencies are not installed."
     : "";
 
   // (3) Show Main Action Menu.
   const action = await selectPrompt<ProjectMenuOption>({
-    title: `Managing ${selectedProject.name}${gitStatusInfo}`,
+    title: `[@reliverse/addons] Managing project: ${selectedProject.name}${gitStatusInfo}`,
     content: depsWarning ? re.bold(depsWarning) : "",
     options: [
       {
         label: "Git and deploy operations",
         value: "git-deploy",
-        hint: re.dim("Commit and push changes"),
+        hint: re.dim("commit and push changes"),
       },
       {
         label: "Translate selected project",
         value: "languine",
-        hint: re.dim("A powerful i18n tools"),
+        hint: re.dim("powerful i18n addon"),
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Code Modifications ${experimental}`)
-          : `- Code Modifications ${experimental}`,
+          ? re.gray(`Code modifications ${experimental}`)
+          : `Code modifications ${experimental}`,
         value: "codemods",
-        hint: re.dim("Apply code transformations"),
+        hint: re.dim("apply code transformations"),
         disabled: selectedProject.needsDepsInstall,
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Integrations ${experimental}`)
-          : `- Integrations ${experimental}`,
+          ? re.gray(`Integrations ${experimental}`)
+          : `Integrations ${experimental}`,
         value: "integrations",
-        hint: re.dim("Manage project integrations"),
+        hint: re.dim("manage project integrations"),
         disabled: selectedProject.needsDepsInstall,
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Database Operations ${experimental}`)
-          : `- Database Operations ${experimental}`,
+          ? re.gray(`Database operations ${experimental}`)
+          : `Database operations ${experimental}`,
         value: "convert-db",
-        hint: re.dim("Convert between database types"),
+        hint: re.dim("convert between database types"),
         disabled: selectedProject.needsDepsInstall,
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Add shadcn/ui components ${experimental}`)
-          : `- Add shadcn/ui components ${experimental}`,
+          ? re.gray(`Add shadcn/ui components ${experimental}`)
+          : `Add shadcn/ui components ${experimental}`,
         value: "shadcn",
-        hint: re.dim("Manage UI components"),
+        hint: re.dim("manage ui components"),
         disabled: selectedProject.needsDepsInstall,
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Drizzle Schema ${experimental}`)
-          : `- Drizzle Schema ${experimental}`,
+          ? re.gray(`Drizzle schema ${experimental}`)
+          : `Drizzle schema ${experimental}`,
         value: "drizzle-schema",
-        hint: re.dim("Manage database schema"),
+        hint: re.dim("manage database schema"),
         disabled: selectedProject.needsDepsInstall,
       },
       {
         label: selectedProject.needsDepsInstall
-          ? re.gray(`- Cleanup Project ${experimental}`)
-          : `- Cleanup Project ${experimental}`,
+          ? re.gray(`Cleanup project ${experimental}`)
+          : `Cleanup project ${experimental}`,
         value: "cleanup",
-        hint: re.dim("Clean up project files"),
+        hint: re.dim("clean up project files"),
         disabled: selectedProject.needsDepsInstall,
       },
-      { label: "👈 Exit", value: "exit", hint: re.dim("ctrl+c anywhere") },
+      {
+        label: "👈 Exit",
+        value: "exit",
+        hint: re.dim("press ctrl+c at any time"),
+      },
     ],
   });
 
   if (action === "exit") return;
 
-  // Initialize Github SDK
-  const githubResult = await initGithubSDK(memory, frontendUsername, maskInput);
-  if (!githubResult) {
-    throw new Error(
-      "Failed to initialize GitHub SDK. Please notify the CLI developers.",
-    );
-  }
-  const [githubToken, githubInstance, githubUsername] = githubResult;
-
-  // Initialize Vercel SDK
-  const vercelResult = await initVercelSDK(memory, maskInput);
-  if (!vercelResult) {
-    throw new Error(
-      "Failed to initialize Vercel SDK. Please notify the CLI developers.",
-    );
-  }
-  const [vercelToken, vercelInstance] = vercelResult;
-
   // (4) Handle Actions
   switch (action) {
     case "git-deploy": {
+      // Initialize Github SDK
+      const githubResult = await initGithubSDK(
+        memory,
+        frontendUsername,
+        maskInput,
+      );
+      if (!githubResult) {
+        throw new Error(
+          "Failed to initialize GitHub SDK. Please notify the CLI developers.",
+        );
+      }
+      const [githubToken, githubInstance, githubUsername] = githubResult;
+
+      // Initialize Vercel SDK
+      const vercelResult = await initVercelSDK(memory, maskInput);
+      if (!vercelResult) {
+        throw new Error(
+          "Failed to initialize Vercel SDK. Please notify the CLI developers.",
+        );
+      }
+      const [vercelToken, vercelInstance] = vercelResult;
+
       // --- Git and Deploy Operations ---
       let showCreateGithubOption = true;
       let hasGithubRepo = false;
@@ -260,7 +268,7 @@ export async function handleOpenProjectMenu(
               ...(selectedProject.gitStatus?.unpushedCommits && hasGithubRepo
                 ? [
                     {
-                      label: `- Push ${selectedProject.gitStatus.unpushedCommits} commits`,
+                      label: `Push ${selectedProject.gitStatus.unpushedCommits} commits`,
                       value: "push",
                     },
                   ]
@@ -411,7 +419,7 @@ export async function handleOpenProjectMenu(
     }
 
     case "languine": {
-      await translateProjectUsingLanguine(selectedProject.path);
+      await useAddonLanguine(selectedProject.path);
       break;
     }
 

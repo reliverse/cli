@@ -4,6 +4,8 @@ import path from "pathe";
 
 import type { MonorepoType } from "~/types.js";
 
+import { tsconfigJson } from "~/app/constants.js";
+
 const MONOREPO_CONFIGS = {
   turborepo: {
     "turbo.json": {
@@ -72,7 +74,7 @@ export async function convertToMonorepo(
     );
     // Move other common files
     const commonFiles = [
-      "tsconfig.json",
+      tsconfigJson,
       "eslint.config.js",
       ".prettierrc",
       "next.config.js",
@@ -172,7 +174,7 @@ export async function convertToMonorepo(
       ...sharedPackages.map((pkg) => ({ path: `packages/${pkg}` })),
     ],
   };
-  await fs.writeJSON(path.join(projectPath, "tsconfig.json"), rootTsConfig, {
+  await fs.writeJSON(path.join(projectPath, tsconfigJson), rootTsConfig, {
     spaces: 2,
   });
 

@@ -194,7 +194,7 @@ export async function handleDownload({
         relinka(
           "success",
           `Successfully downloaded ${term} to ${projectPath}`,
-          `It took ${result.time} seconds to download ${result.size} MB${includesGit}`,
+          `It took ${result.time} seconds to download ${result.sizePretty}${includesGit}`,
         );
       }
     } catch (error) {

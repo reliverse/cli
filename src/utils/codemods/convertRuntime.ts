@@ -3,8 +3,10 @@ import type { TSConfig } from "pkg-types";
 import { relinka } from "@reliverse/prompts";
 import { destr } from "destr";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
+
+import { tsconfigJson } from "~/app/constants.js";
 
 const RUNTIME_REPLACEMENTS = {
   bun: {
@@ -58,7 +60,7 @@ export async function convertRuntime(
     `Converting Node.js code to ${targetRuntime} in ${projectPath}`,
   );
 
-  const files = await globby("**/*.{js,jsx,ts,tsx}", {
+  const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: path.resolve(projectPath),
   });
 
@@ -146,7 +148,7 @@ export async function convertRuntime(
   // Update configuration files
   if (targetRuntime === "bun") {
     // Convert tsconfig.json for Bun
-    const tsconfigPath = path.join(projectPath, "tsconfig.json");
+    const tsconfigPath = path.join(projectPath, tsconfigJson);
     if (await fs.pathExists(tsconfigPath)) {
       const tsconfig = destr<TSConfig>(
         await fs.readFile(tsconfigPath, "utf-8"),

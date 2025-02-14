@@ -151,8 +151,8 @@ export async function generateConfigFiles(
     }
 
     // Use the unified helper to determine the active config file name.
-    const { configPath } = await getReliverseConfigPath(projectPath);
-    const mainConfigFileName = path.basename(configPath);
+    const configInfo = await getReliverseConfigPath(projectPath);
+    const mainConfigFileName = path.basename(configInfo.configPath);
 
     // The main config generator now simply delegates to the unified generateReliverseConfig.
     const configGenerators: Record<string, () => Promise<boolean>> = {
@@ -170,6 +170,7 @@ export async function generateConfigFiles(
           enableI18n,
           overwrite,
           isDev,
+          configInfo,
         });
         return true;
       },

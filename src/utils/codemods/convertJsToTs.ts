@@ -2,6 +2,8 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
+import { tsconfigJson } from "~/app/constants.js";
+
 function generateTypeDefinitions(content: string): string {
   let result = content;
 
@@ -101,7 +103,7 @@ export async function convertJsToTs(cwd: string) {
   }
 
   // Create tsconfig.json if it doesn't exist
-  const tsconfigPath = path.join(cwd, "tsconfig.json");
+  const tsconfigPath = path.join(cwd, tsconfigJson);
   if (!(await fs.pathExists(tsconfigPath))) {
     const tsconfig = {
       compilerOptions: {

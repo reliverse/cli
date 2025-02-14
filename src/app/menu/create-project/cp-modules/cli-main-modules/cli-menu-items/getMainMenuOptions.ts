@@ -40,7 +40,7 @@ export async function getMainMenuOptions(
       value: "create",
     },
     {
-      label: re.bold("🧱 Clone an existing repo"),
+      label: re.bold("🧱 Clone an existing repository"),
       hint: multiConfigMsg,
       value: "clone",
     },
@@ -92,9 +92,9 @@ export async function getMainMenuOptions(
       isDev,
     );
     if (detectedProjects.length > 0) {
-      // Insert the "Edit project" item right after the first item
+      // Insert the "Manage project" item right after the first item
       options.splice(1, 0, {
-        label: "📝 Edit project",
+        label: "📝 Manage project",
         value: "detected-projects",
         hint: re.dim(`Detected: ${detectedProjects.length}`),
       });

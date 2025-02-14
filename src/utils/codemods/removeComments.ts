@@ -1,12 +1,12 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 // Cleanup's functions
 export async function removeComments(cwd: string): Promise<void> {
   // Use Biome to remove comments if available, otherwise use regex
-  const files = await globby("**/*.{js,jsx,ts,tsx}", { cwd });
+  const files = await glob("**/*.{js,jsx,ts,tsx}", { cwd });
   for (const file of files) {
     const content = await fs.readFile(path.join(cwd, file), "utf-8");
     const withoutComments = content

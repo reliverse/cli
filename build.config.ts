@@ -196,7 +196,9 @@ const buildConfig =
         clean: false,
         entries: [
           {
-            input: isNextBuildLib.config ? "src/utils/schemaConfig.ts" : "src",
+            input: isNextBuildLib.config
+              ? "src/utils/libs/config/schemaConfig.ts"
+              : "src",
             outDir: isNextBuildLib.config
               ? `dist-libs/config/${outputBinDir}`
               : outputBinDir,

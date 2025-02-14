@@ -1,7 +1,7 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 import type { ModernReplacement } from "~/types.js";
 
@@ -92,7 +92,7 @@ const MODERN_REPLACEMENTS: ModernReplacement[] = [
 export async function replaceWithModern(projectPath: string) {
   relinka("info", "Starting modern replacements...");
 
-  const files = await globby("**/*.{js,ts,tsx}", {
+  const files = await glob("**/*.{js,ts,tsx}", {
     cwd: projectPath,
     absolute: true,
     ignore: [

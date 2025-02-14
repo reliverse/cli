@@ -1,11 +1,11 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import { installDependencies } from "nypm";
 import { ofetch } from "ofetch";
 import pLimit from "p-limit";
 import { dirname, join } from "pathe";
 import semver from "semver";
+import { glob } from "tinyglobby";
 import { fileURLToPath } from "url";
 
 // ────────────────────────────────────────────────
@@ -190,7 +190,7 @@ async function isPackageDownloaded(
  */
 async function renameTxtToTsx(dir: string): Promise<void> {
   try {
-    const files = await globby("**/*-tsx.txt", {
+    const files = await glob("**/*-tsx.txt", {
       cwd: dir,
       absolute: true,
     });

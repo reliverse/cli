@@ -1,12 +1,12 @@
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
-import { globby } from "globby";
 import path from "pathe";
+import { glob } from "tinyglobby";
 
 export async function convertCjsToEsm(projectPath: string) {
   relinka("info", `Converting CommonJS to ESM in ${projectPath}`);
 
-  const files = await globby("**/*.{js,jsx,ts,tsx}", {
+  const files = await glob("**/*.{js,jsx,ts,tsx}", {
     cwd: path.resolve(projectPath),
   });
 

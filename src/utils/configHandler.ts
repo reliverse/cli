@@ -10,10 +10,12 @@ import type {
   ConfigFile,
 } from "~/types.js";
 
+import { tsconfigJson } from "~/app/constants.js";
+
 export const CONFIG_FILES: ConfigFile[] = [
   {
     name: "TypeScript",
-    files: ["tsconfig.json"],
+    files: [tsconfigJson],
     editPrompt: "Edit TypeScript configuration",
   },
   {

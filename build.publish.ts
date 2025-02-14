@@ -10,7 +10,6 @@ import { parseJSONC, parseJSON5 } from "confbox";
 import { destr } from "destr";
 import { execaCommand } from "execa";
 import fs from "fs-extra";
-import { globby } from "globby";
 import mri from "mri";
 import path from "pathe";
 import {
@@ -20,9 +19,14 @@ import {
   type PackageJson,
 } from "pkg-types";
 import semver from "semver";
+import { glob } from "tinyglobby";
 import { fileURLToPath } from "url";
 
-import { cliConfigJsonc, cliDomainDocs } from "~/app/constants.js";
+import {
+  cliConfigJsonc,
+  cliDomainDocs,
+  tsconfigJson,
+} from "~/app/constants.js";
 
 import {
   pubConfig,
@@ -238,10 +242,9 @@ async function removeDistFolders(): Promise<boolean> {
  * Deletes specific test and temporary files from a given directory.
  */
 async function deleteSpecificFiles(outdirBin: string): Promise<void> {
-  const files = await globby(TEST_FILE_PATTERNS, {
+  const files = await glob(TEST_FILE_PATTERNS, {
     cwd: outdirBin,
     absolute: true,
-    gitignore: true,
   });
   if (files.length > 0) {
     await Promise.all(files.map((file) => fs.remove(file)));
@@ -257,9 +260,8 @@ async function bumpVersions(
   newVersion: string,
 ): Promise<void> {
   try {
-    const codebase = await globby([JSON_FILE_PATTERN], {
+    const codebase = await glob([JSON_FILE_PATTERN], {
       ignore: IGNORE_PATTERNS,
-      gitignore: true,
     });
 
     const updateFile = async (
@@ -532,7 +534,7 @@ async function filterDeps(
   }
 
   // Get all JS/TS files in outdirBin
-  const files = await globby("**/*.{js,ts}", {
+  const files = await glob("**/*.{js,ts}", {
     cwd: outdirBin,
     absolute: true,
   });
@@ -685,7 +687,7 @@ async function createTSConfig(
     include: ["./bin/**/*.ts"],
     exclude: ["**/node_modules"],
   });
-  await fs.writeJSON(path.join(outdirRoot, "tsconfig.json"), tsConfig, {
+  await fs.writeJSON(path.join(outdirRoot, tsconfigJson), tsConfig, {
     spaces: 2,
   });
 }
@@ -768,10 +770,9 @@ async function convertJsToTsImports(
  * Renames .tsx files by replacing the .tsx extension with -tsx.txt.
  */
 async function renameTsxFiles(dir: string): Promise<void> {
-  const files = await globby(["**/*.tsx"], {
+  const files = await glob(["**/*.tsx"], {
     cwd: dir,
     absolute: true,
-    gitignore: true,
   });
   await Promise.all(
     files.map(async (filePath) => {
@@ -946,10 +947,9 @@ export async function convertSymbolPaths(
     return;
   }
   const filePatterns = ["**/*.{js,ts,jsx,tsx,mjs,cjs}"];
-  const files = await globby(filePatterns, {
+  const files = await glob(filePatterns, {
     cwd: outdirBin,
     absolute: true,
-    gitignore: true,
   });
   if (files.length === 0) {
     logger.info(`No matching files found in: ${outdirBin}`, true);

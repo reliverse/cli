@@ -8,10 +8,10 @@ export default defineConfig({
 
   // General project information
   projectName: "@reliverse/cli",
-  projectAuthor: "blefnk",
+  projectAuthor: "reliverse",
   projectDescription:
     "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  version: "1.5.1",
+  version: "1.5.6",
   projectLicense: "MIT",
   projectState: "creating",
   projectRepository: "https://github.com/reliverse/cli",

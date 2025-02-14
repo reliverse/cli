@@ -3,6 +3,7 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
 import path, { dirname } from "pathe";
+import prettyBytes from "pretty-bytes";
 import { simpleGit } from "simple-git";
 
 import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
@@ -118,6 +119,10 @@ export type DownloadResult = {
    * The total size (in MB) of the downloaded project.
    */
   size?: number;
+  /**
+   * The total size in a human-readable format.
+   */
+  sizePretty?: string;
   /**
    * The number of concurrent Git processes used.
    */
@@ -349,7 +354,11 @@ export async function downloadRepo({
           while (await fs.pathExists(backupPath)) {
             backupPath = path.join(
               parentDir,
-              `${projectReliverseConfigPath.endsWith(cliConfigJsonc) ? "reliverse-bak-" : "reliverse-bak-"}${iteration}.${
+              `${
+                projectReliverseConfigPath.endsWith(cliConfigJsonc)
+                  ? "reliverse-bak-"
+                  : "reliverse-bak-"
+              }${iteration}.${
                 projectReliverseConfigPath.endsWith(cliConfigJsonc)
                   ? "jsonc"
                   : "ts"
@@ -520,13 +529,15 @@ export async function downloadRepo({
       result.time = durationSeconds;
     }
     if (returnSize) {
-      // Convert size from bytes to megabytes (MB) and round to 2 decimal places.
+      // Calculate the folder size in bytes and then derive the size in MB.
       // When preserveGit is false, exclude any ".git" folders.
       const folderSizeBytes = await getFolderSize(
         projectPath,
         preserveGit ? [] : [".git"],
       );
-      result.size = parseFloat((folderSizeBytes / (1024 * 1024)).toFixed(2));
+      const sizeMB = parseFloat((folderSizeBytes / (1024 * 1024)).toFixed(2));
+      result.size = sizeMB;
+      result.sizePretty = prettyBytes(folderSizeBytes);
     }
     if (returnConcurrency) {
       result.concurrency = maxConcurrentProcesses;

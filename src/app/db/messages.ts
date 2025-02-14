@@ -6,7 +6,7 @@ export const randomWelcomeMessages = (username: string) => [
   `Nice to see you back, ${username}! Ready to conquer new challenges?`,
   `Hey ${username}, welcome back! Let's continue building something extraordinary.`,
   `Glad to have you back, ${username}! Time to work some development magic.`,
-  `Look who has returned! ${username} is in the house! Let's dive right back in.`,
+  `Look who's back! blefnk is in the house! Let's dive right back in.`,
   `${username}, good to see you again! Let's pick a goal and crush it together.`,
   `Welcome back to your dev journey, ${username}! The possibilities are endless.`,
 ];
@@ -16,7 +16,7 @@ export const randomWelcomeTitle = [
   "Ready to craft something extraordinary? I've got all the tools you need!",
   "Let's transform your vision into reality! I'm here to help bring your ideas to life.",
   "Looking to kick off a new project? I've got everything you need to get started!",
-  "Welcome to your development adventure! What shall we build together today?",
+  "What would you like to build today?",
   "Got a spark of inspiration? Let's turn it into a fully realized masterpiece!",
   "Time to bring your ideas into existence! What kind of project can I help you create?",
 ];

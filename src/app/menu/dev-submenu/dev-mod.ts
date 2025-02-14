@@ -64,7 +64,7 @@ export async function downloadRepoOption(
     config,
   );
 
-  const frontendUsername = await getUsernameFrontend(memory);
+  const frontendUsername = await getUsernameFrontend(memory, false);
   if (!frontendUsername) {
     throw new Error(
       "Failed to determine your frontend username. Please try again or notify the CLI developers.",
