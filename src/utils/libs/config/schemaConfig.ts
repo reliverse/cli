@@ -2,12 +2,17 @@ import { Type, type Static } from "@sinclair/typebox";
 import fs from "fs-extra";
 import path from "pathe";
 
-import {
-  cliDomainDocs,
-  RELIVERSE_SCHEMA_DEV,
-  RELIVERSE_SCHEMA_URL,
-  UNKNOWN_VALUE,
-} from "~/app/constants.js";
+// ------------------------------------------------------------------
+// Duplicating the constants from the @reliverse/cli app/constants.ts
+// since the current file is published as a library to npm and jsr
+const UNKNOWN_VALUE = "unknown";
+const reliverseOrgBase = "reliverse.org";
+const reliverseOrgRoot = `https://${reliverseOrgBase}`;
+const cliDomainRoot = `https://docs.${reliverseOrgBase}`;
+const cliDomainDocs = `${cliDomainRoot}/cli`;
+const RELIVERSE_SCHEMA_DEV = "./schema.json";
+const RELIVERSE_SCHEMA_URL = `${reliverseOrgRoot}/schema.json`;
+// ------------------------------------------------------------------
 
 const featuresSchema = Type.Object({
   i18n: Type.Boolean(),

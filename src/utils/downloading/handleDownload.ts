@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { cliHomeRepos } from "~/app/constants.js";
 import {

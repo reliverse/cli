@@ -4,7 +4,7 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { cliName } from "~/app/constants.js";
 import { type InstanceGithub } from "~/utils/instanceGithub.js";

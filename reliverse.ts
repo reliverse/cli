@@ -1,4 +1,4 @@
-import { defineConfig } from "./src/utils/schemaConfig.js";
+import { defineConfig } from "./src/utils/libs/config/schemaConfig.js";
 
 export default defineConfig({
   // RELIVERSE CONFIG (https://docs.reliverse.org/cli)
@@ -11,7 +11,7 @@ export default defineConfig({
   projectAuthor: "blefnk",
   projectDescription:
     "This superapp CLI tool can help you easily create new web projects, manage existing projects, and automatically make advanced codebase modifications, with more features coming soon.",
-  version: "1.5.0",
+  version: "1.5.1",
   projectLicense: "MIT",
   projectState: "creating",
   projectRepository: "https://github.com/reliverse/cli",

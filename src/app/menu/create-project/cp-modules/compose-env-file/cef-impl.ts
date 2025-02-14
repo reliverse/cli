@@ -11,7 +11,7 @@ import { ofetch } from "ofetch";
 import open from "open";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";

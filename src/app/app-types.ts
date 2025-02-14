@@ -1,4 +1,4 @@
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 export type AppParams = {

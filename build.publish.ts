@@ -1,3 +1,9 @@
+/**
+ * Build and Publish Script
+ * This script bundles, bumps versions, and publishes the project
+ * with its optional libraries to the NPM and/or JSR registries.
+ */
+
 import { re } from "@reliverse/relico";
 import { build as bunBuild } from "bun";
 import { parseJSONC, parseJSON5 } from "confbox";
@@ -24,89 +30,187 @@ import {
   type BuildPublishConfig,
 } from "./build.config.js";
 
-// ---------- Constants & Global Setup ----------
-const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const DIST_FOLDERS = ["dist-npm", "dist-jsr"];
+// ============================
+// Constants & Global Setup
+// ============================
 
-// ---------- Parse CLI Flags ----------
-// Extended CLI flags for bumping, registry selection, verbose output, etc.
-const scriptFlags = mri(process.argv.slice(2), {
+const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const DIST_FOLDERS = ["dist-npm", "dist-jsr", "dist-libs"];
+const JSON_FILE_PATTERN = "**/*.{ts,json,jsonc,json5}";
+const TEST_FILE_PATTERNS = [
+  "**/*.test.js",
+  "**/*.test.ts",
+  "**/*.test.d.ts",
+  "**/*-temp.js",
+  "**/*-temp.ts",
+  "**/*-temp.d.ts",
+];
+const IGNORE_PATTERNS = [
+  "**/node_modules/**",
+  "**/.git/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/.next/**",
+  "**/coverage/**",
+  "**/.cache/**",
+  "**/tmp/**",
+  "**/.temp/**",
+  "**/package-lock.json",
+  "**/pnpm-lock.yaml",
+  "**/yarn.lock",
+  "**/bun.lock",
+];
+
+// Regex constants for version updates
+const JSON_VERSION_REGEX = (oldVer: string) =>
+  new RegExp(`"version"\\s*:\\s*"${oldVer}"`, "g");
+const TS_VERSION_REGEXES = [
+  (oldVer: string) =>
+    new RegExp(`(export\\s+const\\s+version\\s*=\\s*["'])${oldVer}(["'])`, "g"),
+  (oldVer: string) =>
+    new RegExp(`(const\\s+version\\s*=\\s*["'])${oldVer}(["'])`, "g"),
+  (oldVer: string) => new RegExp(`(version\\s*:\\s*["'])${oldVer}(["'])`, "g"),
+  (oldVer: string) => new RegExp(`(VERSION\\s*=\\s*["'])${oldVer}(["'])`, "g"),
+  (oldVer: string) =>
+    new RegExp(
+      `(export\\s+const\\s+cliVersion\\s*=\\s*["'])${oldVer}(["'])`,
+      "g",
+    ),
+  (oldVer: string) =>
+    new RegExp(`(const\\s+cliVersion\\s*=\\s*["'])${oldVer}(["'])`, "g"),
+];
+
+// ============================
+// CLI Flags Parsing & Help
+// ============================
+
+const cliFlags = mri(process.argv.slice(2), {
   string: ["bump", "registry"],
-  boolean: ["verbose", "dryRun", "allowDirty", "jsrSlowTypes"],
+  boolean: ["verbose", "dryRun", "allowDirty", "jsrSlowTypes", "help"],
   alias: {
     v: "verbose",
     d: "dryRun",
     r: "registry",
+    h: "help",
   },
   default: {},
 });
 
+// Display help if requested
+if (cliFlags["help"]) {
+  console.log(`
+Usage: build.publish.ts [options]
+
+Options:
+  --bump <version>              Specify a version to bump to.
+  --registry <npm|jsr|npm-jsr>  Select the registry to publish to.
+  --verbose, -v                 Enable verbose logging.
+  --dryRun, -d                  Run in dry run mode (no actual publish).
+  --allowDirty                  Allow publishing from a dirty working directory.
+  --jsrSlowTypes                Enable slow type-checking for JSR.
+  --help, -h                    Display this help message.
+`);
+  process.exit(0);
+}
+
 // Override pubConfig values with CLI flags if provided.
-if (scriptFlags["verbose"] !== undefined) {
-  pubConfig.verbose = scriptFlags["verbose"];
+if (cliFlags["verbose"] !== undefined) {
+  pubConfig.verbose = cliFlags["verbose"];
 }
-if (scriptFlags["dryRun"] !== undefined) {
-  pubConfig.dryRun = scriptFlags["dryRun"];
+if (cliFlags["dryRun"] !== undefined) {
+  pubConfig.dryRun = cliFlags["dryRun"];
 }
-if (scriptFlags["registry"]) {
-  // Validate registry value
-  if (["npm", "jsr", "npm-jsr"].includes(scriptFlags["registry"])) {
-    pubConfig.registry = scriptFlags["registry"];
+if (cliFlags["registry"]) {
+  if (["npm", "jsr", "npm-jsr"].includes(cliFlags["registry"])) {
+    pubConfig.registry = cliFlags["registry"];
   } else {
     console.warn(
-      `Warning: Unrecognized registry "${scriptFlags["registry"]}". Using default: ${pubConfig.registry}`,
+      `Warning: Unrecognized registry "${cliFlags["registry"]}". Using default: ${pubConfig.registry}`,
     );
   }
 }
-if (scriptFlags["allowDirty"] !== undefined) {
-  pubConfig.allowDirty = scriptFlags["allowDirty"];
+if (cliFlags["allowDirty"] !== undefined) {
+  pubConfig.allowDirty = cliFlags["allowDirty"];
 }
-if (scriptFlags["jsrSlowTypes"] !== undefined) {
-  pubConfig.jsrSlowTypes = scriptFlags["jsrSlowTypes"];
+if (cliFlags["jsrSlowTypes"] !== undefined) {
+  pubConfig.jsrSlowTypes = cliFlags["jsrSlowTypes"];
 }
 
-// ---------- Logger Utility ----------
+// ============================
+// Logger Utility (with timestamps)
+// ============================
+
+const getTimestamp = () => new Date().toISOString();
+
 const logger = {
   info: (msg: string, newLine = false) =>
-    console.log(`${newLine ? "\n" : ""}📝  ${re.cyanBright(msg)}`),
+    console.log(
+      `${newLine ? "\n" : ""}[${getTimestamp()}] 📝  ${re.cyanBright(msg)}`,
+    ),
   success: (msg: string, newLine = false) =>
-    console.log(`${newLine ? "\n" : ""}✅  ${re.greenBright(msg)}`),
+    console.log(
+      `${newLine ? "\n" : ""}[${getTimestamp()}] ✅  ${re.greenBright(msg)}`,
+    ),
   warn: (msg: string, newLine = false) =>
-    console.log(`${newLine ? "\n" : ""}🔔  ${re.yellowBright(msg)}`),
+    console.warn(
+      `${newLine ? "\n" : ""}[${getTimestamp()}] 🔔  ${re.yellowBright(msg)}`,
+    ),
   error: (msg: string, err?: unknown, newLine = false) =>
     console.error(
-      `${newLine ? "\n" : ""}❌  ${msg}`,
+      `${newLine ? "\n" : ""}[${getTimestamp()}] ❌  ${msg}`,
       err instanceof Error ? err.message : err,
     ),
   verbose: (msg: string, newLine = false) => {
     if (pubConfig.verbose) {
-      console.log(`${newLine ? "\n" : ""}🔍  ${re.magentaBright(msg)}`);
+      console.log(
+        `${newLine ? "\n" : ""}[${getTimestamp()}] 🔍  ${re.magentaBright(msg)}`,
+      );
     }
   },
 };
 
-// ---------- Dist Folders Existence Check & Cleanup ----------
-async function handleDistFoldersRemoving(): Promise<void> {
+// ============================
+// Utility Helpers
+// ============================
+
+/**
+ * Runs an async function within a given working directory,
+ * ensuring that the original directory is restored afterward.
+ */
+async function withWorkingDirectory<T>(
+  targetDir: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const originalDir = process.cwd();
   try {
-    await Promise.all(
-      DIST_FOLDERS.map(async (folder) => {
-        const folderPath = path.resolve(CURRENT_DIR, folder);
-        if (await fs.pathExists(folderPath)) {
-          await fs.remove(folderPath);
-          logger.verbose(`Removed: ${folderPath}`, true);
-        }
-      }),
-    );
-    logger.success("Distribution folders cleaned up successfully", true);
+    process.chdir(targetDir);
+    logger.verbose(`Changed working directory to: ${targetDir}`, true);
+    return await fn();
   } catch (error) {
-    logger.warn(`Failed to remove some dist folders: ${String(error)}`, true);
+    logger.error(`Error in directory ${targetDir}:`, error, true);
+    throw error;
+  } finally {
+    process.chdir(originalDir);
+    logger.verbose(`Restored working directory to: ${originalDir}`, true);
   }
 }
 
+/**
+ * Ensures a directory is clean by removing it if it exists and recreating it.
+ */
+async function cleanDir(dirPath: string): Promise<void> {
+  await fs.remove(dirPath);
+  await fs.ensureDir(dirPath);
+  logger.verbose(`Cleaned directory: ${dirPath}`, true);
+}
+
+/**
+ * Recursively removes any existing distribution folders.
+ */
 async function removeDistFolders(): Promise<boolean> {
   const existingFolders: string[] = [];
   for (const folder of DIST_FOLDERS) {
-    const folderPath = path.resolve(CURRENT_DIR, folder);
+    const folderPath = path.resolve(ROOT_DIR, folder);
     if (await fs.pathExists(folderPath)) {
       existingFolders.push(folder);
     }
@@ -116,22 +220,25 @@ async function removeDistFolders(): Promise<boolean> {
       `Found existing distribution folders: ${existingFolders.join(", ")}`,
       true,
     );
-    await handleDistFoldersRemoving();
+    await Promise.all(
+      DIST_FOLDERS.map(async (folder) => {
+        const folderPath = path.resolve(ROOT_DIR, folder);
+        if (await fs.pathExists(folderPath)) {
+          await fs.remove(folderPath);
+          logger.verbose(`Removed: ${folderPath}`, true);
+        }
+      }),
+    );
+    logger.success("Distribution folders cleaned up successfully", true);
   }
   return true;
 }
 
-// ---------- Delete Specific Files ----------
+/**
+ * Deletes specific test and temporary files from a given directory.
+ */
 async function deleteSpecificFiles(outdirBin: string): Promise<void> {
-  const patterns = [
-    "**/*.test.js",
-    "**/*.test.ts",
-    "**/*.test.d.ts",
-    "**/*-temp.js",
-    "**/*-temp.ts",
-    "**/*-temp.d.ts",
-  ];
-  const files = await globby(patterns, {
+  const files = await globby(TEST_FILE_PATTERNS, {
     cwd: outdirBin,
     absolute: true,
     gitignore: true,
@@ -142,43 +249,26 @@ async function deleteSpecificFiles(outdirBin: string): Promise<void> {
   }
 }
 
-// ---------- Bump Versions in Files ----------
+/**
+ * Updates version strings in files based on file type.
+ */
 async function bumpVersions(
   oldVersion: string,
   newVersion: string,
 ): Promise<void> {
   try {
-    const codebase = await globby(["**/*.{ts,json,jsonc,json5,reliverse}"], {
-      ignore: [
-        "**/node_modules/**",
-        "**/.git/**",
-        "**/dist/**",
-        "**/build/**",
-        "**/.next/**",
-        "**/coverage/**",
-        "**/.cache/**",
-        "**/tmp/**",
-        "**/.temp/**",
-        "**/package-lock.json",
-        "**/pnpm-lock.yaml",
-        "**/yarn.lock",
-        "**/bun.lock",
-      ],
+    const codebase = await globby([JSON_FILE_PATTERN], {
+      ignore: IGNORE_PATTERNS,
       gitignore: true,
     });
 
-    /**
-     * Update the version in a given file if it matches the oldVersion.
-     */
     const updateFile = async (
       filePath: string,
       content: string,
     ): Promise<boolean> => {
       try {
-        // Handle JSON-like files
         if (/\.(json|jsonc|json5)$/.test(filePath)) {
           let parsed: { version?: string } | null = null;
-
           if (filePath.endsWith(".json")) {
             parsed = destr(content);
           } else if (filePath.endsWith(".jsonc")) {
@@ -186,73 +276,38 @@ async function bumpVersions(
           } else if (filePath.endsWith(".json5")) {
             parsed = parseJSON5(content);
           }
-
           if (!parsed || typeof parsed !== "object") {
             return false;
           }
-
           if (parsed.version === oldVersion) {
             const updated = content.replace(
-              new RegExp(`"version"\\s*:\\s*"${oldVersion}"`, "g"),
+              JSON_VERSION_REGEX(oldVersion),
               `"version": "${newVersion}"`,
             );
             await fs.writeFile(filePath, updated, "utf8");
             logger.verbose(`Updated version in ${filePath}`, true);
             return true;
           }
-        }
-        // Handle TypeScript files
-        else if (filePath.endsWith(".ts")) {
-          // Look for version declarations in TypeScript files
-          const versionRegexes = [
-            // export const version = "1.0.0"
-            new RegExp(
-              `(export\\s+const\\s+version\\s*=\\s*["'])${oldVersion}(["'])`,
-              "g",
-            ),
-            // const version = "1.0.0"
-            new RegExp(
-              `(const\\s+version\\s*=\\s*["'])${oldVersion}(["'])`,
-              "g",
-            ),
-            // version: "1.0.0"
-            new RegExp(`(version\\s*:\\s*["'])${oldVersion}(["'])`, "g"),
-            // VERSION = "1.0.0"
-            new RegExp(`(VERSION\\s*=\\s*["'])${oldVersion}(["'])`, "g"),
-            // Exported cliVersion
-            new RegExp(
-              `(export\\s+const\\s+cliVersion\\s*=\\s*["'])${oldVersion}(["'])`,
-              "g",
-            ),
-            new RegExp(
-              `(const\\s+cliVersion\\s*=\\s*["'])${oldVersion}(["'])`,
-              "g",
-            ),
-          ];
-
+        } else if (filePath.endsWith(".ts")) {
           let updated = content;
           let hasChanges = false;
-
-          for (const regex of versionRegexes) {
+          for (const regexFactory of TS_VERSION_REGEXES) {
+            const regex = regexFactory(oldVersion);
             if (regex.test(content)) {
               updated = updated.replace(regex, `$1${newVersion}$2`);
               hasChanges = true;
             }
           }
-
           if (hasChanges) {
             await fs.writeFile(filePath, updated, "utf8");
-            logger.verbose(`Updated version in ${filePath}`);
+            logger.verbose(`Updated version in ${filePath}`, true);
             return true;
           }
         }
-
         return false;
       } catch (error) {
         logger.warn(
-          `Failed to process ${filePath}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+          `Failed to process ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
           true,
         );
         return false;
@@ -281,7 +336,9 @@ async function bumpVersions(
   }
 }
 
-// ---------- Auto-Increment Version Based on Config ----------
+/**
+ * Auto-increments a semantic version based on the specified bump mode.
+ */
 function autoIncrementVersion(
   oldVersion: string,
   mode: "autoPatch" | "autoMinor" | "autoMajor",
@@ -301,19 +358,17 @@ function autoIncrementVersion(
   return newVer;
 }
 
-// ---------- Set Bump Disabled Flag in Config ----------
 /**
- * Update the disableBump flag in the build configuration file.
+ * Updates the "disableBump" flag in the build configuration file.
  */
 async function setBumpDisabled(value: boolean): Promise<void> {
-  // Do not toggle disableBump if pausePublish is active and we're trying to disable bumping.
   if (pubConfig.pausePublish && value) {
     logger.verbose("Skipping disableBump toggle due to pausePublish", true);
     return;
   }
 
-  const tsConfigPath = path.join(CURRENT_DIR, "build.config.ts");
-  const jsConfigPath = path.join(CURRENT_DIR, "build.config.js");
+  const tsConfigPath = path.join(ROOT_DIR, "build.config.ts");
+  const jsConfigPath = path.join(ROOT_DIR, "build.config.js");
   const configPath = (await fs.pathExists(tsConfigPath))
     ? tsConfigPath
     : jsConfigPath;
@@ -327,7 +382,6 @@ async function setBumpDisabled(value: boolean): Promise<void> {
   }
 
   let content = await fs.readFile(configPath, "utf-8");
-  // Replace the disableBump value (a boolean) using a regex.
   content = content.replace(
     /disableBump\s*:\s*(true|false)/,
     `disableBump: ${value}`,
@@ -336,22 +390,19 @@ async function setBumpDisabled(value: boolean): Promise<void> {
   logger.verbose(`Updated disableBump to ${value} in ${configPath}`, true);
 }
 
-// ---------- Bump Handler ----------
 /**
- * Handles version bumping. If a CLI version is provided (via --bump), it is used;
- * otherwise, the version is auto-incremented using the configured bump mode.
- * The bump is skipped if disableBump is true or pausePublish is true.
+ * Handles version bumping.
  */
 async function bumpHandler(): Promise<void> {
   if (pubConfig.disableBump || pubConfig.pausePublish) {
     logger.info(
-      "Skipping version bump because a previous run already bumped the version or config paused it.",
+      "Skipping version bump because it is either disabled or paused in config.",
       true,
     );
     return;
   }
 
-  const cliVersion = scriptFlags["bump"];
+  const cliVersion = cliFlags["bump"];
   const pkgPath = path.resolve("package.json");
   if (!(await fs.pathExists(pkgPath))) {
     throw new Error("package.json not found");
@@ -392,7 +443,9 @@ async function bumpHandler(): Promise<void> {
   }
 }
 
-// ---------- Build Config Definition ----------
+/**
+ * Returns a build configuration based on the target registry.
+ */
 function defineConfig(isJSR: boolean): BuildPublishConfig {
   return {
     ...pubConfig,
@@ -401,7 +454,9 @@ function defineConfig(isJSR: boolean): BuildPublishConfig {
   };
 }
 
-// ---------- Create Common Package Fields ----------
+/**
+ * Creates common package.json fields based on the original package.json.
+ */
 async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
   const originalPkg = await readPackageJSON();
   const { name, author, version, license, description, keywords } = originalPkg;
@@ -436,33 +491,115 @@ async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
   return commonFields;
 }
 
-function filterDevDependencies(
-  devDeps: Record<string, string> | undefined,
-): Record<string, string> {
-  if (!devDeps) return {};
-  return Object.entries(devDeps).reduce<Record<string, string>>(
-    (acc, [k, v]) => {
-      if (
-        !k.toLowerCase().includes("eslint") &&
-        !k.toLowerCase().includes("prettier")
-      ) {
-        acc[k] = v;
-      }
-      return acc;
-    },
-    {},
-  );
+/**
+ * Extracts the package name from an import path.
+ * For scoped packages (starting with "@"), returns the first two segments.
+ */
+function extractPackageName(importPath: string | undefined): string | null {
+  if (!importPath || importPath.startsWith(".")) return null;
+  const parts = importPath.split("/");
+  if (importPath.startsWith("@") && parts.length >= 2) {
+    return `${parts[0]}/${parts[1]}`;
+  }
+  return parts[0] || null;
 }
 
-// ---------- Create Dist Package.json for Main Build ----------
+/**
+ * Filters out development dependencies (like eslint and prettier) from a dependency record.
+ * Optionally filters out unused dependencies from a dependency record.
+ */
+async function filterDeps(
+  deps: Record<string, string> | undefined,
+  clearUnused: boolean,
+  outdirBin: string,
+): Promise<Record<string, string>> {
+  if (!deps) return {};
+
+  if (!clearUnused) {
+    // Only filter out eslint and prettier
+    return Object.entries(deps).reduce<Record<string, string>>(
+      (acc, [k, v]) => {
+        if (
+          !k.toLowerCase().includes("eslint") &&
+          !k.toLowerCase().includes("prettier")
+        ) {
+          acc[k] = v;
+        }
+        return acc;
+      },
+      {},
+    );
+  }
+
+  // Get all JS/TS files in outdirBin
+  const files = await globby("**/*.{js,ts}", {
+    cwd: outdirBin,
+    absolute: true,
+  });
+
+  // Extract all imports from files
+  const usedPackages = new Set<string>();
+  for (const file of files) {
+    const content = await fs.readFile(file, "utf8");
+
+    // Match import statements
+    const importMatches = content.matchAll(
+      /from\s+['"](@[^'"]+|[^'".][^'"]*)['"]/g,
+    );
+    for (const match of importMatches) {
+      const importPath = match[1];
+      const pkg = extractPackageName(importPath);
+      if (pkg) {
+        usedPackages.add(pkg);
+      }
+    }
+
+    // Match require statements
+    const requireMatches = content.matchAll(
+      /require\s*\(\s*['"](@[^'"]+|[^'".][^'"]*)['"]\s*\)/g,
+    );
+    for (const match of requireMatches) {
+      const requirePath = match[1];
+      const pkg = extractPackageName(requirePath);
+      if (pkg) {
+        usedPackages.add(pkg);
+      }
+    }
+  }
+
+  // Keep only used packages and always filter out eslint/prettier
+  return Object.entries(deps).reduce<Record<string, string>>((acc, [k, v]) => {
+    if (
+      usedPackages.has(k) &&
+      !k.toLowerCase().includes("eslint") &&
+      !k.toLowerCase().includes("prettier")
+    ) {
+      acc[k] = v;
+    }
+    return acc;
+  }, {});
+}
+
+// ============================
+// Package & TSConfig Generation
+// ============================
+
+/**
+ * Creates a package.json for the main distribution.
+ */
 async function createPackageJSON(
   outdirRoot: string,
   isJSR: boolean,
+  isCLI: boolean,
 ): Promise<void> {
-  logger.info("Generating distribution package.json, tsconfig.json...", true);
-
+  logger.info(
+    "Generating distribution package.json and tsconfig.json...",
+    true,
+  );
   const commonPkg = await createCommonPackageFields();
   const originalPkg = await readPackageJSON();
+
+  const outdirBin = path.join(outdirRoot, "bin");
 
   if (isJSR) {
     const jsrPkg = definePackageJSON({
@@ -470,7 +607,16 @@ async function createPackageJSON(
       exports: {
         ".": "./bin/main.ts",
       },
-      devDependencies: filterDevDependencies(originalPkg.devDependencies),
+      dependencies: await filterDeps(
+        originalPkg.dependencies,
+        false,
+        outdirBin,
+      ),
+      devDependencies: await filterDeps(
+        originalPkg.devDependencies,
+        false,
+        outdirBin,
+      ),
     });
     await fs.writeJSON(path.join(outdirRoot, "package.json"), jsrPkg, {
       spaces: 2,
@@ -483,9 +629,11 @@ async function createPackageJSON(
       exports: {
         ".": "./bin/main.js",
       },
-      bin: {
-        reliverse: "bin/main.js",
-      },
+      bin: isCLI
+        ? {
+            reliverse: "bin/main.js",
+          }
+        : undefined,
       files: ["bin", "package.json", "README.md", "LICENSE"],
       publishConfig: {
         access: "public",
@@ -497,7 +645,9 @@ async function createPackageJSON(
   }
 }
 
-// ---------- Create TSConfig ----------
+/**
+ * Creates a tsconfig.json file for the distribution.
+ */
 async function createTSConfig(
   outdirRoot: string,
   allowImportingTsExtensions: boolean,
@@ -540,9 +690,8 @@ async function createTSConfig(
   });
 }
 
-// ---------- Copy README, LICENSE, etc. ----------
 /**
- * Find a file in the current directory using a case-insensitive match.
+ * Finds a file in the current directory regardless of case.
  */
 async function findFileCaseInsensitive(
   targetFile: string,
@@ -554,10 +703,11 @@ async function findFileCaseInsensitive(
   return found || null;
 }
 
+/**
+ * Copies README and LICENSE files to the output directory.
+ */
 async function copyReadmeLicense(outdirRoot: string): Promise<void> {
   logger.info("Copying README.md and LICENSE files...", true);
-
-  // --- Copy README file (case-insensitive) ---
   const readmeFile = await findFileCaseInsensitive("README.md");
   if (readmeFile) {
     await fs.copy(readmeFile, path.join(outdirRoot, "README.md"));
@@ -565,17 +715,11 @@ async function copyReadmeLicense(outdirRoot: string): Promise<void> {
   } else {
     logger.warn("README.md not found", true);
   }
-
-  // --- Copy LICENSE file ---
-  // First try to find a file named "LICENSE" (with no extension)
   let licenseFile = await findFileCaseInsensitive("LICENSE");
-  // If not found, fall back to "LICENSE.md"
   if (!licenseFile) {
     licenseFile = await findFileCaseInsensitive("LICENSE.md");
   }
-
   if (licenseFile) {
-    // Always copy the chosen file as "LICENSE" in the output folder
     await fs.copy(licenseFile, path.join(outdirRoot, "LICENSE"));
     logger.verbose(`Copied ${licenseFile} as LICENSE`, true);
   } else {
@@ -583,9 +727,12 @@ async function copyReadmeLicense(outdirRoot: string): Promise<void> {
   }
 }
 
-// ---------- Convert JS Imports to TS ----------
+// ============================
+// File Conversion & Renaming
+// ============================
+
 /**
- * For JSR builds, convert .js imports to .ts.
+ * Converts .js import paths to .ts in files within the given directory for JSR builds.
  */
 async function convertJsToTsImports(
   outdirBin: string,
@@ -611,17 +758,14 @@ async function convertJsToTsImports(
         logger.verbose("Converted .js imports to .ts for JSR build", true);
         await fs.writeFile(filePath, finalContent, "utf8");
       } else {
-        // For non–JSR builds, skip rewriting if no change is needed.
         await fs.writeFile(filePath, content, "utf8");
       }
     }
   }
 }
 
-// ---------- Rename TSX Files ----------
 /**
- * JSR doesn't support TSX files, so rename them to avoid warnings.
- * (They can later be renamed back by @reliverse/cli if needed.)
+ * Renames .tsx files by replacing the .tsx extension with -tsx.txt.
  */
 async function renameTsxFiles(dir: string): Promise<void> {
   const files = await globby(["**/*.tsx"], {
@@ -638,9 +782,21 @@ async function renameTsxFiles(dir: string): Promise<void> {
   );
 }
 
-async function createJsrConfig(outdirRoot: string): Promise<void> {
+/**
+ * Generates a jsr.jsonc configuration file for JSR distributions.
+ */
+async function createJsrConfig(
+  outdirRoot: string,
+  projectName: string,
+  isLib: boolean,
+): Promise<void> {
   const originalPkg = await readPackageJSON();
-  const { author, name, version, license, description } = originalPkg;
+  let { name, description } = originalPkg;
+  const { author, version, license } = originalPkg;
+  if (isLib) {
+    name = projectName;
+    description = "A helper library for the Reliverse CLI";
+  }
   const pkgHomepage = cliDomainDocs;
   const jsrConfig = {
     name,
@@ -660,22 +816,33 @@ async function createJsrConfig(outdirRoot: string): Promise<void> {
   logger.verbose("Generated jsr.jsonc file", true);
 }
 
-async function copyJsrFiles(outdirRoot: string): Promise<void> {
-  await fs.writeFile(
-    path.join(outdirRoot, ".gitignore"),
-    "node_modules/\n.env\n",
-    "utf-8",
-  );
-  logger.verbose("Generated .gitignore for JSR", true);
+/**
+ * Copies additional JSR-specific files to the output directory.
+ */
+async function copyJsrFiles(
+  outdirRoot: string,
+  projectName: string,
+  isLib: boolean,
+  isCLI: boolean,
+): Promise<void> {
+  if (isCLI) {
+    await fs.writeFile(
+      path.join(outdirRoot, ".gitignore"),
+      "node_modules/\n.env\n",
+      "utf-8",
+    );
+    logger.verbose("Generated .gitignore for JSR", true);
+  }
 
-  await createJsrConfig(outdirRoot);
+  await createJsrConfig(outdirRoot, projectName, isLib);
 
-  const jsrFiles = [
-    cliConfigJsonc,
-    "bun.lock",
-    "drizzle.config.ts",
-    "schema.json",
-  ];
+  let jsrFiles: string[];
+  if (isCLI) {
+    jsrFiles = [cliConfigJsonc, "bun.lock", "drizzle.config.ts", "schema.json"];
+  } else {
+    jsrFiles = [cliConfigJsonc];
+  }
+
   await Promise.all(
     jsrFiles.map(async (file) => {
       if (await fs.pathExists(file)) {
@@ -686,6 +853,9 @@ async function copyJsrFiles(outdirRoot: string): Promise<void> {
   );
 }
 
+/**
+ * Calculates the total size (in bytes) of a directory.
+ */
 async function getDirectorySize(outdirRoot: string): Promise<number> {
   try {
     const files = await fs.readdir(outdirRoot);
@@ -707,6 +877,9 @@ async function getDirectorySize(outdirRoot: string): Promise<number> {
   }
 }
 
+/**
+ * Computes a relative import path from a source file to a target sub-path.
+ */
 function getRelativeImportPath(
   sourceFile: string,
   subPath: string,
@@ -723,6 +896,9 @@ function getRelativeImportPath(
   return prefix ? `${prefix}${relativePath}` : relativePath;
 }
 
+/**
+ * Replaces symbol paths (e.g. "~/...") with relative paths.
+ */
 function replaceSymbolPaths(
   content: string,
   sourceFile: string,
@@ -748,18 +924,22 @@ function replaceSymbolPaths(
   return { changed, newContent };
 }
 
+/**
+ * Converts symbol paths in built files (both JSR and NPM).
+ */
 export async function convertSymbolPaths(
   outdirBin: string,
   isJSR: boolean,
   symbolPrefix = "~/",
 ): Promise<void> {
-  if (isJSR) {
-    logger.info("Converting symbol paths in JSR built files...", true);
-  } else {
-    logger.info("Converting symbol paths in NPM built files...", true);
-  }
+  logger.info(
+    isJSR
+      ? "Converting symbol paths in JSR built files..."
+      : "Converting symbol paths in NPM built files...",
+    true,
+  );
   if (!(await fs.pathExists(outdirBin))) {
-    logger.warn(
+    logger.error(
       `[convertSymbolPaths] Directory does not exist: ${outdirBin}`,
       true,
     );
@@ -778,7 +958,6 @@ export async function convertSymbolPaths(
   await Promise.all(
     files.map(async (file) => {
       try {
-        // Check if file exists before processing
         if (!(await fs.pathExists(file))) {
           logger.verbose(`File does not exist (skipped): ${file}`, true);
           return;
@@ -812,89 +991,144 @@ export async function convertSymbolPaths(
   );
 }
 
-// ---------- Build JSR Distribution (Main Project) ----------
+// ============================
+// Bundling Functions
+// ============================
+
+/**
+ * Bundles source files using mkdist.
+ *
+ * @param src The source file or directory to bundle.
+ * @param dest The destination directory for the bundled files.
+ */
+async function bundleUsingMkdist(src: string, dest: string) {
+  logger.info(`Bundling using mkdist: ${src} -> ${dest}`, true);
+  await execaCommand(
+    `bunx mkdist --src=${src} --dist=${dest} --format=esm --declaration --ext=js --clean=false`,
+    { stdio: "inherit" },
+  );
+}
+
+/**
+ * Bundles source files by copying them.
+ *
+ * This function checks whether the source is a file or directory.
+ * If the source is a file, it uses fs.copyFile; otherwise, it uses fs.copy.
+ * This prevents errors when the entry file is a file (as in library builds).
+ */
+async function bundleUsingCopy(src: string, dest: string) {
+  await fs.ensureDir(path.dirname(dest));
+  const stats = await fs.stat(src);
+  if (stats.isFile()) {
+    if (await fs.pathExists(dest)) {
+      await fs.remove(dest);
+    }
+    await fs.copyFile(src, dest);
+    logger.verbose(`Copied file from ${src} to ${dest}`, true);
+  } else {
+    await fs.copy(src, dest);
+    logger.verbose(`Copied directory from ${src} to ${dest}`, true);
+  }
+}
+
+/**
+ * Bundles using 'unbuild'.
+ */
+async function bundleUsingUnbuild(entryFile: string, outdirBin: string) {
+  if (!(await fs.pathExists(entryFile))) {
+    logger.error(`Could not find entry file at: ${entryFile}`, true);
+    throw new Error(`Entry file not found: ${entryFile}`);
+  }
+  await execaCommand("bunx unbuild", { stdio: "inherit" });
+  const fileCount = await outdirBinFilesCount(outdirBin);
+  logger.verbose(`unbuild completed with ${fileCount} output file(s).`, true);
+}
+
+/**
+ * Bundles using Bun's bundler.
+ */
+async function bundleUsingBun(
+  cfg: BuildPublishConfig,
+  entryFile: string,
+  outdirBin: string,
+  packageName = "",
+) {
+  if (!(await fs.pathExists(entryFile))) {
+    logger.error(`Could not find entry file at: ${entryFile}`, true);
+    throw new Error(`Entry file not found: ${entryFile}`);
+  }
+  try {
+    const buildResult = await bunBuild({
+      entrypoints: [entryFile],
+      outdir: outdirBin,
+      target: cfg.target,
+      format: cfg.format,
+      splitting: cfg.splitting,
+      minify: cfg.shouldMinify,
+      sourcemap: getBunSourcemapOption(cfg.sourcemap),
+      throw: true,
+      naming: {
+        entry: "[dir]/[name]-[hash].[ext]",
+        chunk: "[name]-[hash].[ext]",
+        asset: "[name]-[hash].[ext]",
+      },
+      publicPath: pubConfig.publicPath || "/",
+      define: {
+        "process.env.NODE_ENV": JSON.stringify(
+          process.env.NODE_ENV || "production",
+        ),
+      },
+      banner: "/* Bundled by @reliverse/relidler */",
+      footer: "/* End of bundle */",
+      drop: ["debugger"],
+    });
+    logger.verbose(
+      `${packageName} bun build completed with ${buildResult.outputs.length} output file(s).`,
+      true,
+    );
+    if (buildResult.logs && buildResult.logs.length > 0) {
+      buildResult.logs.forEach((log, index) => {
+        logger.verbose(`Log ${index + 1}: ${JSON.stringify(log)}`, true);
+      });
+    }
+  } catch (error) {
+    logger.error(
+      `${packageName} build failed while using bun bundler:`,
+      error,
+      true,
+    );
+    throw error;
+  }
+}
+
+// ============================
+// Distribution Build Functions (Main Project)
+// ============================
+
+/**
+ * Builds the JSR distribution.
+ */
 async function buildJsrDist(): Promise<void> {
   const cfg = { ...defineConfig(true), lastBuildFor: "jsr" as const };
   const outdirRoot = cfg.jsrDistDir;
   const outdirBin = `${outdirRoot}/bin`;
-  // Remove any existing JSR dist folder and ensure it exists
-  await fs.remove(outdirRoot);
-  await fs.ensureDir(outdirRoot);
+  await cleanDir(outdirRoot);
 
   logger.info("Creating JSR distribution...", true);
+  const entryFile = path.join(cfg.rootSrcDir, "main.ts");
 
   if (cfg.builderJsr === "jsr") {
-    // Copy the src directory into dist-jsr
-    await fs.copy(cfg.rootSrcDir, outdirBin);
-    logger.verbose("Copied source directory to JSR distribution folder", true);
+    await bundleUsingCopy(cfg.rootSrcDir, outdirBin);
   } else if (cfg.builderJsr === "bun") {
-    const entryFile = path.join(cfg.rootSrcDir, "main.ts");
-    if (!(await fs.pathExists(entryFile))) {
-      logger.error(`Could not find entry file at: ${entryFile}`, true);
-      throw new Error(`Entry file not found: ${entryFile}`);
-    }
-    try {
-      const buildResult = await bunBuild({
-        entrypoints: [entryFile],
-        outdir: outdirBin,
-        target: cfg.target,
-        format: cfg.format,
-        splitting: cfg.splitting,
-        minify: cfg.shouldMinify,
-        // Convert sourcemap options for Bun:
-        sourcemap: getBunSourcemapOption(cfg.sourcemap),
-        throw: true,
-        naming: {
-          entry: "[dir]/[name]-[hash].[ext]",
-          chunk: "[name]-[hash].[ext]",
-          asset: "[name]-[hash].[ext]",
-        },
-        publicPath: pubConfig.publicPath || "/",
-        define: {
-          "process.env.NODE_ENV": JSON.stringify(
-            process.env.NODE_ENV || "production",
-          ),
-        },
-        banner: "/* Bundled by @reliverse/relidler */",
-        footer: "/* End of bundle */",
-        drop: ["debugger"],
-      });
-      logger.verbose(
-        `Bun build completed with ${buildResult.outputs.length} output file(s).`,
-        true,
-      );
-      if (buildResult.logs && buildResult.logs.length > 0) {
-        buildResult.logs.forEach((log, index) => {
-          logger.verbose(`Log ${index + 1}: ${JSON.stringify(log)}`, true);
-        });
-      }
-    } catch (err) {
-      logger.error("Bun bundler failed:", err, true);
-      throw err;
-    }
+    await bundleUsingBun(cfg, entryFile, outdirBin);
   } else {
-    // For other bundlers (not "bun" or "jsr"), use unbuild
-    const entryFile = path.join(cfg.rootSrcDir, "main.ts");
-    if (!(await fs.pathExists(entryFile))) {
-      logger.error(`Could not find entry file at: ${entryFile}`, true);
-      throw new Error(`Entry file not found: ${entryFile}`);
-    }
-    await execaCommand("bunx unbuild", { stdio: "inherit" });
-    const fileCount = await outdirBinFilesCount(outdirBin);
-    logger.verbose(`unbuild completed with ${fileCount} output file(s).`, true);
+    await bundleUsingUnbuild(entryFile, outdirBin);
   }
 
-  /**
-   * For any bundler as a post-build step, do the following:
-   */
-
-  // `dist-jsr`:
   await copyReadmeLicense(outdirRoot);
-  await createPackageJSON(outdirRoot, true);
+  await createPackageJSON(outdirRoot, true, true);
   await createTSConfig(outdirRoot, true);
-  await copyJsrFiles(outdirRoot);
-
-  // `dist-jsr/bin`:
+  await copyJsrFiles(outdirRoot, "", false, true);
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);
@@ -904,14 +1138,14 @@ async function buildJsrDist(): Promise<void> {
   logger.success(`Successfully created JSR distribution (${size} bytes)`, true);
 }
 
-// ---------- Build NPM Distribution (Main Project) ----------
+/**
+ * Builds the NPM distribution.
+ */
 async function buildNpmDist(): Promise<void> {
   const cfg = { ...defineConfig(false), lastBuildFor: "npm" as const };
   const outdirRoot = cfg.npmDistDir;
   const outdirBin = `${outdirRoot}/bin`;
-  // Remove any existing NPM dist folder and ensure it exists
-  await fs.remove(outdirRoot);
-  await fs.ensureDir(outdirRoot);
+  await cleanDir(outdirRoot);
 
   const entrySrcDir = cfg.rootSrcDir;
   logger.info("Creating NPM distribution...", true);
@@ -924,62 +1158,14 @@ async function buildNpmDist(): Promise<void> {
     `Starting ${cfg.builderNpm} bundling for entry file: ${entryFile}\n`,
     true,
   );
-  // Use Bun only if builderNpm is exactly "bun"
   if (cfg.builderNpm !== "bun") {
-    await execaCommand("bunx unbuild", { stdio: "inherit" });
-    const fileCount = await outdirBinFilesCount(outdirBin);
-    logger.verbose(`unbuild completed with ${fileCount} output file(s).`, true);
+    await bundleUsingUnbuild(entryFile, outdirBin);
   } else {
-    try {
-      const buildResult = await bunBuild({
-        entrypoints: [entryFile],
-        outdir: outdirBin,
-        target: cfg.target,
-        format: cfg.format,
-        splitting: cfg.splitting,
-        minify: cfg.shouldMinify,
-        // Use the helper for sourcemap conversion:
-        sourcemap: getBunSourcemapOption(cfg.sourcemap),
-        throw: true,
-        naming: {
-          entry: "[dir]/[name]-[hash].[ext]",
-          chunk: "[name]-[hash].[ext]",
-          asset: "[name]-[hash].[ext]",
-        },
-        publicPath: pubConfig.publicPath || "/",
-        define: {
-          "process.env.NODE_ENV": JSON.stringify(
-            process.env.NODE_ENV || "production",
-          ),
-        },
-        banner: "/* Bundled by @reliverse/relidler */",
-        footer: "/* End of bundle */",
-        drop: ["debugger"],
-      });
-      logger.verbose(
-        `Bun build completed with ${buildResult.outputs.length} output file(s).`,
-        true,
-      );
-      if (buildResult.logs && buildResult.logs.length > 0) {
-        buildResult.logs.forEach((log, index) => {
-          logger.verbose(`Log ${index + 1}: ${JSON.stringify(log)}`, true);
-        });
-      }
-    } catch (err) {
-      logger.error("Bun bundler failed:", err, true);
-      throw err;
-    }
+    await bundleUsingBun(cfg, entryFile, outdirBin);
   }
 
-  /**
-   * For any bundler as a post-build step, do the following:
-   */
-
-  // `dist-npm`:
   await copyReadmeLicense(outdirRoot);
-  await createPackageJSON(outdirRoot, false);
-
-  // `dist-npm/bin`:
+  await createPackageJSON(outdirRoot, false, true);
   await convertSymbolPaths(outdirBin, false);
   await deleteSpecificFiles(outdirBin);
 
@@ -987,20 +1173,15 @@ async function buildNpmDist(): Promise<void> {
   logger.success(`Successfully created NPM distribution (${size} bytes)`, true);
 }
 
-// ---------- Publish Functions (Main Project) ----------
+/**
+ * Publishes the JSR distribution.
+ */
 async function publishToJsr(dryRun: boolean): Promise<void> {
   logger.info("Publishing to JSR...", true);
-
   try {
     if (!pubConfig.pausePublish) {
-      const originalDir = process.cwd();
-      const jsrDistDir = path.resolve(CURRENT_DIR, "dist-jsr");
-
-      try {
-        // Change to JSR dist directory for publishing
-        process.chdir(jsrDistDir);
-        logger.info(`Changed working directory to: ${jsrDistDir}\n`, true);
-
+      const jsrDistDir = path.resolve(ROOT_DIR, "dist-jsr");
+      await withWorkingDirectory(jsrDistDir, async () => {
         const command = [
           "bunx jsr publish",
           dryRun ? "--dry-run" : "",
@@ -1009,17 +1190,12 @@ async function publishToJsr(dryRun: boolean): Promise<void> {
         ]
           .filter(Boolean)
           .join(" ");
-
         await execaCommand(command, { stdio: "inherit" });
         logger.success(
           `Successfully ${dryRun ? "validated" : "published"} to JSR registry`,
           true,
         );
-      } finally {
-        // Always change back to original directory
-        process.chdir(originalDir);
-        logger.info(`Restored working directory to: ${originalDir}`, true);
-      }
+      });
     }
   } catch (error) {
     logger.error("Failed to publish to JSR:", error, true);
@@ -1027,6 +1203,9 @@ async function publishToJsr(dryRun: boolean): Promise<void> {
   }
 }
 
+/**
+ * Recursively counts the number of files in a directory.
+ */
 export async function outdirBinFilesCount(outdirBin: string): Promise<number> {
   let fileCount = 0;
   if (!(await fs.pathExists(outdirBin))) {
@@ -1052,31 +1231,23 @@ export async function outdirBinFilesCount(outdirBin: string): Promise<number> {
   return fileCount;
 }
 
+/**
+ * Publishes the NPM distribution.
+ */
 async function publishToNpm(dryRun: boolean): Promise<void> {
   try {
     if (!pubConfig.pausePublish) {
-      const originalDir = process.cwd();
-      const npmDistDir = path.resolve(CURRENT_DIR, "dist-npm");
-
-      try {
-        // Change to NPM dist directory for publishing
-        process.chdir(npmDistDir);
-        logger.info(`Changed working directory to: ${npmDistDir}\n`, true);
-
+      const npmDistDir = path.resolve(ROOT_DIR, "dist-npm");
+      await withWorkingDirectory(npmDistDir, async () => {
         const command = ["bun publish", dryRun ? "--dry-run" : ""]
           .filter(Boolean)
           .join(" ");
-
         await execaCommand(command, { stdio: "inherit" });
         logger.success(
           `Successfully ${dryRun ? "validated" : "published"} to NPM registry`,
           true,
         );
-      } finally {
-        // Change back to original directory
-        process.chdir(originalDir);
-        logger.info(`Restored working directory to: ${originalDir}`, true);
-      }
+      });
     }
   } catch (error) {
     logger.error("Failed to publish to NPM:", error, true);
@@ -1084,26 +1255,29 @@ async function publishToNpm(dryRun: boolean): Promise<void> {
   }
 }
 
-// =======================
+// ============================
 // Library Build/Publish Functions
-// =======================
+// ============================
 
 /**
  * Creates a package.json for a library distribution.
- * The generated package.json will use the library's name (e.g. "@reliverse/config")
- * and the version from the root package.json.
  */
 async function createLibPackageJSON(
   libName: string,
   outdirRoot: string,
   isJSR: boolean,
+  isCLI: boolean,
 ): Promise<void> {
   logger.info(
     `Generating package.json for lib ${libName} (${isJSR ? "JSR" : "NPM"})...`,
     true,
   );
   const originalPkg = await readPackageJSON();
-  const { version, license, description, keywords, author } = originalPkg;
+  let { description } = originalPkg;
+  const { version, license, keywords, author } = originalPkg;
+  if (!isCLI) {
+    description = "A helper library for the Reliverse CLI";
+  }
   const commonPkg: Partial<PackageJson> = {
     name: libName,
     version,
@@ -1111,6 +1285,7 @@ async function createLibPackageJSON(
     description,
     type: "module",
   };
+
   if (author) {
     Object.assign(commonPkg, {
       author,
@@ -1127,13 +1302,20 @@ async function createLibPackageJSON(
   } else if (keywords && keywords.length > 0) {
     commonPkg.keywords = keywords;
   }
+
+  const outdirBin = path.join(outdirRoot, "bin");
   if (isJSR) {
     const jsrPkg = definePackageJSON({
       ...commonPkg,
       exports: {
         ".": "./bin/main.ts",
       },
-      devDependencies: filterDevDependencies(originalPkg.devDependencies),
+      dependencies: await filterDeps(originalPkg.dependencies, true, outdirBin),
+      devDependencies: await filterDeps(
+        originalPkg.devDependencies,
+        true,
+        outdirBin,
+      ),
     });
     await fs.writeJSON(path.join(outdirRoot, "package.json"), jsrPkg, {
       spaces: 2,
@@ -1146,14 +1328,21 @@ async function createLibPackageJSON(
       exports: {
         ".": "./bin/main.js",
       },
-      // Use the last segment of the lib name as the binary name if needed
-      bin: {
-        [libName.split("/").pop()!]: "bin/main.js",
-      },
+      bin: isCLI
+        ? {
+            [libName.split("/").pop()!]: "bin/main.js",
+          }
+        : undefined,
       files: ["bin", "package.json", "README.md", "LICENSE"],
       publishConfig: {
         access: "public",
       },
+      dependencies: await filterDeps(originalPkg.dependencies, true, outdirBin),
+      devDependencies: await filterDeps(
+        originalPkg.devDependencies,
+        true,
+        outdirBin,
+      ),
     });
     await fs.writeJSON(path.join(outdirRoot, "package.json"), npmPkg, {
       spaces: 2,
@@ -1161,73 +1350,84 @@ async function createLibPackageJSON(
   }
 }
 
+async function renameEntryFile(
+  isJSR: boolean,
+  outdirBin: string,
+  entryDir: string,
+  entryFile: string,
+): Promise<{ updatedEntryFile: string }> {
+  if (!isJSR) {
+    // replace *.ts to *.js
+    entryFile = entryFile.replace(".ts", ".js");
+
+    // rename *.d.ts to main.d.ts
+    const entryFileNoExt = entryFile.split(".").slice(0, -1).join(".");
+    if (await fs.pathExists(path.join(outdirBin, `${entryFileNoExt}.d.ts`))) {
+      await fs.rename(
+        path.join(outdirBin, `${entryFileNoExt}.d.ts`),
+        path.join(outdirBin, "main.d.ts"),
+      );
+    }
+  }
+
+  // rename *.{js,ts} to main.{js,ts}
+  if (entryFile.endsWith(".js")) {
+    await fs.rename(
+      path.join(outdirBin, entryFile),
+      path.join(outdirBin, "main.js"),
+    );
+    entryFile = "main.js";
+  } else if (entryFile.endsWith(".ts")) {
+    await fs.rename(
+      path.join(outdirBin, entryFile),
+      path.join(outdirBin, "main.ts"),
+    );
+    entryFile = "main.ts";
+  }
+
+  logger.info(`Renamed entry file to ${entryDir + entryFile}`, true);
+  return { updatedEntryFile: entryFile };
+}
+
 /**
- * Builds the NPM distribution for a given library.
- * The build uses the provided entry file (lib’s main file) and outputs to the given directory.
+ * Builds the NPM distribution for a library.
  */
 async function buildLibNpmDist(
   libName: string,
-  entry: string,
+  entryDir: string,
   outdirRoot: string,
+  entryFile: string,
 ): Promise<void> {
   const outdirBin = path.join(outdirRoot, "bin");
-  // Clean and ensure output directory
-  await fs.remove(outdirRoot);
-  await fs.ensureDir(outdirRoot);
+  await cleanDir(outdirRoot);
 
-  const entryFile = path.resolve(entry);
-  if (!(await fs.pathExists(entryFile))) {
-    logger.error(`Lib ${libName}: entry file not found at ${entryFile}`);
-    throw new Error(`Entry file not found: ${entryFile}`);
+  const entryFilePath = path.join(entryDir, entryFile);
+  if (!(await fs.pathExists(entryFilePath))) {
+    logger.error(`Lib ${libName}: entry file not found at ${entryFilePath}`);
+    throw new Error(`Entry file not found: ${entryFilePath}`);
   }
   logger.info(
-    `Building NPM distribution for lib ${libName} using entry ${entryFile}`,
+    `Building NPM distribution for lib ${libName} using entry ${entryFilePath}`,
     true,
   );
   const cfg = { ...pubConfig, lastBuildFor: "npm" } as BuildPublishConfig;
-  // For simplicity, using builderNpm settings similar to main build:
+  await fs.ensureDir(path.dirname(outdirBin));
   if (cfg.builderNpm !== "bun") {
-    await execaCommand(`bunx unbuild --entry ${entryFile}`, {
-      stdio: "inherit",
-    });
+    await bundleUsingMkdist(entryDir, outdirBin);
   } else {
-    try {
-      const buildResult = await bunBuild({
-        entrypoints: [entryFile],
-        outdir: outdirBin,
-        target: cfg.target,
-        format: cfg.format,
-        splitting: cfg.splitting,
-        minify: cfg.shouldMinify,
-        sourcemap: getBunSourcemapOption(cfg.sourcemap),
-        throw: true,
-        naming: {
-          entry: "[dir]/[name]-[hash].[ext]",
-          chunk: "[name]-[hash].[ext]",
-          asset: "[name]-[hash].[ext]",
-        },
-        publicPath: pubConfig.publicPath || "/",
-        define: {
-          "process.env.NODE_ENV": JSON.stringify(
-            process.env.NODE_ENV || "production",
-          ),
-        },
-        banner: "/* Bundled by @reliverse/relidler */",
-        footer: "/* End of bundle */",
-        drop: ["debugger"],
-      });
-      logger.verbose(
-        `Lib ${libName} bun build completed with ${buildResult.outputs.length} output file(s).`,
-        true,
-      );
-    } catch (err) {
-      logger.error(`Lib ${libName} build failed:`, err, true);
-      throw err;
-    }
+    await bundleUsingBun(cfg, entryFilePath, outdirBin, libName);
   }
-  // Post-build steps for NPM lib:
+
+  const { updatedEntryFile } = await renameEntryFile(
+    false,
+    outdirBin,
+    entryDir,
+    entryFile,
+  );
+  entryFile = updatedEntryFile;
+
   await copyReadmeLicense(outdirRoot);
-  await createLibPackageJSON(libName, outdirRoot, false);
+  await createLibPackageJSON(libName, outdirRoot, false, false);
   await convertSymbolPaths(outdirBin, false);
   await deleteSpecificFiles(outdirBin);
 
@@ -1239,76 +1439,52 @@ async function buildLibNpmDist(
 }
 
 /**
- * Builds the JSR distribution for a given library.
+ * Builds the JSR distribution for a library.
  */
 async function buildLibJsrDist(
   libName: string,
-  entry: string,
+  entryDir: string,
   outdirRoot: string,
+  entryFile: string,
 ): Promise<void> {
   const outdirBin = path.join(outdirRoot, "bin");
-  await fs.remove(outdirRoot);
-  await fs.ensureDir(outdirRoot);
-
+  await cleanDir(outdirRoot);
   logger.info(
-    `Building JSR distribution for lib ${libName} using entry ${entry}`,
+    `Building JSR distribution for lib ${libName} using entry ${path.join(
+      entryDir,
+      entryFile,
+    )}`,
     true,
   );
   const cfg = { ...pubConfig, lastBuildFor: "jsr" } as BuildPublishConfig;
+
   if (cfg.builderJsr === "jsr") {
-    // For minimal JSR build, simply copy the entry file to outdir/bin
-    await fs.ensureDir(outdirBin);
-    await fs.copy(entry, path.join(outdirBin, path.basename(entry)));
-    logger.verbose(
-      `Copied ${entry} to JSR lib distribution for lib ${libName}`,
-      true,
+    await bundleUsingCopy(
+      path.join(entryDir, entryFile),
+      path.join(outdirBin, entryFile),
     );
   } else if (cfg.builderJsr === "bun") {
-    if (!(await fs.pathExists(entry))) {
-      logger.error(`Lib ${libName}: entry file not found at ${entry}`, true);
-      throw new Error(`Entry file not found: ${entry}`);
-    }
-    try {
-      const buildResult = await bunBuild({
-        entrypoints: [entry],
-        outdir: outdirBin,
-        target: cfg.target,
-        format: cfg.format,
-        splitting: cfg.splitting,
-        minify: cfg.shouldMinify,
-        sourcemap: getBunSourcemapOption(cfg.sourcemap),
-        throw: true,
-        naming: {
-          entry: "[dir]/[name]-[hash].[ext]",
-          chunk: "[name]-[hash].[ext]",
-          asset: "[name]-[hash].[ext]",
-        },
-        publicPath: pubConfig.publicPath || "/",
-        define: {
-          "process.env.NODE_ENV": JSON.stringify(
-            process.env.NODE_ENV || "production",
-          ),
-        },
-        banner: "/* Bundled by @reliverse/relidler */",
-        footer: "/* End of bundle */",
-        drop: ["debugger"],
-      });
-      logger.verbose(
-        `Lib ${libName} bun build completed with ${buildResult.outputs.length} output file(s).`,
-        true,
-      );
-    } catch (err) {
-      logger.error(`Lib ${libName} build failed:`, err, true);
-      throw err;
-    }
+    await bundleUsingBun(
+      cfg,
+      path.join(entryDir, entryFile),
+      outdirBin,
+      libName,
+    );
   } else {
-    await execaCommand(`bunx unbuild --entry ${entry}`, { stdio: "inherit" });
+    await bundleUsingUnbuild(path.join(entryDir, entryFile), outdirBin);
   }
-  // Post-build steps for JSR lib:
+
+  const { updatedEntryFile } = await renameEntryFile(
+    true,
+    outdirBin,
+    entryDir,
+    entryFile,
+  );
+  entryFile = updatedEntryFile;
+
   await copyReadmeLicense(outdirRoot);
-  await createLibPackageJSON(libName, outdirRoot, true);
-  await createTSConfig(outdirRoot, true);
-  await copyJsrFiles(outdirRoot);
+  await createLibPackageJSON(libName, outdirRoot, true, false);
+  await copyJsrFiles(outdirRoot, libName, true, false);
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);
@@ -1322,16 +1498,14 @@ async function buildLibJsrDist(
 }
 
 /**
- * Publishes a library distribution (NPM variant).
+ * Publishes a library to NPM.
  */
 async function publishLibToNpm(
   libOutDir: string,
   dryRun: boolean,
   libName: string,
 ): Promise<void> {
-  const originalDir = process.cwd();
-  try {
-    process.chdir(libOutDir);
+  await withWorkingDirectory(libOutDir, async () => {
     logger.info(`Publishing lib ${libName} to NPM from ${libOutDir}`, true);
     const command = ["bun publish", dryRun ? "--dry-run" : ""]
       .filter(Boolean)
@@ -1341,23 +1515,18 @@ async function publishLibToNpm(
       `Successfully ${dryRun ? "validated" : "published"} lib ${libName} to NPM`,
       true,
     );
-  } finally {
-    process.chdir(originalDir);
-    logger.info(`Restored working directory to: ${originalDir}`, true);
-  }
+  });
 }
 
 /**
- * Publishes a library distribution (JSR variant).
+ * Publishes a library to JSR.
  */
 async function publishLibToJsr(
   libOutDir: string,
   dryRun: boolean,
   libName: string,
 ): Promise<void> {
-  const originalDir = process.cwd();
-  try {
-    process.chdir(libOutDir);
+  await withWorkingDirectory(libOutDir, async () => {
     logger.info(`Publishing lib ${libName} to JSR from ${libOutDir}`, true);
     const command = [
       "bunx jsr publish",
@@ -1372,24 +1541,18 @@ async function publishLibToJsr(
       `Successfully ${dryRun ? "validated" : "published"} lib ${libName} to JSR`,
       true,
     );
-  } finally {
-    process.chdir(originalDir);
-    logger.info(`Restored working directory to: ${originalDir}`, true);
-  }
+  });
 }
 
 /**
  * Processes all libraries defined in build.libs.jsonc.
- * For each lib, it creates a folder inside dist-lib (using the lib’s name)
- * and builds both the NPM and JSR distributions (in subfolders "npm" and "jsr").
- * Finally, it publishes them to the appropriate registries.
  */
 type LibEntry = {
   main: string;
   [key: string]: unknown;
 };
-async function buildLibsDist(): Promise<void> {
-  const libsFile = path.resolve(CURRENT_DIR, "build.libs.jsonc");
+async function buildPublishLibs(): Promise<void> {
+  const libsFile = path.resolve(ROOT_DIR, "build.libs.jsonc");
   if (!(await fs.pathExists(libsFile))) {
     logger.verbose(
       "No build.libs.jsonc file found, skipping libs build.",
@@ -1400,14 +1563,11 @@ async function buildLibsDist(): Promise<void> {
   logger.info("build.libs.jsonc detected, processing libraries...", true);
 
   const libsContent = await fs.readFile(libsFile, "utf8");
-  // Cast the parsed JSON to a record with LibEntry values.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const libsJson = parseJSONC(libsContent) as Record<string, LibEntry>;
   const libs = Object.entries(libsJson);
   const dry = !!pubConfig.dryRun;
 
   for (const [libName, config] of libs) {
-    // Check if the "main" property exists.
     if (!config.main) {
       logger.warn(
         `Library ${libName} is missing "main" property. Skipping...`,
@@ -1415,44 +1575,51 @@ async function buildLibsDist(): Promise<void> {
       );
       continue;
     }
-    // For a scoped package like "@reliverse/config", use the part after "/" as folder name.
     let folderName = libName;
     if (libName.startsWith("@")) {
       const parts = libName.split("/");
       if (parts.length > 1) folderName = parts[1]!;
     }
-    const libBaseDir = path.resolve(CURRENT_DIR, "dist-lib", folderName);
-    // Create separate subfolders for NPM and JSR builds.
+    const libBaseDir = path.resolve(ROOT_DIR, "dist-libs", folderName);
     const npmOutDir = path.join(libBaseDir, "npm");
     const jsrOutDir = path.join(libBaseDir, "jsr");
 
-    // Build NPM and JSR distributions for the library.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    await buildLibNpmDist(libName, config.main!, npmOutDir);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    await buildLibJsrDist(libName, config.main!, jsrOutDir);
+    // Parse the main path to separate file from directory
+    const mainPath = path.parse(config.main);
+    const mainFile = mainPath.base; // File with extension
+    const mainDir = mainPath.dir || "."; // Directory path, defaults to '.' if empty
 
-    // Publish based on the registry configuration.
-    if (pubConfig.registry === "npm-jsr") {
-      logger.info(`Publishing lib ${libName} to both NPM and JSR...`, true);
-      await publishLibToNpm(npmOutDir, dry, libName);
-      await publishLibToJsr(jsrOutDir, dry, libName);
-    } else if (pubConfig.registry === "npm") {
-      logger.info(`Publishing lib ${libName} to NPM only...`, true);
-      await publishLibToNpm(npmOutDir, dry, libName);
-    } else if (pubConfig.registry === "jsr") {
-      logger.info(`Publishing lib ${libName} to JSR only...`, true);
-      await publishLibToJsr(jsrOutDir, dry, libName);
-    } else {
-      logger.warn(
-        `Registry "${pubConfig.registry}" not recognized for lib ${libName}. Skipping publishing for this lib.`,
-        true,
-      );
+    await buildLibNpmDist(libName, mainDir, npmOutDir, mainFile);
+    await buildLibJsrDist(libName, mainDir, jsrOutDir, mainFile);
+
+    if (!pubConfig.pausePublish) {
+      if (pubConfig.registry === "npm-jsr") {
+        logger.info(`Publishing lib ${libName} to both NPM and JSR...`, true);
+        await publishLibToNpm(npmOutDir, dry, libName);
+        await publishLibToJsr(jsrOutDir, dry, libName);
+      } else if (pubConfig.registry === "npm") {
+        logger.info(`Publishing lib ${libName} to NPM only...`, true);
+        await publishLibToNpm(npmOutDir, dry, libName);
+      } else if (pubConfig.registry === "jsr") {
+        logger.info(`Publishing lib ${libName} to JSR only...`, true);
+        await publishLibToJsr(jsrOutDir, dry, libName);
+      } else {
+        logger.warn(
+          `Registry "${pubConfig.registry}" not recognized for lib ${libName}. Skipping publishing for this lib.`,
+          true,
+        );
+      }
     }
   }
 }
 
-// ---------- Main ----------
+// ============================
+// Main Function
+// ============================
+
+/**
+ * Main build/publish function.
+ */
 export async function main(): Promise<void> {
   try {
     await removeDistFolders();
@@ -1481,9 +1648,7 @@ export async function main(): Promise<void> {
       await buildNpmDist();
       await buildJsrDist();
     }
-
-    // Process libraries if build.libs.jsonc exists
-    await buildLibsDist();
+    await buildPublishLibs();
 
     if (!pubConfig.pausePublish) {
       await removeDistFolders();

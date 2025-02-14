@@ -72,6 +72,11 @@ async function updateDependencies() {
     await installSpecificDependencies(false);
 
     console.log("\n✅ All dependencies are up-to-date!");
+
+    console.log(
+      "\n🔎 Running `bun check` to verify if the codebase\n   is free of issues after the update process...",
+    );
+    await execaCommand("bun check", { stdio: "inherit" });
   } catch (error) {
     console.error(
       "\n❌ Failed to update dependencies:",

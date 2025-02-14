@@ -88,7 +88,7 @@ export async function getBiomeConfig(
     const biomePath = path.join(projectPath, "biome.jsonc");
     if (await fs.pathExists(biomePath)) {
       const content = await fs.readFile(biomePath, "utf-8");
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
       const config = parseJSONC(content) as BiomeConfig;
       cachedBiomeConfig = {
         lineWidth: config.formatter?.lineWidth ?? 80,

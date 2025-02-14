@@ -1,5 +1,5 @@
 {
   "@reliverse/config": {
-    "main": "./src/utils/schemaConfig.ts"
+    "main": "src/utils/libs/config/schemaConfig.ts"
   }
 }

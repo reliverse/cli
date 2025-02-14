@@ -2,8 +2,8 @@ import { relinka } from "@reliverse/prompts";
 import { simpleGit } from "simple-git";
 
 import type { GitModParams } from "~/app/app-types.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { cliName } from "~/app/constants.js";

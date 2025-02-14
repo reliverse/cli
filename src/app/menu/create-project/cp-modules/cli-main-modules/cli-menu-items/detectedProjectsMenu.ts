@@ -8,8 +8,8 @@ import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import { installDependencies } from "nypm";
 
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { DetectedProject } from "~/utils/reliverseConfig.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental } from "~/app/constants.js";

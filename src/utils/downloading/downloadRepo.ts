@@ -5,7 +5,7 @@ import { installDependencies } from "nypm";
 import path, { dirname } from "pathe";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 import { initGitDir } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";

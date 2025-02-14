@@ -3,7 +3,7 @@ import os from "os";
 import path from "pathe";
 import { fileURLToPath } from "url";
 
-export const cliVersion = "1.5.0";
+export const cliVersion = "1.5.1";
 export const cliName = "@reliverse/cli";
 
 // RELIVERSE JSONC CONFIG

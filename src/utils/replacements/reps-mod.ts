@@ -5,8 +5,8 @@ import { globby } from "globby";
 import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";
 import { CommonPatterns, HardcodedStrings } from "./reps-keys.js";

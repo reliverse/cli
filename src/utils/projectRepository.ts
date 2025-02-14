@@ -12,7 +12,7 @@ import type { VSCodeRepoOption } from "~/app/menu/menu-impl.js";
 
 import { cliHomeRepos, experimental, recommended } from "~/app/constants.js";
 
-import type { reliverseConfigSchema } from "./schemaConfig.js";
+import type { reliverseConfigSchema } from "./libs/config/schemaConfig.js";
 
 import { setHiddenAttributeOnWindows } from "./filesysHelpers.js";
 import {

@@ -2,7 +2,7 @@
 .venv/
 dist-jsr/
 dist-npm/
-dist-lib/
+dist-libs/
 .DS_Store
 merged.txt
 .eslintcache

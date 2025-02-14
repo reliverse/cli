@@ -3,7 +3,7 @@ import { defineBuildConfig } from "unbuild";
 import { fileURLToPath } from "url";
 
 /**
- * The list of supported bundler names.
+ * Supported bundler names.
  */
 export type BundlerName =
   | "jsr"
@@ -19,21 +19,16 @@ export type BundlerName =
  * and additional build settings.
  */
 export type BuildPublishConfig = {
-  /**
-   * The bump mode for versioning, used if the user didn't provide --bump:
-   * - "autoPatch": 1.2.3 -> 1.2.4
-   * - "autoMinor": 1.2.3 -> 1.3.0
-   * - "autoMajor": 1.2.3 -> 2.0.0
-   */
+  /** Version bump mode: "autoPatch" (1.2.3 → 1.2.4), "autoMinor" (1.2.3 → 1.3.0), or "autoMajor" (1.2.3 → 2.0.0) */
   bump: "autoPatch" | "autoMinor" | "autoMajor";
 
-  /** Enables more detailed log output */
+  /** Enables verbose logging */
   verbose: boolean;
 
-  /** Do a dry run (publish --dry-run) instead of a real publish */
+  /** Dry run mode for publishing (does not actually publish) */
   dryRun: boolean;
 
-  /** Build only but skip publishing (and do not remove dist folders) */
+  /** Build-only mode: skip publishing and do not remove distribution folders */
   pausePublish: boolean;
 
   /** Allow publishing with uncommitted changes (--allow-dirty) */
@@ -42,7 +37,7 @@ export type BuildPublishConfig = {
   /** Allow JSR to use slow types (--allow-slow-types) */
   jsrSlowTypes: boolean;
 
-  /** Target registry: "npm", "jsr", or "npm-jsr". */
+  /** Target registry: "npm", "jsr", or "npm-jsr" */
   registry: "npm" | "jsr" | "npm-jsr";
 
   /** Output directory for NPM build artifacts */
@@ -51,7 +46,7 @@ export type BuildPublishConfig = {
   /** Output directory for JSR build artifacts */
   jsrDistDir: string;
 
-  /** Directory where the source code resides */
+  /** Directory containing the source code */
   rootSrcDir: string;
 
   /** Bundler to use for NPM builds */
@@ -60,15 +55,15 @@ export type BuildPublishConfig = {
   /** Bundler to use for JSR builds */
   builderJsr: BundlerName;
 
-  /** Minify the build output */
+  /** Whether to minify the build output */
   shouldMinify: boolean;
 
-  /** Split the build output into chunks */
+  /** Whether to split the build output into chunks */
   splitting: boolean;
 
   /**
-   * Whether to generate sourcemaps.
-   * For Bun/Rollup: boolean | "inline" | "none" | "linked" | "external"
+   * Sourcemap configuration.
+   * Options: boolean, "inline", "none", "linked", or "external"
    */
   sourcemap: boolean | "inline" | "none" | "linked" | "external";
 
@@ -78,48 +73,43 @@ export type BuildPublishConfig = {
   /** Build target environment: "node", "bun", or "browser" */
   target: "node" | "bun" | "browser";
 
-  /** Public path for the output */
+  /** Public path for the output assets */
   publicPath: string;
 
-  /**
-   * Tracks if the version bump is disabled.
-   * Used to prevent re-bumping on retry.
-   */
+  /** Flag to disable version bumping (prevents re-bumping on retry) */
   disableBump: boolean;
 
-  /** Indicates which target was last built ("npm" or "jsr")
-   * Please don't change this unless you know what you're doing.
-   */
+  /** Indicates which target was last built ("npm" or "jsr") */
   lastBuildFor: "npm" | "jsr";
 
   /** Flag indicating if the build is for JSR */
   isJSR: boolean;
 };
 
-const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Default configuration for the publishing script.
  */
 export const pubConfig: BuildPublishConfig = {
-  // Publish config
+  // Publish configuration
   registry: "npm-jsr",
   pausePublish: false,
 
-  // Bump config
+  // Bump configuration
   bump: "autoPatch",
   disableBump: false,
 
   // Output directories
-  npmDistDir: resolve(CURRENT_DIR, "dist-npm"),
-  jsrDistDir: resolve(CURRENT_DIR, "dist-jsr"),
-  rootSrcDir: resolve(CURRENT_DIR, "src"),
+  npmDistDir: resolve(ROOT_DIR, "dist-npm"),
+  jsrDistDir: resolve(ROOT_DIR, "dist-jsr"),
+  rootSrcDir: resolve(ROOT_DIR, "src"),
 
   // Bundler options
   builderNpm: "mkdist",
   builderJsr: "jsr",
 
-  // Build config
+  // Build configuration
   format: "esm",
   target: "node",
   publicPath: "/",
@@ -132,29 +122,39 @@ export const pubConfig: BuildPublishConfig = {
   allowDirty: true,
   dryRun: false,
 
-  // Build/pub helpers
+  // Helper flags
   verbose: false,
 
-  // Build overrides – don't change these manually
+  // Build overrides – do not modify these manually
   lastBuildFor: "npm",
   isJSR: false,
 };
 
 /**
- * Helper to compute the Rollup sourcemap option based on the configuration.
+ * Computes the Rollup sourcemap option based on the given configuration.
+ * @param sourcemap - Sourcemap configuration.
+ * @returns "inline" if inline is specified; true for linked/external or boolean true; otherwise false.
  */
 function getRollupSourcemapOption(
   sourcemap: boolean | "inline" | "none" | "linked" | "external",
 ): boolean | "inline" {
-  if (sourcemap === "none") return false;
-  if (sourcemap === "inline") return sourcemap;
-  if (sourcemap === "linked" || sourcemap === "external" || sourcemap)
-    return true;
-  return false;
+  switch (sourcemap) {
+    case "none":
+      return false;
+    case "inline":
+      return "inline";
+    case "linked":
+    case "external":
+      return true;
+    default:
+      return !!sourcemap;
+  }
 }
 
 /**
- * Helper for Bun builds: convert the sourcemap option to a Bun-friendly value.
+ * Converts the sourcemap option to a Bun-friendly value.
+ * @param sourcemap - Sourcemap configuration.
+ * @returns "none", "inline", or "external".
  */
 export function getBunSourcemapOption(
   sourcemap: boolean | "inline" | "none" | "linked" | "external",
@@ -165,29 +165,43 @@ export function getBunSourcemapOption(
   return "external";
 }
 
-// Select the appropriate bundler based on the last build target.
-const selectedBuilder =
+// Determine the appropriate bundler based on the last build target.
+const selectedBuilder: BundlerName =
   pubConfig.lastBuildFor === "npm"
     ? pubConfig.builderNpm
     : pubConfig.builderJsr;
 
 const shouldMinify = pubConfig.shouldMinify;
 
+// Compute the output directory for build entries.
+const outputBinDir =
+  pubConfig.lastBuildFor === "npm"
+    ? resolve(pubConfig.npmDistDir, "bin")
+    : resolve(pubConfig.jsrDistDir, "bin");
+
+// Toggle flag for library builds – similar to lastBuildFor toggling.
+export const isNextBuildLib = {
+  // @reliverse/config
+  config: false,
+};
+
+/**
+ * Build configuration using unbuild.
+ * Only defined when not using "bun" or "jsr" bundlers.
+ */
 const buildConfig =
-  // Use defineBuildConfig only if not using the "bun" or "jsr" bundlers.
   selectedBuilder !== "bun" && selectedBuilder !== "jsr"
     ? defineBuildConfig({
         declaration: false,
         clean: false,
         entries: [
           {
-            outDir:
-              pubConfig.lastBuildFor === "npm"
-                ? `${pubConfig.npmDistDir}/bin`
-                : `${pubConfig.jsrDistDir}/bin`,
+            input: isNextBuildLib.config ? "src/utils/schemaConfig.ts" : "src",
+            outDir: isNextBuildLib.config
+              ? `dist-libs/config/${outputBinDir}`
+              : outputBinDir,
             builder: selectedBuilder,
             format: pubConfig.format === "esm" ? "esm" : "cjs",
-            input: "src",
             ext: "js",
           },
         ],

@@ -2,7 +2,7 @@ import { confirmPrompt, multiselectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
 import type { MonorepoType } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { cliConfigJsonc } from "~/app/constants.js";
 import { convertCjsToEsm } from "~/utils/codemods/convertCjsToEsm.js";

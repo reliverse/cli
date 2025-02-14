@@ -48,7 +48,14 @@
     "src/**/*.js",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "dist-libs/**/*.ts"
   ],
-  "exclude": ["tests-runtime", "node_modules", "dist-npm"]
+  "exclude": [
+    "tests-runtime",
+    "node_modules",
+    "dist-npm",
+    "dist-libs/**/*.js",
+    "dist-libs/**/*.d.ts"
+  ]
 }

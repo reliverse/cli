@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import type { AppParams, ParamsOmitReli } from "~/app/app-types.js";
-import type { ProjectCategory } from "~/utils/schemaConfig.js";
+import type { ProjectCategory } from "~/utils/libs/config/schemaConfig.js";
 
 import { endTitle, experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { getRandomMessage } from "~/app/db/messages.js";

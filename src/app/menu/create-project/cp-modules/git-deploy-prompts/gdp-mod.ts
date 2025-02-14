@@ -2,8 +2,8 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
 import type { DeploymentService } from "~/types.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/deploy.js";

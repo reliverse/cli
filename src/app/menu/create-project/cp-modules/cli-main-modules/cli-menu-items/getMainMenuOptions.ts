@@ -3,7 +3,7 @@ import { isBunPM, isBunRuntime } from "@reliverse/runtime";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/schemaConfig.js";
+import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
 import { cliJsrPath } from "~/app/constants.js";
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";

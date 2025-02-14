@@ -1,7 +1,7 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import type { ReliverseConfig } from "./schemaConfig.js";
+import type { ReliverseConfig } from "./libs/config/schemaConfig.js";
 
 /**
  * A string literal union for either 'gitBehavior' or 'deployBehavior'
