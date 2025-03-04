@@ -48,6 +48,7 @@
     "src/**/*.js",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "reli/**/*.ts",
     "vitest.config.ts",
     "dist-libs/**/*.ts"
   ],

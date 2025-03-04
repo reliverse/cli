@@ -66,7 +66,6 @@ export const knownServiceSchema = Type.Object({
 });
 
 export type KeyType = Static<typeof keyTypeSchema>;
-export type ServiceKey = Static<typeof serviceKeySchema>;
 export type KnownService = Static<typeof knownServiceSchema>;
 
 export const KNOWN_SERVICES: Record<string, KnownService> = {

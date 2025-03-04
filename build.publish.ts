@@ -23,12 +23,6 @@ import { glob } from "tinyglobby";
 import { fileURLToPath } from "url";
 
 import {
-  cliConfigJsonc,
-  cliDomainDocs,
-  tsconfigJson,
-} from "~/app/constants.js";
-
-import {
   pubConfig,
   getBunSourcemapOption,
   type BuildPublishConfig,
@@ -37,6 +31,10 @@ import {
 // ============================
 // Constants & Global Setup
 // ============================
+
+const tsconfigJson = "tsconfig.json";
+const cliConfigJsonc = "cli.config.jsonc";
+const cliDomainDocs = "https://docs.reliverse.org";
 
 const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DIST_FOLDERS = ["dist-npm", "dist-jsr", "dist-libs"];
@@ -592,7 +590,6 @@ async function filterDeps(
 async function createPackageJSON(
   outdirRoot: string,
   isJSR: boolean,
-  isCLI: boolean,
 ): Promise<void> {
   logger.info(
     "Generating distribution package.json and tsconfig.json...",
@@ -600,6 +597,14 @@ async function createPackageJSON(
   );
   const commonPkg = await createCommonPackageFields();
   const originalPkg = await readPackageJSON();
+
+  // Extract CLI command name from package.json name
+  // If it's a scoped package like @reliverse/cleaner, extract "cleaner"
+  // Otherwise use the name as is
+  const packageName = originalPkg.name || "";
+  const cliCommandName = packageName.startsWith("@")
+    ? packageName.split("/").pop() || "cli"
+    : packageName;
 
   const outdirBin = path.join(outdirRoot, "bin");
 
@@ -631,9 +636,9 @@ async function createPackageJSON(
       exports: {
         ".": "./bin/main.js",
       },
-      bin: isCLI
+      bin: pubConfig.isCLI
         ? {
-            reliverse: "bin/main.js",
+            [cliCommandName]: "bin/main.js",
           }
         : undefined,
       files: ["bin", "package.json", "README.md", "LICENSE"],
@@ -824,9 +829,8 @@ async function copyJsrFiles(
   outdirRoot: string,
   projectName: string,
   isLib: boolean,
-  isCLI: boolean,
 ): Promise<void> {
-  if (isCLI) {
+  if (pubConfig.isCLI) {
     await fs.writeFile(
       path.join(outdirRoot, ".gitignore"),
       "node_modules/\n.env\n",
@@ -838,7 +842,7 @@ async function copyJsrFiles(
   await createJsrConfig(outdirRoot, projectName, isLib);
 
   let jsrFiles: string[];
-  if (isCLI) {
+  if (pubConfig.isCLI) {
     jsrFiles = [cliConfigJsonc, "bun.lock", "drizzle.config.ts", "schema.json"];
   } else {
     jsrFiles = [cliConfigJsonc];
@@ -1126,9 +1130,9 @@ async function buildJsrDist(): Promise<void> {
   }
 
   await copyReadmeLicense(outdirRoot);
-  await createPackageJSON(outdirRoot, true, true);
+  await createPackageJSON(outdirRoot, true);
   await createTSConfig(outdirRoot, true);
-  await copyJsrFiles(outdirRoot, "", false, true);
+  await copyJsrFiles(outdirRoot, "", false);
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);
@@ -1165,7 +1169,7 @@ async function buildNpmDist(): Promise<void> {
   }
 
   await copyReadmeLicense(outdirRoot);
-  await createPackageJSON(outdirRoot, false, true);
+  await createPackageJSON(outdirRoot, false);
   await convertSymbolPaths(outdirBin, false);
   await deleteSpecificFiles(outdirBin);
 
@@ -1266,7 +1270,6 @@ async function createLibPackageJSON(
   libName: string,
   outdirRoot: string,
   isJSR: boolean,
-  isCLI: boolean,
 ): Promise<void> {
   logger.info(
     `Generating package.json for lib ${libName} (${isJSR ? "JSR" : "NPM"})...`,
@@ -1275,7 +1278,7 @@ async function createLibPackageJSON(
   const originalPkg = await readPackageJSON();
   let { description } = originalPkg;
   const { version, license, keywords, author } = originalPkg;
-  if (!isCLI) {
+  if (!pubConfig.isCLI) {
     description = "A helper library for the Reliverse CLI";
   }
   const commonPkg: Partial<PackageJson> = {
@@ -1328,7 +1331,7 @@ async function createLibPackageJSON(
       exports: {
         ".": "./bin/main.js",
       },
-      bin: isCLI
+      bin: pubConfig.isCLI
         ? {
             [libName.split("/").pop()!]: "bin/main.js",
           }
@@ -1427,7 +1430,7 @@ async function buildLibNpmDist(
   entryFile = updatedEntryFile;
 
   await copyReadmeLicense(outdirRoot);
-  await createLibPackageJSON(libName, outdirRoot, false, false);
+  await createLibPackageJSON(libName, outdirRoot, false);
   await convertSymbolPaths(outdirBin, false);
   await deleteSpecificFiles(outdirBin);
 
@@ -1483,8 +1486,8 @@ async function buildLibJsrDist(
   entryFile = updatedEntryFile;
 
   await copyReadmeLicense(outdirRoot);
-  await createLibPackageJSON(libName, outdirRoot, true, false);
-  await copyJsrFiles(outdirRoot, libName, true, false);
+  await createLibPackageJSON(libName, outdirRoot, true);
+  await copyJsrFiles(outdirRoot, libName, true);
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);

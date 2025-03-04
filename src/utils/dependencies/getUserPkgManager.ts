@@ -213,13 +213,6 @@ async function detectPackageManagers(
   return detected;
 }
 
-/**
- * Clear the detection cache
- */
-export function clearCache(): void {
-  cache.clear();
-}
-
 export async function getUserPkgManager(
   projectPath?: string,
   options: DetectOptions = {},

@@ -33,7 +33,6 @@ const config = tseslint.config(
     },
     plugins: {
       perfectionist,
-      // @ts-expect-error wrong issue
       "@stylistic": stylistic,
       "no-relative-import-paths": noRelativeImportPaths,
     },

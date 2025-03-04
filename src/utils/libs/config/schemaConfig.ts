@@ -14,6 +14,8 @@ const RELIVERSE_SCHEMA_DEV = "./schema.json";
 const RELIVERSE_SCHEMA_URL = `${reliverseOrgRoot}/schema.json`;
 // ------------------------------------------------------------------
 
+const unknownLiteral = Type.Literal("unknown");
+
 const featuresSchema = Type.Object({
   i18n: Type.Boolean(),
   analytics: Type.Boolean(),
@@ -83,6 +85,109 @@ const monorepoSchema = Type.Object({
   ]),
   packages: Type.Array(Type.String()),
   sharedPackages: Type.Array(Type.String()),
+});
+
+const preferredLibrariesSchema = Type.Object({
+  stateManagement: Type.Union([
+    Type.Literal("zustand"),
+    Type.Literal("jotai"),
+    Type.Literal("redux-toolkit"),
+    unknownLiteral,
+  ]),
+  formManagement: Type.Union([
+    Type.Literal("react-hook-form"),
+    Type.Literal("formik"),
+    unknownLiteral,
+  ]),
+  styling: Type.Union([
+    Type.Literal("tailwind"),
+    Type.Literal("styled-components"),
+    Type.Literal("css-modules"),
+    Type.Literal("sass"),
+    unknownLiteral,
+  ]),
+  uiComponents: Type.Union([
+    Type.Literal("shadcn-ui"),
+    Type.Literal("chakra-ui"),
+    Type.Literal("material-ui"),
+    unknownLiteral,
+  ]),
+  testing: Type.Union([
+    Type.Literal("bun"),
+    Type.Literal("vitest"),
+    Type.Literal("jest"),
+    Type.Literal("playwright"),
+    Type.Literal("cypress"),
+    unknownLiteral,
+  ]),
+  authentication: Type.Union([
+    Type.Literal("better-auth"),
+    Type.Literal("clerk"),
+    Type.Literal("next-auth"),
+    Type.Literal("supabase-auth"),
+    Type.Literal("auth0"),
+    unknownLiteral,
+  ]),
+  databaseLibrary: Type.Union([
+    Type.Literal("drizzle"),
+    Type.Literal("prisma"),
+    Type.Literal("supabase"),
+    unknownLiteral,
+  ]),
+  databaseProvider: Type.Union([
+    Type.Literal("pg"),
+    Type.Literal("mysql"),
+    Type.Literal("sqlite"),
+    Type.Literal("mongodb"),
+    unknownLiteral,
+  ]),
+  api: Type.Union([
+    Type.Literal("hono"),
+    Type.Literal("trpc"),
+    Type.Literal("graphql"),
+    Type.Literal("rest"),
+    unknownLiteral,
+  ]),
+  linting: Type.Union([Type.Literal("eslint"), unknownLiteral]),
+  formatting: Type.Union([Type.Literal("biome"), unknownLiteral]),
+  payment: Type.Union([Type.Literal("stripe"), unknownLiteral]),
+  analytics: Type.Union([Type.Literal("vercel"), unknownLiteral]),
+  monitoring: Type.Union([Type.Literal("sentry"), unknownLiteral]),
+  logging: Type.Union([Type.Literal("axiom"), unknownLiteral]),
+  forms: Type.Union([Type.Literal("react-hook-form"), unknownLiteral]),
+  notifications: Type.Union([Type.Literal("sonner"), unknownLiteral]),
+  search: Type.Union([Type.Literal("algolia"), unknownLiteral]),
+  uploads: Type.Union([Type.Literal("uploadthing"), unknownLiteral]),
+  validation: Type.Union([
+    Type.Literal("zod"),
+    Type.Literal("typebox"),
+    Type.Literal("valibot"),
+    unknownLiteral,
+  ]),
+  documentation: Type.Union([
+    Type.Literal("starlight"),
+    Type.Literal("nextra"),
+    unknownLiteral,
+  ]),
+  icons: Type.Union([Type.Literal("lucide"), unknownLiteral]),
+  mail: Type.Union([Type.Literal("resend"), unknownLiteral]),
+  cache: Type.Union([Type.Literal("redis"), unknownLiteral]),
+  storage: Type.Union([Type.Literal("cloudflare"), unknownLiteral]),
+  cdn: Type.Union([Type.Literal("cloudflare"), unknownLiteral]),
+  cms: Type.Union([Type.Literal("contentlayer"), unknownLiteral]),
+  i18n: Type.Union([Type.Literal("next-intl"), unknownLiteral]),
+  seo: Type.Union([Type.Literal("next-seo"), unknownLiteral]),
+  motion: Type.Union([Type.Literal("framer"), unknownLiteral]),
+  charts: Type.Union([Type.Literal("recharts"), unknownLiteral]),
+  dates: Type.Union([Type.Literal("dayjs"), unknownLiteral]),
+  markdown: Type.Union([Type.Literal("mdx"), unknownLiteral]),
+  security: Type.Union([Type.Literal("auth"), unknownLiteral]),
+  routing: Type.Union([
+    Type.Literal("next"),
+    Type.Literal("react-router"),
+    Type.Literal("tanstack-router"),
+    unknownLiteral,
+  ]),
 });
 
 export const reliverseConfigSchema = Type.Object({
@@ -172,7 +277,7 @@ export const reliverseConfigSchema = Type.Object({
   ]),
 
   features: featuresSchema,
-  preferredLibraries: Type.Record(Type.String(), Type.String()),
+  preferredLibraries: preferredLibrariesSchema,
   codeStyle: codeStyleSchema,
   monorepo: monorepoSchema,
   ignoreDependencies: Type.Array(Type.String()),
@@ -189,12 +294,12 @@ export const reliverseConfigSchema = Type.Object({
 
   repoBranch: Type.String(),
   repoPrivacy: Type.Union([
-    Type.Literal("unknown"),
+    unknownLiteral,
     Type.Literal("public"),
     Type.Literal("private"),
   ]),
   projectArchitecture: Type.Union([
-    Type.Literal("unknown"),
+    unknownLiteral,
     Type.Literal("fullstack"),
     Type.Literal("separated"),
   ]),
@@ -263,13 +368,6 @@ export type ProjectArchitecture = Exclude<
   ReliverseConfig["projectArchitecture"],
   undefined
 >;
-
-/**
- * A helper to define a Reliverse configuration in the reliverse.ts file
- */
-export function defineConfig<T extends ReliverseConfig>(config: T): T {
-  return config;
-}
 
 /**
  * Converts a TypeBox schema to a JSON Schema
@@ -384,4 +482,11 @@ export async function generateSchemaFile(): Promise<void> {
     await fs.remove(schemaPath);
   }
   await generateJsonSchema(schemaPath);
+}
+
+/**
+ * A helper to define a Reliverse configuration in the reliverse.ts file
+ */
+export function defineConfig<T extends ReliverseConfig>(config: T): T {
+  return config;
 }

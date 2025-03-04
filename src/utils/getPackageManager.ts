@@ -1,7 +1,6 @@
-import { detect, getNpmVersion } from "detect-package-manager";
+import { detect } from "detect-package-manager";
 
 export const pm = await detect();
-export const pmv = await getNpmVersion(pm);
 
 let pmx: string;
 switch (pm) {

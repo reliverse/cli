@@ -1,10 +1,7 @@
-import { getExactTerminalWidth, relinka, symbols } from "@reliverse/prompts";
-import { re } from "@reliverse/relico";
+import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import { cwd } from "node:process";
 import { normalize } from "pathe";
-
-import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 
 export const handleError = (error: unknown) =>
   error instanceof Error ? error.message : "Unknown error";
@@ -34,38 +31,6 @@ export function pwd() {
 }
 
 /**
- * Lists the contents of a directory. If no directory is specified,
- * the current working directory is used. Logs a warning if the directory
- * does not exist.
- */
-export async function ls(dir?: string): Promise<string[]> {
-  const projectPath = dir ?? process.cwd();
-  try {
-    await fs.access(projectPath);
-    return await fs.readdir(projectPath);
-  } catch (error) {
-    relinka(
-      "warn",
-      `Directory does not exist: ${projectPath}`,
-      handleError(error),
-    );
-    return [];
-  }
-}
-
-/**
- * Creates a directory (recursively by default). Logs an error if creation fails.
- */
-export async function mkdir(dir: string): Promise<void> {
-  try {
-    await fs.mkdirp(dir);
-    relinka("info-verbose", `Directory created: ${dir}`);
-  } catch (error) {
-    relinka("error", `Failed to create directory: ${dir}`, handleError(error));
-  }
-}
-
-/**
  * Removes a file or directory (recursively, if it's a directory).
  * Logs an error if removal fails.
  */
@@ -75,93 +40,6 @@ export async function rm(target: string): Promise<void> {
     relinka("info-verbose", `Removed: ${target}`);
   } catch (error) {
     relinka("error", `Failed to remove: ${target}`, handleError(error));
-  }
-}
-
-/**
- * Writes content to a file. If the file does not exist, it is created.
- * Logs an error if write fails.
- */
-export async function echo(filePath: string, content: string): Promise<void> {
-  try {
-    await fs.writeFile(filePath, content, "utf8");
-    relinka("info-verbose", `Wrote to file: ${filePath}`);
-  } catch (error) {
-    relinka("error", `Failed to write file: ${filePath}`, handleError(error));
-  }
-}
-
-/**
- * Reads and returns the content of a file.
- * Logs an error if reading fails.
- */
-export async function cat(filePath: string): Promise<string> {
-  try {
-    return await fs.readFile(filePath, "utf8");
-  } catch (error) {
-    relinka("error", `Failed to read file: ${filePath}`, handleError(error));
-    throw error;
-  }
-}
-
-/**
- * Shows the first n lines of a file.
- */
-export async function head(filePath: string, n = 10): Promise<string> {
-  try {
-    const content = await fs.readFile(filePath, "utf8");
-    return content.split("\n").slice(0, n).join("\n");
-  } catch (error) {
-    relinka("error", `Failed to read file: ${filePath}`, handleError(error));
-    throw error;
-  }
-}
-
-/**
- * Shows the last n lines of a file.
- */
-export async function tail(filePath: string, n = 10): Promise<string> {
-  try {
-    const content = await fs.readFile(filePath, "utf8");
-    const lines = content.split("\n");
-    return lines.slice(-n).join("\n");
-  } catch (error) {
-    relinka("error", `Failed to read file: ${filePath}`, handleError(error));
-    throw error;
-  }
-}
-
-/**
- * Copies a file or directory from one location to another.
- * Logs an error if copying fails.
- */
-export async function cp(src: string, dest: string): Promise<void> {
-  try {
-    await fs.copy(src, dest);
-    relinka("info", `Copied from ${src} to ${dest}`);
-  } catch (error) {
-    relinka(
-      "error",
-      `Failed to copy from ${src} to ${dest}`,
-      handleError(error),
-    );
-  }
-}
-
-/**
- * Moves a file or directory from one location to another.
- * Logs an error if moving fails.
- */
-export async function mv(src: string, dest: string): Promise<void> {
-  try {
-    await fs.move(src, dest, { overwrite: true });
-    relinka("info", `Moved from ${src} to ${dest}`);
-  } catch (error) {
-    relinka(
-      "error",
-      `Failed to move from ${src} to ${dest}`,
-      handleError(error),
-    );
   }
 }
 
@@ -187,43 +65,4 @@ export function getCurrentWorkingDirectory(useCache = true): string {
     );
     throw error;
   }
-}
-
-// temp
-
-export function renderEndLine() {
-  console.log(re.dim(symbols.middle));
-
-  const lineLength = getExactTerminalWidth() - 2;
-  console.log(re.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
-
-  console.log();
-}
-
-export function renderEndLineInput() {
-  const lineLength = getExactTerminalWidth() - 2;
-  console.log();
-  console.log(re.dim(`${symbols.end}${symbols.line.repeat(lineLength)}⊱`));
-  console.log();
-}
-
-/**
- * Checks if the current working directory is empty.
- * Ignores certain paths like config files, node_modules, .git, package.json, and reli.
- */
-export async function isCwdEmpty(cwd: string) {
-  const IGNORED_PATHS = [
-    ".git",
-    "node_modules",
-    "package.json",
-    cliConfigJsonc,
-    cliConfigTs,
-    "reli",
-  ];
-
-  const files = await fs.readdir(cwd);
-  const significantFiles = files.filter(
-    (file) => !IGNORED_PATHS.includes(file),
-  );
-  return significantFiles.length === 0;
 }

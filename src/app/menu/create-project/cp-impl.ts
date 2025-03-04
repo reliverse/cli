@@ -30,18 +30,7 @@ import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
-import { readPackageJson } from "~/utils/pkgJsonHelpers.js";
 import { normalizeName } from "~/utils/validateHelpers.js";
-
-/**
- * For parsing and updating package.json
- */
-export type PackageJson = {
-  name?: string;
-  scripts?: Record<string, string>;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-};
 
 /**
  * Ensures a unique project name by prompting for a new one if the target directory exists.
@@ -505,77 +494,5 @@ export async function handleNextAction(
     }
   } catch (error) {
     relinka("error", `Error handling action '${action}':`, String(error));
-  }
-}
-
-/**
- * Checks if a project has certain dependencies
- */
-export async function checkDependenciesExist(
-  projectPath: string,
-  dependencies: string[],
-): Promise<{ exists: boolean; missing: string[] }> {
-  try {
-    const packageJson = await readPackageJson(projectPath);
-    if (!packageJson) {
-      return { exists: false, missing: dependencies };
-    }
-
-    const allDeps = {
-      ...packageJson.dependencies,
-      ...packageJson.devDependencies,
-    };
-    const missing = dependencies.filter((dep) => !allDeps[dep]);
-    return { exists: missing.length === 0, missing };
-  } catch (error: unknown) {
-    relinka("error", "Error checking dependencies:", String(error));
-    return { exists: false, missing: dependencies };
-  }
-}
-
-/**
- * Validates that certain directories exist in the project
- */
-export async function validateProjectStructure(
-  projectPath: string,
-  requiredPaths: string[] = ["src", "public"],
-): Promise<{ isValid: boolean; missing: string[] }> {
-  try {
-    const missingDirs: string[] = [];
-    for (const dirPath of requiredPaths) {
-      const fullPath = path.join(projectPath, dirPath);
-      if (!(await fs.pathExists(fullPath))) {
-        missingDirs.push(dirPath);
-      }
-    }
-    return {
-      isValid: missingDirs.length === 0,
-      missing: missingDirs,
-    };
-  } catch (error: unknown) {
-    relinka("error", "Error validating project structure:", String(error));
-    return { isValid: false, missing: requiredPaths };
-  }
-}
-
-/**
- * Updates package.json fields
- */
-export async function updatePackageJson(
-  projectPath: string,
-  updates: Partial<PackageJson>,
-): Promise<boolean> {
-  try {
-    const packageJson = await readPackageJson(projectPath);
-    if (!packageJson) return false;
-
-    const updated = { ...packageJson, ...updates };
-    const packageJsonPath = path.join(projectPath, "package.json");
-
-    await fs.writeJson(packageJsonPath, updated, { spaces: 2 });
-    return true;
-  } catch (error: unknown) {
-    relinka("error", "Error updating package.json:", String(error));
-    return false;
   }
 }

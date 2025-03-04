@@ -21,31 +21,33 @@ export async function reReadReliverseMemory(): Promise<ReliverseMemory | null> {
   try {
     // Read encrypted data from config_keys
     const configRows = await db.select().from(configKeysTable);
-    const configData = configRows.reduce<Record<string, string>>((acc, row) => {
+
+    // Process encrypted data
+    const configData: Record<string, string> = {};
+    for (const row of configRows) {
       try {
-        const decrypted = decrypt(row.value);
+        const decrypted = await decrypt(row.value);
         // Try to parse JSON if the value looks like JSON
         try {
-          if (decrypted.startsWith("{") ?? decrypted.startsWith("[")) {
-            acc[row.key] = JSON.parse(decrypted) as string;
+          if (decrypted.startsWith("{") || decrypted.startsWith("[")) {
+            configData[row.key] = JSON.parse(decrypted) as string;
           } else {
-            acc[row.key] = decrypted;
+            configData[row.key] = decrypted;
           }
         } catch {
-          acc[row.key] = decrypted;
+          configData[row.key] = decrypted;
         }
       } catch {
-        acc[row.key] = "";
+        configData[row.key] = "";
       }
-      return acc;
-    }, {});
+    }
 
     // Read non-encrypted data from user_data
     const userRows = await db.select().from(userDataTable);
     const userData = userRows.reduce<Record<string, string>>((acc, row) => {
       try {
         // Try to parse JSON if the value looks like JSON
-        if (row.value.startsWith("{") ?? row.value.startsWith("[")) {
+        if (row.value.startsWith("{") || row.value.startsWith("[")) {
           acc[row.key] = JSON.parse(row.value) as string;
         } else {
           acc[row.key] = row.value;
@@ -101,31 +103,33 @@ export async function getReliverseMemory(): Promise<ReliverseMemory> {
   try {
     // Read encrypted data from config_keys
     const configRows = await db.select().from(configKeysTable);
-    const configData = configRows.reduce<Record<string, string>>((acc, row) => {
+
+    // Process encrypted data
+    const configData: Record<string, string> = {};
+    for (const row of configRows) {
       try {
-        const decrypted = decrypt(row.value);
+        const decrypted = await decrypt(row.value);
         // Try to parse JSON if the value looks like JSON
         try {
-          if (decrypted.startsWith("{") ?? decrypted.startsWith("[")) {
-            acc[row.key] = JSON.parse(decrypted) as string;
+          if (decrypted.startsWith("{") || decrypted.startsWith("[")) {
+            configData[row.key] = JSON.parse(decrypted) as string;
           } else {
-            acc[row.key] = decrypted;
+            configData[row.key] = decrypted;
           }
         } catch {
-          acc[row.key] = decrypted;
+          configData[row.key] = decrypted;
         }
       } catch {
-        acc[row.key] = "";
+        configData[row.key] = "";
       }
-      return acc;
-    }, {});
+    }
 
     // Read non-encrypted data from user_data
     const userRows = await db.select().from(userDataTable);
     const userData = userRows.reduce<Record<string, string>>((acc, row) => {
       try {
         // Try to parse JSON if the value looks like JSON
-        if (row.value.startsWith("{") ?? row.value.startsWith("[")) {
+        if (row.value.startsWith("{") || row.value.startsWith("[")) {
           acc[row.key] = JSON.parse(row.value) as string;
         } else {
           acc[row.key] = row.value;
@@ -176,21 +180,28 @@ export async function updateReliverseMemory(
 ): Promise<void> {
   try {
     // Split updates into encrypted and non-encrypted data
-    const configUpdates = Object.entries(data)
+    const encryptedEntries = Object.entries(data)
       .filter(([key]) =>
         ["code", "key", "githubKey", "vercelKey", "openaiKey"].includes(key),
       )
-      .filter(([_, value]) => value !== null && value !== undefined)
-      .map(([key, value]) => ({
+      .filter(([_, value]) => value !== null && value !== undefined);
+
+    // Process encrypted data
+    const configUpdates: { key: EncryptedDataMemory; value: string }[] = [];
+    for (const [key, value] of encryptedEntries) {
+      const stringValue =
+        typeof value === "object"
+          ? JSON.stringify(value)
+          : typeof value === "undefined"
+            ? ""
+            : String(value);
+
+      const encryptedValue = await encrypt(stringValue);
+      configUpdates.push({
         key: key as EncryptedDataMemory,
-        value: encrypt(
-          typeof value === "object"
-            ? JSON.stringify(value)
-            : typeof value === "undefined"
-              ? ""
-              : String(value),
-        ),
-      }));
+        value: encryptedValue,
+      });
+    }
 
     const userDataUpdates = Object.entries(data)
       .filter(([key]) =>

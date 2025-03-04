@@ -21,12 +21,6 @@ export type DeploymentLog = {
   text: string;
 };
 
-export type InlinedFile = {
-  file: string;
-  data: string;
-  encoding: "utf-8" | "base64";
-};
-
 export type EnvVar = {
   key: string;
   value: string;

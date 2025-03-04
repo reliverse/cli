@@ -21,7 +21,7 @@ const RUNTIME_REPLACEMENTS = {
     'import path from "path"':
       'import { join, resolve, dirname, basename } from "path"',
     // Node.js crypto to Bun's crypto
-    'import crypto from "crypto"': 'import { crypto } from "bun"',
+    'import crypto from "uncrypto"': 'import { crypto } from "bun"',
     // Node.js buffer to Bun's buffer
     "import { Buffer }": "// Bun has Buffer globally available",
     // Node.js process to Bun's process
@@ -40,7 +40,7 @@ const RUNTIME_REPLACEMENTS = {
     'import path from "path"':
       'import * as path from "https://deno.land/std/path/mod.ts"',
     // Node.js crypto to Deno's crypto
-    'import crypto from "crypto"':
+    'import crypto from "uncrypto"':
       'import * as crypto from "https://deno.land/std/crypto/mod.ts"',
     // Node.js buffer to Deno's buffer
     "import { Buffer }":

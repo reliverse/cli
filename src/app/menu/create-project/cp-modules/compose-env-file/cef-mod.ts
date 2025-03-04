@@ -19,7 +19,7 @@ import {
 } from "./cef-impl.js";
 
 export async function composeEnvFile(
-  projectDir: string,
+  projectPath: string,
   fallbackEnvExampleURL: string,
   maskInput: boolean,
   skipPrompts: boolean,
@@ -29,8 +29,8 @@ export async function composeEnvFile(
 
   try {
     const results = await Promise.all([
-      ensureExampleExists(projectDir, fallbackEnvExampleURL),
-      ensureEnvExists(projectDir),
+      ensureExampleExists(projectPath, fallbackEnvExampleURL),
+      ensureEnvExists(projectPath),
     ]).catch((err) => {
       relinka("error", "Failed to setup env files:", getErrorMessage(err));
       return [false, false];
@@ -38,7 +38,7 @@ export async function composeEnvFile(
 
     if (!results[0] || !results[1]) return;
 
-    const missingKeys = await getMissingKeys(projectDir).catch(() => {
+    const missingKeys = await getMissingKeys(projectPath).catch(() => {
       relinka("error", "Failed to check for missing keys");
       return [] as string[];
     });
@@ -49,16 +49,16 @@ export async function composeEnvFile(
     }
 
     const lastEnvPath = await getLastEnvFilePath();
-    const envPath = getEnvPath(projectDir);
+    const envPath = getEnvPath(projectPath);
 
     // In auto mode, use last env path if it exists and is valid
     if (skipPrompts && lastEnvPath && (await fs.pathExists(lastEnvPath))) {
-      if (await copyFromExisting(projectDir, lastEnvPath)) {
+      if (await copyFromExisting(projectPath, lastEnvPath)) {
         relinka(
           "success",
           "Environment variables copied from the last used file.",
         );
-        const remainingMissingKeys = await getMissingKeys(projectDir);
+        const remainingMissingKeys = await getMissingKeys(projectPath);
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",
@@ -130,9 +130,9 @@ export async function composeEnvFile(
       // if existingPath contains `""` or `''`, remove the quotes
       existingPath = existingPath.replace(/^["']|["']$/g, "");
 
-      if (await copyFromExisting(projectDir, existingPath)) {
+      if (await copyFromExisting(projectPath, existingPath)) {
         await saveLastEnvFilePath(existingPath);
-        const remainingMissingKeys = await getMissingKeys(projectDir);
+        const remainingMissingKeys = await getMissingKeys(projectPath);
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",
@@ -148,12 +148,12 @@ export async function composeEnvFile(
         }
       }
     } else if (response === "latest") {
-      if (lastEnvPath && (await copyFromExisting(projectDir, lastEnvPath))) {
+      if (lastEnvPath && (await copyFromExisting(projectPath, lastEnvPath))) {
         relinka(
           "success",
           "Environment variables copied from the last used file.",
         );
-        const remainingMissingKeys = await getMissingKeys(projectDir);
+        const remainingMissingKeys = await getMissingKeys(projectPath);
         if (remainingMissingKeys.length > 0) {
           relinka(
             "info",

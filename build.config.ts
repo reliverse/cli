@@ -84,6 +84,9 @@ export type BuildPublishConfig = {
 
   /** Flag indicating if the build is for JSR */
   isJSR: boolean;
+
+  /** Flag indicating if the build is for a CLI package */
+  isCLI: boolean;
 };
 
 const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -123,7 +126,10 @@ export const pubConfig: BuildPublishConfig = {
   dryRun: false,
 
   // Helper flags
-  verbose: false,
+  verbose: true,
+
+  // CLI flag
+  isCLI: true,
 
   // Build overrides – do not modify these manually
   lastBuildFor: "npm",

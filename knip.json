@@ -1,66 +1,22 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "{build,eslint}.{config,publish}.{js,ts}",
+    "eslint.config.js",
+    "build.config.ts",
+    "build.publish.ts",
     "addons/**/*.ts",
-    "src/app/menu/create-project/cp-modules/cli-main-modules/**/*.ts",
-    "src/main.ts"
+    "src/main.ts",
+    "src/utils/libs/**/*.ts"
   ],
   "project": [
-    "{build,eslint}.{config,publish}.{js,ts}",
-    "{src,addons}/**/*.ts"
+    "eslint.config.js",
+    "build.config.ts",
+    "build.publish.ts",
+    "addons/**/*.ts",
+    "src/**/*.ts"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignore": [
-    "tests-runtime/",
-    "dist-jsr/",
-    "dist-npm/",
-    "dist-libs/",
-    "src/app/app-types.ts",
-    "src/app/constants.ts",
-    "src/app/db/config.ts",
-    "src/app/menu/create-project/cp-impl.ts",
-    "src/app/menu/create-project/cp-modules/compose-env-file/cef-impl.ts",
-    "src/app/menu/create-project/cp-modules/compose-env-file/cef-keys.ts",
-    "src/app/menu/create-project/cp-modules/compose-env-file/cef-sgen.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/github.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/utils-git-github.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-check.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-domain.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-project.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-types.ts",
-    "src/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-unused.ts",
-    "src/app/menu/menu-impl.ts",
-    "src/args/add/add-mod.ts",
-    "src/args/diff/diff-mod.ts",
-    "src/args/init/init-mod.ts",
-    "src/types.ts",
-    "src/utils/configHandler.ts",
-    "src/utils/debugHelpers.ts",
-    "src/utils/dependencies/getUserPkgManager.ts",
-    "src/utils/dependencies/installDependencies.ts",
-    "src/utils/execaSpinner.ts",
-    "src/utils/filesystem.test.ts",
-    "src/utils/getPackageManager.ts",
-    "src/utils/handlers/cloneAndCopyFiles.ts",
-    "src/utils/handlers/configure.ts",
-    "src/utils/handlers/dependencies.ts",
-    "src/utils/handlers/fileUtils.ts",
-    "src/utils/handlers/i18nMove.ts",
-    "src/utils/handlers/products.ts",
-    "src/utils/handlers/shadcn.ts",
-    "src/utils/libs/config/schemaConfig.ts",
-    "src/utils/reliverseConfig.ts",
-    "src/utils/secret-inputs/askMaskInput.ts",
-    "src/utils/terminalHelpers.ts"
-  ],
+  "ignore": ["tests-runtime/", "dist-jsr/", "dist-npm/", "dist-libs/"],
   "ignoreBinaries": ["code", "db:push"],
-  "ignoreDependencies": [
-    "@octokit/plugin-rest-endpoint-methods",
-    "@types/eslint__js",
-    "mri",
-    "octokit",
-    "ora",
-    "querystring"
-  ]
+  "ignoreDependencies": ["octokit", "ora", "querystring"]
 }

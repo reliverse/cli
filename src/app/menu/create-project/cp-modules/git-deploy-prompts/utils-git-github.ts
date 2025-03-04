@@ -1,11 +1,7 @@
-import type { PackageJson } from "pkg-types";
-
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 import { simpleGit } from "simple-git";
-
-import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 /**
  * Checks if the given directory is a git repository
@@ -125,26 +121,4 @@ export async function setupGitRemote(
     );
     return false;
   }
-}
-
-export function extractGithubUsername(
-  packageJson: PackageJson | null,
-  memory: ReliverseMemory,
-  fallback: string,
-): string {
-  let githubUsername = memory.githubUsername;
-  if (!githubUsername && packageJson?.repository) {
-    const repoUrl =
-      typeof packageJson.repository === "string"
-        ? packageJson.repository
-        : packageJson.repository.url;
-
-    if (repoUrl) {
-      const match = /github\.com[:/]([^/]+)/.exec(repoUrl);
-      if (match) {
-        githubUsername = match[1];
-      }
-    }
-  }
-  return githubUsername ?? fallback;
 }

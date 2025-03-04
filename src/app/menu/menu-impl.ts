@@ -466,7 +466,3 @@ export async function optionCreateWebProject(
     });
   }
 }
-
-export function configureCliProject() {
-  relinka("info", "Coming soon...");
-}

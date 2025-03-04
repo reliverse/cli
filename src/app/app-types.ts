@@ -11,7 +11,6 @@ export type AppParams = {
   skipPrompts: boolean;
 };
 
-export type ParamsOmitPN = Omit<AppParams, "projectName">;
 export type ParamsOmitSkipPN = Omit<AppParams, "skipPrompts" | "projectName">;
 export type ParamsOmitReli = Omit<AppParams, "reli">;
 

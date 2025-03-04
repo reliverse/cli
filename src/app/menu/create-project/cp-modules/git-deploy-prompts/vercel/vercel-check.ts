@@ -2,12 +2,6 @@ import { relinka } from "@reliverse/prompts";
 
 import { type InstanceGithub } from "~/utils/instanceGithub.js";
 
-export type InlinedFile = {
-  file: string;
-  data: string;
-  encoding: "utf-8" | "base64";
-};
-
 /**
  * Checks whether there is an existing deployment for the given project.
  *

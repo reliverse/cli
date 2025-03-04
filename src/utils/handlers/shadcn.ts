@@ -166,13 +166,6 @@ async function ensureComponentDependencies(
   }
 }
 
-type InitOptions = {
-  defaults?: boolean;
-  force?: boolean;
-  yes?: boolean;
-  cwd: string;
-};
-
 type ComponentOptions = {
   yes?: boolean;
   overwrite?: boolean;
@@ -180,44 +173,6 @@ type ComponentOptions = {
   all?: boolean;
   path?: string;
 };
-
-export async function initializeShadcn(
-  cwd: string,
-  options: Partial<InitOptions> = {},
-): Promise<void> {
-  try {
-    const configExists = await fs.pathExists(path.join(cwd, "components.json"));
-    if (configExists && !options.force) {
-      relinka("info", "shadcn/ui is already initialized");
-      return;
-    }
-
-    const args = ["shadcn-ui@latest", "init"];
-
-    if (options.defaults) {
-      args.push("--defaults");
-    }
-    if (options.force) {
-      args.push("--force");
-    }
-    if (options.yes) {
-      args.push("--yes");
-    }
-
-    await execa(pmx, args, {
-      cwd,
-      stdio: "inherit",
-    });
-
-    relinka("success", "Initialized shadcn/ui");
-  } catch (error) {
-    relinka(
-      "error",
-      "Failed to initialize shadcn/ui:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
-}
 
 export async function installComponent(
   cwd: string,
@@ -266,28 +221,6 @@ export async function updateComponent(
   component: string,
 ): Promise<void> {
   return installComponent(cwd, component, { overwrite: true });
-}
-
-export async function installAllComponents(
-  cwd: string,
-  options: Partial<ComponentOptions> = {},
-): Promise<void> {
-  try {
-    const config = await readShadcnConfig(cwd);
-    if (!config) {
-      relinka("error", "shadcn/ui configuration not found");
-      return;
-    }
-
-    await installComponent(cwd, "", { ...options, all: true });
-    relinka("success", "Installed all components");
-  } catch (error) {
-    relinka(
-      "error",
-      "Failed to install all components:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
 }
 
 export async function removeComponent(

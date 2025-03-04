@@ -4,12 +4,12 @@ import {
   confirmPrompt,
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
-import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import open from "open";
 import path from "pathe";
+import { getRandomValues } from "uncrypto";
 
 import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 
@@ -25,8 +25,8 @@ type EnvPaths = {
   envPath: string;
 };
 
-function getEnvPaths(projectDir: string): EnvPaths {
-  const projectRoot = path.resolve(projectDir);
+function getEnvPaths(projectPath: string): EnvPaths {
+  const projectRoot = path.resolve(projectPath);
   return {
     projectRoot,
     exampleEnvPath: path.join(projectRoot, ".env.example"),
@@ -55,10 +55,10 @@ async function safeWriteFile(
 }
 
 export async function ensureExampleExists(
-  projectDir: string,
+  projectPath: string,
   fallbackEnvExampleURL: string,
 ): Promise<boolean> {
-  const { exampleEnvPath } = getEnvPaths(projectDir);
+  const { exampleEnvPath } = getEnvPaths(projectPath);
 
   try {
     if (await fs.pathExists(exampleEnvPath)) {
@@ -85,8 +85,8 @@ export async function ensureExampleExists(
   }
 }
 
-export async function ensureEnvExists(projectDir: string): Promise<boolean> {
-  const { envPath, exampleEnvPath } = getEnvPaths(projectDir);
+export async function ensureEnvExists(projectPath: string): Promise<boolean> {
+  const { envPath, exampleEnvPath } = getEnvPaths(projectPath);
 
   try {
     if (await fs.pathExists(envPath)) {
@@ -147,8 +147,8 @@ function parseEnvKeys(envContents: string): Record<string, string> {
  * 2) Parses .env to see which keys are present & non-empty
  * 3) Returns only those that are truly missing or empty
  */
-export async function getMissingKeys(projectDir: string): Promise<string[]> {
-  const { envPath, exampleEnvPath } = getEnvPaths(projectDir);
+export async function getMissingKeys(projectPath: string): Promise<string[]> {
+  const { envPath, exampleEnvPath } = getEnvPaths(projectPath);
 
   try {
     const envContent = await safeReadFile(envPath);
@@ -196,10 +196,10 @@ async function getRequiredKeys(exampleEnvPath: string): Promise<string[]> {
 }
 
 export async function copyFromExisting(
-  projectDir: string,
+  projectPath: string,
   sourcePath: string,
 ): Promise<boolean> {
-  const { envPath } = getEnvPaths(projectDir);
+  const { envPath } = getEnvPaths(projectPath);
 
   try {
     let fullEnvPath = sourcePath;
@@ -226,12 +226,8 @@ export async function copyFromExisting(
   }
 }
 
-export function getEnvPath(projectDir: string): string {
-  return getEnvPaths(projectDir).envPath;
-}
-
-export function getExampleEnvPath(projectDir: string): string {
-  return getEnvPaths(projectDir).exampleEnvPath;
+export function getEnvPath(projectPath: string): string {
+  return getEnvPaths(projectPath).envPath;
 }
 
 export async function fetchEnvExampleContent(
@@ -256,30 +252,6 @@ export async function fetchEnvExampleContent(
 }
 
 const LAST_ENV_FILE_KEY = "last_env_file";
-
-export async function ensureEnvFile(
-  envPath: string,
-  envExamplePath: string,
-): Promise<void> {
-  if (!(await fs.pathExists(envPath)) || (await fs.stat(envPath)).size === 0) {
-    relinka("info-verbose", "Creating .env file based on .env.example file...");
-    await fs.copy(envExamplePath, envPath);
-  }
-}
-
-export async function getRequiredEnvKeys(
-  envExamplePath: string,
-): Promise<string[]> {
-  if (await fs.pathExists(envExamplePath)) {
-    const content = await fs.readFile(envExamplePath, "utf8");
-    return content
-      .split("\n")
-      .filter((line) => line.trim() && !line.startsWith("#"))
-      .map((line) => line.split("=")[0]?.trim())
-      .filter((key): key is string => key !== undefined);
-  }
-  return [];
-}
 
 async function updateEnvValue(
   envPath: string,
@@ -337,9 +309,22 @@ function validateKeyValue(value: string, keyType: KeyType): string | boolean {
   }
 }
 
+/**
+ * Generates a cryptographically secure random string of specified length
+ * @param length - The length of the string to generate (default: 64)
+ * @returns A secure random string in hexadecimal format
+ */
 function generateSecureString(length = 64): string {
-  return randomBytes(Math.ceil(length / 2))
-    .toString("hex")
+  // Create a Uint8Array with half the length (since each byte becomes 2 hex chars)
+  const randomBytesArray = new Uint8Array(Math.ceil(length / 2));
+
+  // Fill the array with random values
+  getRandomValues(randomBytesArray);
+
+  // Convert to hex string and trim to the requested length
+  return Array.from(randomBytesArray)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
     .slice(0, length);
 }
 
@@ -506,7 +491,7 @@ export async function promptAndSetMissingValues(
 
 export async function saveLastEnvFilePath(envPath: string): Promise<void> {
   try {
-    const encryptedPath = encrypt(envPath);
+    const encryptedPath = await encrypt(envPath);
     await db
       .insert(userDataTable)
       .values({
@@ -539,7 +524,7 @@ export async function getLastEnvFilePath(): Promise<string | null> {
       .get();
 
     if (result?.value) {
-      return decrypt(result.value);
+      return await decrypt(result.value);
     }
     return null;
   } catch (error) {

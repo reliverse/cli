@@ -1,7 +1,6 @@
 {
   "recommendations": [
     "biomejs.biome",
-    "bradlc.vscode-tailwindcss",
     "dbaeumer.vscode-eslint",
     "fabiospampinato.vscode-open-multiple-files"
   ]

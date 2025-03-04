@@ -1,7 +1,10 @@
+import type { PackageJson } from "pkg-types";
+
 import { relinka } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
+import { readPackageJSON, writePackageJSON } from "pkg-types";
 
 import type { IntegrationConfig, RemovalConfig } from "~/types.js";
 
@@ -53,27 +56,52 @@ async function installDependencies(
   }
 }
 
-async function updatePackageJson(cwd: string, config: IntegrationConfig) {
-  const pkgPath = path.join(cwd, "package.json");
-  if (!(await fs.pathExists(pkgPath))) {
-    throw new Error("package.json not found");
-  }
-
+/**
+ * Updates package.json fields with comprehensive options
+ * @param projectPath - Path to the project directory containing package.json
+ * @param options - Configuration options for the update
+ * @returns Promise resolving to true if successful, false otherwise
+ */
+export async function updatePackageJson(
+  projectPath: string,
+  options: {
+    /** Full or partial package.json fields to update */
+    fields?: Partial<PackageJson>;
+    /** Scripts to add or update */
+    scripts?: Record<string, string>;
+    /** Whether to throw errors instead of returning false */
+    throwOnError?: boolean;
+  } = {},
+): Promise<boolean> {
   try {
-    const pkg = await fs.readJson(pkgPath);
-
-    // Inject scripts
-    if (config.scripts) {
-      pkg.scripts = { ...pkg.scripts, ...config.scripts };
+    const packageJson = await readPackageJSON(projectPath);
+    if (!packageJson) {
+      throw new Error("package.json not found or could not be read");
     }
 
-    await fs.writeJson(pkgPath, pkg, { spaces: 2 });
-  } catch (error) {
-    relinka(
-      "error",
-      `Failed to update package.json: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    throw error;
+    // Update specific fields if provided
+    if (options.fields) {
+      Object.assign(packageJson, options.fields);
+    }
+
+    // Update scripts if provided
+    if (options.scripts) {
+      packageJson.scripts = { ...packageJson.scripts, ...options.scripts };
+    }
+
+    // Use pkg-types to write package.json
+    const packageJsonPath = path.join(projectPath, "package.json");
+    await writePackageJSON(packageJsonPath, packageJson);
+
+    return true;
+  } catch (error: unknown) {
+    relinka("error", "Error updating package.json:", String(error));
+
+    if (options.throwOnError) {
+      throw error;
+    }
+
+    return false;
   }
 }
 
@@ -140,7 +168,18 @@ export async function installIntegration(
 
     // Update package.json scripts
     if (config.scripts) {
-      await updatePackageJson(cwd, config);
+      try {
+        await updatePackageJson(cwd, {
+          scripts: config.scripts,
+          throwOnError: true,
+        });
+      } catch (error) {
+        relinka(
+          "error",
+          `Failed to update package.json: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        throw error;
+      }
     }
 
     // Update env files

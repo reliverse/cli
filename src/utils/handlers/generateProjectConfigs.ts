@@ -1,5 +1,6 @@
 import { relinka } from "@reliverse/prompts";
 import { destr } from "destr";
+import { execaCommand } from "execa";
 import fs from "fs-extra";
 import path from "pathe";
 
@@ -15,32 +16,14 @@ import {
 // Helper Functions for Additional Config Files
 // ------------------------------------------------------------------
 
-async function generateBiomeConfig(
-  projectPath: string,
-  overwrite: boolean,
-): Promise<void> {
+async function generateBiomeConfig(projectPath: string): Promise<void> {
   const biomePath = path.join(projectPath, "biome.json");
-  if (overwrite ?? !(await fs.pathExists(biomePath))) {
-    const biomeConfig = {
-      $schema: "https://biomejs.dev/schemas/1.5.3/schema.json",
-      organizeImports: {
-        enabled: true,
-      },
-      linter: {
-        enabled: true,
-        rules: {
-          recommended: true,
-        },
-      },
-      formatter: {
-        enabled: true,
-        formatWithErrors: false,
-        indentStyle: "space",
-        indentWidth: 2,
-        lineWidth: 80,
-      },
-    };
-    await fs.writeFile(biomePath, JSON.stringify(biomeConfig, null, 2));
+  const biomeExists = await fs.pathExists(biomePath);
+  if (!biomeExists) {
+    await execaCommand("bunx biome init", {
+      cwd: projectPath,
+      stdio: "inherit",
+    });
     relinka("success-verbose", "Generated biome.json");
   }
 }
@@ -171,11 +154,16 @@ export async function generateConfigFiles(
           overwrite,
           isDev,
           configInfo,
+          ...(isDev && configInfo?.isTS
+            ? {
+                customPathToTypes: "./src/utils/libs/config/schemaConfig.js",
+              }
+            : {}),
         });
         return true;
       },
       "biome.json": async () => {
-        await generateBiomeConfig(projectPath, overwrite);
+        await generateBiomeConfig(projectPath);
         return true;
       },
       "settings.json": async () => {

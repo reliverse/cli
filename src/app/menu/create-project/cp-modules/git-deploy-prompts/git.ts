@@ -32,7 +32,7 @@ import { handleExistingRepo } from "./utils-repo-exists.js";
 /**
  * Validates that the provided directory exists.
  */
-async function validateProjectDir(effectiveDir: string): Promise<boolean> {
+async function validateProjectPath(effectiveDir: string): Promise<boolean> {
   const exists = await fs.pathExists(effectiveDir);
   if (!exists) {
     relinka("error", `Project directory does not exist: ${effectiveDir}`);
@@ -170,7 +170,7 @@ export async function initGitDir(
   const effectiveDir = getEffectiveDir(params);
 
   try {
-    if (!(await validateProjectDir(effectiveDir))) {
+    if (!(await validateProjectPath(effectiveDir))) {
       return false;
     }
 
@@ -265,7 +265,7 @@ export async function createCommit(
   const effectiveDir = getEffectiveDir(params);
 
   try {
-    if (!(await validateProjectDir(effectiveDir))) return false;
+    if (!(await validateProjectPath(effectiveDir))) return false;
 
     const alreadyGit = await isDirHasGit(
       params.cwd,

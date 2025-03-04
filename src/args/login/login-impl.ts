@@ -150,7 +150,7 @@ export async function auth({
         : "https://reliverse.org";
       relinka("info-verbose", `Using client URL: ${clientUrl}`);
 
-      const confirmationUrl = new URL(`${clientUrl}/confirm`);
+      const confirmationUrl = new URL(`${clientUrl}/auth/confirm`);
       confirmationUrl.searchParams.append("code", code);
       confirmationUrl.searchParams.append("redirect", redirect);
 

@@ -8,13 +8,22 @@ import { destr } from "destr";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { KnipConfig } from "~/types.js";
+import type { BaseConfig } from "~/types.js";
 
 import { removeComments } from "~/utils/codemods/removeComments.js";
 import { getUnusedDependencies } from "~/utils/codemods/removeUnusedDeps.js";
 import { readReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import { uninstallDependencies } from "./dependencies.js";
+
+type KnipConfig = BaseConfig & {
+  $schema: string;
+  entry?: string[];
+  project?: string[];
+  ignore: string[];
+  ignoreDependencies?: string[];
+  rules: Record<string, "error" | "warn" | "off">;
+};
 
 const defaultIgnoredDeps: string[] = [
   // TODO: add default dependencies to ignore
