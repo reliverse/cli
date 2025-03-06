@@ -2,7 +2,7 @@ import { RequestError } from "@octokit/request-error";
 import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { type InstanceGithub } from "~/utils/instanceGithub.js";
 import { cd } from "~/utils/terminalHelpers.js";

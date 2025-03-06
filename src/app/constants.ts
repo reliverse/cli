@@ -2,7 +2,7 @@ import { re } from "@reliverse/relico";
 import os from "os";
 import path from "pathe";
 
-export const cliVersion = "1.5.7";
+export const cliVersion = "1.5.9";
 export const cliName = "@reliverse/cli";
 
 // GENERAL CONFIG NAMES

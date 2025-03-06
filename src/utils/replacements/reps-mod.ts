@@ -5,7 +5,7 @@ import path from "pathe";
 import { glob } from "tinyglobby";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 
 import { extractRepoInfo, replaceStringsInFiles } from "./reps-impl.js";

@@ -11,15 +11,16 @@ const main = defineCommand({
   },
   subCommands: {
     cli: () => import("./app/app-mod.js").then((r) => r.default),
-    help: () => import("./args/help/help-mod.js").then((r) => r.default),
-    login: () => import("./args/login/login-mod.js").then((r) => r.default),
-    logout: () => import("./args/logout/logout-mod.js").then((r) => r.default),
-    schema: () => import("./args/schema/schema-mod.js").then((r) => r.default),
-    memory: () => import("./args/memory/memory-mod.js").then((r) => r.default),
-    studio: () => import("./args/studio/studio-mod.js").then((r) => r.default),
-    update: () => import("./args/update/update-mod.js").then((r) => r.default),
+    help: () => import("./arg/help/help-mod.js").then((r) => r.default),
+    login: () => import("./arg/login/login-mod.js").then((r) => r.default),
+    logout: () => import("./arg/logout/logout-mod.js").then((r) => r.default),
+    schema: () => import("./arg/schema/schema-mod.js").then((r) => r.default),
+    memory: () => import("./arg/memory/memory-mod.js").then((r) => r.default),
+    studio: () => import("./arg/studio/studio-mod.js").then((r) => r.default),
+    update: () => import("./arg/update/update-mod.js").then((r) => r.default),
     multireli: () =>
-      import("./args/multireli/multireli-mod.js").then((r) => r.default),
+      import("./arg/multireli/multireli-mod.js").then((r) => r.default),
+    env: () => import("./arg/env/env-mod.js").then((r) => r.default),
   },
 });
 

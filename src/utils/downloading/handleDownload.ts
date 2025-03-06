@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { ofetch } from "ofetch";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { cliHomeRepos } from "~/app/constants.js";
 import {
@@ -52,7 +52,7 @@ export async function handleDownload({
   projectPath,
   projectName,
   selectedRepo,
-  auth,
+  githubToken,
   config,
   preserveGit = true,
   install = false,
@@ -65,7 +65,7 @@ export async function handleDownload({
   projectPath: string;
   projectName: string;
   selectedRepo: string;
-  auth?: string | undefined;
+  githubToken?: string | undefined;
   preserveGit?: boolean | undefined;
   config?: ReliverseConfig | undefined;
   install?: boolean | undefined;
@@ -178,7 +178,7 @@ export async function handleDownload({
         projectName,
         isDev,
         cwd,
-        ...(auth ? { auth } : {}),
+        ...(githubToken ? { auth: githubToken } : {}),
         preserveGit,
         ...(config ? { config } : {}),
         install,

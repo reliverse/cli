@@ -2,10 +2,10 @@ import { selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { DeploymentService } from "~/types.js";
 import type { InstanceGithub } from "~/utils/instanceGithub.js";
 import type { InstanceVercel } from "~/utils/instanceVercel.js";
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { prepareVercelProjectCreation } from "./vercel/vercel-create.js";

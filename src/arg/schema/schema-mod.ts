@@ -2,7 +2,7 @@ import { defineCommand } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
 import { cliConfigJsonc } from "~/app/constants.js";
-import { generateSchemaFile } from "~/utils/libs/config/schemaConfig.js";
+import { generateSchemaFile } from "~/libs/config/config-main.js";
 
 export default defineCommand({
   meta: {

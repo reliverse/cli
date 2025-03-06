@@ -38,12 +38,12 @@ import {
   cliVersion,
   tsconfigJson,
 } from "~/app/constants.js";
-import { getBiomeConfig } from "~/utils/configHandler.js";
 import {
   reliverseConfigSchema,
   type ProjectFramework,
   type ReliverseConfig,
-} from "~/utils/libs/config/schemaConfig.js";
+} from "~/libs/config/config-main.js";
+import { getBiomeConfig } from "~/utils/configHandler.js";
 
 import { getCurrentWorkingDirectory } from "./terminalHelpers.js";
 
@@ -911,8 +911,8 @@ export async function writeReliverseConfig(
       } else {
         importPath = isDev
           ? isTestsRuntimeDir
-            ? "../../src/utils/libs/config/schemaConfig.js"
-            : "./src/utils/libs/config/schemaConfig.js"
+            ? "../../src/libs/config/config-main.js"
+            : "./src/libs/config/config-main.js"
           : "@reliverse/config";
       }
 
@@ -1702,18 +1702,18 @@ export async function generateReliverseConfig({
 export async function getReliverseConfig(
   projectPath: string,
   isDev: boolean,
-): Promise<{ config: ReliverseConfig; reli: ReliverseConfig[] }> {
+): Promise<{ config: ReliverseConfig; multireli: ReliverseConfig[] }> {
   const githubUsername = UNKNOWN_VALUE;
-  const reliFolderPath = path.join(projectPath, "reli");
+  const multireliFolderPath = path.join(projectPath, "multireli");
   const results: ReliverseConfig[] = [];
-  if (await fs.pathExists(reliFolderPath)) {
-    const dirItems = await fs.readdir(reliFolderPath);
+  if (await fs.pathExists(multireliFolderPath)) {
+    const dirItems = await fs.readdir(multireliFolderPath);
     const reliverseFiles = dirItems.filter(
       (item) => item === cliConfigJsonc || item === cliConfigTs,
     );
     const configs = await Promise.all(
       reliverseFiles.map(async (file) => {
-        const filePath = path.join(reliFolderPath, file);
+        const filePath = path.join(multireliFolderPath, file);
         let config = await readReliverseConfig(filePath, isDev);
         if (!config) {
           config = await parseAndFixConfig(filePath, isDev);
@@ -1755,10 +1755,10 @@ export async function getReliverseConfig(
       "warn",
       "Using fallback default config because the config could not be validated.",
     );
-    return { config: { ...DEFAULT_CONFIG }, reli: results };
+    return { config: { ...DEFAULT_CONFIG }, multireli: results };
   }
   if (isDev) {
     mainConfig.$schema = RELIVERSE_SCHEMA_DEV;
   }
-  return { config: mainConfig, reli: results };
+  return { config: mainConfig, multireli: results };
 }

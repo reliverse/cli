@@ -6,7 +6,7 @@
     "build.publish.ts",
     "addons/**/*.ts",
     "src/main.ts",
-    "src/utils/libs/**/*.ts"
+    "src/libs/**/*.ts"
   ],
   "project": [
     "eslint.config.js",

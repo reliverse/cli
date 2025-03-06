@@ -1,6 +1,6 @@
 import { defineCommand } from "@reliverse/prompts";
 
-import { authCheck } from "~/args/login/login-impl.js";
+import { authCheck } from "~/arg/login/login-impl.js";
 import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
@@ -27,10 +27,10 @@ export default defineCommand({
     const cwd = getCurrentWorkingDirectory();
 
     const memory = await getReliverseMemory();
-    const { config, reli } = await getReliverseConfig(cwd, isDev);
+    const { config, multireli } = await getReliverseConfig(cwd, isDev);
 
     await authCheck(isDev, memory, useLocalhost);
-    await app({ cwd, isDev, config, memory, reli });
+    await app({ cwd, isDev, config, memory, multireli });
 
     process.exit(0);
   },

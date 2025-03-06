@@ -10,7 +10,7 @@ import type {
   ProjectArchitecture,
   ProjectSubcategory,
   ReliverseConfig,
-} from "~/utils/libs/config/schemaConfig.js";
+} from "~/libs/config/config-main.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
@@ -308,7 +308,7 @@ export async function optionCreateBrowserExtension(
 
 /**
  * Orchestrates the creation of a Web project.
- * If `isMultiConfig` is true, we loop through `reli` array.
+ * If `isMultiConfig` is true, we loop through `multireli` array.
  */
 export async function optionCreateWebProject(
   projectName: string,
@@ -317,11 +317,11 @@ export async function optionCreateWebProject(
   memory: ReliverseMemory,
   config: ReliverseConfig,
   isMultiConfig: boolean,
-  reli: ReliverseConfig[],
+  multireli: ReliverseConfig[],
   skipPrompts: boolean,
 ): Promise<void> {
   if (isMultiConfig) {
-    for (const multiConfig of reli) {
+    for (const multiConfig of multireli) {
       let template = multiConfig.projectTemplate;
       if (template === "unknown") {
         let architecture = multiConfig.projectArchitecture;
@@ -351,7 +351,7 @@ export async function optionCreateWebProject(
         })) as RepoOption;
       }
 
-      const settingUpMsg = `Setting up project #${reli.indexOf(multiConfig) + 1}...`;
+      const settingUpMsg = `Setting up project #${multireli.indexOf(multiConfig) + 1}...`;
 
       await createWebProject({
         projectName,
@@ -449,7 +449,7 @@ export async function optionCreateWebProject(
     }
 
     const settingUpMsg = isMultiConfig
-      ? `Setting up project #${reli.indexOf(config) + 1}...`
+      ? `Setting up project #${multireli.indexOf(config) + 1}...`
       : getRandomMessage("details");
 
     // Finally, create the web project

@@ -88,7 +88,7 @@ const config = tseslint.config(
       "no-constant-binary-expression": "off",
       "no-constant-condition": "off",
       "no-case-declarations": "off",
-      "max-lines": ["error", 700],
+      "max-lines": ["error", 1000],
       "perfectionist/sort-imports": "warn",
       "@stylistic/operator-linebreak": "off",
       "@stylistic/indent": "off",

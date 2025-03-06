@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -62,6 +62,7 @@ export async function downloadRepoOption(
     maskInput,
     skipPrompts,
     config,
+    false, // isMultireli
   );
 
   const frontendUsername = await getUsernameFrontend(memory, false);

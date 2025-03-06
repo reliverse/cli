@@ -20,7 +20,7 @@ import {
 } from "./menu/menu-mod.js";
 
 export async function app(params: ParamsOmitSkipPN) {
-  const { cwd, isDev, reli, memory, config } = params;
+  const { cwd, isDev, multireli, memory, config } = params;
 
   const skipPrompts = config.skipPromptsUseAutoBehavior;
   const frontendUsername = memory.name !== "" ? memory.name : UNKNOWN_VALUE;
@@ -47,7 +47,7 @@ export async function app(params: ParamsOmitSkipPN) {
     }
   }
 
-  const options = await getMainMenuOptions(cwd, isDev, reli);
+  const options = await getMainMenuOptions(cwd, isDev, multireli);
 
   const mainMenuOption = await selectPrompt({
     options,
@@ -66,7 +66,7 @@ export async function app(params: ParamsOmitSkipPN) {
       isDev,
       memory,
       config,
-      reli,
+      multireli,
       skipPrompts,
     });
   } else if (mainMenuOption === "clone") {
@@ -81,7 +81,7 @@ export async function app(params: ParamsOmitSkipPN) {
       isDev,
       memory,
       config,
-      reli,
+      multireli,
       skipPrompts,
     });
   } else if (mainMenuOption === "isDevTools") {

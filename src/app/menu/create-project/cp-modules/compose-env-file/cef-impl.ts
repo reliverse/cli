@@ -11,7 +11,7 @@ import open from "open";
 import path from "pathe";
 import { getRandomValues } from "uncrypto";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { db } from "~/app/db/client.js";
 import { encrypt, decrypt } from "~/app/db/config.js";
@@ -334,6 +334,9 @@ export async function promptAndSetMissingValues(
   maskInput: boolean,
   config: ReliverseConfig,
   wasEnvCopied = false,
+  isMultireli = false,
+  projectPath = "",
+  skipPrompts = false,
 ): Promise<void> {
   if (missingKeys.length === 0 || wasEnvCopied) {
     relinka(
@@ -349,6 +352,59 @@ export async function promptAndSetMissingValues(
     "info-verbose",
     `Processing missing values: ${missingKeys.join(", ")}`,
   );
+
+  // Check for multireli project env file
+  let multiReliEnvPath: string | null = null;
+  let projectName = "";
+
+  if (isMultireli && projectPath) {
+    // Extract project name from the path
+    projectName = path.basename(projectPath);
+    // Construct the path to the multireli env file
+    multiReliEnvPath = path.join(
+      path.dirname(projectPath),
+      "multireli",
+      `${projectName}.env`,
+    );
+
+    // Check if the multireli env file exists
+    const multiReliEnvExists = await fs
+      .pathExists(multiReliEnvPath)
+      .catch(() => false);
+
+    // If skipPrompts is true and the multireli env file exists, use it automatically
+    if (skipPrompts && multiReliEnvExists) {
+      relinka(
+        "info",
+        `Using environment variables from multireli/${projectName}.env`,
+      );
+      if (await copyFromExisting(projectPath, multiReliEnvPath)) {
+        relinka(
+          "success",
+          "Environment variables copied from multireli environment file.",
+        );
+        const remainingMissingKeys = await getMissingKeys(projectPath);
+        if (remainingMissingKeys.length > 0) {
+          relinka(
+            "info",
+            `The following keys are still missing in the copied .env file: ${remainingMissingKeys.join(", ")}`,
+          );
+          // Continue with the normal flow for remaining keys
+          await promptAndSetMissingValues(
+            remainingMissingKeys,
+            envPath,
+            maskInput,
+            config,
+            true,
+            isMultireli,
+            projectPath,
+            skipPrompts,
+          );
+        }
+        return;
+      }
+    }
+  }
 
   // Group missing keys by service
   const servicesWithMissingKeys = Object.entries(KNOWN_SERVICES).filter(
@@ -374,118 +430,184 @@ export async function promptAndSetMissingValues(
     return;
   }
 
+  // Prepare options for the multiselectPrompt
+  let options = validServices;
+
+  // Add the special multireli option if applicable
+  if (
+    isMultireli &&
+    multiReliEnvPath &&
+    (await fs.pathExists(multiReliEnvPath))
+  ) {
+    options = [
+      {
+        label: `Get keys from multireli/${projectName}.env`,
+        value: "multireli_env",
+      },
+      ...validServices,
+    ];
+  }
+
   const selectedServices = await multiselectPrompt({
     title: "Great! Which services do you want to configure?",
     content: selectedServicesMsg,
-    defaultValue: validServices.map((srv) => srv.value),
-    options: validServices,
+    defaultValue: options.map((srv) => srv.value),
+    options: options,
   });
 
-  for (const serviceKey of selectedServices) {
-    if (serviceKey === "skip") continue;
-    const service = KNOWN_SERVICES[serviceKey];
-    if (!service) continue;
-
-    if (service.dashboardUrl && service.dashboardUrl !== "none") {
-      relinka("info-verbose", `Opening ${service.name} dashboard...`);
-      if (config.envComposerOpenBrowser) {
-        await open(service.dashboardUrl);
-      } else {
-        relinka("info", `Dashboard link: ${service.dashboardUrl}`);
-      }
-    }
-
-    for (const keyConfig of service.keys) {
-      // If it's not in the missing list, skip
-      if (!missingKeys.includes(keyConfig.key)) {
-        continue;
-      }
-
-      // If optional is true, give user a chance to skip
-      if (keyConfig.optional) {
-        const displayValue =
-          maskInput && keyConfig.defaultValue
-            ? "[hidden]"
-            : keyConfig.defaultValue === "generate-64-chars"
-              ? "[will generate secure string]"
-              : keyConfig.defaultValue
-                ? `"${keyConfig.defaultValue}"`
-                : "";
-
-        const shouldFill = await confirmPrompt({
-          title: `Do you want to configure ${keyConfig.key}?${
-            displayValue ? ` (default: ${displayValue})` : ""
-          }`,
-          defaultValue: false,
-        });
-        if (!shouldFill) {
-          if (keyConfig.defaultValue) {
-            const value =
-              keyConfig.defaultValue === "generate-64-chars"
-                ? generateSecureString()
-                : keyConfig.defaultValue;
-            await updateEnvValue(envPath, keyConfig.key, value);
-            relinka(
-              "info-verbose",
-              `Using ${
-                keyConfig.defaultValue === "generate-64-chars"
-                  ? "generated"
-                  : "default"
-              } value for ${keyConfig.key}${maskInput ? "" : `: ${value}`}`,
+  // Handle the special multireli option if selected
+  if (selectedServices.includes("multireli_env") && multiReliEnvPath) {
+    relinka(
+      "info",
+      `Using environment variables from multireli/${projectName}.env`,
+    );
+    if (await copyFromExisting(projectPath, multiReliEnvPath)) {
+      relinka(
+        "success",
+        "Environment variables copied from multireli environment file.",
+      );
+      const remainingMissingKeys = await getMissingKeys(projectPath);
+      if (remainingMissingKeys.length > 0) {
+        relinka(
+          "info",
+          `The following keys are still missing in the copied .env file: ${remainingMissingKeys.join(", ")}`,
+        );
+        // Continue with the normal flow for remaining keys, but remove the multireli option
+        const filteredServices = selectedServices.filter(
+          (s) => s !== "multireli_env",
+        );
+        if (filteredServices.length > 0) {
+          // Process the remaining services
+          for (const serviceKey of filteredServices) {
+            await processService(
+              serviceKey,
+              missingKeys,
+              envPath,
+              maskInput,
+              config,
             );
           }
-          continue;
         }
       }
-
-      let isValid = false;
-      let userInput = "";
-
-      while (!isValid) {
-        const defaultVal =
-          keyConfig.defaultValue === "generate-64-chars"
-            ? generateSecureString()
-            : keyConfig.defaultValue;
-
-        userInput = await inputPrompt({
-          title: `Enter value for ${keyConfig.key}:`,
-          placeholder: defaultVal
-            ? `Press Enter to use default: ${
-                maskInput ? "[hidden]" : defaultVal
-              }`
-            : "Paste your value here...",
-          defaultValue: defaultVal ?? "",
-          mode: maskInput ? "password" : "plain",
-          ...(keyConfig.instruction && {
-            content: keyConfig.instruction,
-            contentColor: "yellowBright",
-          }),
-          ...(service.dashboardUrl &&
-            service.dashboardUrl !== "none" && {
-              hint: `Visit ${service.dashboardUrl} to get your key`,
-            }),
-        });
-
-        // If user just pressed Enter, use default
-        if (!userInput.trim() && keyConfig.defaultValue) {
-          userInput = keyConfig.defaultValue;
-        }
-
-        const validationResult = validateKeyValue(userInput, keyConfig.type);
-        if (validationResult === true) {
-          isValid = true;
-        } else {
-          relinka("warn", validationResult as string);
-        }
-      }
-
-      const rawValue = userInput.startsWith(`${keyConfig.key}=`)
-        ? userInput.substring(userInput.indexOf("=") + 1)
-        : userInput;
-      const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
-
-      await updateEnvValue(envPath, keyConfig.key, cleanValue);
+      return;
     }
+  }
+
+  // Process the selected services
+  for (const serviceKey of selectedServices) {
+    if (serviceKey === "skip" || serviceKey === "multireli_env") continue;
+    await processService(serviceKey, missingKeys, envPath, maskInput, config);
+  }
+}
+
+// Helper function to process a service
+async function processService(
+  serviceKey: string,
+  missingKeys: string[],
+  envPath: string,
+  maskInput: boolean,
+  config: ReliverseConfig,
+): Promise<void> {
+  const service = KNOWN_SERVICES[serviceKey];
+  if (!service) return;
+
+  if (service.dashboardUrl && service.dashboardUrl !== "none") {
+    relinka("info-verbose", `Opening ${service.name} dashboard...`);
+    if (config.envComposerOpenBrowser) {
+      await open(service.dashboardUrl);
+    } else {
+      relinka("info", `Dashboard link: ${service.dashboardUrl}`);
+    }
+  }
+
+  for (const keyConfig of service.keys) {
+    // If it's not in the missing list, skip
+    if (!missingKeys.includes(keyConfig.key)) {
+      continue;
+    }
+
+    // If optional is true, give user a chance to skip
+    if (keyConfig.optional) {
+      const displayValue =
+        maskInput && keyConfig.defaultValue
+          ? "[hidden]"
+          : keyConfig.defaultValue === "generate-64-chars"
+            ? "[will generate secure string]"
+            : keyConfig.defaultValue
+              ? `"${keyConfig.defaultValue}"`
+              : "";
+
+      const shouldFill = await confirmPrompt({
+        title: `Do you want to configure ${keyConfig.key}?${
+          displayValue ? ` (default: ${displayValue})` : ""
+        }`,
+        defaultValue: false,
+      });
+      if (!shouldFill) {
+        if (keyConfig.defaultValue) {
+          const value =
+            keyConfig.defaultValue === "generate-64-chars"
+              ? generateSecureString()
+              : keyConfig.defaultValue;
+          await updateEnvValue(envPath, keyConfig.key, value);
+          relinka(
+            "info-verbose",
+            `Using ${
+              keyConfig.defaultValue === "generate-64-chars"
+                ? "generated"
+                : "default"
+            } value for ${keyConfig.key}${maskInput ? "" : `: ${value}`}`,
+          );
+        }
+        continue;
+      }
+    }
+
+    let isValid = false;
+    let userInput = "";
+
+    while (!isValid) {
+      const defaultVal =
+        keyConfig.defaultValue === "generate-64-chars"
+          ? generateSecureString()
+          : keyConfig.defaultValue;
+
+      userInput = await inputPrompt({
+        title: `Enter value for ${keyConfig.key}:`,
+        placeholder: defaultVal
+          ? `Press Enter to use default: ${maskInput ? "[hidden]" : defaultVal}`
+          : "Paste your value here...",
+        defaultValue: defaultVal ?? "",
+        mode: maskInput ? "password" : "plain",
+        ...(keyConfig.instruction && {
+          content: keyConfig.instruction,
+          contentColor: "yellowBright",
+        }),
+        ...(service.dashboardUrl &&
+          service.dashboardUrl !== "none" && {
+            hint: `Visit ${service.dashboardUrl} to get your key`,
+          }),
+      });
+
+      // If user just pressed Enter, use default
+      if (!userInput.trim() && keyConfig.defaultValue) {
+        userInput = keyConfig.defaultValue;
+      }
+
+      const validationResult = validateKeyValue(userInput, keyConfig.type);
+      if (validationResult === true) {
+        isValid = true;
+      } else {
+        relinka("warn", validationResult as string);
+      }
+    }
+
+    const rawValue = userInput.startsWith(`${keyConfig.key}=`)
+      ? userInput.substring(userInput.indexOf("=") + 1)
+      : userInput;
+    const cleanValue = rawValue.trim().replace(/^['"](.*)['"]$/, "$1");
+
+    await updateEnvValue(envPath, keyConfig.key, cleanValue);
   }
 }
 

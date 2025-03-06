@@ -6,7 +6,7 @@ import path, { dirname } from "pathe";
 import prettyBytes from "pretty-bytes";
 import { simpleGit } from "simple-git";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 import { initGitDir } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
@@ -36,7 +36,7 @@ type DownloadRepoOptions = {
   /**
    * Optional authentication token (e.g., GitHub personal access token) if the repository is private.
    */
-  auth?: string;
+  githubToken?: string;
   /**
    * If true, automatically installs dependencies (via `nypm`) after downloading.
    */
@@ -217,15 +217,15 @@ function getRepoUrl(repo: string, provider: GitProvider): string {
 function computeRepoInfo(
   input: string,
   defaultProvider: GitProvider,
-  auth?: string,
+  githubToken?: string,
   subdirectory?: string,
 ): RepoInfo {
   const { provider: parsedProvider, repo, ref, subdir } = parseGitURI(input);
   const actualProvider = (parsedProvider ?? defaultProvider) as GitProvider;
   const name = repo.replace("/", "-");
   const headers: Record<string, string> = {};
-  if (auth) {
-    headers["Authorization"] = `Bearer ${auth}`;
+  if (githubToken) {
+    headers["Authorization"] = `Bearer ${githubToken}`;
   }
   const gitUrl = getRepoUrl(repo, actualProvider);
   return {
@@ -277,7 +277,7 @@ export async function downloadRepo({
   projectName,
   isDev,
   cwd,
-  auth,
+  githubToken,
   install = false,
   provider = "github",
   subdirectory,
@@ -384,17 +384,22 @@ export async function downloadRepo({
     }
 
     // 4) Parse and compute final repo info
-    const repoInfo = computeRepoInfo(repoURL, provider, auth, subdirectory);
+    const repoInfo = computeRepoInfo(
+      repoURL,
+      provider,
+      githubToken,
+      subdirectory,
+    );
     if (!repoInfo.gitUrl) {
       throw new Error(`Invalid repository URL or provider: ${repoURL}`);
     }
 
     // 5) Prepare final URL (embed auth token if needed)
     let finalUrl = repoInfo.gitUrl;
-    if (auth) {
+    if (githubToken) {
       const authUrl = new URL(repoInfo.gitUrl);
       authUrl.username = "oauth2";
-      authUrl.password = auth;
+      authUrl.password = githubToken;
       finalUrl = authUrl.toString();
     }
 

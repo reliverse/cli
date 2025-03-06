@@ -8,7 +8,7 @@ import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import { installDependencies } from "nypm";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { DetectedProject } from "~/utils/reliverseConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -25,6 +25,7 @@ import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-de
 import { checkVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-check.js";
 import { manageDrizzleSchema } from "~/app/menu/project-editor/cli-addons/drizzle/manageDrizzleSchema.js";
 import { useAddonLanguine } from "~/app/menu/project-editor/cli-addons/languine/languine-mod.js";
+import { envArgImpl } from "~/arg/env/env-impl.js";
 import {
   convertDatabaseProvider,
   convertPrismaToDrizzle,
@@ -58,6 +59,7 @@ type ProjectMenuOption =
   | "codemods"
   | "integrations"
   | "cleanup"
+  | "env"
   | "exit";
 
 // ──────────────────────────────────────────────
@@ -160,6 +162,11 @@ export async function handleOpenProjectMenu(
         label: "Translate selected project",
         value: "languine",
         hint: re.dim("powerful i18n addon"),
+      },
+      {
+        label: "Compose .env file",
+        value: "env",
+        hint: re.dim("create .env file"),
       },
       {
         label: selectedProject.needsDepsInstall
@@ -581,6 +588,11 @@ export async function handleOpenProjectMenu(
 
     case "cleanup": {
       await handleCleanup(cwd, selectedProject.path, isDev);
+      break;
+    }
+
+    case "env": {
+      await envArgImpl(isDev, selectedProject.path);
       break;
     }
 

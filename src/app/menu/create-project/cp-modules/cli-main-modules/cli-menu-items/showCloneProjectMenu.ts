@@ -6,7 +6,7 @@ import {
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { askProjectName } from "~/utils/askProjectName.js";
@@ -170,8 +170,11 @@ async function promptForRepo({
 
     // Map selections to normalized URLs and check if each is custom
     const normalizedSelections = selections.map(normalizeGitHubUrl);
-    const isCustomMap = new Map(
-      normalizedSelections.map((repo) => [repo, customRepos.includes(repo)]),
+    const isCustomMap = new Map<string, boolean>(
+      normalizedSelections.map((repo: string) => [
+        repo,
+        customRepos.includes(repo),
+      ]),
     );
 
     return {
@@ -339,7 +342,7 @@ export async function showCloneProjectMenu({
         projectPath: "",
         projectName,
         selectedRepo: repo,
-        auth: githubToken,
+        githubToken,
         preserveGit: gitPreference === "preserve",
         config: gitPreference === "fresh" ? config : undefined,
         install: shouldInstallDeps,
@@ -405,7 +408,7 @@ export async function showCloneProjectMenu({
       projectPath: "",
       projectName,
       selectedRepo: result.repo,
-      auth: githubToken,
+      githubToken,
       preserveGit: gitPreference === "preserve",
       config: gitPreference === "fresh" ? config : undefined,
       install: shouldInstallDeps,

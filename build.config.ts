@@ -1,6 +1,21 @@
+import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "pathe";
 import { defineBuildConfig } from "unbuild";
-import { fileURLToPath } from "url";
+
+/** ------------------------------------
+ *  COMMON OPTIONS
+ * ------------------------------------ */
+
+const isCLI = true;
+const declaration = false;
+
+const pausePublish = false;
+const disableBump = false;
+const verbose = false;
+
+/** ------------------------------------
+ *  CONFIGURATION
+ * ------------------------------------ */
 
 /**
  * Supported bundler names.
@@ -97,11 +112,11 @@ const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 export const pubConfig: BuildPublishConfig = {
   // Publish configuration
   registry: "npm-jsr",
-  pausePublish: false,
+  pausePublish,
 
   // Bump configuration
   bump: "autoPatch",
-  disableBump: false,
+  disableBump,
 
   // Output directories
   npmDistDir: resolve(ROOT_DIR, "dist-npm"),
@@ -126,10 +141,10 @@ export const pubConfig: BuildPublishConfig = {
   dryRun: false,
 
   // Helper flags
-  verbose: true,
+  verbose,
 
   // CLI flag
-  isCLI: true,
+  isCLI,
 
   // Build overrides – do not modify these manually
   lastBuildFor: "npm",
@@ -198,7 +213,7 @@ export const isNextBuildLib = {
 const buildConfig =
   selectedBuilder !== "bun" && selectedBuilder !== "jsr"
     ? defineBuildConfig({
-        declaration: false,
+        declaration,
         clean: false,
         entries: [
           {

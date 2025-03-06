@@ -1,4 +1,4 @@
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 export type AppParams = {
@@ -7,12 +7,12 @@ export type AppParams = {
   isDev: boolean;
   memory: ReliverseMemory;
   config: ReliverseConfig;
-  reli: ReliverseConfig[];
+  multireli: ReliverseConfig[];
   skipPrompts: boolean;
 };
 
 export type ParamsOmitSkipPN = Omit<AppParams, "skipPrompts" | "projectName">;
-export type ParamsOmitReli = Omit<AppParams, "reli">;
+export type ParamsOmitReli = Omit<AppParams, "multireli">;
 
 /**
  * Minimal object describing essential project info after initialization

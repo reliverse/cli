@@ -3,7 +3,7 @@ import { isBunPM, isBunRuntime } from "@reliverse/runtime";
 import fs from "fs-extra";
 import path from "pathe";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { cliJsrPath } from "~/app/constants.js";
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
@@ -25,11 +25,11 @@ type MainMenuOption = {
 export async function getMainMenuOptions(
   cwd: string,
   isDev: boolean,
-  reli: ReliverseConfig[],
+  multireli: ReliverseConfig[],
 ): Promise<MainMenuOption[]> {
   const multiConfigMsg =
-    reli.length > 0
-      ? re.dim(`multi-config mode with ${reli.length} projects`)
+    multireli.length > 0
+      ? re.dim(`multi-config mode with ${multireli.length} projects`)
       : "";
 
   // 1) Start with the base options

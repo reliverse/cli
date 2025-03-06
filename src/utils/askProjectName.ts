@@ -1,7 +1,5 @@
-import { inputPrompt } from "@reliverse/prompts";
+import { inputPrompt, isValidName } from "@reliverse/prompts";
 import { generate } from "random-words";
-
-import { isValidName } from "~/utils/validateHelpers.js";
 
 export async function askProjectName({
   repoName = "",
@@ -35,7 +33,7 @@ export async function askProjectName({
     content,
     placeholder,
     defaultValue,
-    validate: (value) =>
+    validate: (value: string) =>
       isValidName(value).isValid || `Invalid project name: ${value}`,
   });
 

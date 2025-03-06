@@ -46,6 +46,7 @@ const TEST_FILE_PATTERNS = [
   "**/*-temp.js",
   "**/*-temp.ts",
   "**/*-temp.d.ts",
+  "**/__snapshots__/**",
 ];
 const IGNORE_PATTERNS = [
   "**/node_modules/**",
@@ -240,13 +241,41 @@ async function removeDistFolders(): Promise<boolean> {
  * Deletes specific test and temporary files from a given directory.
  */
 async function deleteSpecificFiles(outdirBin: string): Promise<void> {
+  // Get all test files and snapshot directories
   const files = await glob(TEST_FILE_PATTERNS, {
     cwd: outdirBin,
     absolute: true,
   });
-  if (files.length > 0) {
-    await Promise.all(files.map((file) => fs.remove(file)));
-    logger.verbose(`Deleted files:\n${files.join("\n")}`, true);
+
+  // Find all __snapshots__ directories for separate handling
+  const snapshotDirs = await glob("**/__snapshots__", {
+    cwd: outdirBin,
+    absolute: true,
+    onlyDirectories: true,
+  });
+
+  // Filter out regular .d.ts files that aren't test or temp files
+  const filesToDelete = files.filter((file) => {
+    if (file.endsWith(".d.ts")) {
+      // Only delete .d.ts files that match test or temp patterns
+      return file.includes(".test.d.ts") || file.includes("-temp.d.ts");
+    }
+    return true;
+  });
+
+  // Delete individual files
+  if (filesToDelete.length > 0) {
+    await Promise.all(filesToDelete.map((file) => fs.remove(file)));
+    logger.verbose(`Deleted files:\n${filesToDelete.join("\n")}`, true);
+  }
+
+  // Delete snapshot directories
+  if (snapshotDirs.length > 0) {
+    await Promise.all(snapshotDirs.map((dir) => fs.remove(dir)));
+    logger.verbose(
+      `Deleted snapshot directories:\n${snapshotDirs.join("\n")}`,
+      true,
+    );
   }
 }
 
@@ -472,14 +501,23 @@ async function createCommonPackageFields(): Promise<Partial<PackageJson>> {
   };
 
   if (author) {
+    // Extract organization name for GitHub URLs
+    const repoOwner = author;
+    // Remove scope prefix for repo name if it exists
+    const repoName = originalPkg.name
+      ? originalPkg.name.startsWith("@")
+        ? originalPkg.name.split("/").pop() || originalPkg.name
+        : originalPkg.name
+      : "";
+
     Object.assign(commonFields, {
       author,
       repository: {
         type: "git",
-        url: `git+https://github.com/${author}/${name}.git`,
+        url: `git+https://github.com/${repoOwner}/${repoName}.git`,
       },
       bugs: {
-        url: `https://github.com/${author}/${name}/issues`,
+        url: `https://github.com/${repoOwner}/${repoName}/issues`,
         email: "blefnk@gmail.com",
       },
       keywords: [...new Set([...(keywords || []), author])],
@@ -549,18 +587,6 @@ async function filterDeps(
     for (const match of importMatches) {
       const importPath = match[1];
       const pkg = extractPackageName(importPath);
-      if (pkg) {
-        usedPackages.add(pkg);
-      }
-    }
-
-    // Match require statements
-    const requireMatches = content.matchAll(
-      /require\s*\(\s*['"](@[^'"]+|[^'".][^'"]*)['"]\s*\)/g,
-    );
-    for (const match of requireMatches) {
-      const requirePath = match[1];
-      const pkg = extractPackageName(requirePath);
       if (pkg) {
         usedPackages.add(pkg);
       }
@@ -759,8 +785,8 @@ async function convertJsToTsImports(
       const content = await fs.readFile(filePath, "utf8");
       if (isJSR) {
         const finalContent = content.replace(
-          /(from\s*['"])([^'"]+?)\.js(?=['"])/g,
-          "$1$2.ts",
+          /(from\s*['"])(\.|\.\/|\.\\)?src(\/|\\)/g,
+          "$1$2bin$3",
         );
         logger.verbose("Converted .js imports to .ts for JSR build", true);
         await fs.writeFile(filePath, finalContent, "utf8");
@@ -830,6 +856,11 @@ async function copyJsrFiles(
   projectName: string,
   isLib: boolean,
 ): Promise<void> {
+  logger.info(
+    `Copying JSR files (isCLI=${pubConfig.isCLI}, isLib=${isLib})`,
+    true,
+  );
+
   if (pubConfig.isCLI) {
     await fs.writeFile(
       path.join(outdirRoot, ".gitignore"),
@@ -844,18 +875,29 @@ async function copyJsrFiles(
   let jsrFiles: string[];
   if (pubConfig.isCLI) {
     jsrFiles = [cliConfigJsonc, "bun.lock", "drizzle.config.ts", "schema.json"];
+    logger.verbose(
+      `Will copy CLI-specific files: ${jsrFiles.join(", ")}`,
+      true,
+    );
   } else {
     jsrFiles = [cliConfigJsonc];
+    logger.verbose(`Will only copy common files: ${jsrFiles.join(", ")}`, true);
   }
 
+  let copiedCount = 0;
   await Promise.all(
     jsrFiles.map(async (file) => {
       if (await fs.pathExists(file)) {
         await fs.copy(file, path.join(outdirRoot, file));
+        copiedCount++;
         logger.verbose(`Copied JSR file: ${file}`, true);
+      } else {
+        logger.verbose(`JSR file not found (skipped): ${file}`, true);
       }
     }),
   );
+
+  logger.info(`Copied ${copiedCount} JSR files to ${outdirRoot}`, true);
 }
 
 /**
@@ -993,6 +1035,161 @@ export async function convertSymbolPaths(
       }
     }),
   );
+}
+
+/**
+ * Converts src paths to bin paths in built files.
+ * For example, converts "./src/app/constants.js" to "./bin/app/constants.js"
+ * Also fixes extension to .ts for JSR builds for files outside bin directory
+ */
+async function convertSrcToBinPaths(
+  outdirRoot: string,
+  isJSR = false,
+): Promise<void> {
+  logger.info("Converting src paths to bin paths in built files...", true);
+
+  if (!(await fs.pathExists(outdirRoot))) {
+    logger.error(
+      `[convertSrcToBinPaths] Directory does not exist: ${outdirRoot}`,
+      true,
+    );
+    return;
+  }
+
+  // Process both the outdirRoot and the bin subdirectory
+  const dirsToProcess = [outdirRoot, path.join(outdirRoot, "bin")];
+
+  let filesModified = 0;
+
+  for (const dir of dirsToProcess) {
+    if (!(await fs.pathExists(dir))) {
+      logger.verbose(`Directory does not exist (skipped): ${dir}`, true);
+      continue;
+    }
+
+    const filePatterns = ["**/*.{js,ts,jsx,tsx,mjs,cjs}"];
+    const files = await glob(filePatterns, {
+      cwd: dir,
+      absolute: true,
+    });
+
+    if (files.length === 0) {
+      logger.verbose(`No matching files found in: ${dir}`, true);
+      continue;
+    }
+
+    await Promise.all(
+      files.map(async (file) => {
+        try {
+          if (!(await fs.pathExists(file))) {
+            logger.verbose(`File does not exist (skipped): ${file}`, true);
+            return;
+          }
+
+          const content = await fs.readFile(file, "utf8");
+          let newContent = content;
+
+          // Replace imports from "./src/" with "./bin/"
+          newContent = newContent
+            // Handle ES module imports with relative paths
+            .replace(/(from\s*['"])(\.|\.\/|\.\\)?src(\/|\\)/g, "$1$2bin$3")
+            // Handle dynamic imports with relative paths
+            .replace(
+              /(import\s*\(\s*['"])(\.|\.\/|\.\\)?src(\/|\\)/g,
+              "$1$2bin$3",
+            )
+            // Handle require statements with relative paths
+            .replace(
+              /(require\s*\(\s*['"])(\.|\.\/|\.\\)?src(\/|\\)/g,
+              "$1$2bin$3",
+            )
+            // Handle absolute paths to src directory
+            .replace(/(['"])(\/src\/|\\src\\)/g, "$1/bin/");
+
+          // For JSR builds, change .js to .ts in imports for files outside of bin directory
+          // This ensures JSR compatibility
+          if (isJSR && !file.includes(path.join(outdirRoot, "bin"))) {
+            newContent = newContent.replace(
+              /(from\s*['"])([^'"]+?)\.js(?=['"])/g,
+              "$1$2.ts",
+            );
+          }
+
+          if (content !== newContent) {
+            await fs.writeFile(file, newContent, "utf8");
+            filesModified++;
+            logger.verbose(`Converted paths in: ${file}`, true);
+          }
+        } catch (error: any) {
+          if (error.code === "ENOENT") {
+            logger.verbose(
+              `File not found during processing (skipped): ${file}`,
+              true,
+            );
+            return;
+          }
+          logger.error(
+            `Error processing file ${file}: ${error.message || String(error)}`,
+            true,
+          );
+        }
+      }),
+    );
+  }
+
+  logger.info(`Converted paths in ${filesModified} files.`, true);
+}
+
+/**
+ * Deletes specific files from the root of the distribution directory.
+ * When isCLI is false or the directory is a library JSR distribution (dist-libs/packageName/jsr),
+ * this includes files like drizzle.config.ts, .gitignore, bun.lock, schema.json
+ * When isCLI is true and NOT a library distribution, these CLI-specific files are preserved
+ */
+async function deleteRootSpecificFiles(outdirRoot: string): Promise<void> {
+  // Check if this is a library JSR distribution directory (inside dist-libs)
+  const isLibraryJsrDist =
+    outdirRoot.includes("dist-libs") && outdirRoot.endsWith("jsr");
+
+  // Delete CLI-specific files when isCLI is false OR when it's a library JSR distribution
+  if (!pubConfig.isCLI || isLibraryJsrDist) {
+    const cliSpecificFiles = [
+      "drizzle.config.ts",
+      ".gitignore",
+      "bun.lock",
+      "schema.json",
+    ];
+
+    let deletedCount = 0;
+
+    for (const file of cliSpecificFiles) {
+      const filePath = path.join(outdirRoot, file);
+      if (await fs.pathExists(filePath)) {
+        await fs.remove(filePath);
+        deletedCount++;
+        logger.verbose(`Deleted CLI-specific file: ${filePath}`, true);
+      }
+    }
+
+    if (deletedCount > 0) {
+      if (isLibraryJsrDist) {
+        logger.verbose(
+          `Deleted ${deletedCount} CLI-specific files from library JSR directory (even with isCLI=${pubConfig.isCLI})`,
+          true,
+        );
+      } else {
+        logger.info(
+          `Deleted ${deletedCount} CLI-specific files from root directory (isCLI=${pubConfig.isCLI})`,
+          true,
+        );
+      }
+    }
+  } else {
+    logger.verbose(
+      `Preserving CLI-specific files in main distribution (isCLI=${pubConfig.isCLI})`,
+      true,
+    );
+  }
 }
 
 // ============================
@@ -1136,7 +1333,9 @@ async function buildJsrDist(): Promise<void> {
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);
+  await convertSrcToBinPaths(outdirRoot, true);
   await deleteSpecificFiles(outdirBin);
+  await deleteRootSpecificFiles(outdirRoot);
 
   const size = await getDirectorySize(outdirRoot);
   logger.success(`Successfully created JSR distribution (${size} bytes)`, true);
@@ -1171,7 +1370,9 @@ async function buildNpmDist(): Promise<void> {
   await copyReadmeLicense(outdirRoot);
   await createPackageJSON(outdirRoot, false);
   await convertSymbolPaths(outdirBin, false);
+  await convertSrcToBinPaths(outdirRoot, false);
   await deleteSpecificFiles(outdirBin);
+  await deleteRootSpecificFiles(outdirRoot);
 
   const size = await getDirectorySize(outdirRoot);
   logger.success(`Successfully created NPM distribution (${size} bytes)`, true);
@@ -1290,14 +1491,23 @@ async function createLibPackageJSON(
   };
 
   if (author) {
+    // Extract organization name for GitHub URLs
+    const repoOwner = author;
+    // Remove scope prefix for repo name if it exists
+    const repoName = originalPkg.name
+      ? originalPkg.name.startsWith("@")
+        ? originalPkg.name.split("/").pop() || originalPkg.name
+        : originalPkg.name
+      : "";
+
     Object.assign(commonPkg, {
       author,
       repository: {
         type: "git",
-        url: `git+https://github.com/${author}/${originalPkg.name}.git`,
+        url: `git+https://github.com/${repoOwner}/${repoName}.git`,
       },
       bugs: {
-        url: `https://github.com/${author}/${originalPkg.name}/issues`,
+        url: `https://github.com/${repoOwner}/${repoName}/issues`,
         email: "blefnk@gmail.com",
       },
       keywords: [...new Set([...(keywords || []), author])],
@@ -1333,7 +1543,7 @@ async function createLibPackageJSON(
       },
       bin: pubConfig.isCLI
         ? {
-            [libName.split("/").pop()!]: "bin/main.js",
+            [libName.split("/").pop() || ""]: "bin/main.js",
           }
         : undefined,
       files: ["bin", "package.json", "README.md", "LICENSE"],
@@ -1432,7 +1642,9 @@ async function buildLibNpmDist(
   await copyReadmeLicense(outdirRoot);
   await createLibPackageJSON(libName, outdirRoot, false);
   await convertSymbolPaths(outdirBin, false);
+  await convertSrcToBinPaths(outdirRoot, false);
   await deleteSpecificFiles(outdirBin);
+  await deleteRootSpecificFiles(outdirRoot);
 
   const size = await getDirectorySize(outdirRoot);
   logger.success(
@@ -1491,7 +1703,9 @@ async function buildLibJsrDist(
   await renameTsxFiles(outdirBin);
   await convertJsToTsImports(outdirBin, true);
   await convertSymbolPaths(outdirBin, true);
+  await convertSrcToBinPaths(outdirRoot, true);
   await deleteSpecificFiles(outdirBin);
+  await deleteRootSpecificFiles(outdirRoot);
 
   const size = await getDirectorySize(outdirRoot);
   logger.success(
@@ -1550,10 +1764,6 @@ async function publishLibToJsr(
 /**
  * Processes all libraries defined in build.libs.jsonc.
  */
-type LibEntry = {
-  main: string;
-  [key: string]: unknown;
-};
 async function buildPublishLibs(): Promise<void> {
   const libsFile = path.resolve(ROOT_DIR, "build.libs.jsonc");
   if (!(await fs.pathExists(libsFile))) {
@@ -1566,12 +1776,13 @@ async function buildPublishLibs(): Promise<void> {
   logger.info("build.libs.jsonc detected, processing libraries...", true);
 
   const libsContent = await fs.readFile(libsFile, "utf8");
-  const libsJson = parseJSONC(libsContent) as Record<string, LibEntry>;
-  const libs = Object.entries(libsJson);
+  const libsJson = parseJSONC(libsContent);
+  const libs = Object.entries(libsJson as Record<string, unknown>);
   const dry = !!pubConfig.dryRun;
 
   for (const [libName, config] of libs) {
-    if (!config.main) {
+    const typedConfig = config as { main?: string };
+    if (!typedConfig.main) {
       logger.warn(
         `Library ${libName} is missing "main" property. Skipping...`,
         true,
@@ -1588,7 +1799,7 @@ async function buildPublishLibs(): Promise<void> {
     const jsrOutDir = path.join(libBaseDir, "jsr");
 
     // Parse the main path to separate file from directory
-    const mainPath = path.parse(config.main);
+    const mainPath = path.parse(typedConfig.main);
     const mainFile = mainPath.base; // File with extension
     const mainDir = mainPath.dir || "."; // Directory path, defaults to '.' if empty
 

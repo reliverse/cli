@@ -6,6 +6,7 @@ import {
   inputPrompt,
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
+import { normalizeName } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
@@ -14,8 +15,8 @@ import os from "os";
 import path from "pathe";
 
 import type { ProjectConfigReturn } from "~/app/app-types.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { Behavior } from "~/types.js";
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -30,7 +31,6 @@ import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
-import { normalizeName } from "~/utils/validateHelpers.js";
 
 /**
  * Ensures a unique project name by prompting for a new one if the target directory exists.

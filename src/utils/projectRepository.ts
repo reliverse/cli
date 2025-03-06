@@ -9,10 +9,9 @@ import { ofetch } from "ofetch";
 import path from "pathe";
 
 import type { VSCodeRepoOption } from "~/app/menu/menu-impl.js";
+import type { reliverseConfigSchema } from "~/libs/config/config-main.js";
 
 import { cliHomeRepos, experimental, recommended } from "~/app/constants.js";
-
-import type { reliverseConfigSchema } from "./libs/config/schemaConfig.js";
 
 import { setHiddenAttributeOnWindows } from "./filesysHelpers.js";
 import {

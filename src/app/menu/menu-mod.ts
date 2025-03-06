@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import path from "pathe";
 
 import type { AppParams, ParamsOmitReli } from "~/app/app-types.js";
-import type { ProjectCategory } from "~/utils/libs/config/schemaConfig.js";
+import type { ProjectCategory } from "~/libs/config/config-main.js";
 
 import { endTitle, experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { getRandomMessage } from "~/app/db/messages.js";
@@ -27,7 +27,7 @@ import {
 } from "./menu-impl.js";
 
 async function handleProjectCategory(params: AppParams) {
-  const { cwd, isDev, memory, config, reli, skipPrompts } = params;
+  const { cwd, isDev, memory, config, multireli, skipPrompts } = params;
 
   let projectCategory = config.projectCategory;
   if (projectCategory === UNKNOWN_VALUE) {
@@ -95,7 +95,7 @@ async function handleProjectCategory(params: AppParams) {
       memory,
       config,
       false,
-      reli,
+      multireli,
       skipPrompts,
     );
   }
@@ -105,9 +105,10 @@ async function handleProjectCategory(params: AppParams) {
  * Main entry point to show user a new project menu
  */
 export async function showNewProjectMenu(params: AppParams): Promise<void> {
-  const { cwd, isDev, memory, config, reli, skipPrompts, projectName } = params;
+  const { cwd, isDev, memory, config, multireli, skipPrompts, projectName } =
+    params;
 
-  const isMultiConfig = reli.length > 0;
+  const isMultiConfig = multireli.length > 0;
 
   if (isMultiConfig) {
     relinka(
@@ -121,7 +122,7 @@ export async function showNewProjectMenu(params: AppParams): Promise<void> {
       memory,
       config,
       isMultiConfig,
-      reli,
+      multireli,
       skipPrompts,
     );
   } else {

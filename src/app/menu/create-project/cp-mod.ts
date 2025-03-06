@@ -2,7 +2,7 @@ import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
@@ -10,6 +10,7 @@ import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { generateProjectConfigs } from "~/utils/handlers/generateProjectConfigs.js";
+import { isMultireliProject } from "~/utils/multireliHelpers.js";
 import {
   getReliverseConfigPath,
   updateReliverseConfig,
@@ -51,7 +52,15 @@ export async function createWebProject({
   relinka("info", message);
 
   // -------------------------------------------------
-  // 1) Initialize project configuration
+  // 1) Check if the project is a multireli project
+  // -------------------------------------------------
+  const isMultireli = await isMultireliProject(cwd);
+  if (isMultireli) {
+    relinka("info", "✅ Multireli mode activated");
+  }
+
+  // -------------------------------------------------
+  // 2) Initialize project configuration
   // -------------------------------------------------
   const projectConfig = await initializeProjectConfig(
     initialProjectName,
@@ -68,7 +77,7 @@ export async function createWebProject({
   } = projectConfig;
 
   // -------------------------------------------------
-  // 2) Download template
+  // 3) Download template
   // -------------------------------------------------
   const { dir: projectPath } = await handleDownload({
     cwd,
@@ -83,7 +92,7 @@ export async function createWebProject({
   });
 
   // -------------------------------------------------
-  // 3) Replace placeholders in the template
+  // 4) Replace placeholders in the template
   // -------------------------------------------------
   const result = await getReliverseConfigPath(projectPath);
   if (!result) {
@@ -105,7 +114,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 4) Remove reliverse config from project if exists
+  // 5) Remove reliverse config from project if exists
   // -------------------------------------------------
   if (await fs.pathExists(configPath)) {
     relinka("info-verbose", `Removed: ${configPath}, isTS: ${isTS}`);
@@ -113,12 +122,12 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 5) Setup i18n (auto or prompt-based)
+  // 6) Setup i18n (auto or prompt-based)
   // -------------------------------------------------
   const enableI18n = await setupI18nSupport(projectPath, config);
 
   // -------------------------------------------------
-  // 6) Ask about masking secrets
+  // 7) Ask about masking secrets
   // -------------------------------------------------
   let maskInput = true;
   if (skipPrompts) {
@@ -131,7 +140,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 7) Compose .env files
+  // 8) Compose .env files
   // -------------------------------------------------
   await composeEnvFile(
     projectPath,
@@ -139,10 +148,11 @@ export async function createWebProject({
     maskInput,
     skipPrompts,
     config,
+    isMultireli,
   );
 
   // -------------------------------------------------
-  // 8) Handle dependencies (install or not?)
+  // 9) Handle dependencies (install or not?)
   // -------------------------------------------------
   const { shouldInstallDeps, shouldRunDbPush } = await handleDependencies(
     projectPath,
@@ -150,7 +160,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 9) Generate or update project config files
+  // 10) Generate or update project config files
   // -------------------------------------------------
   await generateProjectConfigs(
     projectPath,
@@ -163,7 +173,7 @@ export async function createWebProject({
   );
 
   // -------------------------------------------------
-  // 10) Deployment flow
+  // 11) Deployment flow
   // -------------------------------------------------
   const { deployService, primaryDomain, isDeployed, allDomains } =
     await promptGitDeploy({
@@ -197,7 +207,7 @@ export async function createWebProject({
   }
 
   // -------------------------------------------------
-  // 11) Final success & next steps
+  // 12) Final success & next steps
   // -------------------------------------------------
   await showSuccessAndNextSteps(
     projectPath,

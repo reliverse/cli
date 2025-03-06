@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/prompts";
 import { execa } from "execa";
 import fs from "fs-extra";
 
-import type { ReliverseConfig } from "~/utils/libs/config/schemaConfig.js";
+import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
 import { cliDomainEnv } from "~/app/constants.js";
 
@@ -24,6 +24,7 @@ export async function composeEnvFile(
   maskInput: boolean,
   skipPrompts: boolean,
   config: ReliverseConfig | null,
+  isMultireli: boolean,
 ): Promise<void> {
   if (config === null) return;
 
@@ -70,6 +71,9 @@ export async function composeEnvFile(
             maskInput,
             config,
             true,
+            isMultireli,
+            projectPath,
+            skipPrompts,
           );
         }
         return;
@@ -144,6 +148,9 @@ export async function composeEnvFile(
             maskInput,
             config,
             true,
+            isMultireli,
+            projectPath,
+            skipPrompts,
           );
         }
       }
@@ -165,6 +172,9 @@ export async function composeEnvFile(
             maskInput,
             config,
             true,
+            isMultireli,
+            projectPath,
+            skipPrompts,
           );
         }
       } else {
@@ -175,6 +185,9 @@ export async function composeEnvFile(
           maskInput,
           config,
           false,
+          isMultireli,
+          projectPath,
+          skipPrompts,
         );
       }
     } else {
@@ -185,6 +198,9 @@ export async function composeEnvFile(
         maskInput,
         config,
         false,
+        isMultireli,
+        projectPath,
+        skipPrompts,
       );
     }
 

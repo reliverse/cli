@@ -156,7 +156,7 @@ export async function generateConfigFiles(
           configInfo,
           ...(isDev && configInfo?.isTS
             ? {
-                customPathToTypes: "./src/utils/libs/config/schemaConfig.js",
+                customPathToTypes: "./src/libs/config/config-main.js",
               }
             : {}),
         });
