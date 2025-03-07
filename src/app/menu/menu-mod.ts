@@ -16,10 +16,10 @@ import {
 } from "~/utils/reliverseConfig.js";
 import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
 
-import { handleOpenProjectMenu } from "./create-project/cp-modules/cli-main-modules/cli-menu-items/detectedProjectsMenu.js";
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadRepoOption } from "./dev-submenu/dev-mod.js";
 import { openVercelTools } from "./dev-submenu/dev-vercel.js";
+import { handleOpenProjectMenu } from "./manual-mode/deprecated/editor-menu.js";
 import {
   optionCreateBrowserExtension,
   optionCreateVSCodeExtension,

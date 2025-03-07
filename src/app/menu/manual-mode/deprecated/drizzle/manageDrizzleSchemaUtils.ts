@@ -5,8 +5,8 @@ import path from "pathe";
 
 import type { ColumnType, DatabaseProvider, TableSchema } from "~/types.js";
 
-import { installIntegration } from "~/app/menu/project-editor/integrations/integrations.js";
-import { INTEGRATION_CONFIGS } from "~/app/menu/project-editor/integrations/integrationsIntegrConfig.js";
+import { installIntegration } from "~/app/menu/manual-mode/deprecated/editor-mod.js";
+import { INTEGRATION_CONFIGS } from "~/app/menu/manual-mode/deprecated/feature-add.js";
 
 import { COLUMN_TYPES } from "./manageDrizzleConstants.js";
 

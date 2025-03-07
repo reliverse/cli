@@ -1201,6 +1201,7 @@ export async function getDefaultReliverseConfig(
     projectCategory: UNKNOWN_VALUE,
     projectSubcategory: UNKNOWN_VALUE,
     projectTemplate: UNKNOWN_VALUE,
+    // projectTemplateDate: UNKNOWN_VALUE,
     projectArchitecture: UNKNOWN_VALUE,
     repoPrivacy: UNKNOWN_VALUE,
     repoBranch: "main",
@@ -1221,22 +1222,39 @@ export async function getDefaultReliverseConfig(
  * ------------------------------------------------------------------
  */
 
-async function checkProjectFiles(projectPath: string): Promise<{
-  hasReliverse: boolean;
-  hasPackageJson: boolean;
-  hasNodeModules: boolean;
-  hasGit: boolean;
+export async function getProjectContent(projectPath: string): Promise<{
+  requiredContent: {
+    fileReliverse: boolean;
+    filePackageJson: boolean;
+  };
+  optionalContent: {
+    dirNodeModules: boolean;
+    dirGit: boolean;
+  };
 }> {
+  // reliverse.jsonc or reliverse.ts
   const configJSONC = path.join(projectPath, cliConfigJsonc);
   const configTS = path.join(projectPath, cliConfigTs);
-  const hasReliverse =
+  const fileReliverse =
     (await fs.pathExists(configJSONC)) || (await fs.pathExists(configTS));
-  const [hasPackageJson, hasNodeModules, hasGit] = await Promise.all([
-    fs.pathExists(path.join(projectPath, "package.json")),
-    fs.pathExists(path.join(projectPath, "node_modules")),
-    fs.pathExists(path.join(projectPath, ".git")),
-  ]);
-  return { hasReliverse, hasPackageJson, hasNodeModules, hasGit };
+
+  // package.json
+  const filePackageJson = await fs.pathExists(
+    path.join(projectPath, "package.json"),
+  );
+
+  // node_modules
+  const dirNodeModules = await fs.pathExists(
+    path.join(projectPath, "node_modules"),
+  );
+
+  // .git
+  const dirGit = await fs.pathExists(path.join(projectPath, ".git"));
+
+  return {
+    requiredContent: { fileReliverse, filePackageJson },
+    optionalContent: { dirNodeModules, dirGit },
+  };
 }
 
 export type DetectedProject = {
@@ -1433,9 +1451,10 @@ export async function detectProject(
   isDev: boolean,
 ): Promise<DetectedProject | null> {
   try {
-    const { hasReliverse, hasPackageJson, hasNodeModules, hasGit } =
-      await checkProjectFiles(projectPath);
-    if (!hasReliverse || !hasPackageJson) return null;
+    const { requiredContent, optionalContent } =
+      await getProjectContent(projectPath);
+    if (!requiredContent.fileReliverse || !requiredContent.filePackageJson)
+      return null;
     const { configPath } = await getReliverseConfigPath(projectPath);
     if (!(await fs.pathExists(configPath))) return null;
     const config = await readReliverseConfig(configPath, isDev);
@@ -1444,8 +1463,8 @@ export async function detectProject(
       name: path.basename(projectPath),
       path: projectPath,
       config,
-      needsDepsInstall: !hasNodeModules,
-      hasGit,
+      needsDepsInstall: !optionalContent.dirNodeModules,
+      hasGit: optionalContent.dirGit,
     };
   } catch (error) {
     relinka(

@@ -14,6 +14,7 @@ export type MainMenuChoice =
   | "detected-projects"
   | "isDevTools"
   | "native-cli"
+  | "manual"
   | "exit";
 
 type MainMenuOption = {
@@ -44,11 +45,16 @@ export async function getMainMenuOptions(
       hint: multiConfigMsg,
       value: "clone",
     },
+    {
+      label: re.bold("🔬 Switch to manual builder mode"),
+      hint: multiConfigMsg,
+      value: "manual",
+    },
   ];
 
   // 2) Inject the dev tools option
   options.push({
-    label: "🧰 Open developer tools",
+    label: re.bold("🧰 Open developer tools"),
     value: "isDevTools",
   });
 

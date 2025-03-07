@@ -6,9 +6,9 @@ import type { IntegrationCategory, IntegrationOptions } from "~/types.js";
 import {
   installIntegration,
   removeIntegration,
-} from "~/app/menu/project-editor/integrations/integrations.js";
-import { INTEGRATION_CONFIGS } from "~/app/menu/project-editor/integrations/integrationsIntegrConfig.js";
-import { REMOVAL_CONFIGS } from "~/app/menu/project-editor/integrations/integrationsRemovalConfig.js";
+} from "~/app/menu/manual-mode/deprecated/editor-mod.js";
+import { INTEGRATION_CONFIGS } from "~/app/menu/manual-mode/deprecated/feature-add.js";
+import { REMOVAL_CONFIGS } from "~/app/menu/manual-mode/deprecated/feature-rm.js";
 
 export async function handleIntegrations(cwd: string, isDev: boolean) {
   const integrationOptions: IntegrationOptions = {

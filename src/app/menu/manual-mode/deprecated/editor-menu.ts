@@ -1,15 +1,8 @@
-import {
-  selectPrompt,
-  inputPrompt,
-  multiselectPrompt,
-  confirmPrompt,
-} from "@reliverse/prompts";
+import { selectPrompt, inputPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
-import { installDependencies } from "nypm";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
-import type { DetectedProject } from "~/utils/reliverseConfig.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import { experimental } from "~/app/constants.js";
@@ -23,8 +16,11 @@ import {
 import { checkGithubRepoOwnership } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/github.js";
 import { ensureDbInitialized } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/helpers/handlePkgJsonScripts.js";
 import { checkVercelDeployment } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/vercel/vercel-check.js";
-import { manageDrizzleSchema } from "~/app/menu/project-editor/cli-addons/drizzle/manageDrizzleSchema.js";
-import { useAddonLanguine } from "~/app/menu/project-editor/cli-addons/languine/languine-mod.js";
+import { manageDrizzleSchema } from "~/app/menu/manual-mode/deprecated/drizzle/manageDrizzleSchema.js";
+import { handleIntegrations } from "~/app/menu/manual-mode/deprecated/editor-impl.js";
+import { useAddonLanguine } from "~/app/menu/manual-mode/deprecated/languine/languine-mod.js";
+import { manageShadcn } from "~/app/menu/manual-mode/deprecated/shadcn/shadcn-mod.js";
+import { installDepsPrompt } from "~/app/prompts/deps-prompts.js";
 import { envArgImpl } from "~/arg/env/env-impl.js";
 import {
   convertDatabaseProvider,
@@ -33,22 +29,13 @@ import {
 import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { handleCleanup } from "~/utils/handlers/handleCleanup.js";
 import { handleCodemods } from "~/utils/handlers/handleCodemods.js";
-import { handleIntegrations } from "~/utils/handlers/handleIntegrations.js";
-import {
-  readShadcnConfig,
-  getInstalledComponents,
-  installComponent,
-  removeComponent,
-  updateComponent,
-  applyTheme,
-  AVAILABLE_COMPONENTS,
-  THEMES,
-  selectChartsPrompt,
-  selectSidebarPrompt,
-} from "~/utils/handlers/shadcn.js";
 import { initGithubSDK } from "~/utils/instanceGithub.js";
 import { initVercelSDK } from "~/utils/instanceVercel.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
+import {
+  getProjectContent,
+  type DetectedProject,
+} from "~/utils/reliverseConfig.js";
 
 type ProjectMenuOption =
   | "git-deploy"
@@ -60,6 +47,8 @@ type ProjectMenuOption =
   | "integrations"
   | "cleanup"
   | "env"
+  | "updater"
+  | "i18n"
   | "exit";
 
 // ──────────────────────────────────────────────
@@ -117,36 +106,18 @@ export async function handleOpenProjectMenu(
 
   // (2) Check for dependency installation.
   if (selectedProject.needsDepsInstall) {
-    const shouldInstall = await confirmPrompt({
-      title:
-        "Dependencies are missing from your project. Would you like to install them?",
-      content: re.bold(
-        "🚨 Note: Certain addons will be disabled until the dependencies are installed.",
-      ),
-    });
-    if (shouldInstall) {
-      relinka("info", "Installing dependencies...");
-      try {
-        await installDependencies({ cwd: selectedProject.path });
-        relinka("success", "Dependencies installed successfully");
-        selectedProject.needsDepsInstall = false;
-      } catch (error) {
-        relinka(
-          "error",
-          "Failed to install dependencies:",
-          error instanceof Error ? error.message : String(error),
-        );
-        return;
-      }
-    }
+    await installDepsPrompt(selectedProject.path);
   }
+
+  const projectContent = await getProjectContent(selectedProject.path);
+  const hasNodeModules = projectContent.optionalContent.dirNodeModules;
 
   const gitStatusInfo = selectedProject.hasGit
     ? ` (${selectedProject.gitStatus?.uncommittedChanges ?? 0} uncommitted changes, ${selectedProject.gitStatus?.unpushedCommits ?? 0} unpushed commits)`
     : "";
-  const depsWarning = selectedProject.needsDepsInstall
-    ? "Some addons were disabled because dependencies are not installed."
-    : "";
+  const depsWarning = hasNodeModules
+    ? ""
+    : "Some addons were disabled because dependencies are not installed.";
 
   // (3) Show Main Action Menu.
   const action = await selectPrompt<ProjectMenuOption>({
@@ -169,52 +140,52 @@ export async function handleOpenProjectMenu(
         hint: re.dim("create .env file"),
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Code modifications ${experimental}`)
           : `Code modifications ${experimental}`,
         value: "codemods",
         hint: re.dim("apply code transformations"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Integrations ${experimental}`)
           : `Integrations ${experimental}`,
         value: "integrations",
         hint: re.dim("manage project integrations"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Database operations ${experimental}`)
           : `Database operations ${experimental}`,
         value: "convert-db",
         hint: re.dim("convert between database types"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Add shadcn/ui components ${experimental}`)
           : `Add shadcn/ui components ${experimental}`,
         value: "shadcn",
         hint: re.dim("manage ui components"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Drizzle schema ${experimental}`)
           : `Drizzle schema ${experimental}`,
         value: "drizzle-schema",
         hint: re.dim("manage database schema"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
-        label: selectedProject.needsDepsInstall
+        label: !hasNodeModules
           ? re.gray(`Cleanup project ${experimental}`)
           : `Cleanup project ${experimental}`,
         value: "cleanup",
         hint: re.dim("clean up project files"),
-        disabled: selectedProject.needsDepsInstall,
+        disabled: !hasNodeModules,
       },
       {
         label: "👈 Exit",
@@ -374,7 +345,7 @@ export async function handleOpenProjectMenu(
         const dbStatus = await ensureDbInitialized(
           hasDbPush,
           shouldRunDbPush,
-          selectedProject.needsDepsInstall ?? false,
+          !hasNodeModules,
           selectedProject.path,
         );
         if (dbStatus === "cancel") {
@@ -494,90 +465,7 @@ export async function handleOpenProjectMenu(
     }
 
     case "shadcn": {
-      const shadcnConfig = await readShadcnConfig(selectedProject.path);
-      if (!shadcnConfig) {
-        relinka("error", "shadcn/ui configuration file not found");
-        return;
-      }
-      const shadcnAction = await selectPrompt({
-        title: "What would you like to do?",
-        options: [
-          { label: "Add Components", value: "add" },
-          { label: "Remove Components", value: "remove" },
-          { label: "Update Components", value: "update" },
-          { label: "Change Theme", value: "theme" },
-          { label: "Install sidebars", value: "sidebars" },
-          { label: "Install charts", value: "charts" },
-        ],
-      });
-      switch (shadcnAction) {
-        case "sidebars":
-          selectSidebarPrompt(selectedProject.path);
-          break;
-        case "charts":
-          selectChartsPrompt(selectedProject.path);
-          break;
-        case "add": {
-          const installedComponents = await getInstalledComponents(
-            selectedProject.path,
-            shadcnConfig,
-          );
-          const availableComponents = AVAILABLE_COMPONENTS.filter(
-            (c) => !installedComponents.includes(c),
-          );
-          const components = await multiselectPrompt({
-            title: "Select components to add:",
-            options: availableComponents.map((c) => ({ label: c, value: c })),
-          });
-          for (const component of components) {
-            await installComponent(selectedProject.path, component);
-          }
-          break;
-        }
-        case "remove": {
-          const installedComponents = await getInstalledComponents(
-            selectedProject.path,
-            shadcnConfig,
-          );
-          const components = await multiselectPrompt({
-            title: "Select components to remove:",
-            options: installedComponents.map((c) => ({ label: c, value: c })),
-          });
-          for (const component of components) {
-            await removeComponent(
-              selectedProject.path,
-              shadcnConfig,
-              component,
-            );
-          }
-          break;
-        }
-        case "update": {
-          const installedComponents = await getInstalledComponents(
-            selectedProject.path,
-            shadcnConfig,
-          );
-          const components = await multiselectPrompt({
-            title: "Select components to update:",
-            options: installedComponents.map((c) => ({ label: c, value: c })),
-          });
-          for (const component of components) {
-            await updateComponent(selectedProject.path, component);
-          }
-          break;
-        }
-        case "theme": {
-          const theme = await selectPrompt({
-            title: "Select a theme:",
-            options: THEMES.map((t) => ({ label: t.name, value: t.name })),
-          });
-          const selectedTheme = THEMES.find((t) => t.name === theme);
-          if (selectedTheme) {
-            await applyTheme(selectedProject.path, shadcnConfig, selectedTheme);
-          }
-          break;
-        }
-      }
+      await manageShadcn(selectedProject.path);
       break;
     }
 
@@ -593,6 +481,16 @@ export async function handleOpenProjectMenu(
 
     case "env": {
       await envArgImpl(isDev, selectedProject.path);
+      break;
+    }
+
+    case "updater": {
+      // await handleUpdater(selectedProject.path);
+      break;
+    }
+
+    case "i18n": {
+      // await handleI18n(selectedProject.path);
       break;
     }
 

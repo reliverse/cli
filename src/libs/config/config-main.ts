@@ -275,6 +275,7 @@ export const reliverseConfigSchema = Type.Object({
     Type.Literal("reliverse/cli-starter-template"),
     Type.Literal("blefnk/deno-cli-tutorial"),
   ]),
+  // projectTemplateDate: Type.String(),
 
   features: featuresSchema,
   preferredLibraries: preferredLibrariesSchema,
