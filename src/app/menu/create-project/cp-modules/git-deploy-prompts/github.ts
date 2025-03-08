@@ -4,6 +4,7 @@ import { relinka } from "@reliverse/prompts";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
+import { UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import { type InstanceGithub } from "~/utils/instanceGithub.js";
 import { cd } from "~/utils/terminalHelpers.js";
 
@@ -79,7 +80,7 @@ export async function createGithubRepo(
 
     // For new repositories, determine privacy setting
     let privacyAction = config.repoPrivacy;
-    if (privacyAction === "unknown") {
+    if (privacyAction === UNKNOWN_VALUE) {
       const selectedPrivacyAction = await selectPrompt({
         title: "Choose repository privacy setting",
         defaultValue: "public",

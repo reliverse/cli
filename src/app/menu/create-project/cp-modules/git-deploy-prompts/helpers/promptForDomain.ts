@@ -1,6 +1,8 @@
 import { inputPrompt, selectPrompt } from "@reliverse/prompts";
 
-import { DEFAULT_DOMAIN, experimental, recommended } from "~/app/constants.js";
+import { DEFAULT_DOMAIN } from "~/libs/sdk/constants.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
+import { recommended } from "~/utils/badgeNotifiers.js";
 
 /**
  * Validates and formats a domain name

@@ -1,8 +1,0 @@
-tests-runtime/
-node_modules/
-dist-libs/
-dist-jsr/
-dist-npm/
-dist/
-*.log
-*.lock

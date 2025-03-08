@@ -6,7 +6,7 @@ import fs from "fs-extra";
 import path from "pathe";
 import { glob } from "tinyglobby";
 
-import { tsconfigJson } from "~/app/constants.js";
+import { tsconfigJson } from "~/libs/sdk/constants.js";
 
 const RUNTIME_REPLACEMENTS = {
   bun: {

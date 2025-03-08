@@ -13,8 +13,8 @@ import url from "url";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { cliDomainDocs, memoryPath } from "~/app/constants.js";
 import { showAnykeyPrompt } from "~/app/menu/create-project/cp-modules/cli-main-modules/modules/showAnykeyPrompt.js";
+import { cliDomainDocs, memoryPath } from "~/libs/sdk/constants.js";
 import {
   getReliverseMemory,
   updateReliverseMemory,

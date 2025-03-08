@@ -1,7 +1,7 @@
 import type { TSchema } from "@sinclair/typebox";
 import type { PackageJson } from "pkg-types";
 
-import { relinka, selectPrompt, confirmPrompt } from "@reliverse/prompts";
+import { relinka, confirmPrompt } from "@reliverse/prompts";
 import { getUserPkgManager, isBunPM, runtimeInfo } from "@reliverse/runtime";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
@@ -22,6 +22,12 @@ import {
 
 import type { DeploymentService } from "~/types.js";
 
+import { askReliverseConfigType } from "~/app/prompts/askReliverseConfigType.js";
+import {
+  reliverseConfigSchema,
+  type ProjectFramework,
+  type ReliverseConfig,
+} from "~/libs/config/config-main.js";
 import {
   DEFAULT_DOMAIN,
   UNKNOWN_VALUE,
@@ -37,15 +43,8 @@ import {
   cliConfigTsBak,
   cliVersion,
   tsconfigJson,
-} from "~/app/constants.js";
-import {
-  reliverseConfigSchema,
-  type ProjectFramework,
-  type ReliverseConfig,
-} from "~/libs/config/config-main.js";
+} from "~/libs/sdk/constants.js";
 import { getBiomeConfig } from "~/utils/configHandler.js";
-
-import { getCurrentWorkingDirectory } from "./terminalHelpers.js";
 
 /* ------------------------------------------------------------------
 * Helper Function: Repair and Parse JSON
@@ -79,51 +78,54 @@ const configPathCache = new Map<
 
 /**
  * Returns the proper config file path and its type (TS or JSONC).
+ * This function determines which config file to use based on existing files.
+ * It does not contain UI prompts directly - those are delegated to a separate function.
+ *
+ * @param projectPath - Path to the project directory
+ * @param skipPrompt - If true, will default to JSONC without prompting (optional)
+ * @returns Object containing the config path and whether it's a TypeScript config
  */
 export async function getReliverseConfigPath(
   projectPath: string,
+  skipPrompt = false,
 ): Promise<{ configPath: string; isTS: boolean }> {
+  // Check cache first to avoid redundant file system checks and prompts
   if (configPathCache.has(projectPath)) {
     return configPathCache.get(projectPath)!;
   }
 
+  // Define paths for all possible config files
   const tsconfigPath = path.join(projectPath, tsconfigJson);
   const reliverseJsoncPath = path.join(projectPath, cliConfigJsonc);
   const reliverseTsPath = path.join(projectPath, cliConfigTs);
 
+  // Check which files exist
   const tsconfigExists = await fs.pathExists(tsconfigPath);
   const reliverseJsoncExists = await fs.pathExists(reliverseJsoncPath);
   const reliverseTsExists = await fs.pathExists(reliverseTsPath);
 
   let result: { configPath: string; isTS: boolean };
 
-  // If a TS config already exists, use it.
+  // Decision logic for which config file to use:
+
+  // Case 1: TS config already exists - use it
   if (reliverseTsExists) {
     result = { configPath: reliverseTsPath, isTS: true };
   }
-  // If neither config exists and a tsconfig.json is present, prompt the user.
-  else if (tsconfigExists && !reliverseJsoncExists) {
-    const choice = await selectPrompt({
-      title:
-        "Please select a Reliverse CLI configuration file type. JSONC is recommended for most projects.",
-      content:
-        "A tsconfig.json file was detected. You can use the TypeScript config type for this project; however, it requires @reliverse/config to be installed; without it, the Reliverse CLI cannot run correctly when using the TS config type.",
-      options: [
-        { label: "JSONC (reliverse.jsonc)", value: "jsonc" },
-        { label: "TypeScript (reliverse.ts)", value: "ts" },
-      ],
-      defaultValue: "jsonc",
-    });
+  // Case 2: Neither config exists but tsconfig.json is present - ask user (unless skipPrompt is true)
+  else if (tsconfigExists && !reliverseJsoncExists && !skipPrompt) {
+    const choice = await askReliverseConfigType();
     result =
       choice === "ts"
         ? { configPath: reliverseTsPath, isTS: true }
         : { configPath: reliverseJsoncPath, isTS: false };
-  } else {
-    // Default to JSONC if nothing else applies.
+  }
+  // Case 3: Default to JSONC for all other cases
+  else {
     result = { configPath: reliverseJsoncPath, isTS: false };
   }
 
-  // Cache the result for this project so subsequent calls don't prompt again.
+  // Cache the result for this project
   configPathCache.set(projectPath, result);
   return result;
 }
@@ -165,30 +167,6 @@ async function atomicWriteFile(
   if (await fs.pathExists(backupPath)) {
     await fs.remove(backupPath);
   }
-}
-
-/* ------------------------------------------------------------------
- * Experimental Functions (not used yet)
- * ------------------------------------------------------------------
- */
-
-/**
- * Attempts to re-read the reliverse config from the current working directory.
- * If the file is not valid, it attempts a line-by-line fix.
- */
-export async function reReadReliverseConfig(
-  isDev: boolean,
-): Promise<ReliverseConfig | null> {
-  const projectPath = getCurrentWorkingDirectory();
-  const { configPath } = await getReliverseConfigPath(projectPath);
-
-  // First try normal read
-  let config = await readReliverseConfig(configPath, isDev);
-  if (config) return config;
-
-  // If not valid, attempt a line-by-line fix
-  config = await parseAndFixConfig(configPath, isDev);
-  return config;
 }
 
 /* ------------------------------------------------------------------
@@ -415,6 +393,7 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   projectCategory: UNKNOWN_VALUE,
   projectSubcategory: UNKNOWN_VALUE,
   projectTemplate: UNKNOWN_VALUE,
+  projectTemplateDate: UNKNOWN_VALUE,
   projectArchitecture: UNKNOWN_VALUE,
   repoPrivacy: UNKNOWN_VALUE,
   projectGitService: "github",
@@ -424,41 +403,41 @@ export const DEFAULT_CONFIG: ReliverseConfig = {
   projectPackageManager: (await isBunPM()) ? "bun" : "npm",
   projectRuntime: runtimeInfo?.name || "node",
   preferredLibraries: {
-    stateManagement: "unknown",
-    formManagement: "unknown",
-    styling: "unknown",
-    uiComponents: "unknown",
-    testing: "unknown",
-    authentication: "unknown",
-    databaseLibrary: "unknown",
-    databaseProvider: "unknown",
-    api: "unknown",
-    linting: "unknown",
-    formatting: "unknown",
-    payment: "unknown",
-    analytics: "unknown",
-    monitoring: "unknown",
-    logging: "unknown",
-    forms: "unknown",
-    notifications: "unknown",
-    search: "unknown",
-    uploads: "unknown",
-    validation: "unknown",
-    documentation: "unknown",
-    icons: "unknown",
-    mail: "unknown",
-    cache: "unknown",
-    storage: "unknown",
-    cdn: "unknown",
-    cms: "unknown",
-    i18n: "unknown",
-    seo: "unknown",
-    motion: "unknown",
-    charts: "unknown",
-    dates: "unknown",
-    markdown: "unknown",
-    security: "unknown",
-    routing: "unknown",
+    stateManagement: UNKNOWN_VALUE,
+    formManagement: UNKNOWN_VALUE,
+    styling: UNKNOWN_VALUE,
+    uiComponents: UNKNOWN_VALUE,
+    testing: UNKNOWN_VALUE,
+    authentication: UNKNOWN_VALUE,
+    databaseLibrary: UNKNOWN_VALUE,
+    databaseProvider: UNKNOWN_VALUE,
+    api: UNKNOWN_VALUE,
+    linting: UNKNOWN_VALUE,
+    formatting: UNKNOWN_VALUE,
+    payment: UNKNOWN_VALUE,
+    analytics: UNKNOWN_VALUE,
+    monitoring: UNKNOWN_VALUE,
+    logging: UNKNOWN_VALUE,
+    forms: UNKNOWN_VALUE,
+    notifications: UNKNOWN_VALUE,
+    search: UNKNOWN_VALUE,
+    uploads: UNKNOWN_VALUE,
+    validation: UNKNOWN_VALUE,
+    documentation: UNKNOWN_VALUE,
+    icons: UNKNOWN_VALUE,
+    mail: UNKNOWN_VALUE,
+    cache: UNKNOWN_VALUE,
+    storage: UNKNOWN_VALUE,
+    cdn: UNKNOWN_VALUE,
+    cms: UNKNOWN_VALUE,
+    i18n: UNKNOWN_VALUE,
+    seo: UNKNOWN_VALUE,
+    motion: UNKNOWN_VALUE,
+    charts: UNKNOWN_VALUE,
+    dates: UNKNOWN_VALUE,
+    markdown: UNKNOWN_VALUE,
+    security: UNKNOWN_VALUE,
+    routing: UNKNOWN_VALUE,
   },
   monorepo: {
     type: "none",
@@ -945,9 +924,11 @@ export default defineConfig(${objectLiteralWithComments});
             stdio: "inherit",
           });
         } else {
-          throw new Error(
-            "Please run `bun install` at your convenience, then run `reliverse cli` again to continue.",
+          relinka(
+            "success",
+            "Please run `bun install` at your convenience, then use `reliverse cli` again to continue.",
           );
+          process.exit(0);
         }
       } else {
         relinka("success-verbose", "TS config written successfully");
@@ -1198,12 +1179,6 @@ export async function getDefaultReliverseConfig(
       effectiveProjectName === cliName ? cliDomainDocs : DEFAULT_DOMAIN,
     projectGitService: "github",
     projectDeployService: "vercel",
-    projectCategory: UNKNOWN_VALUE,
-    projectSubcategory: UNKNOWN_VALUE,
-    projectTemplate: UNKNOWN_VALUE,
-    // projectTemplateDate: UNKNOWN_VALUE,
-    projectArchitecture: UNKNOWN_VALUE,
-    repoPrivacy: UNKNOWN_VALUE,
     repoBranch: "main",
     projectFramework: detectedProjectFramework ?? UNKNOWN_VALUE,
     projectPackageManager: detectedPkgManager.packageManager,
@@ -1222,33 +1197,39 @@ export async function getDefaultReliverseConfig(
  * ------------------------------------------------------------------
  */
 
+/**
+ * Gets information about the project content, separating required and optional elements.
+ *
+ * @param projectPath - Path to the project directory
+ * @returns Object containing required and optional content status
+ */
 export async function getProjectContent(projectPath: string): Promise<{
   requiredContent: {
-    fileReliverse: boolean;
-    filePackageJson: boolean;
+    fileReliverse: boolean; // Whether reliverse config file exists
+    filePackageJson: boolean; // Whether package.json exists
   };
   optionalContent: {
-    dirNodeModules: boolean;
-    dirGit: boolean;
+    dirNodeModules: boolean; // Whether node_modules directory exists
+    dirGit: boolean; // Whether .git directory exists
   };
 }> {
-  // reliverse.jsonc or reliverse.ts
+  // Check for reliverse config files
   const configJSONC = path.join(projectPath, cliConfigJsonc);
   const configTS = path.join(projectPath, cliConfigTs);
   const fileReliverse =
     (await fs.pathExists(configJSONC)) || (await fs.pathExists(configTS));
 
-  // package.json
+  // Check for package.json
   const filePackageJson = await fs.pathExists(
     path.join(projectPath, "package.json"),
   );
 
-  // node_modules
+  // Check for node_modules directory
   const dirNodeModules = await fs.pathExists(
     path.join(projectPath, "node_modules"),
   );
 
-  // .git
+  // Check for .git directory
   const dirGit = await fs.pathExists(path.join(projectPath, ".git"));
 
   return {
@@ -1339,7 +1320,6 @@ export async function generateDefaultRulesForProject(
   isDev: boolean,
 ): Promise<ReliverseConfig | null> {
   const projectCategory = await detectProjectFramework(projectPath);
-  const effectiveProjectCategory = projectCategory ?? "nextjs";
 
   const packageJsonPath = path.join(projectPath, "package.json");
   let packageJson: any = {};
@@ -1365,51 +1345,205 @@ export async function generateDefaultRulesForProject(
     return rules;
   }
 
-  const hasPrisma = await fs.pathExists(
-    path.join(projectPath, "prisma/schema.prisma"),
-  );
-  const hasDrizzle = await fs.pathExists(
-    path.join(projectPath, "drizzle.config.ts"),
-  );
-  const hasNextAuth = await fs.pathExists(
-    path.join(projectPath, "src/app/api/auth/[...nextauth]"),
-  );
-  const hasClerk = packageJson.dependencies?.["@clerk/nextjs"];
-  const hasBetterAuth =
-    packageJson.dependencies?.["better-auth"] &&
-    (await fs.pathExists(
-      path.join(projectPath, "src/app/api/auth/[...all]/route.ts"),
-    ));
-  const hasAuth0 = packageJson.dependencies?.["@auth0/nextjs-auth0"];
-  const hasSupabase = packageJson.dependencies?.["@supabase/supabase-js"];
-
-  rules.features = {
-    ...rules.features,
-    database: hasPrisma || hasDrizzle,
-    authentication:
-      hasNextAuth || hasClerk || hasBetterAuth || hasAuth0 || hasSupabase,
-    analytics: false,
-    themeMode: "dark-light",
-    api: true,
-    testing: false,
-    docker: false,
-    ci: false,
-    commands: [],
-    webview: [],
-    language: ["typescript"],
-    themes: ["default"],
+  const deps = {
+    ...(packageJson?.dependencies ?? {}),
+    ...(packageJson?.devDependencies ?? {}),
   };
 
+  // File-based detection
+  const hasPrismaFile = await fs.pathExists(
+    path.join(projectPath, "prisma/schema.prisma"),
+  );
+  const hasDrizzleFile = await fs.pathExists(
+    path.join(projectPath, "drizzle.config.ts"),
+  );
+  const hasNextAuthDir = await fs.pathExists(
+    path.join(projectPath, "src/app/api/auth/[...nextauth]"),
+  );
+  const hasBetterAuthFile = await fs.pathExists(
+    path.join(projectPath, "src/app/api/auth/[...all]/route.ts"),
+  );
+  const hasShadcnUi = await fs.pathExists(
+    path.join(projectPath, "components/ui"),
+  );
+
+  // Dependency-based detection
+  const hasClerk = "@clerk/nextjs" in deps;
+  const hasBetterAuth = "better-auth" in deps && hasBetterAuthFile;
+  const hasAuth0 = "@auth0/nextjs-auth0" in deps;
+  const hasSupabase = "@supabase/supabase-js" in deps;
+  const hasPrisma = "@prisma/client" in deps || hasPrismaFile;
+  const hasDrizzle = "drizzle-orm" in deps || hasDrizzleFile;
+
+  // State management
+  const hasZustand = "zustand" in deps;
+  const hasJotai = "jotai" in deps;
+  const hasRedux = "@reduxjs/toolkit" in deps || "redux" in deps;
+
+  // Form libraries
+  const hasReactHookForm = "react-hook-form" in deps;
+  const hasFormik = "formik" in deps;
+
+  // Styling libraries
+  const hasTailwind = "tailwindcss" in deps;
+  const hasStyledComponents = "styled-components" in deps;
+  const hasCssModules =
+    packageJson?.dependencies &&
+    Object.keys(deps).some(
+      (key) => key.includes("css-loader") || key.includes("css-modules"),
+    );
+  const hasSass = "sass" in deps || "node-sass" in deps;
+
+  // UI libraries
+  const _hasChakraUi = "@chakra-ui/react" in deps;
+  const _hasMaterialUi = "@mui/material" in deps;
+
+  // Testing
+  const _hasBunTest =
+    packageJson?.scripts &&
+    Object.values(packageJson.scripts).some(
+      (script) =>
+        script && typeof script === "string" && script.includes("bun test"),
+    );
+  const _hasVitest = "vitest" in deps;
+  const hasJest = "jest" in deps;
+  const _hasPlaywright = "@playwright/test" in deps;
+  const _hasCypress = "cypress" in deps;
+
+  // API frameworks
+  const hasHono = "hono" in deps;
+  const hasTrpc = "@trpc/server" in deps;
+  const hasGraphql = "graphql" in deps || "apollo-server" in deps;
+  const hasRest =
+    (await fs.pathExists(path.join(projectPath, "src/api"))) ||
+    (await fs.pathExists(path.join(projectPath, "src/app/api")));
+
+  // Database providers
+  const hasPg = "pg" in deps || "@neondatabase/serverless" in deps;
+  const hasMysql = "mysql" in deps || "mysql2" in deps;
+  const hasSqlite =
+    "sqlite" in deps || "sqlite3" in deps || "better-sqlite3" in deps;
+  const hasMongo = "mongodb" in deps || "mongoose" in deps;
+
+  // Other libraries to detect
+  const hasZod = "zod" in deps;
+  const hasTypebox = "@sinclair/typebox" in deps;
+  const hasValibot = "valibot" in deps;
+
+  // Features detection
+  rules.features = await detectFeatures(projectPath, packageJson);
+
+  // If no preferredLibraries object, create one
   if (!rules.preferredLibraries) {
     rules.preferredLibraries = { ...DEFAULT_CONFIG.preferredLibraries };
   }
-  if (effectiveProjectCategory === "nextjs") {
+
+  // Set specific libraries based on detection
+  // Database
+  if (hasPrisma) {
     rules.preferredLibraries.databaseLibrary = "prisma";
-    rules.preferredLibraries.authentication = "next-auth";
-  } else {
+  } else if (hasDrizzle) {
     rules.preferredLibraries.databaseLibrary = "drizzle";
-    rules.preferredLibraries.authentication = "clerk";
+  } else if (hasSupabase) {
+    rules.preferredLibraries.databaseLibrary = "supabase";
   }
+
+  // Database provider
+  if (hasPg) {
+    rules.preferredLibraries.databaseProvider = "pg";
+  } else if (hasMysql) {
+    rules.preferredLibraries.databaseProvider = "mysql";
+  } else if (hasSqlite) {
+    rules.preferredLibraries.databaseProvider = "sqlite";
+  } else if (hasMongo) {
+    rules.preferredLibraries.databaseProvider = "mongodb";
+  }
+
+  // Authentication
+  if (hasNextAuthDir) {
+    rules.preferredLibraries.authentication = "next-auth";
+  } else if (hasClerk) {
+    rules.preferredLibraries.authentication = "clerk";
+  } else if (hasBetterAuth) {
+    rules.preferredLibraries.authentication = "better-auth";
+  } else if (hasAuth0) {
+    rules.preferredLibraries.authentication = "auth0";
+  } else if (hasSupabase) {
+    rules.preferredLibraries.authentication = "supabase-auth";
+  }
+
+  // State management
+  if (hasZustand) {
+    rules.preferredLibraries.stateManagement = "zustand";
+  } else if (hasJotai) {
+    rules.preferredLibraries.stateManagement = "jotai";
+  } else if (hasRedux) {
+    rules.preferredLibraries.stateManagement = "redux-toolkit";
+  }
+
+  // Form management
+  if (hasReactHookForm) {
+    rules.preferredLibraries.formManagement = "react-hook-form";
+    rules.preferredLibraries.forms = "react-hook-form";
+  } else if (hasFormik) {
+    rules.preferredLibraries.formManagement = "formik";
+  }
+
+  // Styling
+  if (hasTailwind) {
+    rules.preferredLibraries.styling = "tailwind";
+  } else if (hasStyledComponents) {
+    rules.preferredLibraries.styling = "styled-components";
+  } else if (hasCssModules) {
+    rules.preferredLibraries.styling = "css-modules";
+  } else if (hasSass) {
+    rules.preferredLibraries.styling = "sass";
+  }
+
+  // UI components
+  if (hasShadcnUi) {
+    rules.preferredLibraries.uiComponents = "shadcn-ui";
+  } else if (_hasChakraUi) {
+    rules.preferredLibraries.uiComponents = "chakra-ui";
+  } else if (_hasMaterialUi) {
+    rules.preferredLibraries.uiComponents = "material-ui";
+  }
+
+  // Testing
+  if (_hasBunTest) {
+    rules.preferredLibraries.testing = "bun";
+  } else if (_hasVitest) {
+    rules.preferredLibraries.testing = "vitest";
+  } else if (hasJest) {
+    rules.preferredLibraries.testing = "jest";
+  } else if (_hasPlaywright) {
+    rules.preferredLibraries.testing = "playwright";
+  } else if (_hasCypress) {
+    rules.preferredLibraries.testing = "cypress";
+  }
+
+  // API
+  if (hasHono) {
+    rules.preferredLibraries.api = "hono";
+  } else if (hasTrpc) {
+    rules.preferredLibraries.api = "trpc";
+  } else if (hasGraphql) {
+    rules.preferredLibraries.api = "graphql";
+  } else if (hasRest) {
+    rules.preferredLibraries.api = "rest";
+  }
+
+  // Validation
+  if (hasZod) {
+    rules.preferredLibraries.validation = "zod";
+  } else if (hasTypebox) {
+    rules.preferredLibraries.validation = "typebox";
+  } else if (hasValibot) {
+    rules.preferredLibraries.validation = "valibot";
+  }
+
+  // Add more specific library detections for other categories
+
   return rules;
 }
 
@@ -1533,33 +1667,384 @@ export async function detectFeatures(
     ...(packageJson?.devDependencies ?? {}),
   };
 
+  // Authentication libraries
   const hasNextAuth = "next-auth" in deps;
   const hasClerk = "@clerk/nextjs" in deps;
+  const hasBetterAuth = "better-auth" in deps;
+  const hasAuth0 = "@auth0/nextjs-auth0" in deps;
+
+  // Database libraries
   const hasPrisma = "@prisma/client" in deps;
   const hasDrizzle = "drizzle-orm" in deps;
-  const hasAnalytics =
-    "@vercel/analytics" in deps || "@segment/analytics-next" in deps;
+  const hasSupabase = "@supabase/supabase-js" in deps;
+  const hasMongoose = "mongoose" in deps;
+
+  // Database providers
+  const hasPg = "pg" in deps || "@neondatabase/serverless" in deps;
+  const hasMysql = "mysql" in deps || "mysql2" in deps;
+  const hasSqlite =
+    "sqlite" in deps || "sqlite3" in deps || "better-sqlite3" in deps;
+  const hasMongo = "mongodb" in deps || "mongoose" in deps;
+
+  // Analytics
+  const hasVercelAnalytics = "@vercel/analytics" in deps;
+  const hasSegmentAnalytics = "@segment/analytics-next" in deps;
+  const hasGoogleAnalytics = "ga-4-react" in deps || "react-ga" in deps;
+  const hasPlausible = "next-plausible" in deps;
+  const hasFathom = "fathom-client" in deps;
+
+  // State management
+  const hasZustand = "zustand" in deps;
+  const hasJotai = "jotai" in deps;
+  const hasRedux = "@reduxjs/toolkit" in deps || "redux" in deps;
+
+  // Form management
+  const hasReactHookForm = "react-hook-form" in deps;
+  const hasFormik = "formik" in deps;
+
+  // Styling
+  const hasTailwind = "tailwindcss" in deps;
+  const hasStyledComponents = "styled-components" in deps;
+  const hasCssModules =
+    packageJson?.dependencies &&
+    Object.keys(deps).some(
+      (key) => key.includes("css-loader") || key.includes("css-modules"),
+    );
+  const hasSass = "sass" in deps || "node-sass" in deps;
+
+  // UI Components
+  const hasShadcnUi = await fs.pathExists(
+    path.join(projectPath, "components/ui"),
+  );
+  const hasChakraUi = "@chakra-ui/react" in deps;
+  const hasMaterialUi = "@mui/material" in deps;
+
+  // Testing
+  const hasBunTest =
+    packageJson?.scripts &&
+    Object.values(packageJson.scripts).some(
+      (script) =>
+        script && typeof script === "string" && script.includes("bun test"),
+    );
+  const hasVitest = "vitest" in deps;
+  const hasJest = "jest" in deps;
+  const hasPlaywright = "@playwright/test" in deps;
+  const hasCypress = "cypress" in deps;
+
+  // API
+  const hasHono = "hono" in deps;
+  const hasTrpc = "@trpc/server" in deps;
+  const hasGraphql = "graphql" in deps || "apollo-server" in deps;
+  const hasRest =
+    (await fs.pathExists(path.join(projectPath, "src/api"))) ||
+    (await fs.pathExists(path.join(projectPath, "src/app/api")));
+
+  // Linting and formatting
+  const hasEslint = "eslint" in deps;
+  const hasBiome = "@biomejs/biome" in deps;
+
+  // Payments
+  const hasStripe = "stripe" in deps || "@stripe/stripe-js" in deps;
+
+  // Monitoring
+  const hasSentry = "@sentry/nextjs" in deps || "@sentry/react" in deps;
+
+  // Logging
+  const hasAxiom = "next-axiom" in deps;
+
+  // Notifications
+  const hasSonner = "sonner" in deps;
+
+  // Search
+  const hasAlgolia = "algoliasearch" in deps || "react-instantsearch" in deps;
+
+  // Uploads
+  const hasUploadthing = "uploadthing" in deps;
+
+  // Validation
+  const hasZod = "zod" in deps;
+  const hasTypebox = "@sinclair/typebox" in deps;
+  const hasValibot = "valibot" in deps;
+
+  // Documentation
+  const hasStarlight = "@astrojs/starlight" in deps;
+  const hasNextra = "nextra" in deps;
+
+  // Icons
+  const hasLucide = "lucide-react" in deps;
+
+  // Mail
+  const hasResend = "resend" in deps;
+
+  // Cache
+  const hasRedis = "redis" in deps || "@upstash/redis" in deps;
+
+  // Storage & CDN
+  const hasCloudflare =
+    "cloudflare" in deps || "@cloudflare/workers-types" in deps;
+
+  // CMS
+  const hasContentlayer = "contentlayer" in deps;
+
+  // i18n
+  const hasNextIntl = "next-intl" in deps;
+  const hasI18next = "i18next" in deps || "react-i18next" in deps;
+  const hasRosetta = "rosetta" in deps;
+
+  // SEO
+  const hasNextSeo = "next-seo" in deps;
+
+  // Motion
+  const hasFramer = "framer-motion" in deps;
+
+  // Charts
+  const hasRecharts = "recharts" in deps;
+
+  // Dates
+  const hasDayjs = "dayjs" in deps;
+
+  // Markdown
+  const hasMdx = "mdx" in deps || "@next/mdx" in deps;
+
+  // Project infra
   const hasDocker = await fs.pathExists(path.join(projectPath, "Dockerfile"));
   const hasCI =
     (await fs.pathExists(path.join(projectPath, ".github/workflows"))) ||
     (await fs.pathExists(path.join(projectPath, ".gitlab-ci.yml")));
-  const hasTesting =
-    "jest" in deps || "vitest" in deps || "@testing-library/react" in deps;
 
+  // Detect languages
+  const languages: string[] = ["typescript"];
+  if (
+    "python" in deps ||
+    (await fs.pathExists(path.join(projectPath, "requirements.txt")))
+  ) {
+    languages.push("python");
+  }
+  if (await fs.pathExists(path.join(projectPath, "go.mod"))) {
+    languages.push("go");
+  }
+  if (await fs.pathExists(path.join(projectPath, "Cargo.toml"))) {
+    languages.push("rust");
+  }
+
+  // Detect themes and libraries
+  const themes: string[] = ["default"];
+  if (hasTailwind) {
+    themes.push("tailwind");
+  }
+  if (hasChakraUi) {
+    themes.push("chakra");
+  }
+  if (hasMaterialUi) {
+    themes.push("material");
+  }
+  if (hasStyledComponents) {
+    themes.push("styled-components");
+  }
+  if (hasCssModules) {
+    themes.push("css-modules");
+  }
+  if (hasSass) {
+    themes.push("sass");
+  }
+  if (hasShadcnUi) {
+    themes.push("shadcn");
+  }
+
+  // Detect state management
+  if (hasZustand) {
+    themes.push("zustand");
+  }
+  if (hasJotai) {
+    themes.push("jotai");
+  }
+  if (hasRedux) {
+    themes.push("redux");
+  }
+
+  // Detect form libraries
+  if (hasReactHookForm) {
+    themes.push("react-hook-form");
+  }
+  if (hasFormik) {
+    themes.push("formik");
+  }
+
+  // Detect linting and formatting
+  if (hasEslint) {
+    themes.push("eslint");
+  }
+  if (hasBiome) {
+    themes.push("biome");
+  }
+
+  // Detect payment providers
+  if (hasStripe) {
+    themes.push("stripe");
+  }
+
+  // Detect monitoring tools
+  if (hasSentry) {
+    themes.push("sentry");
+  }
+
+  // Detect logging
+  if (hasAxiom) {
+    themes.push("axiom");
+  }
+
+  // Detect notifications
+  if (hasSonner) {
+    themes.push("sonner");
+  }
+
+  // Detect search
+  if (hasAlgolia) {
+    themes.push("algolia");
+  }
+
+  // Detect upload providers
+  if (hasUploadthing) {
+    themes.push("uploadthing");
+  }
+
+  // Detect validation libraries
+  if (hasZod) {
+    themes.push("zod");
+  }
+  if (hasTypebox) {
+    themes.push("typebox");
+  }
+  if (hasValibot) {
+    themes.push("valibot");
+  }
+
+  // Detect documentation
+  if (hasStarlight) {
+    themes.push("starlight");
+  }
+  if (hasNextra) {
+    themes.push("nextra");
+  }
+
+  // Detect icons
+  if (hasLucide) {
+    themes.push("lucide");
+  }
+
+  // Detect mail providers
+  if (hasResend) {
+    themes.push("resend");
+  }
+
+  // Detect cache providers
+  if (hasRedis) {
+    themes.push("redis");
+  }
+
+  // Detect CDN/Storage
+  if (hasCloudflare) {
+    themes.push("cloudflare");
+  }
+
+  // Detect CMS
+  if (hasContentlayer) {
+    themes.push("contentlayer");
+  }
+
+  // Detect SEO
+  if (hasNextSeo) {
+    themes.push("next-seo");
+  }
+
+  // Detect motion
+  if (hasFramer) {
+    themes.push("framer-motion");
+  }
+
+  // Detect charts
+  if (hasRecharts) {
+    themes.push("recharts");
+  }
+
+  // Detect date libraries
+  if (hasDayjs) {
+    themes.push("dayjs");
+  }
+
+  // Detect markdown
+  if (hasMdx) {
+    themes.push("mdx");
+  }
+
+  // Detect webview technologies
+  const webviews: string[] = [];
+  if ("electron" in deps) {
+    webviews.push("electron");
+  }
+  if ("tauri" in deps) {
+    webviews.push("tauri");
+  }
+  if ("capacitor" in deps) {
+    webviews.push("capacitor");
+  }
+  if ("react-native" in deps) {
+    webviews.push("react-native");
+  }
+
+  // Detect custom commands from package.json
+  const commands: string[] = [];
+  if (packageJson?.scripts) {
+    for (const [name, _script] of Object.entries(packageJson.scripts)) {
+      if (
+        name !== "start" &&
+        name !== "build" &&
+        name !== "dev" &&
+        name !== "test"
+      ) {
+        commands.push(name);
+      }
+    }
+  }
+
+  // Detect testing frameworks
+  const hasTestingFramework = !!(
+    hasJest ||
+    hasVitest ||
+    hasPlaywright ||
+    hasCypress ||
+    hasBunTest
+  );
+
+  // Return the features object
   return {
-    i18n: false,
-    analytics: hasAnalytics,
+    i18n: hasNextIntl || hasI18next || hasRosetta,
+    analytics:
+      hasVercelAnalytics ||
+      hasSegmentAnalytics ||
+      hasGoogleAnalytics ||
+      hasPlausible ||
+      hasFathom,
     themeMode: "dark-light",
-    authentication: hasNextAuth || hasClerk,
-    api: true,
-    database: hasPrisma || hasDrizzle,
-    testing: hasTesting,
+    authentication:
+      hasNextAuth || hasClerk || hasBetterAuth || hasAuth0 || hasSupabase,
+    api: hasHono || hasTrpc || hasGraphql || hasRest,
+    database:
+      hasPrisma ||
+      hasDrizzle ||
+      hasSupabase ||
+      hasMongoose ||
+      hasPg ||
+      hasMysql ||
+      hasSqlite ||
+      hasMongo,
+    testing: hasTestingFramework,
     docker: hasDocker,
     ci: hasCI,
-    commands: [],
-    webview: [],
-    language: ["typescript"],
-    themes: ["default"],
+    commands: commands.slice(0, 10), // Limit to 10 commands to avoid overly large configs
+    webview: webviews,
+    language: languages,
+    themes: themes.slice(0, 20), // Limit to 20 themes to avoid overly large configs
   };
 }
 
@@ -1682,9 +2167,10 @@ export async function generateReliverseConfig({
     // Use custom path and filename when provided
     effectiveConfigPath = path.join(customOutputPath, customFilename);
   } else {
-    // Use standard path determination
+    // Use standard path determination with skipPrompt parameter
     const configPathInfo =
-      configInfo ?? (await getReliverseConfigPath(projectPath));
+      configInfo ??
+      (await getReliverseConfigPath(projectPath, skipInstallPrompt));
     effectiveConfigPath = configPathInfo.configPath;
   }
 

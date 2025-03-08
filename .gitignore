@@ -12,5 +12,6 @@
 /multireli
 /node_modules
 /tests-runtime
+/start-runtime
 merged.txt
 logs.txt

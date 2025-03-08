@@ -6,8 +6,8 @@ import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
+import { FALLBACK_ENV_EXAMPLE_URL } from "~/libs/sdk/constants.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { generateProjectConfigs } from "~/utils/handlers/generateProjectConfigs.js";
 import { isMultireliProject } from "~/utils/multireliHelpers.js";
@@ -94,7 +94,7 @@ export async function createWebProject({
   // -------------------------------------------------
   // 4) Replace placeholders in the template
   // -------------------------------------------------
-  const result = await getReliverseConfigPath(projectPath);
+  const result = await getReliverseConfigPath(projectPath, true);
   if (!result) {
     throw new Error("Failed to get reliverse config path.");
   }

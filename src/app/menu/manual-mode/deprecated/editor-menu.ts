@@ -5,7 +5,6 @@ import { re } from "@reliverse/relico";
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { experimental } from "~/app/constants.js";
 import { deployProject } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/deploy.js";
 import {
   pushGitCommits,
@@ -20,13 +19,14 @@ import { manageDrizzleSchema } from "~/app/menu/manual-mode/deprecated/drizzle/m
 import { handleIntegrations } from "~/app/menu/manual-mode/deprecated/editor-impl.js";
 import { useAddonLanguine } from "~/app/menu/manual-mode/deprecated/languine/languine-mod.js";
 import { manageShadcn } from "~/app/menu/manual-mode/deprecated/shadcn/shadcn-mod.js";
-import { installDepsPrompt } from "~/app/prompts/deps-prompts.js";
+import { askInstallDeps } from "~/app/prompts/askInstallDeps.js";
+import { askUsernameFrontend } from "~/app/prompts/askUsernameFrontend.js";
 import { envArgImpl } from "~/arg/env/env-impl.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
 import {
   convertDatabaseProvider,
   convertPrismaToDrizzle,
 } from "~/utils/codemods/convertDatabase.js";
-import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { handleCleanup } from "~/utils/handlers/handleCleanup.js";
 import { handleCodemods } from "~/utils/handlers/handleCodemods.js";
 import { initGithubSDK } from "~/utils/instanceGithub.js";
@@ -62,7 +62,7 @@ export async function handleOpenProjectMenu(
   maskInput: boolean,
   config: ReliverseConfig,
 ): Promise<void> {
-  const frontendUsername = await getUsernameFrontend(memory, false);
+  const frontendUsername = await askUsernameFrontend(memory, false);
   if (!frontendUsername) {
     throw new Error(
       "Failed to determine your frontend username. Please try again or notify the CLI developers.",
@@ -105,12 +105,24 @@ export async function handleOpenProjectMenu(
   }
 
   // (2) Check for dependency installation.
+  let hasNodeModules = false;
   if (selectedProject.needsDepsInstall) {
-    await installDepsPrompt(selectedProject.path);
+    // askInstallDeps returns true if deps are still missing, false if installed
+    const depsStillMissing = await askInstallDeps(selectedProject.path);
+    if (!depsStillMissing) {
+      // Update the project status if installation was successful
+      selectedProject.needsDepsInstall = false;
+      hasNodeModules = true;
+    }
   }
 
+  // Get the latest project content after potential dependency installation
   const projectContent = await getProjectContent(selectedProject.path);
-  const hasNodeModules = projectContent.optionalContent.dirNodeModules;
+
+  // If hasNodeModules wasn't set by the installation process, get it from projectContent
+  if (!hasNodeModules) {
+    hasNodeModules = projectContent.optionalContent.dirNodeModules;
+  }
 
   const gitStatusInfo = selectedProject.hasGit
     ? ` (${selectedProject.gitStatus?.uncommittedChanges ?? 0} uncommitted changes, ${selectedProject.gitStatus?.unpushedCommits ?? 0} unpushed commits)`
@@ -333,7 +345,7 @@ export async function handleOpenProjectMenu(
           projectPath: selectedProject.path,
           maskInput,
           githubUsername,
-          selectedTemplate: "blefnk/relivator",
+          selectedTemplate: "blefnk/relivator-nextjs-template",
           isTemplateDownload: false,
           githubInstance,
           githubToken,

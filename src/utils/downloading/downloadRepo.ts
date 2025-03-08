@@ -8,8 +8,8 @@ import { simpleGit } from "simple-git";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
-import { cliConfigJsonc, cliConfigTs } from "~/app/constants.js";
 import { initGitDir } from "~/app/menu/create-project/cp-modules/git-deploy-prompts/git.js";
+import { cliConfigJsonc, cliConfigTs } from "~/libs/sdk/constants.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 import { getReliverseConfigPath } from "~/utils/reliverseConfig.js";
 
@@ -263,7 +263,7 @@ async function getUniqueProjectPath(
 /**
  * Downloads a repository using git clone (shallow clone) and optionally installs dependencies.
  * If a subdirectory is requested and preserveGit is true, a sparse checkout is used so that the
- * final project directory contains just that subdirectory’s content (with Git history preserved).
+ * final project directory contains just that subdirectory's content (with Git history preserved).
  * Otherwise, a temporary clone is used to extract only the desired subdirectory.
  * If the fastCloneSource option is provided, the method copies the pre-populated ".git" folder from
  * that source and runs "git checkout -- ." to quickly rebuild the working tree while preserving complete history.
@@ -326,14 +326,19 @@ export async function downloadRepo({
 
     // 3) Handle reliverse config file
     const parentDir = dirname(projectPath);
-    const { configPath: tempReliverseConfigPath } =
-      await getReliverseConfigPath(parentDir);
+    try {
+      await getReliverseConfigPath(parentDir, true); // Skip prompt during download
+    } catch (_error) {
+      // Ignore errors
+    }
+
+    // Check if the project directory has a reliverse config
     const { configPath: projectReliverseConfigPath } =
-      await getReliverseConfigPath(projectPath);
+      await getReliverseConfigPath(projectPath, true); // Skip prompt during download
 
     const hasReliverseConfig = await fs.pathExists(projectReliverseConfigPath);
     if (hasReliverseConfig) {
-      if (await fs.pathExists(tempReliverseConfigPath)) {
+      if (await fs.pathExists(projectReliverseConfigPath)) {
         const choice = await selectPrompt({
           title: `${projectReliverseConfigPath} already exists in parent directory. What would you like to do?`,
           options: [
@@ -342,7 +347,7 @@ export async function downloadRepo({
           ],
         });
         if (choice === "delete") {
-          await fs.remove(tempReliverseConfigPath);
+          await fs.remove(projectReliverseConfigPath);
         } else {
           let backupPath = path.join(
             parentDir,
@@ -366,7 +371,7 @@ export async function downloadRepo({
             );
             iteration++;
           }
-          await fs.move(tempReliverseConfigPath, backupPath);
+          await fs.move(projectReliverseConfigPath, backupPath);
         }
       }
       // Move the file from projectPath to the parent directory
@@ -377,7 +382,7 @@ export async function downloadRepo({
             ? cliConfigJsonc
             : cliConfigTs,
         ),
-        tempReliverseConfigPath,
+        projectReliverseConfigPath,
       );
       await fs.remove(projectPath);
       await fs.ensureDir(projectPath);
@@ -510,7 +515,7 @@ export async function downloadRepo({
 
     // 8) Restore config if it was moved
     if (hasReliverseConfig) {
-      await fs.move(tempReliverseConfigPath, projectReliverseConfigPath, {
+      await fs.move(projectReliverseConfigPath, projectReliverseConfigPath, {
         overwrite: true,
       });
     }

@@ -12,6 +12,7 @@ import { jsonrepair } from "jsonrepair";
 import { loadFile, writeFile, builders } from "magicast";
 import path from "pathe";
 
+import { UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import { generateReliverseConfig } from "~/utils/reliverseConfig.js";
 
 import {
@@ -495,7 +496,7 @@ export const genCfg: GenCfg[] = [
         }
 
         // Some defaults
-        const githubUsername = "unknown";
+        const githubUsername = UNKNOWN_VALUE;
         // For TS configs in dev mode, skip any installation prompts
         const skipInstallPrompt = !useJsonc && isDev;
 
@@ -511,7 +512,7 @@ export const genCfg: GenCfg[] = [
         // Generate the actual config file
         await generateReliverseConfig({
           projectName,
-          frontendUsername: "unknown",
+          frontendUsername: UNKNOWN_VALUE,
           deployService: "vercel",
           primaryDomain: `https://${projectName}.vercel.app`,
           projectPath: projectConfig?.projectPath || cwd,

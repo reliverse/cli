@@ -2,7 +2,7 @@ import { Type, type Static } from "@sinclair/typebox";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { cliHomeRepos, cliVersion } from "~/app/constants.js";
+import { cliHomeRepos, cliVersion } from "~/libs/sdk/constants.js";
 
 // Import package.json with type assertion
 // import pkg from "../../package.json" assert { type: "json" };

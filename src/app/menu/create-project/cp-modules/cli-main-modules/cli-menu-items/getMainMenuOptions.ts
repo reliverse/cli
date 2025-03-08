@@ -5,7 +5,7 @@ import path from "pathe";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
-import { cliJsrPath } from "~/app/constants.js";
+import { cliJsrPath } from "~/libs/sdk/constants.js";
 import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 export type MainMenuChoice =
@@ -46,7 +46,7 @@ export async function getMainMenuOptions(
       value: "clone",
     },
     {
-      label: re.bold("🔬 Switch to manual builder mode"),
+      label: re.bold("🔬 Open manual builder mode"),
       hint: multiConfigMsg,
       value: "manual",
     },

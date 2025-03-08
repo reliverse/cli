@@ -6,7 +6,7 @@ import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { cliName } from "~/app/constants.js";
+import { cliName } from "~/libs/sdk/constants.js";
 import { getEffectiveDir } from "~/utils/getEffectiveDir.js";
 import { migrateReliverseConfig } from "~/utils/reliverseConfig.js";
 import { handleReplacements } from "~/utils/replacements/reps-mod.js";

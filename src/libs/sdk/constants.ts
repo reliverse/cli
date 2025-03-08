@@ -1,8 +1,7 @@
-import { re } from "@reliverse/relico";
 import os from "os";
 import path from "pathe";
 
-export const cliVersion = "1.5.10";
+export const cliVersion = "1.5.11";
 export const cliName = "@reliverse/cli";
 
 // GENERAL CONFIG NAMES
@@ -38,9 +37,6 @@ export const useLocalhost = false;
 export const DEFAULT_CLI_USERNAME = "johnny911";
 
 export const endTitle = `📚 Check the docs to learn more: ${cliDomainDocs}`;
-
-export const recommended = re.green("🚀 Recommended");
-export const experimental = re.red("🚨 Experimental");
 
 export const UNKNOWN_VALUE = "unknown";
 export const DEFAULT_DOMAIN = "https://example.com";

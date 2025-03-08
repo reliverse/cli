@@ -2,7 +2,7 @@ import { relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { tsconfigJson } from "~/app/constants.js";
+import { tsconfigJson } from "~/libs/sdk/constants.js";
 
 function generateTypeDefinitions(content: string): string {
   let result = content;

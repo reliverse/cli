@@ -7,14 +7,11 @@ import path from "pathe";
 import type { AppParams, ParamsOmitReli } from "~/app/app-types.js";
 import type { ProjectCategory } from "~/libs/config/config-main.js";
 
-import { endTitle, experimental, UNKNOWN_VALUE } from "~/app/constants.js";
 import { getRandomMessage } from "~/app/db/messages.js";
+import { endTitle, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import { aiChatHandler } from "~/utils/aiChatHandler.js";
-import {
-  detectProjectsWithReliverse,
-  reReadReliverseConfig,
-} from "~/utils/reliverseConfig.js";
-import { reReadReliverseMemory } from "~/utils/reliverseMemory.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
+import { detectProjectsWithReliverse } from "~/utils/reliverseConfig.js";
 
 import { rmTestsRuntime } from "./dev-submenu/dev-mod.js";
 import { downloadRepoOption } from "./dev-submenu/dev-mod.js";
@@ -159,7 +156,6 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
     rmTestsRuntime: "rm-tests-runtime",
     downloadTemplate: "download-template",
     openVercelTools: "open-vercel-tools",
-    reReadReliverse: "re-read-reliverse",
     aiChatTest: "ai-chat-test",
     exit: "exit",
   } as const;
@@ -184,14 +180,6 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
             },
           ]
         : []),
-      ...(isDev
-        ? [
-            {
-              label: `Re-read config and memory ${experimental}`,
-              value: toolsOptions.reReadReliverse,
-            },
-          ]
-        : []),
       {
         label: `Open Vercel devtools ${experimental}`,
         value: toolsOptions.openVercelTools,
@@ -205,16 +193,13 @@ export async function showDevToolsMenu(params: ParamsOmitReli) {
     await rmTestsRuntime(cwd);
   } else if (option === toolsOptions.downloadTemplate) {
     await downloadRepoOption(
-      "blefnk/relivator",
+      "blefnk/relivator-nextjs-template",
       config,
       memory,
       isDev,
       cwd,
       skipPrompts,
     );
-  } else if (option === toolsOptions.reReadReliverse) {
-    await reReadReliverseConfig(isDev);
-    await reReadReliverseMemory();
   } else if (option === toolsOptions.aiChatTest) {
     await aiChatHandler(memory);
   } else if (option === toolsOptions.openVercelTools) {

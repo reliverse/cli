@@ -14,15 +14,12 @@ import type {
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
 import {
-  endTitle,
-  experimental,
-  recommended,
-  UNKNOWN_VALUE,
-} from "~/app/constants.js";
-import {
   randomProjectFrameworkTitle,
   getRandomMessage,
 } from "~/app/db/messages.js";
+import { endTitle, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
+import { recommended } from "~/utils/badgeNotifiers.js";
 import {
   TEMP_BROWSER_TEMPLATE_OPTIONS,
   TEMP_VSCODE_TEMPLATE_OPTIONS,
@@ -240,7 +237,7 @@ export async function optionCreateVSCodeExtension(
       { separator: true },
       {
         label: re.italic(re.dim("More templates coming soon")),
-        value: "unknown",
+        value: UNKNOWN_VALUE,
         disabled: true,
       },
     ],
@@ -281,7 +278,7 @@ export async function optionCreateBrowserExtension(
       { separator: true },
       {
         label: re.italic(re.dim("More templates coming soon")),
-        value: "unknown",
+        value: UNKNOWN_VALUE,
         disabled: true,
       },
     ],
@@ -323,9 +320,9 @@ export async function optionCreateWebProject(
   if (isMultiConfig) {
     for (const multiConfig of multireli) {
       let template = multiConfig.projectTemplate;
-      if (template === "unknown") {
+      if (template === UNKNOWN_VALUE) {
         let architecture = multiConfig.projectArchitecture;
-        if (architecture === "unknown") {
+        if (architecture === UNKNOWN_VALUE) {
           architecture = await selectPrompt<ProjectArchitecture>({
             endTitle,
             title: "Which architecture would you prefer?",
@@ -384,7 +381,7 @@ export async function optionCreateWebProject(
           {
             label: "...",
             hint: re.dim("coming soon"),
-            value: "unknown",
+            value: UNKNOWN_VALUE,
             disabled: true,
           },
         ],
@@ -421,7 +418,7 @@ export async function optionCreateWebProject(
       template = config.projectTemplate as RepoOption;
     } else {
       let architecture = config.projectArchitecture;
-      if (architecture === "unknown") {
+      if (architecture === UNKNOWN_VALUE) {
         architecture = await selectPrompt<ProjectArchitecture>({
           endTitle,
           title: "Which architecture would you prefer?",

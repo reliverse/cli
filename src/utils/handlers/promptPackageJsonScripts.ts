@@ -4,7 +4,7 @@ import { relinka } from "@reliverse/prompts";
 import { re } from "@reliverse/relico";
 import { execa } from "execa";
 
-import { experimental } from "~/app/constants.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
 import { checkScriptExists } from "~/utils/pkgJsonHelpers.js";
 
 export type ScriptStatus = {

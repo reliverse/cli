@@ -9,7 +9,7 @@ import { relinka } from "@reliverse/prompts";
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { askProjectName } from "~/utils/askProjectName.js";
+import { askProjectName } from "~/app/prompts/askProjectName.js";
 import { getUserPkgManager } from "~/utils/dependencies/getUserPkgManager.js";
 import { handleDownload } from "~/utils/downloading/handleDownload.js";
 import { ensureGithubToken } from "~/utils/instanceGithub.js";
@@ -53,8 +53,8 @@ const REPOS_USERS = [
   "blefnk/astro-starlight-template",
   "blefnk/create-next-app",
   "blefnk/create-t3-app",
-  "blefnk/relivator",
-  "blefnk/versator",
+  "blefnk/relivator-nextjs-template",
+  "blefnk/versator-nextjs-template",
   "onwidget/astrowind",
   "reliverse/template-browser-extension",
   "shadcn-ui/taxonomy",

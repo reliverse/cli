@@ -1,7 +1,7 @@
 import { defineCommand, errorHandler, runMain } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import { cliDomainDocs, cliVersion } from "./app/constants.js";
+import { cliDomainDocs, cliVersion } from "./libs/sdk/constants.js";
 
 const main = defineCommand({
   meta: {

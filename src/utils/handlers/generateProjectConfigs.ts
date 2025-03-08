@@ -6,7 +6,7 @@ import path from "pathe";
 
 import type { DeploymentService, VSCodeSettings } from "~/types.js";
 
-import { CONFIG_CATEGORIES, UNKNOWN_VALUE } from "~/app/constants.js";
+import { CONFIG_CATEGORIES, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import {
   generateReliverseConfig,
   getReliverseConfigPath,
@@ -137,7 +137,7 @@ export async function generateConfigFiles(
     const configInfo = await getReliverseConfigPath(projectPath);
     const mainConfigFileName = path.basename(configInfo.configPath);
 
-    // The main config generator now simply delegates to the unified generateReliverseConfig.
+    // The reliverse config generation
     const configGenerators: Record<string, () => Promise<boolean>> = {
       [mainConfigFileName]: async () => {
         await generateReliverseConfig({

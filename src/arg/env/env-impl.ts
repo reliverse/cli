@@ -1,8 +1,8 @@
 import { confirmPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 
-import { FALLBACK_ENV_EXAMPLE_URL } from "~/app/constants.js";
 import { composeEnvFile } from "~/app/menu/create-project/cp-modules/compose-env-file/cef-mod.js";
+import { FALLBACK_ENV_EXAMPLE_URL } from "~/libs/sdk/constants.js";
 import { getReliverseConfig } from "~/utils/reliverseConfig.js";
 import { getCurrentWorkingDirectory } from "~/utils/terminalHelpers.js";
 

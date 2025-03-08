@@ -3,7 +3,7 @@ import { relinka } from "@reliverse/prompts";
 import { drizzle } from "drizzle-orm/libsql/node";
 import fs from "fs-extra";
 
-import { memoryPath, cliHomeDir } from "~/app/constants.js";
+import { memoryPath, cliHomeDir } from "~/libs/sdk/constants.js";
 
 // Ensure the directory exists
 await fs.ensureDir(cliHomeDir);

@@ -4,10 +4,10 @@ import { re } from "@reliverse/relico";
 
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import { DEFAULT_CLI_USERNAME } from "~/app/constants.js";
+import { DEFAULT_CLI_USERNAME } from "~/libs/sdk/constants.js";
 import { updateReliverseMemory } from "~/utils/reliverseMemory.js";
 
-export async function getUsernameFrontend(
+export async function askUsernameFrontend(
   memory: ReliverseMemory,
   shouldAskIfExists: boolean,
 ): Promise<string | null> {

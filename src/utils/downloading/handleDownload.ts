@@ -6,7 +6,7 @@ import path from "pathe";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
-import { cliHomeRepos } from "~/app/constants.js";
+import { cliHomeRepos, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import {
   downloadRepo,
   type DownloadResult,
@@ -96,7 +96,7 @@ export async function handleDownload({
       author,
       name,
       description: "Custom repository",
-      category: "unknown" as CategoryFromSchema,
+      category: UNKNOWN_VALUE as CategoryFromSchema,
     };
   }
 

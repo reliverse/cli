@@ -7,7 +7,6 @@ import {
 } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { normalizeName } from "@reliverse/prompts";
-import { execa } from "execa";
 import fs from "fs-extra";
 import { installDependencies } from "nypm";
 import open from "open";
@@ -20,15 +19,12 @@ import type { Behavior } from "~/types.js";
 import type { RepoOption } from "~/utils/projectRepository.js";
 import type { ReliverseMemory } from "~/utils/schemaMemory.js";
 
-import {
-  cliDomainDocs,
-  experimental,
-  homeDir,
-  UNKNOWN_VALUE,
-} from "~/app/constants.js";
-import { askProjectName } from "~/utils/askProjectName.js";
+import { askOpenInIDE } from "~/app/prompts/askOpenInIDE.js";
+import { askProjectName } from "~/app/prompts/askProjectName.js";
+import { askUsernameFrontend } from "~/app/prompts/askUsernameFrontend.js";
+import { cliDomainDocs, homeDir, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
 import { setupI18nFiles } from "~/utils/downloading/downloadI18nFiles.js";
-import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
 import { isVSCodeInstalled } from "~/utils/handlers/isAppInstalled.js";
 import { promptPackageJsonScripts } from "~/utils/handlers/promptPackageJsonScripts.js";
 
@@ -91,7 +87,7 @@ export async function initializeProjectConfig(
     config?.projectAuthor !== UNKNOWN_VALUE &&
     config?.projectAuthor !== ""
       ? config.projectAuthor
-      : ((await getUsernameFrontend(memory, true)) ?? "");
+      : ((await askUsernameFrontend(memory, true)) ?? "");
 
   if (!frontendUsername) {
     throw new Error(
@@ -427,27 +423,7 @@ export async function handleNextAction(
   try {
     switch (action) {
       case "ide": {
-        const vscodeInstalled = isVSCodeInstalled();
-        relinka(
-          "info-verbose",
-          vscodeInstalled
-            ? "Opening bootstrapped project in VSCode-based IDE..."
-            : "Trying to open project in default IDE...",
-        );
-        try {
-          // Spawn the IDE process in detached mode so it doesn't block subsequent actions.
-          await execa("code", [projectPath], {
-            detached: true,
-            stdio: "ignore",
-          });
-        } catch (error) {
-          relinka(
-            "error",
-            "Error opening project in IDE:",
-            error instanceof Error ? error.message : String(error),
-            `Try manually: code ${projectPath}`,
-          );
-        }
+        await askOpenInIDE({ projectPath, enforce: true });
         break;
       }
       case "deployed": {

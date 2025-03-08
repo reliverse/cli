@@ -2,8 +2,8 @@ import { confirmPrompt, relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 import path from "pathe";
 
-import { homeDir } from "~/app/constants.js";
-import { getUsernameFrontend } from "~/utils/getUsernameFrontend.js";
+import { askUsernameFrontend } from "~/app/prompts/askUsernameFrontend.js";
+import { homeDir } from "~/libs/sdk/constants.js";
 import { initGithubSDK } from "~/utils/instanceGithub.js";
 import { getReliverseMemory } from "~/utils/reliverseMemory.js";
 
@@ -136,7 +136,7 @@ export async function downloadFileFromGitHub(
     const memory = await getReliverseMemory();
 
     // Determine the user's local GitHub username or prompt them
-    const frontendUsername = await getUsernameFrontend(memory, false);
+    const frontendUsername = await askUsernameFrontend(memory, false);
     if (!frontendUsername) {
       throw new Error(
         "Failed to determine your frontend username. Please try again or notify the CLI developers.",

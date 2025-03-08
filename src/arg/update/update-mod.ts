@@ -2,7 +2,7 @@ import { defineCommand, selectPrompt } from "@reliverse/prompts";
 import { relinka } from "@reliverse/prompts";
 import { execaCommand } from "execa";
 
-import { cliName } from "~/app/constants.js";
+import { cliName } from "~/libs/sdk/constants.js";
 import {
   getAllPkgManagers,
   type PackageManager,

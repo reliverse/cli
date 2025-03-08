@@ -41,22 +41,19 @@
     "build.publish.ts",
     "drizzle.config.ts",
     "eslint.config.js",
-    "globals/**/*.d.ts",
     "latest.ts",
+    "multireli/**/*.ts",
     "reliverse.ts",
     "reset.d.ts",
-    "src/**/*.js",
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "multireli/**/*.ts",
-    "vitest.config.ts",
-    "dist-libs/**/*.ts"
+    "vitest.config.ts"
   ],
   "exclude": [
-    "tests-runtime",
     "node_modules",
+    "tests-runtime",
+    "start-runtime",
+    "dist-jsr",
     "dist-npm",
-    "dist-libs/**/*.js",
-    "dist-libs/**/*.d.ts"
+    "dist-libs"
   ]
 }

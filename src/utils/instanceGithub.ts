@@ -2,11 +2,11 @@ import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import { Octokit } from "@octokit/rest";
 import { inputPrompt, relinka } from "@reliverse/prompts";
 
-import { cliVersion } from "~/app/constants.js";
+import { askUsernameGithub } from "~/app/prompts/askUsernameGithub.js";
+import { cliVersion } from "~/libs/sdk/constants.js";
 
 import type { ReliverseMemory } from "./schemaMemory.js";
 
-import { getUsernameGithub } from "./getUsernameGithub.js";
 import { updateReliverseMemory } from "./reliverseMemory.js";
 
 // A custom Octokit with REST endpoint methods.
@@ -123,7 +123,7 @@ export async function initGithubSDK(
   frontendUsername: string,
   maskInput: "prompt" | boolean,
 ): Promise<[string, InstanceGithub, string]> {
-  const githubUsername = await getUsernameGithub(memory, frontendUsername);
+  const githubUsername = await askUsernameGithub(memory, frontendUsername);
   const githubToken = await ensureGithubToken(memory, maskInput);
   const githubInstance = initOctokitSDK(githubToken);
   return [githubToken, githubInstance, githubUsername];

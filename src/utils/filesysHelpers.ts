@@ -29,3 +29,18 @@ export async function isHidden(filePath: string): Promise<boolean> {
   }
   return false;
 }
+
+/**
+ * Checks if a directory is empty
+ * @param directory Path to the directory
+ * @returns Boolean indicating if the directory is empty
+ */
+export async function isDirectoryEmpty(directory: string): Promise<boolean> {
+  try {
+    const files = await fs.readdir(directory);
+    return files.length === 0;
+  } catch (_error) {
+    // If there's an error reading the directory, assume it's not empty
+    return false;
+  }
+}

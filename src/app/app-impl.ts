@@ -4,12 +4,12 @@ import { generate } from "random-words";
 
 import { getMainMenuOptions } from "~/app/menu/create-project/cp-modules/cli-main-modules/cli-menu-items/getMainMenuOptions.js";
 import { handleOpenProjectMenu } from "~/app/menu/manual-mode/deprecated/editor-menu.js";
+import { cliJsrPath, UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 import { showNativeCliMenu } from "~/utils/native-cli/nc-mod.js";
 import { detectProject } from "~/utils/reliverseConfig.js";
 
 import type { ParamsOmitSkipPN } from "./app-types.js";
 
-import { cliJsrPath, UNKNOWN_VALUE } from "./constants.js";
 import { getRandomMessage, getWelcomeTitle } from "./db/messages.js";
 import { showCloneProjectMenu } from "./menu/create-project/cp-modules/cli-main-modules/cli-menu-items/showCloneProjectMenu.js";
 import { showEndPrompt } from "./menu/create-project/cp-modules/cli-main-modules/modules/showStartEndPrompt.js";

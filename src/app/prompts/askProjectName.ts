@@ -26,7 +26,7 @@ export async function askProjectName({
 
   const placeholder = repoName
     ? `Press <Enter> to use the repository name: ${defaultValue}`
-    : `I've just generated a random name for you: ${defaultValue}`;
+    : `I've just generated a random name for you (press <Enter> to use it): ${defaultValue}`;
 
   const name = await inputPrompt({
     title,

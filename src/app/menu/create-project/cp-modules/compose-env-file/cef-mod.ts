@@ -5,7 +5,7 @@ import fs from "fs-extra";
 
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 
-import { cliDomainEnv } from "~/app/constants.js";
+import { cliDomainEnv } from "~/libs/sdk/constants.js";
 
 import {
   promptAndSetMissingValues,

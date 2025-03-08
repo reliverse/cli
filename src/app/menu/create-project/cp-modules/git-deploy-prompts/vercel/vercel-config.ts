@@ -6,7 +6,7 @@ import { projectsUpdateProject } from "@vercel/sdk/funcs/projectsUpdateProject.j
 
 import type { InstanceVercel } from "~/utils/instanceVercel.js";
 
-import { experimental } from "~/app/constants.js";
+import { experimental } from "~/utils/badgeNotifiers.js";
 
 import { withRateLimit } from "./vercel-api.js";
 

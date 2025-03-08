@@ -2,7 +2,7 @@ import { endPrompt, startPrompt } from "@reliverse/prompts";
 import { getTerminalWidth } from "@reliverse/prompts";
 import { isBun, isBunPM, isBunRuntime } from "@reliverse/runtime";
 
-import { cliName, cliVersion } from "~/app/constants.js";
+import { cliName, cliVersion } from "~/libs/sdk/constants.js";
 
 export async function showStartPrompt(
   isDev: boolean,

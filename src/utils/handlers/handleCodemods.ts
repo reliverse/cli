@@ -4,7 +4,7 @@ import { relinka } from "@reliverse/prompts";
 import type { ReliverseConfig } from "~/libs/config/config-main.js";
 import type { MonorepoType } from "~/types.js";
 
-import { cliConfigJsonc } from "~/app/constants.js";
+import { cliConfigJsonc } from "~/libs/sdk/constants.js";
 import { convertCjsToEsm } from "~/utils/codemods/convertCjsToEsm.js";
 import { convertTypeDefinitions } from "~/utils/codemods/convertDefinitions.js";
 import { convertImportStyle } from "~/utils/codemods/convertImportStyle.js";

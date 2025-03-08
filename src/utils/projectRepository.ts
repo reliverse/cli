@@ -11,7 +11,8 @@ import path from "pathe";
 import type { VSCodeRepoOption } from "~/app/menu/menu-impl.js";
 import type { reliverseConfigSchema } from "~/libs/config/config-main.js";
 
-import { cliHomeRepos, experimental, recommended } from "~/app/constants.js";
+import { cliHomeRepos } from "~/libs/sdk/constants.js";
+import { experimental, recommended } from "~/utils/badgeNotifiers.js";
 
 import { setHiddenAttributeOnWindows } from "./filesysHelpers.js";
 import {
@@ -53,7 +54,7 @@ export type RepoOption = CloneOrTemplateRepo["id"] | "unknown";
 
 export const REPO_TEMPLATES: CloneOrTemplateRepo[] = [
   {
-    id: "blefnk/relivator",
+    id: "blefnk/relivator-nextjs-template",
     author: "blefnk",
     name: "relivator",
     description: "Full-featured e-commerce template with auth, payments, etc.",
@@ -96,7 +97,7 @@ export const REPO_TEMPLATES: CloneOrTemplateRepo[] = [
     category: "website",
   },
   {
-    id: "blefnk/versator",
+    id: "blefnk/versator-nextjs-template",
     author: "blefnk",
     name: "versator",
     description: "Versatile Next.js template for various use cases",
@@ -280,9 +281,9 @@ export async function saveRepoToDevice(
 // ────────────────────────────────────────────────
 
 export const TEMP_FULLSTACK_WEBSITE_TEMPLATE_OPTIONS = {
-  "blefnk/relivator": {
+  "blefnk/relivator-nextjs-template": {
     label: `Relivator ${recommended}`,
-    value: "blefnk/relivator",
+    value: "blefnk/relivator-nextjs-template",
     hint: re.dim("Full-featured e-commerce repo with auth, payments, etc."),
   },
   "blefnk/next-react-ts-src-minimal": {

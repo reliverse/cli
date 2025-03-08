@@ -2,7 +2,7 @@ import { confirmPrompt, defineCommand } from "@reliverse/prompts";
 import { deleteLastLine, msg, relinka } from "@reliverse/prompts";
 import fs from "fs-extra";
 
-import { memoryPath } from "~/app/constants.js";
+import { memoryPath } from "~/libs/sdk/constants.js";
 
 import { deleteMemory } from "./logout-impl.js";
 

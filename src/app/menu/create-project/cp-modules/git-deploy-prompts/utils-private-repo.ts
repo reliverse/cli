@@ -13,7 +13,7 @@ import {
   cliConfigJsonc,
   cliConfigJsoncTmp,
   cliHomeTmp,
-} from "~/app/constants.js";
+} from "~/libs/sdk/constants.js";
 import { setHiddenAttributeOnWindows } from "~/utils/filesysHelpers.js";
 
 const gzipAsync = promisify(gzip);

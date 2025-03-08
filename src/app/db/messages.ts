@@ -1,4 +1,4 @@
-import { UNKNOWN_VALUE } from "~/app/constants.js";
+import { UNKNOWN_VALUE } from "~/libs/sdk/constants.js";
 
 export const randomWelcomeMessages = (username: string) => [
   `Welcome back, ${username}! Ready to pick up where you left off?`,

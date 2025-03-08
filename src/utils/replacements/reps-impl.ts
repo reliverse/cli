@@ -224,6 +224,8 @@ export async function replaceStringsInFiles(
     stringExclusions = [
       "https://api.github.com/repos/blefnk/relivator",
       "https://api.github.com/repos/blefnk/relivator-nextjs-template",
+      "https://api.github.com/repos/blefnk/versator",
+      "https://api.github.com/repos/blefnk/versator-nextjs-template",
     ],
     verbose = false,
     dryRun = false,
